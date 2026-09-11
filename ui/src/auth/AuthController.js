@@ -23,6 +23,8 @@ export default class AuthController {
 
     this.client = client;
     this.user = null;
+    this.initialized = false;
+    this.renewalPromise = null;
     this.renewalTimer = null;
 
     window.addEventListener('storage', ({ storageArea, key }) => {
@@ -36,20 +38,29 @@ export default class AuthController {
    * Get the current user, first renewing credentials if necessary.
    */
   async getUser() {
-    // if no user, try loading from localStorage
-    if (!this.user) {
+    if (!this.initialized) {
       this.loadUser();
     }
 
-    // if expired or no credentials, try to renew the credentials
     if (
       this.user &&
       (!this.user.credentials || new Date(this.user.expires) < new Date())
     ) {
-      await this.renew();
+      await this.renewOnce();
     }
 
     return this.user;
+  }
+
+  /**
+   * Get the current Taskcluster credentials.
+   *
+   * This implements the credentialAgent interface used by client-web.
+   */
+  async getCredentials() {
+    const user = await this.getUser();
+
+    return user?.credentials;
   }
 
   /**
@@ -88,6 +99,17 @@ export default class AuthController {
 
     this.user = auth ? UserSession.deserialize(auth) : null;
     this.emit('user-changed', this.user);
+    this.initialized = true;
+  }
+
+  async renewOnce() {
+    if (!this.renewalPromise) {
+      this.renewalPromise = this.renew().finally(() => {
+        this.renewalPromise = null;
+      });
+    }
+
+    await this.renewalPromise;
   }
 
   /**

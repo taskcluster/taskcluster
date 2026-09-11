@@ -5,49 +5,6 @@ type HookMetadata {
   emailOnError: Boolean
 }
 
-input HookMetadataInput {
-  name: String!
-  description: String!
-  owner: String!
-  emailOnError: Boolean
-}
-
-enum HookFireResult {
-  SUCCESS
-  ERROR
-  NO_FIRE
-}
-
-enum HookFiredBy {
-  SCHEDULE
-  TRIGGER_HOOK
-  TRIGGER_HOOK_WITH_TOKEN
-  PULSE_MESSAGE
-}
-
-type HookSuccessfulFire {
-  result: HookFireResult!
-  taskId: String!
-  time: DateTime!
-}
-
-type HookFailedFire {
-  result: HookFireResult!
-  error: JSON!
-  time: DateTime!
-}
-
-type NoFire {
-  result: HookFireResult!
-}
-
-union LastFire = HookSuccessfulFire | HookFailedFire | NoFire
-
-type HookStatus {
-  lastFire: LastFire!
-  nextScheduledDate: DateTime
-}
-
 type Hook {
   hookGroupId: ID!
   hookId: ID!
@@ -58,11 +15,6 @@ type Hook {
   expires: DateTime!
   deadline: DateTime!
   triggerSchema: JSON!
-  # Note: This is deprecated and this field will trigger an additional request.
-  status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
-
-  # Note: this field will trigger an additional request.
-  lastFire(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookLastFire
 }
 
 type HookGroup {
@@ -71,73 +23,15 @@ type HookGroup {
   hooks(hookGroupId: ID = hookGroupId): [Hook]
 }
 
-type DeleteHook {
-  hookGroupId: ID
-  hookId: ID
-}
-
 type HookBinding {
   exchange: String!
   routingKeyPattern: String!
 }
 
-input HookBindingInput {
-  exchange: String!
-  routingKeyPattern: String!
-}
-
-input HookInput {
-  metadata: HookMetadataInput!
-  schedule: [String]
-  expires: String
-  deadline: String
-  bindings: [HookBindingInput]
-  task: JSON!
-  triggerSchema: JSON
-}
-
-enum HookTaskState {
-  UNSCHEDULED
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-  EXCEPTION
-  UNKNOWN
-}
-
-type HookLastFire {
-  hookGroupId: ID!,
-  hookId: ID!,
-  firedBy: HookFiredBy!,
-  taskId: String!,
-  taskCreateTime: DateTime!,
-  result: HookFireResult!,
-  taskState: HookTaskState!,
-  error: String!,
-}
-
-type HookLastFireConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [HookLastFireEdge]
-}
-
-type HookLastFireEdge implements Edge {
-  cursor: String
-  node: HookLastFire
-}
-
 extend type Query {
   hookGroups(hookGroupId: ID): [HookGroup]
-  hooks(hookGroupId: ID!): [Hook]
-  hook(hookGroupId: ID!, hookId: ID!): Hook
-  hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
-  hookLastFires(hookGroupId: ID!, hookId: ID!, connection: PageConnection): HookLastFireConnection
 }
 
 extend type Mutation {
   triggerHook(hookGroupId: ID!, hookId: ID!, payload: JSON!): TaskStatus
-  createHook(hookGroupId: ID!, hookId: ID!, payload: HookInput!): Hook
-  updateHook(hookGroupId: ID!, hookId: ID!, payload: HookInput!): Hook
-  deleteHook(hookGroupId: ID!, hookId: ID!): DeleteHook
 }

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
 export const tasks = [];
@@ -24,7 +24,7 @@ tasks.push({
   requires: [],
   provides: ['generic-worker-schemas'],
   run: async (_requirements, _utils) => {
-    const schemaFiles = glob.sync('workers/generic-worker/schemas/*.yml', { cwd: REPO_ROOT });
+    const schemaFiles = globSync('workers/generic-worker/schemas/*.yml', { cwd: REPO_ROOT }).sort();
     return {
       'generic-worker-schemas': await Promise.all(
         schemaFiles.map(async filename => {
@@ -124,7 +124,7 @@ tasks.push({
     const gwDocsDir = path.join('ui', 'docs', 'reference', 'workers', 'generic-worker');
 
     // begin by deleting all *-payload--schema.mdx files
-    for (const file of glob.sync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
+    for (const file of globSync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
       await rimraf(path.join(REPO_ROOT, file));
     }
 

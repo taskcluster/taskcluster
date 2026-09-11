@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v101/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/dockerworker"
 )
 
 func TestD2GWithChainOfTrust(t *testing.T) {
@@ -18,7 +18,7 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 	payload := dockerworker.DockerWorkerPayload{
 		Command: []string{"/bin/bash", "-c", "echo hello"},
 		Image:   json.RawMessage(`"denolehov/curl"`),
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			ChainOfTrust: true,
 		},
 		MaxRunTime: 30,

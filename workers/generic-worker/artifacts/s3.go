@@ -2,6 +2,8 @@ package artifacts
 
 import (
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -12,79 +14,87 @@ import (
 	"path/filepath"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v101/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
 )
 
 type S3Artifact struct {
 	*BaseArtifact
 	// Path is the filename of the file declared in the task payload.
 	Path string
-	// ContentPath is the filename of the file containing the data
-	// for this artifact. ContentPath may be equal to Path, or,
-	// in the case where a temporary file is created, it may be different.
-	// ContentPath will always be read from when uploading the artifact.
-	ContentPath     string
+	// Content streams the data for this artifact.
+	Content         ContentSource
 	ContentEncoding string
 	ContentType     string
 	// ContentLength is the original file size in bytes, before any
 	// encoding (e.g. gzip). Sent to the queue for monitoring purposes.
 	ContentLength int64
+	bodyPath      string
+	bodySHA256    string
 }
 
-// createTempFileForPUTBody gzip-compresses the file at Path and
-// writes it to a temporary file in the same directory. The file path of the
-// generated temporary file is returned.  It is the responsibility of the
-// caller to delete the temporary file.
-func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
-	baseName := filepath.Base(s3Artifact.Path)
-	tmpFile, err := os.CreateTemp("", baseName)
-	if err != nil {
-		panic(err)
+func (s3Artifact *S3Artifact) SourcePath() string {
+	return s3Artifact.Path
+}
+
+func (s3Artifact *S3Artifact) PrepareContent() (err error) {
+	s3Artifact.bodyPath, s3Artifact.bodySHA256, s3Artifact.ContentLength, err = s3Artifact.createTempFileForPUTBody()
+	return err
+}
+
+func (s3Artifact *S3Artifact) DiscardContent() {
+	if s3Artifact.bodyPath != "" {
+		os.Remove(s3Artifact.bodyPath)
+		s3Artifact.bodyPath = ""
+		s3Artifact.bodySHA256 = ""
 	}
-	defer tmpFile.Close()
+}
+
+// Streams the artifact content into a temporary file owned by the worker,
+// applying ContentEncoding on the way. The path of the temporary file is
+// returned, alongside the sha256 and the length of the uncompressed content
+// that got written.
+func (s3Artifact *S3Artifact) createTempFileForPUTBody() (path string, sha256sum string, contentLength int64, err error) {
+	baseName := filepath.Base(s3Artifact.Path)
+	tmpFile, err := os.CreateTemp("", "artifact-")
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			tmpFile.Close()
+			if rmErr := os.Remove(tmpFile.Name()); rmErr != nil {
+				log.Printf("WARNING: could not remove temporary file %v: %v", tmpFile.Name(), rmErr)
+			}
+		}
+	}()
 	var target io.Writer = tmpFile
+	var gzipLogWriter *gzip.Writer
 	if s3Artifact.ContentEncoding == "gzip" {
-		gzipLogWriter := gzip.NewWriter(tmpFile)
-		defer gzipLogWriter.Close()
+		gzipLogWriter = gzip.NewWriter(tmpFile)
 		gzipLogWriter.Name = baseName
 		target = gzipLogWriter
 	}
-	source, err := os.Open(s3Artifact.ContentPath)
-	if err != nil {
-		panic(err)
+	hasher := sha256.New()
+	if contentLength, err = s3Artifact.Content.WriteContent(io.MultiWriter(target, hasher)); err != nil {
+		return
 	}
-	defer source.Close()
-	_, _ = io.Copy(target, source)
-	return tmpFile.Name()
+	if gzipLogWriter != nil {
+		if err = gzipLogWriter.Close(); err != nil {
+			return
+		}
+	}
+	if err = tmpFile.Close(); err != nil {
+		return
+	}
+	return tmpFile.Name(), hex.EncodeToString(hasher.Sum(nil)), contentLength, nil
 }
 
 func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	log.Printf("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
-
-	// Artifacts declared in payload are copied to a temp file
-	// as task user to ensure they are readable by task user.
-	// Reserved artifacts (created by task features) are not,
-	// since their file location is not user-defined, and task
-	// user cannot replace their content with symbolic links.
-	// Thus reserved (trusted) artifacts have Path == ContentPath.
-	tempFileCreated := s3Artifact.Path != s3Artifact.ContentPath
-	if tempFileCreated {
-		defer os.Remove(s3Artifact.ContentPath)
-	}
-
-	var transferContentFile string
-	if !tempFileCreated || s3Artifact.ContentEncoding == "gzip" {
-		log.Printf("Copying %v to temp file...", s3Artifact.ContentPath)
-		transferContentFile = s3Artifact.createTempFileForPUTBody()
-		defer os.Remove(transferContentFile)
-	} else {
-		log.Printf("Not copying %v to temp file", s3Artifact.ContentPath)
-		transferContentFile = s3Artifact.ContentPath
-	}
 
 	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}
@@ -98,7 +108,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 	}
 	httpCall := func() (putResp *http.Response, tempError error, permError error) {
 		var transferContent *os.File
-		transferContent, permError = os.Open(transferContentFile)
+		transferContent, permError = os.Open(s3Artifact.bodyPath)
 		if permError != nil {
 			return
 		}
@@ -128,10 +138,14 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 		// which can/should be retried, so explicitly handle...
 		if putResp.StatusCode == http.StatusBadRequest {
 			tempError = fmt.Errorf("S3 returned status code 400 which could be an intermittent issue - see https://bugzilla.mozilla.org/show_bug.cgi?id=1394557")
+			return
 		}
 		return
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
+	if err == nil {
+		s3Artifact.SHA256 = s3Artifact.bodySHA256
+	}
 	formattedUrl, formatURLErr := formatURL(response.PutURL)
 	if formatURLErr != nil {
 		log.Print("Could not parse PutUrl, something has gone very wrong...")

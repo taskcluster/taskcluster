@@ -412,6 +412,11 @@ impl Queue {
     ///
     /// Task group can be sealed once and is irreversible. Calling it multiple times
     /// will return same result and will not update it again.
+    ///
+    /// Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+    /// from adding more tasks to a group being cancelled. It is not a
+    /// security feature: the check is not atomic with task creation, so a
+    /// `createTask` racing this call may still succeed.
     pub async fn sealTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::sealTaskGroup_details(taskGroupId);
@@ -1354,34 +1359,6 @@ impl Queue {
         (path, query)
     }
 
-    /// Update a provisioner
-    ///
-    /// Declare a provisioner, supplying some details about it.
-    ///
-    /// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-    /// possessed. For example, a request to update the `my-provisioner`
-    /// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-    /// `queue:declare-provisioner:my-provisioner#description`.
-    ///
-    /// The term "provisioner" is taken broadly to mean anything with a provisionerId.
-    /// This does not necessarily mean there is an associated service performing any
-    /// provisioning activity.
-    pub async fn declareProvisioner(&self, provisionerId: &str, payload: &Value) -> Result<Value, Error> {
-        let method = "PUT";
-        let (path, query) = Self::declareProvisioner_details(provisionerId);
-        let body = Some(payload);
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Determine the HTTP request details for declareProvisioner
-    fn declareProvisioner_details<'a>(provisionerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("provisioners/{}", urlencode(provisionerId));
-        let query = None;
-
-        (path, query)
-    }
-
     /// Get Number of Pending Tasks
     ///
     /// Get an approximate number of pending tasks for the given `taskQueueId`.
@@ -1413,6 +1390,32 @@ impl Queue {
     /// Determine the HTTP request details for pendingTasks
     fn pendingTasks_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("pending/{}", urlencode(taskQueueId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Pending and Claimed Task Counts for Multiple Task Queues
+    ///
+    /// Get approximate pending and claimed task counts for the given task queues.
+    ///
+    /// The caller must have both `queue:pending-count:<taskQueueId>` and
+    /// `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+    /// If any task queue is unauthorized, the entire request will fail.
+    ///
+    /// As task states may change rapidly, these counts may not represent the exact
+    /// number of pending and claimed tasks, but are very good approximations.
+    pub async fn taskQueueCountsBatch(&self, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::taskQueueCountsBatch_details();
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for taskQueueCountsBatch
+    fn taskQueueCountsBatch_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "task-queues/counts";
         let query = None;
 
         (path, query)
@@ -1599,30 +1602,6 @@ impl Queue {
 
     /// Determine the HTTP request details for getWorkerType
     fn getWorkerType_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("provisioners/{}/worker-types/{}", urlencode(provisionerId), urlencode(workerType));
-        let query = None;
-
-        (path, query)
-    }
-
-    /// Update a worker-type
-    ///
-    /// Declare a workerType, supplying some details about it.
-    ///
-    /// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-    /// possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-    /// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-    /// `queue:declare-worker-type:my-provisioner/highmem#description`.
-    pub async fn declareWorkerType(&self, provisionerId: &str, workerType: &str, payload: &Value) -> Result<Value, Error> {
-        let method = "PUT";
-        let (path, query) = Self::declareWorkerType_details(provisionerId, workerType);
-        let body = Some(payload);
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Determine the HTTP request details for declareWorkerType
-    fn declareWorkerType_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("provisioners/{}/worker-types/{}", urlencode(provisionerId), urlencode(workerType));
         let query = None;
 

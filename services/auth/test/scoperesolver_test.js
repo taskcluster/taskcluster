@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], (mock, skipping) => {
+helper.secrets.mockSuite('setup and listening', ['gcp'], (mock, skipping) => {
   let scopeResolver;
 
   helper.withDb(mock, skipping);
@@ -225,6 +225,31 @@ suite(testing.suiteName(), () => {
       scopes: ['assum*'],
       expected: ['assum*', 'A', 'B', 'C'],
     });
+
+    for (const scope of ['as*', 'ass*', 'assu*']) {
+      testResolver(`${scope} get all`, {
+        roles: [
+          { role_id: 'a', scopes: ['A'] },
+          { role_id: 'b', scopes: ['B'] },
+          { role_id: 'c', scopes: ['C'] },
+        ],
+        scopes: [scope],
+        expected: [scope, 'A', 'B', 'C'],
+      });
+    }
+
+    // See Bug 2057491
+    for (const scope of [':*', '::*', ':a*', ':as*', ':ass*', ':assu*', ':assum*', ':assume*']) {
+      testResolver(`${scope} expands nothing`, {
+        roles: [
+          { role_id: 'a', scopes: ['A'] },
+          { role_id: 'b', scopes: ['B'] },
+          { role_id: 'c', scopes: ['C'] },
+        ],
+        scopes: [scope],
+        expected: [scope],
+      });
+    }
 
     testResolver('assume:a works', {
       roles: [
@@ -482,7 +507,10 @@ suite(testing.suiteName(), () => {
     // Test with a snapshot of real roles, captured with
     //   `curl https://auth.taskcluster.net/v1/roles > test/roles.json`
     const __dirname = dirname(fileURLToPath(import.meta.url));
-    const realRoles = JSON.parse(readFileSync(join(__dirname, 'roles.json'), 'utf8'));
+    const realRoles = JSON.parse(readFileSync(join(__dirname, 'roles.json'), 'utf8')).map(({ roleId, scopes }) => ({
+      role_id: roleId,
+      scopes,
+    }));
     const testRealRoles = (scopes, expected) => {
       testResolver(`real roles with scopes ${scopes.join(', ')}`, {
         roles: realRoles,

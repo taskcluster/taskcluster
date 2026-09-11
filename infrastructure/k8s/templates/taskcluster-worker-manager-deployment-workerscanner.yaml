@@ -13,8 +13,7 @@ spec:
     matchLabels: *ref_0
   template:
     metadata:
-      annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-worker-manager-secret.yaml") . | sha256sum }}'
+      annotations: {{ merge (dict "checksum/secret" (include (print $.Template.BasePath "/taskcluster-worker-manager-secret.yaml") . | sha256sum)) (.Values.worker_manager.procs.workerscanner.podAnnotations | default dict) (.Values.podAnnotations | default dict) | toJson }}
       labels:
         app.kubernetes.io/name: taskcluster-worker-manager
         app.kubernetes.io/instance: '{{ .Release.Name }}'

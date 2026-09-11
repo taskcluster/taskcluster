@@ -46,14 +46,13 @@ export default class Queue extends Client {
     this.latestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"};
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"};
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"};
-    this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"};
     this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"deprecated","type":"function"};
+    this.taskQueueCountsBatch.entry = {"args":[],"category":"Worker Metadata","input":true,"method":"post","name":"taskQueueCountsBatch","output":true,"query":[],"route":"/task-queues/counts","scopes":{"AllOf":[{"each":"queue:pending-count:<taskQueueId>","for":"taskQueueId","in":"taskQueueIds"},{"each":"queue:claimed-count:<taskQueueId>","for":"taskQueueId","in":"taskQueueIds"}]},"stability":"experimental","type":"function"};
     this.taskQueueCounts.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"taskQueueCounts","output":true,"query":[],"route":"/task-queues/<taskQueueId>/counts","scopes":{"AllOf":["queue:pending-count:<taskQueueId>","queue:claimed-count:<taskQueueId>"]},"stability":"stable","type":"function"};
     this.listPendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listPendingTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/pending","scopes":"queue:pending-list:<taskQueueId>","stability":"experimental","type":"function"};
     this.listClaimedTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listClaimedTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/claimed","scopes":"queue:claimed-list:<taskQueueId>","stability":"experimental","type":"function"};
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"};
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"};
-    this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"};
     this.listTaskQueues.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listTaskQueues","output":true,"query":["continuationToken","limit"],"route":"/task-queues","scopes":"queue:list-task-queues","stability":"stable","type":"function"};
     this.getTaskQueue.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"getTaskQueue","output":true,"query":[],"route":"/task-queues/<taskQueueId>","scopes":"queue:get-task-queue:<taskQueueId>","stability":"stable","type":"function"};
     this.listWorkers.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"listWorkers","output":true,"query":["continuationToken","limit","quarantined"],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers","scopes":"queue:list-workers:<provisionerId>/<workerType>","stability":"deprecated","type":"function"};
@@ -157,6 +156,10 @@ export default class Queue extends Client {
   // Seal task group to prevent creation of new tasks.
   // Task group can be sealed once and is irreversible. Calling it multiple times
   // will return same result and will not update it again.
+  // Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+  // from adding more tasks to a group being cancelled. It is not a
+  // security feature: the check is not atomic with task creation, so a
+  // `createTask` racing this call may still succeed.
   sealTaskGroup(...args) {
     this.validate(this.sealTaskGroup.entry, args);
 
@@ -554,19 +557,6 @@ export default class Queue extends Client {
 
     return this.request(this.getProvisioner.entry, args);
   }
-  // Declare a provisioner, supplying some details about it.
-  // `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-  // possessed. For example, a request to update the `my-provisioner`
-  // provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-  // `queue:declare-provisioner:my-provisioner#description`.
-  // The term "provisioner" is taken broadly to mean anything with a provisionerId.
-  // This does not necessarily mean there is an associated service performing any
-  // provisioning activity.
-  declareProvisioner(...args) {
-    this.validate(this.declareProvisioner.entry, args);
-
-    return this.request(this.declareProvisioner.entry, args);
-  }
   // Get an approximate number of pending tasks for the given `taskQueueId`.
   // As task states may change rapidly, this number may not represent the exact
   // number of pending tasks, but a very good approximation.
@@ -575,6 +565,17 @@ export default class Queue extends Client {
     this.validate(this.pendingTasks.entry, args);
 
     return this.request(this.pendingTasks.entry, args);
+  }
+  // Get approximate pending and claimed task counts for the given task queues.
+  // The caller must have both `queue:pending-count:<taskQueueId>` and
+  // `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+  // If any task queue is unauthorized, the entire request will fail.
+  // As task states may change rapidly, these counts may not represent the exact
+  // number of pending and claimed tasks, but are very good approximations.
+  taskQueueCountsBatch(...args) {
+    this.validate(this.taskQueueCountsBatch.entry, args);
+
+    return this.request(this.taskQueueCountsBatch.entry, args);
   }
   // Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
   // As task states may change rapidly, this number may not represent the exact
@@ -615,16 +616,6 @@ export default class Queue extends Client {
     this.validate(this.getWorkerType.entry, args);
 
     return this.request(this.getWorkerType.entry, args);
-  }
-  // Declare a workerType, supplying some details about it.
-  // `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-  // possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-  // provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-  // `queue:declare-worker-type:my-provisioner/highmem#description`.
-  declareWorkerType(...args) {
-    this.validate(this.declareWorkerType.entry, args);
-
-    return this.request(this.declareWorkerType.entry, args);
   }
   // Get all active task queues.
   // The response is paged. If this end-point returns a `continuationToken`, you

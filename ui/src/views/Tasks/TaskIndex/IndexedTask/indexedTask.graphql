@@ -1,8 +1,0 @@
-query IndexedTask($indexPath: String!) {
-  indexedTask(indexPath: $indexPath) {
-    taskId
-    namespace
-    rank
-    data
-  }
-}

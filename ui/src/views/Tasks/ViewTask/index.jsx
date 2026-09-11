@@ -47,6 +47,7 @@ import {
   TASK_ADDED_FIELDS,
   TASK_POLL_INTERVAL,
   UI_SCHEDULER_ID,
+  TASK_STATE,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -66,12 +67,21 @@ import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
 
-const updateTaskIdHistory = id => {
+const updateTaskIdHistory = (id, task) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
 
-  db.taskIdsHistory.put({ taskId: id });
+  db.taskIdsHistory.put({
+    taskId: id,
+    name: task?.metadata?.name,
+    source: task?.metadata?.source,
+    taskQueueId: task?.taskQueueId,
+    created: task?.created,
+    deadline: task?.deadline,
+    state: task?.status?.state,
+    viewedAt: Date.now(),
+  });
 };
 
 const taskInContext = (tagSetList, taskTags) =>
@@ -128,7 +138,7 @@ export default class ViewTask extends Component {
     } = props;
 
     if (taskId !== state.previousTaskId && task) {
-      updateTaskIdHistory(taskId);
+      updateTaskIdHistory(taskId, task);
 
       const caches = getCachesFromTask(task);
 
@@ -1081,6 +1091,13 @@ export default class ViewTask extends Component {
               <SpeedDialAction
                 tooltipOpen
                 icon={<ChartIcon />}
+                FabProps={{
+                  disabled: [
+                    TASK_STATE.PENDING,
+                    TASK_STATE.RUNNING,
+                    TASK_STATE.UNSCHEDULED,
+                  ].includes(task.status.state),
+                }}
                 tooltipTitle="Profile Task Log"
                 onClick={this.handleOpenLogProfiler}
               />

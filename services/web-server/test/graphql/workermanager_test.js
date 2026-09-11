@@ -9,26 +9,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withServer(skipping);
   helper.resetTables();
 
-  suite('WorkerPools', () => {
-    test('deleting a worker pool calls deleteWorkerPool', async () => {
-      const workerPoolId = 'ww/pp';
-      helper.fakes.makeWorkerPool(workerPoolId, {});
-
-      const client = helper.getHttpClient();
-
-      const deleteWorkerPoolMutation = await helper.loadFixture('deleteWorkerPool.graphql');
-
-      await client.mutate({
-        mutation: gql`${deleteWorkerPoolMutation}`,
-        variables: {
-          workerPoolId,
-        },
-      });
-
-      assert(!helper.fakes.hasWorkerPool(workerPoolId));
-    });
-  });
-
   test('get single workerpool', async () => {
     helper.fakes.makeWorkerPool('baz/bing', {
       owner: 'foo@example.com',

@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/db",
   "private": true,
-  "version": "101.1.0",
+  "version": "108.1.0",
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
@@ -12,8 +12,7 @@
   },
   "exports": "./src/index.js",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
-    "c8": "^8.0.1",
-    "mocha": "^10.8.2"
+    "@biomejs/biome": "^2.5.10",
+    "mocha": "^11.8.0"
   }
 }

@@ -1,0 +1,20 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Github token response"
+description: |
+  A github app installation access token.
+type: object
+properties:
+  token:
+    title: "Token"
+    description: "The installation access token"
+    type: string
+  expires:
+    title: "Expiry time"
+    description: "Time at which the token expires"
+    type: string
+    format: date-time
+additionalProperties: false
+required:
+  - token
+  - expires
+

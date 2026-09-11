@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 24.17.0 installed.
+You will need Node version 24.20.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
@@ -18,7 +18,7 @@ We use `yarn` to run most development commands, so [install that as well](https:
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.26.4 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.27.1 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
@@ -95,7 +95,7 @@ These checks will help keep the code clean and will potentially save CI resource
 ## Hacking on the UI
 
 To be able to run the UI locally, you will need to set up a Taskcluster deployment to point to.
-This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [community-tc](https://community-tc.services.mozilla.com/).
+This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [firefox-ci](https://firefox-ci-tc.services.mozilla.com/).
 
 If you just want to change the UI without changing the backend or graphql API, then you will only need the [latest node](#node) version and `yarn` installed:
 
@@ -104,7 +104,7 @@ cd ui
 # install dependencies if needed
 yarn
 # set the Taskcluster deployment to point to
-export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+export TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com
 # start the UI
 yarn start
 ```
@@ -158,7 +158,7 @@ To run the Taskcluster UI:
     For example:
 
     ```sh
-    export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+    export TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { arrayOf, func, shape, string } from 'prop-types';
+import { arrayOf, bool, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
@@ -10,9 +10,14 @@ import ListItemText from '@material-ui/core/ListItemText';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import JsonDisplay from '../JsonDisplay';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import DateDistance from '../DateDistance';
-import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
+import {
+  artifact,
+  indexedTask,
+  date,
+  pagination,
+} from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import Link from '../../utils/Link';
 import { findArtifactFromTaskUrl } from '../../utils/getArtifactUrl';
@@ -80,61 +85,68 @@ export default class IndexedEntry extends Component {
   static propTypes = {
     indexedTask: indexedTask.isRequired,
     created: date.isRequired,
-    latestArtifactsConnection: shape({
-      edges: arrayOf(artifact),
-      pageInfo,
-    }).isRequired,
-    onArtifactsPageChange: func.isRequired,
+    /** A page of latest artifacts for the indexed task. */
+    latestArtifacts: arrayOf(artifact).isRequired,
+    /** Whether the artifacts page is still being fetched. */
+    artifactsLoading: bool,
+    ...pagination,
     taskGroupId: string,
   };
 
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
+  static defaultProps = {
+    artifactsLoading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
-  loadArtifacts = artifactsConnection => {
+  loadArtifacts = artifacts => {
     const {
       indexedTask: { taskId, namespace },
       user,
     } = this.props;
 
-    if (!taskId || !artifactsConnection.edges.length) {
-      return artifactsConnection;
+    if (!taskId || !artifacts.length) {
+      return artifacts;
     }
 
-    return {
-      ...artifactsConnection,
-      edges: artifactsConnection.edges.map(edge => ({
-        ...edge,
-        node: {
-          ...edge.node,
-          // Build the URLs here so that they'll be updated when people login
-          ...buildArtifactUrl({
-            user,
-            name: edge.node.name,
-            contentType: edge.node.contentType,
-            namespace,
-          }),
-        },
-      })),
-    };
+    return artifacts.map(artifact => ({
+      ...artifact,
+      // Build the URLs here so that they'll be updated when people login
+      ...buildArtifactUrl({
+        user,
+        name: artifact.name,
+        contentType: artifact.contentType,
+        namespace,
+      }),
+    }));
   };
 
   renderArtifactsTable() {
-    const { classes, onArtifactsPageChange, latestArtifactsConnection } =
-      this.props;
-    const artifacts = this.loadArtifacts(latestArtifactsConnection);
+    const {
+      classes,
+      latestArtifacts,
+      artifactsLoading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
+    const artifacts = this.loadArtifacts(latestArtifacts);
 
     return (
-      <ConnectionDataTable
-        connection={artifacts}
+      <PaginatedDataTable
+        items={artifacts}
         pageSize={ARTIFACTS_PAGE_SIZE}
         columnsSize={3}
-        onPageChange={onArtifactsPageChange}
-        renderRow={({ node: artifact }) => (
+        page={page}
+        loading={artifactsLoading}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onNextPage={onNextPage}
+        onPreviousPage={onPreviousPage}
+        noItemsMessage="No artifacts for this task."
+        renderRow={artifact => (
           <TableRow
             key={artifact.name}
             className={classNames(classes.listItemButton, {

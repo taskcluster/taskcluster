@@ -44,7 +44,7 @@ suite(testing.suiteName(), () => {
           'object:download:taskcluster/test/client/*',
         ],
       });
-    } else if (process.env.NO_TEST_SKIP) {
+    } else if (process.env.NO_TEST_SKIP && process.env.TASKCLUSTER_UNTRUSTED_PR !== 'true') {
       throw new Error('NO_TEST_SKIP is set but credentials are not available');
     } else {
       this.skip();
@@ -432,7 +432,7 @@ suite(testing.suiteName(), () => {
 
       await assert.rejects(
         () => tryDownloadArtifact(),
-        err => err.message === 'oh noes' && err.reason === 'test case'
+        err => err.message === 'oh noes' && err.code === 'ArtifactError' && err.reason === 'test case'
       );
     });
   });

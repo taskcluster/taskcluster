@@ -45,7 +45,7 @@ export default class WebServer extends Client {
 
     return this.request(this.taskGroupProfile.entry, args);
   }
-  // Generate a Firefox Profiler–compatible profile from a task's log output.
+  // Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.
   // Parses `public/logs/live.log` (or `live_backing.log`) for timing data.
   taskProfile(...args) {
     this.validate(this.taskProfile.entry, args);

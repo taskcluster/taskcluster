@@ -190,16 +190,16 @@
   },
   {
     "element": "h2",
-    "id": "azure-credentials",
+    "id": "gcp-credentials",
     "path": "/manual/deploying/cloud-credentials",
-    "subtitle": "Azure Credentials",
+    "subtitle": "GCP Credentials",
     "title": "Cloud Credentials"
   },
   {
     "element": "h2",
-    "id": "gcp-credentials",
+    "id": "github-credentials",
     "path": "/manual/deploying/cloud-credentials",
-    "subtitle": "GCP Credentials",
+    "subtitle": "Github credentials",
     "title": "Cloud Credentials"
   },
   {
@@ -3066,6 +3066,27 @@
     "title": "Audit History"
   },
   {
+    "element": "h3",
+    "id": "example-cloning-a-private-repository",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: cloning a private repository",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "id": "example-getting-a-token-from-python",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: getting a token from python",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "id": "github-repository-tokens",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Github repository tokens",
+    "title": null
+  },
+  {
     "element": "h1",
     "id": "metrics",
     "path": "/reference/platform/auth/metrics",
@@ -3302,41 +3323,6 @@
     "path": "/reference/platform/queue",
     "subtitle": "Usage",
     "title": "Queue Service"
-  },
-  {
-    "element": "h1",
-    "id": "actions",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": null,
-    "title": "Actions"
-  },
-  {
-    "element": "h3",
-    "id": "context",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Context",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "defining-actions",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Defining Actions",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "triggering-actions-in-a-user-interface",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Triggering Actions in a User Interface",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "triggering-actions-in-automation",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Triggering Actions in Automation",
-    "title": "Actions"
   },
   {
     "element": "h1",

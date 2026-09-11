@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { Query } from '@apollo/client/react/components';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { parse, stringify } from 'qs';
+import { Auth } from '@taskcluster/client-web';
 import Spinner from '../../../components/Spinner';
 import CodeEditor from '../../../components/CodeEditor';
 import HelpView from '../../../components/HelpView';
@@ -14,9 +14,10 @@ import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
 import Link from '../../../utils/Link';
-import scopesetQuery from './scopeset.graphql';
 import scopeLink from '../../../utils/scopeLink';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
+@withTaskclusterClient
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,
@@ -40,30 +41,45 @@ export default class ScopesetExpander extends Component {
     super(props);
 
     const query = parse(this.props.location.search.slice(1));
-    const { scopes } = query;
+    const scopes = query.scopes ? [].concat(query.scopes) : null;
 
-    if (scopes) {
-      this.state = {
-        scopeText: scopes.join('\n'),
-      };
-    } else {
-      this.state = {
-        scopeText: '',
-      };
-    }
+    this.state = {
+      scopeText: scopes ? scopes.join('\n') : '',
+      scopes: null,
+      expandedScopes: null,
+      loading: false,
+      error: null,
+    };
   }
 
-  handleExpandScopesClick = async () => {
+  get authClient() {
+    return this.props.createTaskclusterClient({ Class: Auth });
+  }
+
+  expandScopes = async scopes => {
+    this.setState({ scopes, loading: true, error: null });
+
+    try {
+      const { scopes: expandedScopes } = await this.authClient.expandScopes({
+        scopes,
+      });
+
+      this.setState({ expandedScopes, loading: false, error: null });
+    } catch (error) {
+      this.setState({ expandedScopes: null, loading: false, error });
+    }
+  };
+
+  handleExpandScopesClick = () => {
     const scopes = splitLines(this.state.scopeText);
-    const queryObj = { scopes };
-    const queryStr = stringify(queryObj);
+    const queryStr = stringify({ scopes });
 
     this.props.history.push({
       pathname: '/auth/scopes/expansions',
       search: queryStr,
     });
 
-    this.setState({ scopes });
+    this.expandScopes(scopes);
   };
 
   handleScopesChange = scopeText => {
@@ -72,7 +88,7 @@ export default class ScopesetExpander extends Component {
 
   render() {
     const { classes } = this.props;
-    const { scopes, scopeText } = this.state;
+    const { scopes, scopeText, expandedScopes, loading, error } = this.state;
     const description = `This tool allows you to find the expanded copy of a given scopeset, with
     scopes implied by any roles included.`;
 
@@ -88,28 +104,24 @@ export default class ScopesetExpander extends Component {
           value={scopeText}
         />
         {scopes && (
-          <Query query={scopesetQuery} variables={{ scopes }}>
-            {({ loading, error, data }) => (
-              <Fragment>
-                <ErrorPanel error={error} />
-                <List dense>
-                  {loading && (
-                    <ListItem>
-                      <Spinner />
-                    </ListItem>
-                  )}
-                  {data?.expandScopes?.map(scope => (
-                    <Link key={scope} to={scopeLink(scope)}>
-                      <ListItem button className={classes.listItemButton}>
-                        <code>{scope}</code>
-                        <LinkIcon size={16} />
-                      </ListItem>
-                    </Link>
-                  ))}
-                </List>
-              </Fragment>
-            )}
-          </Query>
+          <Fragment>
+            <ErrorPanel error={error} />
+            <List dense>
+              {loading && (
+                <ListItem>
+                  <Spinner />
+                </ListItem>
+              )}
+              {expandedScopes?.map(scope => (
+                <Link key={scope} to={scopeLink(scope)}>
+                  <ListItem button className={classes.listItemButton}>
+                    <code>{scope}</code>
+                    <LinkIcon size={16} />
+                  </ListItem>
+                </Link>
+              ))}
+            </List>
+          </Fragment>
         )}
         <Button
           tooltipProps={{ title: 'Expand Scopes' }}

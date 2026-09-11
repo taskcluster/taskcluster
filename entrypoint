@@ -69,7 +69,6 @@ script/lint:go) shift; exec yarn run lint:go "${@}";;
 script/lint:py) shift; exec yarn run lint:py "${@}";;
 script/format) shift; exec yarn run format "${@}";;
 script/test) shift; exec yarn run test "${@}";;
-script/fetch-coverage) shift; exec yarn run fetch-coverage "${@}";;
 script/build) shift; exec yarn run build "${@}";;
 script/release) shift; exec yarn run release "${@}";;
 script/staging-release) shift; exec yarn run staging-release "${@}";;

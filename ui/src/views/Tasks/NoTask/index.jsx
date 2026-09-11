@@ -1,33 +1,43 @@
 import React, { Component } from 'react';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import Typography from '@material-ui/core/Typography';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
+import DateDistance from '../../../components/DateDistance';
+import StatusLabel from '../../../components/StatusLabel';
+import DataTable from '../../../components/DataTable';
+import TableCellItem from '../../../components/TableCellItem';
 import db from '../../../utils/db';
 import Link from '../../../utils/Link';
+import sort from '../../../utils/sort';
 
 @withStyles(theme => ({
   infoText: {
     marginBottom: theme.spacing(1),
   },
-  listItemButton: {
-    ...theme.mixins.listItemButton,
-    display: 'flex',
-    justifyContent: 'space-between',
+  // Let the table scroll rather than wrap a date/age fragment.
+  nowrap: {
+    whiteSpace: 'nowrap',
   },
 }))
 export default class NoTask extends Component {
   state = {
-    recentTasks: null,
+    recentTasks: [],
+    sortBy: null,
+    sortDirection: null,
   };
 
   async componentDidMount() {
-    const recentTasks = await db.taskIdsHistory.limit(5).reverse().toArray();
+    const recentTasks = await db.taskIdsHistory
+      .orderBy('viewedAt')
+      .reverse()
+      .limit(20)
+      .toArray();
 
     this.setState({ recentTasks });
   }
@@ -36,9 +46,70 @@ export default class NoTask extends Component {
     this.props.history.push(`/tasks/${taskId}`);
   };
 
+  handleHeaderClick = ({ id: sortBy }) => {
+    const { sortBy: currentSortBy, sortDirection } = this.state;
+    const toggled = sortDirection === 'desc' ? 'asc' : 'desc';
+
+    this.setState({
+      sortBy,
+      sortDirection: currentSortBy === sortBy ? toggled : 'desc',
+    });
+  };
+
+  sortedTasks() {
+    const { recentTasks, sortBy, sortDirection } = this.state;
+
+    if (!sortBy) {
+      return recentTasks;
+    }
+
+    return [...recentTasks].sort((a, b) =>
+      sortDirection === 'desc'
+        ? sort(b[sortBy], a[sortBy])
+        : sort(a[sortBy], b[sortBy])
+    );
+  }
+
+  renderTaskRow = ({ taskId, name, state, taskQueueId, created, viewedAt }) => {
+    const { classes } = this.props;
+
+    return (
+      <TableRow key={taskId}>
+        <TableCell>
+          <Link to={`/tasks/${taskId}`}>
+            <TableCellItem>
+              <code>{taskId}</code>
+              <span>
+                <LinkIcon size={16} />
+              </span>
+            </TableCellItem>
+          </Link>
+        </TableCell>
+        <TableCell>
+          <Link to={`/tasks/${taskId}`}>{name || taskId}</Link>
+        </TableCell>
+        <TableCell title="State recorded at view time; may be stale">
+          {state ? <StatusLabel state={state} /> : null}
+        </TableCell>
+        <TableCell>{taskQueueId || null}</TableCell>
+        <TableCell className={classes.nowrap}>
+          {created ? <DateDistance from={created} /> : null}
+        </TableCell>
+        <TableCell className={classes.nowrap}>
+          {viewedAt ? (
+            <span>
+              viewed <DateDistance from={new Date(viewedAt)} />
+            </span>
+          ) : null}
+        </TableCell>
+      </TableRow>
+    );
+  };
+
   render() {
     const { description, classes } = this.props;
-    const { recentTasks } = this.state;
+    const { sortBy, sortDirection } = this.state;
+    const items = this.sortedTasks();
 
     return (
       <Dashboard
@@ -53,21 +124,27 @@ export default class NoTask extends Component {
         <Typography variant="body2" className={classes.infoText}>
           Enter a task ID in the search box
         </Typography>
-        {recentTasks && Boolean(recentTasks.length) && (
-          <List
-            dense
-            subheader={
-              <ListSubheader component="div">Recent Tasks</ListSubheader>
-            }>
-            {recentTasks.map(({ taskId }) => (
-              <Link key={taskId} to={`/tasks/${taskId}`}>
-                <ListItem button className={classes.listItemButton}>
-                  {taskId}
-                  <LinkIcon />
-                </ListItem>
-              </Link>
-            ))}
-          </List>
+        {Boolean(items.length) && (
+          <React.Fragment>
+            <ListSubheader component="div" disableGutters>
+              Recent Tasks
+            </ListSubheader>
+            <DataTable
+              headers={[
+                { id: 'taskId', label: 'Task ID' },
+                { id: 'name', label: 'Name' },
+                { id: 'state', label: 'State (at time of viewing)' },
+                { id: 'taskQueueId', label: 'Queue' },
+                { id: 'created', label: 'Created' },
+                { id: 'viewedAt', label: 'Viewed' },
+              ]}
+              items={items}
+              renderRow={this.renderTaskRow}
+              onHeaderClick={this.handleHeaderClick}
+              sortByLabel={sortBy}
+              sortDirection={sortDirection}
+            />
+          </React.Fragment>
         )}
       </Dashboard>
     );

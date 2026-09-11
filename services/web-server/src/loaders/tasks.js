@@ -1,8 +1,8 @@
 import DataLoader from 'dataloader';
-import got from 'got';
+import { downloadManagedArtifact } from '@taskcluster/client';
+import { PassThrough } from 'node:stream';
 import ConnectionLoader from '../ConnectionLoader.js';
 import Task from '../entities/Task.js';
-import maybeSignedUrl from '../utils/maybeSignedUrl.js';
 
 // Task actions were previously filtered with a client-supplied sift query. The
 // UI only ever sent two fixed shapes, encoded here as a `contextScope`:
@@ -21,23 +21,30 @@ const filterTaskActions = (actions, contextScope) =>
       : !isContextSize(action.context, 0);
   });
 
-export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
+const downloadArtifactToBuffer = async ({ queue, taskId, name }) => {
+  let chunks;
+
+  await downloadManagedArtifact({
+    taskId,
+    name,
+    queue,
+    streamFactory: async () => {
+      chunks = [];
+      const stream = new PassThrough();
+      stream.on('data', chunk => chunks.push(chunk));
+      return stream;
+    },
+  });
+
+  return Buffer.concat(chunks);
+};
+
+export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {
         try {
           return new Task(taskId, null, await queue.task(taskId));
-        } catch (err) {
-          return err;
-        }
-      })
-    )
-  );
-  const indexedTask = new DataLoader(indexPaths =>
-    Promise.all(
-      indexPaths.map(async indexPath => {
-        try {
-          return await index.findTask(indexPath);
         } catch (err) {
           return err;
         }
@@ -59,13 +66,12 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
     Promise.all(
       queries.map(async ({ taskGroupId, contextScope }) => {
         try {
-          const url = await maybeSignedUrl(queue, isAuthed)(
-            queue.getLatestArtifact,
-            taskGroupId,
-            'public/actions.json'
-          );
-
-          const raw = await got(url).json();
+          const content = await downloadArtifactToBuffer({
+            queue,
+            taskId: taskGroupId,
+            name: 'public/actions.json',
+          });
+          const raw = JSON.parse(content);
 
           return raw.actions
             ? {
@@ -74,8 +80,9 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
               }
             : null;
         } catch (err) {
-          // if the URL does not exist or is an error artifact, return nothing
-          if (err.response && (err.response.statusCode === 404 || err.response.statusCode === 424)) {
+          // if the artifact does not exist, is an error artifact, or is a `reference`, there are
+          // no actions to report
+          if (err.statusCode === 404 || err.code === 'ArtifactError' || err.code === 'ArtifactStorageTypeRejected') {
             return null;
           }
 
@@ -93,42 +100,10 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
       items: tasks.map(({ task, status }) => new Task(status.taskId, status, task)),
     };
   });
-  const listPendingTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
-    const raw = await queue.listPendingTasks(taskQueueId, options);
-
-    return {
-      ...raw,
-      items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
-        taskId,
-        runId,
-        inserted,
-        task: new Task(taskId, null, task),
-      })),
-    };
-  });
-  const listClaimedTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
-    const raw = await queue.listClaimedTasks(taskQueueId, options);
-
-    return {
-      ...raw,
-      items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
-        taskId,
-        runId,
-        claimed,
-        workerGroup,
-        workerId,
-        task: new Task(taskId, null, task),
-      })),
-    };
-  });
-
   return {
     dependents,
     task,
-    indexedTask,
     taskGroup,
     taskActions,
-    listPendingTasks,
-    listClaimedTasks,
   };
 };

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';
 
 export const tasks = [
@@ -9,7 +9,7 @@ export const tasks = [
     requires: [],
     provides: [],
     run: async () => {
-      const versionFiles = glob.sync('db/versions/*.yml', { cwd: REPO_ROOT }).map(path => path.split('/')[2]);
+      const versionFiles = globSync('db/versions/*.yml', { cwd: REPO_ROOT }).map(path => path.split('/')[2]);
       for (const file of versionFiles) {
         const testFile = `db/test/versions/${path.basename(file, '.yml')}_test.js`;
         if (!fs.existsSync(testFile)) {

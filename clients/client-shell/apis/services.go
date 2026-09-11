@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v101/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v108/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -315,77 +315,6 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
-				Name:        "azureAccounts",
-				Title:       "List Accounts Managed by Auth",
-				Description: "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/accounts",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "",
-			},
-			definitions.Entry{
-				Name:        "azureTables",
-				Title:       "List Tables in an Account Managed by Auth",
-				Description: "Retrieve a list of all tables in an account.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/tables",
-				Args: []string{
-					"account",
-				},
-				Query: []string{
-					"continuationToken",
-				},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureTableSAS",
-				Title:       "Get Shared-Access-Signature for Azure Table",
-				Description: "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/table/<table>/<level>",
-				Args: []string{
-					"account",
-					"table",
-					"level",
-				},
-				Query: []string{},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureContainers",
-				Title:       "List containers in an Account Managed by Auth",
-				Description: "Retrieve a list of all containers in an account.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/containers",
-				Args: []string{
-					"account",
-				},
-				Query: []string{
-					"continuationToken",
-				},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureContainerSAS",
-				Title:       "Get Shared-Access-Signature for Azure Container",
-				Description: "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/containers/<container>/<level>",
-				Args: []string{
-					"account",
-					"container",
-					"level",
-				},
-				Query: []string{},
-				Input: "",
-			},
-			definitions.Entry{
 				Name:        "sentryDSN",
 				Title:       "Get DSN for Sentry Project",
 				Description: "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
@@ -425,6 +354,20 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
+			},
+			definitions.Entry{
+				Name:        "githubRepoToken",
+				Title:       "Get a repository scoped github token",
+				Description: "Get a Github application installation token scoped to the given repositories\nand permissions, using the configured app `appName`.\n\nRequesting `<permission>: <level>` on `<owner>/<repo>` requires the scope\n`auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.\nLevels and permissions are matched exactly to github token permissions\nwhich can be found at\nhttps://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.\nWhile token access is widened (requesting a write token will give a read+write one)\nscopes are not. Holding `:contents:write` alone only allows requesting a `write` token.\nBoth owner and repo must be in lowercase in the scope.\n\nThe token expires after an hour but this behavior is github dependent.\nYou should read the `expires` property from the response if you intend\nto maintain active credentials in your task.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/github/<appName>/<owner>/repo-token",
+				Args: []string{
+					"appName",
+					"owner",
+				},
+				Query: []string{},
+				Input: "v1/github-repo-token-request.json#",
 			},
 			definitions.Entry{
 				Name:        "authenticateHawk",
@@ -1496,7 +1439,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "sealTaskGroup",
 				Title:       "Seal Task Group",
-				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
+				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.\n\nSealing makes `cancelTaskGroup` meaningful by stopping task creators\nfrom adding more tasks to a group being cancelled. It is not a\nsecurity feature: the check is not atomic with task creation, so a\n`createTask` racing this call may still succeed.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/task-group/<taskGroupId>/seal",
@@ -1861,19 +1804,6 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
-				Name:        "declareProvisioner",
-				Title:       "Update a provisioner",
-				Description: "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-				Stability:   "deprecated",
-				Method:      "put",
-				Route:       "/provisioners/<provisionerId>",
-				Args: []string{
-					"provisionerId",
-				},
-				Query: []string{},
-				Input: "v1/update-provisioner-request.json#",
-			},
-			definitions.Entry{
 				Name:        "pendingTasks",
 				Title:       "Get Number of Pending Tasks",
 				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
@@ -1885,6 +1815,17 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
+			},
+			definitions.Entry{
+				Name:        "taskQueueCountsBatch",
+				Title:       "Get Pending and Claimed Task Counts for Multiple Task Queues",
+				Description: "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task-queues/counts",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "v1/task-queue-counts-request.json#",
 			},
 			definitions.Entry{
 				Name:        "taskQueueCounts",
@@ -1960,20 +1901,6 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
-			},
-			definitions.Entry{
-				Name:        "declareWorkerType",
-				Title:       "Update a worker-type",
-				Description: "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-				Stability:   "deprecated",
-				Method:      "put",
-				Route:       "/provisioners/<provisionerId>/worker-types/<workerType>",
-				Args: []string{
-					"provisionerId",
-					"workerType",
-				},
-				Query: []string{},
-				Input: "v1/update-workertype-request.json#",
 			},
 			definitions.Entry{
 				Name:        "listTaskQueues",
@@ -2241,7 +2168,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "taskProfile",
 				Title:       "Task Log Profile",
-				Description: "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+				Description: "Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
 				Stability:   "experimental",
 				Method:      "get",
 				Route:       "/task/<taskId>/profile",

@@ -34,7 +34,7 @@ we are working with:
 <html>
   <head><title>Taskcluster Third Party Login Demo</title></head>
   <body>
-    <a id="action-link" href="https://tc.example.com/login/oauth/authorize?client_id=demo-app&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tags%3Aget%3A*&state=99&expires=1+week">Login</a><br />
+    <a id="action-link" href="#">Login</a><br />
     <pre id="status"></pre>
   </body>
 </html>
@@ -44,29 +44,83 @@ The important parts of this page are an action link and a status container.
 We will use the action link to trigger interaction on the page, and the status
 container to show the results of our actions.
 
-To start, let's add a few library dependencies before the closing body tag:
+To start, let's add a module script before the closing body tag.
+`@taskcluster/client-web` is published as an ES module, so it is imported rather
+than loaded as a global. A few of its dependencies are still CommonJS, so import
+it from a CDN that bundles them — [esm.sh](https://esm.sh) and jsDelivr's `/+esm`
+both work:
 
 ```html
-<script src="https://unpkg.com/hawk/lib/browser.js"></script>
-<script>window.hawk = hawk; /* hawk's "browser" client doesn't expose itself on window */</script>
-<script src="https://wzrd.in/standalone/query-string"></script>
-<script src="https://unpkg.com/@taskcluster/client-web"></script>
-```
-
-Next, let's add an empty script tag to contain our custom functionality,
-and capture a reference to our action link and status container:
-
-```html
-<script>
-'use strict';
-
-const link = document.getElementById('action-link');
-const status = document.getElementById('status');
+<script type="module">
+import { Auth } from 'https://esm.sh/@taskcluster/client-web';
 </script>
 ```
 
-Loading our page up to this point you will see our action link, and clicking
-it will navigate you to the familiar Taskcluster user interface to sign in.
+Everything below goes inside that same module. Module scripts are deferred and
+always run in strict mode, and they allow top-level `await`, which lets the login
+flow read top to bottom.
+
+Next, let's capture a reference to our action link and status container:
+
+```html
+<script type="module">
+import { Auth } from 'https://esm.sh/@taskcluster/client-web';
+
+const link = document.getElementById('action-link');
+const status = document.getElementById('status');
+const rootUrl = 'https://tc.example.com';
+const clientId = 'demo-app';
+const redirectUri = 'http://localhost:4000';
+const pkceVerifierKey = 'taskclusterPkceVerifier';
+const oauthStateKey = 'taskclusterOauthState';
+
+function base64UrlEncode(bytes) {
+  let binary = '';
+  bytes.forEach(byte => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+function randomValue() {
+  return base64UrlEncode(crypto.getRandomValues(new Uint8Array(32)));
+}
+
+async function prepareLogin() {
+  const codeVerifier = randomValue();
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(codeVerifier),
+  );
+  const state = randomValue();
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    scope: 'tags:get:*',
+    state,
+    expires: '1 week',
+    code_challenge: base64UrlEncode(new Uint8Array(digest)),
+    code_challenge_method: 'S256',
+  });
+
+  sessionStorage.setItem(pkceVerifierKey, codeVerifier);
+  sessionStorage.setItem(oauthStateKey, state);
+  link.href = `${rootUrl}/login/oauth/authorize?${params}`;
+}
+
+if (!window.location.search) {
+  await prepareLogin();
+}
+</script>
+```
+
+This generates a fresh PKCE verifier and CSRF state for the login transaction,
+stores them in session storage for the callback, and builds the authorization
+URL. Clicking the action link navigates to Taskcluster to sign in.
 The URL takes the following query parameters:
 
 | Parameter | Required | Description |
@@ -77,26 +131,44 @@ The URL takes the following query parameters:
 | scope | ✓ | Taskcluser scopes the client is authorized to receive. |
 | state | | An opaque value used by the client to maintain state between the request and callback. |
 | expires | | The requested lifetime of the resulting Taskcluster credentials, in a format understood by [`fromNow`](../../../../clients/client#relative-date-time-utilities). |
+| code_challenge | | The PKCE challenge derived from a fresh verifier. Required when the registered client has `requirePkce: true`. |
+| code_challenge_method | | Must be `S256` when `code_challenge` is present. |
 
 Remarks:
 * `scope` can end with `*`. Scopes are space delimited (e.g., `scope=scopeA+scopeB&...`).
-* `state` is **strongly recommended**. The authorization server includes this value when redirecting the user-agent back to the client. The parameter should be used for preventing cross-site request forgery.
+* `state` should be a unique, unguessable value bound to the browser session. The authorization server includes it when redirecting the user-agent back to the client, which must compare it with the stored value to prevent cross-site request forgery.
 * `expires` defaults to the registered OAuth client `maxExpires` value if the parameter is not provided.
+* Public authorization-code clients should always use PKCE, even when their registration does not yet require it.
 
 Once the sign in is complete, Taskcluster will
 redirect back to the `redirect_uri` you specified in the URL.
 The redirect URI will have the authorization `code` in the
 query parameter which will then be used to grab a third party access token.
-In the case of an implicit grant (i.e., `response_type=“token”`) the query
-parameter will instead have the access token so you can safely skip the next
-section and continue at [Exchanging a Third Party token for
-Taskcluster Credentials](#exchanging-a-third-party-token-for-taskcluster-credentials) section.
+
+In the case of an implicit grant (i.e., `response_type="token"`) there is no
+code to exchange, so you can skip the next section and continue at
+[Exchanging a Third Party token for Taskcluster Credentials](#exchanging-a-third-party-token-for-taskcluster-credentials).
+Note that the implicit grant returns its response in the URL **fragment**
+rather than the query string, so read `window.location.hash` instead of
+`window.location.search`:
+
+```js
+// implicit flow (response_type=token) only
+const qs = parseQuery(window.location.hash.replace(/^#/, ''));
+const thirdPartyAccessToken = qs.access_token; // qs.token_type is "Bearer"
+```
 
 ### Exchanging a code for a third-party access token
 
 Next, the client requests an access token from the authorization server’s token endpoint by
 including the authorization code received in the previous step.
 The token endpoint is `<rootUrl>/login/oauth/token`.
+
+The form-encoded token request must contain `grant_type=authorization_code`,
+the authorization `code`, the same `redirect_uri`, and the registered
+`client_id`. When the authorization request included a PKCE challenge, it must
+also contain the original `code_verifier`. After the exchange, discard the
+verifier so it cannot be reused.
 
 <Warning>
 A third party Taskcluster access token is different than the access token property of the resulting Taskcluster credentials. The former cannot be used to access protected Taskcluster endpoints.
@@ -105,16 +177,18 @@ A third party Taskcluster access token is different than the access token proper
 ```js
 if (window.location.search) {
   const qs = parseQuery(window.location.search);
+  const expectedState = sessionStorage.getItem(oauthStateKey);
 
   if (qs.error) {
     // The authorization server responded with an error.
     // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     status.innerText = qs.error;
-  } else if (qs.state === '99') {
+  } else if (qs.state === expectedState) {
+    const codeVerifier = sessionStorage.getItem(pkceVerifierKey);
+    sessionStorage.removeItem(oauthStateKey);
+    sessionStorage.removeItem(pkceVerifierKey);
     // See below for the implementation of `fetchToken`
-    fetchToken(qs.code).then(data => {
-      const thirdPartyAccessToken = data.access_token;
-    });
+    const { access_token: thirdPartyAccessToken } = await fetchToken(qs.code, codeVerifier);
   }
 }
 ```
@@ -126,25 +200,26 @@ We can now fetch Taskcluster credentials using the acquired third party access t
 ```js
 if (window.location.search) {
   const qs = parseQuery(window.location.search);
+  const expectedState = sessionStorage.getItem(oauthStateKey);
 
   if (qs.error) {
     // The authorization server responded with an error.
     // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     status.innerText = qs.error;
-  } else if (qs.state === '99') {
+  } else if (qs.state === expectedState) {
+    const codeVerifier = sessionStorage.getItem(pkceVerifierKey);
+    sessionStorage.removeItem(oauthStateKey);
+    sessionStorage.removeItem(pkceVerifierKey);
     // See below for the implementation of `fetchToken`
-    fetchToken(qs.code).then(data => {
-      const thirdPartyAccessToken = data.access_token;
-      // Exchange the third party token for Taskcluster credentials
-      // See below for the implementation of `fetchCredentials`
-      fetchCredentials(thirdPartyAccessToken).then(data => {
-        // Let’s save the Taskcluster credentials, update the UI
-        // and tell the user
-        credentials = data.credentials;
-        status.innerText = 'Received Taskcluster credentials';
-        link.innerText = 'Call Taskcluster API';
-      })
-    });
+    const { access_token: thirdPartyAccessToken } = await fetchToken(qs.code, codeVerifier);
+    // Exchange the third party token for Taskcluster credentials
+    // See below for the implementation of `fetchCredentials`
+    const data = await fetchCredentials(thirdPartyAccessToken);
+
+    // Let’s save the Taskcluster credentials, update the UI and tell the user
+    credentials = data.credentials;
+    status.innerText = 'Received Taskcluster credentials';
+    link.innerText = 'Call Taskcluster API';
   }
 }
 ```
@@ -152,11 +227,12 @@ if (window.location.search) {
 Great, now that we have credentials to identify a user,
 we can now call Taskcluster API methods; we will call `auth.currentScopes`
 in our example. In the previous step we changed the action link to say
-"Call Taskcluster API". Our next step will be to perform this work using
-@taskcluster/client-web. Let's add a click handler to the action link:
+"Call Taskcluster API". Our next step will be to perform this work using the
+`Auth` client we imported at the top of the module. Let's add a click handler to
+the action link:
 
 ```js
-link.addEventListener('click', (e) => {
+link.addEventListener('click', async (e) => {
   // Ignore event listener if we haven't fetched Taskcluster credentials yet
   if (!credentials) {
     return;
@@ -165,33 +241,30 @@ link.addEventListener('click', (e) => {
   // Make sure the page doesn't redirect on click
   e.preventDefault();
 
-  // Create an instance of the taskcluster.Auth client,
-  // using the Taskcluster credentials and the root URL of the target deployment.
-  const client = new window.taskcluster.Auth({
+  // Create an instance of the Auth client, using the Taskcluster
+  // credentials and the root URL of the target deployment.
+  const client = new Auth({
     credentials: {
       clientId: credentials.clientId,
       accessToken: credentials.accessToken,
     },
-    rootUrl: 'https://taskcluster.net',
+    rootUrl,
   });
 
   // Let's update the UI and tell the user we are working
   status.innerText = 'Waiting for scopes...';
 
-  // With our Taskcluster Auth client, we can request the
-  // current user's scopes, and format them for display
-  client
-    .currentScopes()
-    .then(({ scopes }) => {
-      status.innerText = scopes
-        .map(scope => `- ${scope}`)
-        .join('\n');
-    })
-    .catch(err => {
-      // If something went wrong talking to Taskcluster,
-      // let's tell the user what happened
-      status.innerText = err.message;
-    });
+  try {
+    // With our Taskcluster Auth client, we can request the
+    // current user's scopes, and format them for display
+    const { scopes } = await client.currentScopes();
+
+    status.innerText = scopes.map(scope => `- ${scope}`).join('\n');
+  } catch (err) {
+    // If something went wrong talking to Taskcluster,
+    // let's tell the user what happened
+    status.innerText = err.message;
+  }
 });
 ```
 
@@ -204,40 +277,80 @@ here is the full code we wrote in order to make this happen:
 <html>
   <head><title>Taskcluster Login Demo</title></head>
   <body>
-    <a id="action-link" href="https://tc.example.com/login/oauth/authorize?client_id=demo-app&redirect_uri=http%3A%2F%2Flocalhost%3A4000&response_type=code&scope=tasgs%3Aget%3A*&state=99&expires=1+week">Login</a><br />
+    <a id="action-link" href="#">Login</a><br />
     <pre id="status"></pre>
-    <script src="https://unpkg.com/hawk/lib/browser.js"></script>
-    <script>
-    // hawk's "browser" client doesn't expose itself on window
-    window.hawk = hawk;
-    </script>
-    <script src="https://unpkg.com/taskcluster-client-web@8.1.1"></script>
-    <script>
-    'use strict';
+    <script type="module">
+    import { Auth } from 'https://esm.sh/@taskcluster/client-web';
 
     const link = document.getElementById('action-link');
     const status = document.getElementById('status');
     // `rootUrl` should be pointing to the deployment target
     const rootUrl = 'https://tc.example.com';
+    const clientId = 'demo-app';
+    const redirectUri = 'http://localhost:4000';
+    const pkceVerifierKey = 'taskclusterPkceVerifier';
+    const oauthStateKey = 'taskclusterOauthState';
     let credentials;
 
-
-    function request(url, options) {
-      return fetch(url, options)
-      .then(response => {
-        if (!response.ok) {
-          status.innerText = response.statusText;
-          throw new Error(response.statusText);
-        }
-
-        return response.json();
-      })
+    function base64UrlEncode(bytes) {
+      let binary = '';
+      bytes.forEach(byte => {
+        binary += String.fromCharCode(byte);
+      });
+      return btoa(binary)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
     }
 
-    function fetchToken(code) {
+    function randomValue() {
+      return base64UrlEncode(crypto.getRandomValues(new Uint8Array(32)));
+    }
+
+    async function prepareLogin() {
+      const codeVerifier = randomValue();
+      const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(codeVerifier),
+      );
+      const state = randomValue();
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'tags:get:*',
+        state,
+        expires: '1 week',
+        code_challenge: base64UrlEncode(new Uint8Array(digest)),
+        code_challenge_method: 'S256',
+      });
+
+      sessionStorage.setItem(pkceVerifierKey, codeVerifier);
+      sessionStorage.setItem(oauthStateKey, state);
+      link.href = `${rootUrl}/login/oauth/authorize?${params}`;
+    }
+
+    async function request(url, options) {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        status.innerText = response.statusText;
+        throw new Error(response.statusText);
+      }
+
+      return response.json();
+    }
+
+    function fetchToken(code, codeVerifier) {
       return request(`${rootUrl}/login/oauth/token`, {
         method: 'POST',
-        body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent('http://localhost:4000')}&client_id=demo-app`,
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri,
+          client_id: clientId,
+          code_verifier: codeVerifier,
+        }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
     }
@@ -253,18 +366,10 @@ here is the full code we wrote in order to make this happen:
     }
 
     function parseQuery(q) {
-      const qs = q.replace('?', '').split('&');
-
-      return qs.reduce((acc, curr) => {
-        const [parameter, value] = curr.split('=');
-
-        acc[parameter] = value;
-
-        return acc;
-      }, {});
+      return Object.fromEntries(new URLSearchParams(q));
     }
 
-    link.addEventListener('click', (e) => {
+    link.addEventListener('click', async (e) => {
       // Ignore event listener if we haven't fetched Taskcluster credentials yet
       if (!credentials) {
         return;
@@ -273,55 +378,56 @@ here is the full code we wrote in order to make this happen:
       // Make sure the page doesn't redirect on click
       e.preventDefault();
 
-      // Create an instance of the taskcluster.Auth client,
-      // using the Taskcluster credentials and the root URL of the target deployment.
-      const client = new window.taskcluster.Auth({
+      // Create an instance of the Auth client, using the Taskcluster
+      // credentials and the root URL of the target deployment.
+      const client = new Auth({
         credentials: {
           clientId: credentials.clientId,
           accessToken: credentials.accessToken,
         },
-        rootUrl: 'https://taskcluster.net',
+        rootUrl,
       });
 
       // Let's update the UI and tell the user we are working
       status.innerText = 'Waiting for scopes...';
 
-      // With our Taskcluster Auth client, we can request the
-      // current user's scopes, and format them for display
-      client
-        .currentScopes()
-        .then(({ scopes }) => {
-          status.innerText = scopes
-            .map(scope => `- ${scope}`)
-            .join('\n');
-        })
-        .catch(err => {
-          // If something went wrong talking to Taskcluster,
-          // let's tell the user what happened
-          status.innerText = err.message;
-        });
+      try {
+        // With our Taskcluster Auth client, we can request the
+        // current user's scopes, and format them for display
+        const { scopes } = await client.currentScopes();
+
+        status.innerText = scopes.map(scope => `- ${scope}`).join('\n');
+      } catch (err) {
+        // If something went wrong talking to Taskcluster,
+        // let's tell the user what happened
+        status.innerText = err.message;
+      }
     });
 
     if (window.location.search) {
       const qs = parseQuery(window.location.search);
+      const expectedState = sessionStorage.getItem(oauthStateKey);
 
       if (qs.error) {
         // The authorization server responded with an error.
         // The list of error codes can be found in https://tools.ietf.org/html/rfc6749#section-4.1.2.1
         status.innerText = qs.error;
-      } else if (qs.state === '99') {
-        fetchToken(qs.code).then(data => {
-          const thirdPartyAccessToken = data.access_token;
-          // Exchange the third party token for Taskcluster credentials
-          fetchCredentials(thirdPartyAccessToken).then(data => {
-            // Let’s save the Taskcluster credentials, update the UI
-            // and tell the user
-            credentials = data.credentials;
-            status.innerText = 'Received Taskcluster credentials';
-            link.innerText = 'Call Taskcluster API';
-          })
-        });
+      } else if (qs.state === expectedState) {
+        const codeVerifier = sessionStorage.getItem(pkceVerifierKey);
+        sessionStorage.removeItem(oauthStateKey);
+        sessionStorage.removeItem(pkceVerifierKey);
+
+        const { access_token: thirdPartyAccessToken } = await fetchToken(qs.code, codeVerifier);
+        // Exchange the third party token for Taskcluster credentials
+        const data = await fetchCredentials(thirdPartyAccessToken);
+
+        // Let’s save the Taskcluster credentials, update the UI and tell the user
+        credentials = data.credentials;
+        status.innerText = 'Received Taskcluster credentials';
+        link.innerText = 'Call Taskcluster API';
       }
+    } else {
+      await prepareLogin();
     }
     </script>
   </body>

@@ -2672,36 +2672,13 @@
                 },
                 "name": "worker-hierarchy",
                 "next": {
-                  "path": "reference/platform/queue/actions",
-                  "title": "Actions"
+                  "path": "reference/platform/queue/task-life-cycle",
+                  "title": "Task Life-Cycle"
                 },
                 "path": "reference/platform/queue/worker-hierarchy",
                 "prev": {
                   "path": "reference/platform/queue/metrics",
                   "title": "metrics"
-                },
-                "up": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "description": "Queue Actions",
-                  "order": 40,
-                  "title": "Actions"
-                },
-                "name": "actions",
-                "next": {
-                  "path": "reference/platform/queue/task-life-cycle",
-                  "title": "Task Life-Cycle"
-                },
-                "path": "reference/platform/queue/actions",
-                "prev": {
-                  "path": "reference/platform/queue/worker-hierarchy",
-                  "title": "Worker Hierarchy"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2723,8 +2700,8 @@
                 },
                 "path": "reference/platform/queue/task-life-cycle",
                 "prev": {
-                  "path": "reference/platform/queue/actions",
-                  "title": "Actions"
+                  "path": "reference/platform/queue/worker-hierarchy",
+                  "title": "Worker Hierarchy"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",

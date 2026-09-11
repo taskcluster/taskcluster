@@ -13,8 +13,8 @@
 <h5 align="center">The task execution framework that supports Mozilla's continuous integration and release processes.</h5>
 
 <p align="center">
-  <a href="https://community-tc.services.mozilla.com/api/github/v1/repository/taskcluster/taskcluster/main/latest">
-    <img src="https://community-tc.services.mozilla.com/api/github/v1/repository/taskcluster/taskcluster/main/badge.svg" alt="Taskcluster Status" />
+  <a href="https://firefox-ci-tc.services.mozilla.com/api/github/v1/repository/taskcluster/taskcluster/main/latest">
+    <img src="https://firefox-ci-tc.services.mozilla.com/api/github/v1/repository/taskcluster/taskcluster/main/badge.svg" alt="Taskcluster Status" />
   </a>
   <a href="http://mozilla.org/MPL/2.0">
     <img src="https://img.shields.io/badge/license-MPL%202.0-orange.svg" alt="License" />
@@ -35,6 +35,12 @@
 ## Usage
 
 This repository is used to develop, build, and release the Taskcluster services.
+
+## Security
+
+External vulnerability reports for Taskcluster must go through [Mozilla's HackerOne program](https://hackerone.com/mozilla). Please do not open GitHub Security Advisories, GitHub Issues, pull requests, or email threads for potential vulnerabilities.
+
+If you already opened a GitHub Security Advisory, submit the issue through HackerOne and include the GHSA ID, proof of concept or reproduction steps, affected deployment details, and potential impact. See [SECURITY.md](SECURITY.md) for the full policy.
 
 ## Table of Contents
 

@@ -1,9 +1,11 @@
 import assert from 'node:assert';
+import http from 'node:http';
 import { Readable } from 'node:stream';
 import testing from '@taskcluster/lib-testing';
 
 import {
-  throttleRequest,
+  downloadArtifactAsText,
+  downloadArtifactAsStream,
   shouldSkipCommit,
   shouldSkipPullRequest,
   shouldSkipComment,
@@ -18,90 +20,6 @@ import {
 const toStream = str => Readable.from([Buffer.from(str)]);
 
 suite(testing.suiteName(), () => {
-  suite('throttleRequest', () => {
-    let oldRequest;
-
-    suiteSetup(() => {
-      oldRequest = throttleRequest.request;
-    });
-
-    teardown(() => {
-      throttleRequest.request = oldRequest;
-    });
-
-    test('calls with the given method and url and returns a success result immediately', async () => {
-      throttleRequest.request = async (method, url) => {
-        assert.equal(method, 'GET');
-        assert.equal(url, 'https://foo');
-        return { result: true };
-      };
-
-      const res = await throttleRequest({ url: 'https://foo', method: 'GET' });
-      assert.deepEqual(res, { result: true });
-    });
-
-    test('4xx statuses are returned (not thrown) immediately', async () => {
-      let calls = 0;
-
-      throttleRequest.request = async (_method, _url) => {
-        calls++;
-        const err = new Error('uhoh');
-        err.status = 424;
-        throw err;
-      };
-
-      const res = await throttleRequest({ url: 'https://foo', method: 'GET' });
-      assert.equal(res.status, 424);
-      assert.equal(calls, 1); // didn't retry
-    });
-
-    test('5xx statuses are retried', async () => {
-      let calls = 0;
-
-      throttleRequest.request = async (_method, _url) => {
-        calls++;
-        const err = new Error('uhoh');
-        err.status = 543;
-        throw err;
-      };
-
-      // (set delay=10 to retry more quickly than usual)
-      const res = await throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 });
-      assert.equal(res.status, 543);
-      assert.equal(calls, 5);
-    });
-
-    test('5xx status retried once returns successful result', async () => {
-      let calls = 0;
-
-      throttleRequest.request = async (_method, _url) => {
-        calls++;
-        if (calls >= 1) {
-          return { status: 200 };
-        }
-        const err = new Error('uhoh');
-        err.status = 543;
-        throw err;
-      };
-
-      const res = await throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 });
-      assert.equal(res.status, 200);
-      assert.equal(calls, 1);
-    });
-
-    test('connection errors are thrown directly', async () => {
-      throttleRequest.request = async (_method, _url) => {
-        const err = new Error('uhoh');
-        err.code = 'ECONNREFUSED';
-        throw err;
-      };
-
-      await assert.rejects(
-        () => throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 }),
-        err => err.code === 'ECONNREFUSED'
-      );
-    });
-  });
   suite('shouldSkipCommit', () => {
     const skipMessages = [
       '[CI Skip] this is not ready',
@@ -528,6 +446,120 @@ suite(testing.suiteName(), () => {
           'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'
         ),
         false
+      );
+    });
+  });
+
+  suite('artifact downloads', () => {
+    const bodyLine1 = 'first line\nsecond line\n';
+    const bodyLine2 = `Lots of x: ${Array.from({ length: 999999 }).fill('x')}`;
+    let server, url;
+
+    suiteSetup(async () => {
+      server = http.createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'text/plain' });
+        // simulate few chunks
+        res.write(bodyLine1, 'utf-8', () => {
+          res.write(bodyLine2, 'utf-8', () => {
+            res.end();
+          });
+        });
+      });
+      await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+      url = `http://127.0.0.1:${server.address().port}/artifact`;
+    });
+
+    suiteTeardown(() => server.close());
+
+    // a queue client recording the options it is limited with, and resolving every artifact to the
+    // given result
+    const fakeQueueClient = artifact => {
+      const scopeLimits = [];
+      return {
+        scopeLimits,
+        use: options => {
+          scopeLimits.push(options);
+          return {
+            artifact: async () => artifact,
+            latestArtifact: async () => artifact,
+          };
+        },
+      };
+    };
+
+    const stored = () => ({ storageType: 's3', url });
+    const reference = () => ({ storageType: 'reference', url: 'http://169.254.169.254/metadata' });
+
+    const args = (queueClient, extra = {}) => ({
+      queueClient,
+      taskId: 'taskid',
+      runId: 0,
+      artifactName: 'public/github/customCheckRunText.md',
+      ...extra,
+    });
+
+    test('downloadArtifactAsText returns a stored artifact', async () => {
+      assert.equal(await downloadArtifactAsText(args(fakeQueueClient(stored()))), `${bodyLine1}${bodyLine2}`);
+    });
+
+    test('downloadArtifactAsText limits the queue client to the one artifact', async () => {
+      const queueClient = fakeQueueClient(stored());
+      await downloadArtifactAsText(args(queueClient));
+
+      assert.deepEqual(queueClient.scopeLimits, [
+        { authorizedScopes: ['queue:get-artifact:public/github/customCheckRunText.md'] },
+      ]);
+    });
+
+    test('downloadArtifactAsText refuses a reference artifact', async () => {
+      await assert.rejects(
+        () => downloadArtifactAsText(args(fakeQueueClient(reference()))),
+        err => err.code === 'ArtifactStorageTypeRejected' && err.storageType === 'reference'
+      );
+    });
+
+    test('downloadArtifactAsStream hands a stored artifact to the consumer', async () => {
+      const excerpt = await downloadArtifactAsStream(
+        args(fakeQueueClient(stored()), { consume: stream => extractLog(stream, 1, 1) })
+      );
+
+      assert.match(excerpt, /first line/);
+    });
+
+    test('downloadArtifactAsStream refuses a reference artifact', async () => {
+      await assert.rejects(
+        () => downloadArtifactAsStream(args(fakeQueueClient(reference()), { consume: stream => extractLog(stream) })),
+        err => err.code === 'ArtifactStorageTypeRejected'
+      );
+    });
+
+    test('downloadArtifactAsStream reports the consumer failure, not the torn-down stream', async () => {
+      await assert.rejects(
+        () =>
+          downloadArtifactAsStream(
+            args(fakeQueueClient(stored()), {
+              consume: async () => {
+                throw new Error('parser exploded');
+              },
+            })
+          ),
+        err => err.message === 'parser exploded'
+      );
+    });
+
+    test('downloadArtifactAsStream throws if consumer stops reading early', async () => {
+      await assert.rejects(
+        () =>
+          downloadArtifactAsStream(
+            args(fakeQueueClient(stored()), {
+              consume: async stream => {
+                for await (const chunk of stream) {
+                  return chunk.length;
+                }
+              },
+            })
+          ),
+        err => err.code === 'ABORT_ERR'
       );
     });
   });

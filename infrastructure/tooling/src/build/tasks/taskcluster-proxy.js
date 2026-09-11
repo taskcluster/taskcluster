@@ -1,4 +1,4 @@
-import glob from 'glob';
+import { globSync } from 'glob';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
@@ -17,7 +17,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
-      const artifacts = glob.sync('taskcluster-proxy-*', { cwd: artifactsDir });
+      const artifacts = globSync('taskcluster-proxy-*', { cwd: artifactsDir });
 
       return {
         'taskcluster-proxy-artifacts': artifacts,

@@ -11,6 +11,7 @@ import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/con
 import utils from '../src/utils.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { formatBytes } from '../src/handlers/utils.js';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
 const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
@@ -33,6 +34,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   const webhookCommentEditedJson = loadJson('webhooks/webhook.issue_comment.edited.json');
 
+  // Generated per suite: the queue enforces slugid-pattern on taskGroupIds, so multi-group
+  // tests must use real slugids (the fixture's "A"/"B" placeholders are not valid ones).
+  const GROUP_A = taskcluster.slugid();
+  const GROUP_B = taskcluster.slugid();
+  const multiGroupConfig = () => {
+    const config = loadJson('yml/valid-yaml-v1-multi-group.json');
+    for (const task of config.tasks) {
+      if (task.taskGroupId === 'AAAAAAAAAAAAAAAAAAAAAA') {
+        task.taskGroupId = GROUP_A;
+      } else if (task.taskGroupId === 'BBBBBBBBBBBBBBBBBBBBBB') {
+        task.taskGroupId = GROUP_B;
+      }
+    }
+    return config;
+  };
+
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
   const CUSTOM_CHECKRUN_HOOK_TASKID = 'apple-hook';
@@ -46,18 +63,49 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   const COMMIT_SHA = '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf';
   const INST_ID = 5828;
 
+  // the name the task definitions below ask for, rather than the default text artifact name
+  const CUSTOM_CHECKRUN_TEXT_ARTIFACT = 'public/text.md';
+  const CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT = 'public/github/customCheckRunAnnotations.json';
+
+  /**
+   * Stub the artifact downloads the status handler makes.
+   *
+   * `log` is the live_backing.log excerpt, and `artifacts` maps an artifact name to the text
+   * downloaded for it, or to an Error to reject with. Names absent from `artifacts` reject with a
+   * 404, as an unpublished artifact does.
+   */
+  const stubArtifacts = ({ log = '', artifacts = {} } = {}) => {
+    sinon.stub(utils, 'downloadArtifactAsStream').resolves(log);
+    sinon.stub(utils, 'downloadArtifactAsText').callsFake(async ({ artifactName }) => {
+      const content = artifacts[artifactName];
+      if (content === undefined) {
+        throw Object.assign(new Error('artifact not found'), { statusCode: 404 });
+      }
+      if (content instanceof Error) {
+        throw content;
+      }
+      return content;
+    });
+  };
+
   let github = null;
   let handlers = null;
+
+  const deterministicArtifactSize = i => i ** 4;
 
   function buildArtifactLinks(limit, taskId) {
     const artifactLinks = [];
 
     for (let i = 0; i < limit; i++) {
-      artifactLinks.push(`\\- [artifact-${i}](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
+      const formattedSize = formatBytes(deterministicArtifactSize(i));
+      artifactLinks.push(
+        `\\- [artifact-${i} (${formattedSize})](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`
+      );
     }
 
     return artifactLinks.join('\n');
   }
+
   async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
@@ -134,6 +182,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     await handlers.setup();
 
+    // the .taskcluster.yml handler binds to the push exchange as well, and a
+    // fake pulse message reaches every consumer that matches it.  Stopping it
+    // keeps these tests to the handlers they are about.
+    await handlers.taskclusterYmlPq.stop();
+
     // stub out `createTasks` so that we don't actually create tasks
     handlers.realCreateTasks = handlers.createTasks;
     handlers.createTasks = sinon.stub();
@@ -149,7 +202,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
               extra: {
                 github: {
                   customCheckRun: {
-                    textArtifactName: 'public/text.md',
+                    textArtifactName: CUSTOM_CHECKRUN_TEXT_ARTIFACT,
                   },
                 },
               },
@@ -184,6 +237,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         for (let i = 0; i < options.limit; i++) {
           artifacts.push({
             name: `artifact-${i}`,
+            contentLength: deterministicArtifactSize(i),
           });
         }
         return Promise.resolve({ artifacts });
@@ -474,6 +528,74 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildC.state, 'cancelled');
     });
 
+    test('does not cancel sibling task groups from the same event', async () => {
+      // Old build from a previous event
+      await helper.db.fns.create_github_build_pr(
+        'TaskclusterRobot',
+        'hooks-testing',
+        COMMIT_SHA,
+        'old-group',
+        'pending',
+        new Date(),
+        new Date(),
+        9988,
+        'pull_request.opened',
+        'old-event-id',
+        1
+      );
+      // Two sibling builds from the current event — share the same event_id
+      await helper.db.fns.create_github_build_pr(
+        'TaskclusterRobot',
+        'hooks-testing',
+        COMMIT_SHA,
+        'new-group-a',
+        'pending',
+        new Date(),
+        new Date(),
+        9988,
+        'pull_request.opened',
+        'new-event-id',
+        1
+      );
+      await helper.db.fns.create_github_build_pr(
+        'TaskclusterRobot',
+        'hooks-testing',
+        COMMIT_SHA,
+        'new-group-b',
+        'pending',
+        new Date(),
+        new Date(),
+        9988,
+        'pull_request.opened',
+        'new-event-id',
+        1
+      );
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'new-group-a',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          pull_number: 1,
+          event_type: 'pull_request.opened',
+          event_id: 'new-event-id',
+        },
+      });
+
+      // Only the old build (different event_id) should be cancelled
+      assert.deepEqual(sealedTaskGroups, ['old-group']);
+      assert.deepEqual(cancelledTaskGroups, ['old-group']);
+
+      // Sibling builds (same event_id) must NOT be cancelled — neither of them
+      const [buildA] = await helper.db.fns.get_github_build_pr('new-group-a');
+      const [buildB] = await helper.db.fns.get_github_build_pr('new-group-b');
+      assert.equal(buildA.state, 'pending');
+      assert.equal(buildB.state, 'pending');
+    });
+
     test('calls queue.sealTaskGroup/cancelTaskGroup for SHA excluding new task group id', async () => {
       await addBuild({ state: 'pending', taskGroupId: 'aa' });
       await addBuild({ state: 'pending', taskGroupId: 'bb' });
@@ -720,6 +842,149 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
       assert.equal(build.state, 'pending');
+    });
+
+    test('multi-group fixture injects valid slugids for all taskGroupIds', () => {
+      const config = multiGroupConfig();
+      const ids = config.tasks.map(task => task.taskGroupId);
+      assert.deepEqual(
+        [...new Set(ids)].sort(),
+        [GROUP_A, GROUP_B].sort(),
+        'fixture placeholders should be replaced by the generated group ids'
+      );
+      // slugid-pattern from schemas/constants.yml:32 (enforced by the queue's createTasks)
+      for (const id of ids) {
+        assert.match(
+          id,
+          /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
+          `taskGroupId ${id} must satisfy the queue's slugid-pattern`
+        );
+      }
+    });
+
+    test('multi-group yml creates one build record per unique taskGroupId', async () => {
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert(handlers.createTasks.calledOnce, 'createTasks should be called once');
+
+      const [buildA] = await helper.db.fns.get_github_build_pr(GROUP_A);
+      const [buildB] = await helper.db.fns.get_github_build_pr(GROUP_B);
+      assert.ok(buildA, 'build record for group A should exist');
+      assert.ok(buildB, 'build record for group B should exist');
+      assert.equal(buildA.state, 'pending');
+      assert.equal(buildB.state, 'pending');
+      assert.equal(buildA.organization, 'TaskclusterRobot');
+      assert.equal(buildB.organization, 'TaskclusterRobot');
+      assert.equal(buildA.sha, COMMIT_SHA);
+      assert.equal(buildB.sha, COMMIT_SHA);
+    });
+
+    test('multi-group yml publishes taskGroupCreationRequested once per unique group', async () => {
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+
+      const publishedGroupIds = [];
+      helper.onPulsePublish((exchange, _routingKey, payload) => {
+        if (exchange.endsWith('task-group-creation-requested')) {
+          publishedGroupIds.push(JSON.parse(payload).taskGroupId);
+        }
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert.equal(publishedGroupIds.length, 2, 'should publish once per unique taskGroupId');
+      assert(publishedGroupIds.includes(GROUP_A), 'should publish for group A');
+      assert(publishedGroupIds.includes(GROUP_B), 'should publish for group B');
+    });
+
+    test("multi-group yml publishes the union of all tasks' routes per group", async () => {
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+
+      const publishedRoutes = {};
+      helper.onPulsePublish((exchange, _routingKey, payload, CCs) => {
+        if (exchange.endsWith('task-group-creation-requested')) {
+          const taskGroupId = JSON.parse(payload).taskGroupId;
+          publishedRoutes[taskGroupId] = [...(publishedRoutes[taskGroupId] || []), ...CCs];
+        }
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert.deepEqual(
+        [...publishedRoutes[GROUP_A]].sort(),
+        ['route.multi-group-shared', 'route.route-a-1', 'route.route-a-2', 'route.statuses'],
+        "group A's publish should carry the deduplicated union of both tasks' routes"
+      );
+      assert.deepEqual(
+        [...publishedRoutes[GROUP_B]].sort(),
+        ['route.statuses'],
+        "group B's publish should carry the injected statuses route only"
+      );
+    });
+
+    test('multi-group yml still publishes remaining groups when one publish fails', async () => {
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+
+      helper.onPulsePublish((exchange, _routingKey, payload) => {
+        if (exchange.endsWith('task-group-creation-requested')) {
+          if (JSON.parse(payload).taskGroupId === GROUP_A) {
+            throw new Error('simulated publish failure for group A');
+          }
+        }
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      // group B's publish should still land after group A's fails
+      helper.assertPulseMessage('task-group-creation-requested', m => m.payload.taskGroupId === GROUP_B);
+      helper.assertNoPulseMessage('task-group-creation-requested', m => m.payload.taskGroupId === GROUP_A);
+    });
+
+    test('multi-group yml calls cancelPreviousTaskGroups once for pull_request', async () => {
+      github.inst(INST_ID).setRepoCollaborator({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development',
+        content: multiGroupConfig(),
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+
+      assert(handlers.createTasks.calledOnce, 'createTasks should be called once');
+      // cancelPreviousTaskGroups should be called exactly once regardless of how many groups exist
+      assert(handlers.cancelPreviousTaskGroups.calledOnce, 'cancelPreviousTaskGroups should be called once');
     });
 
     test('valid pull_request (user is collaborator) creates a taskGroup', async () => {
@@ -1396,11 +1661,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     suite('hooks', () => {
       let mockTriggerHook;
       let mockUse;
+      let mockExpandScopes;
+      let repoExpandedScopes;
 
       setup(() => {
         mockTriggerHook = sinon.stub().resolves({ taskId: taskcluster.slugid() });
         mockUse = sinon.stub().returns({ triggerHook: mockTriggerHook });
         handlers.context.hooksClient = { use: mockUse };
+
+        repoExpandedScopes = ['github:trigger-hook:*'];
+        mockExpandScopes = sinon.stub().callsFake(async ({ scopes }) => ({
+          scopes: [...scopes, ...repoExpandedScopes],
+        }));
+        handlers.context.authClient = { expandScopes: mockExpandScopes };
       });
 
       test('hooks-only config triggers hook and creates build record', async () => {
@@ -1427,7 +1700,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.equal(payload.tasks_for, 'github-push');
 
         assert(mockUse.calledOnce);
-        assert.ok(mockUse.firstCall.args[0].authorizedScopes, 'use() should be called with authorizedScopes');
+        assert.deepEqual(mockUse.firstCall.args[0].authorizedScopes, ['hooks:trigger-hook:project-test/decision-hook']);
 
         const [build] = await helper.db.fns.get_github_build_pr(payload.taskId);
         assert.ok(build, 'build record should exist');
@@ -1533,6 +1806,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.deepEqual(builds, [], 'build record should be deleted when hook trigger fails');
       });
 
+      test('a missing github:trigger-hook is reported on the commit', async () => {
+        repoExpandedScopes = ['github:trigger-hook:project-test/wrong-hook'];
+
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [{ name: 'project-test/decision-hook' }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(mockTriggerHook.notCalled, 'the hook must not be triggered');
+        assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      });
+
       test('hook failure does not prevent tasks from running', async () => {
         mockTriggerHook.rejects(Object.assign(new Error('hook failed'), { body: { error: 'hook error' } }));
 
@@ -1555,22 +1847,57 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(handlers.createTasks.calledOnce, 'tasks should still run despite hook failure');
       });
 
-      test('triggerHook reformats InsufficientScopes error with context', async () => {
-        const insufficientScopesErr = Object.assign(new Error('original scope error'), { code: 'InsufficientScopes' });
-        mockTriggerHook.rejects(insufficientScopesErr);
+      test('triggerHook does not foward the repository scopes to the hooks service', async () => {
+        await handlers.triggerHook({
+          scopes: ['assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'],
+          name: 'project-test/decision-hook',
+          payload: {},
+        });
+
+        assert(mockUse.calledOnce);
+        assert.deepEqual(mockUse.firstCall.args[0].authorizedScopes, ['hooks:trigger-hook:project-test/decision-hook']);
+      });
+
+      test('triggerHook requires the right github:trigger-hook', async () => {
+        repoExpandedScopes = ['github:trigger-hook:project-test/some-other-hook'];
 
         await assert.rejects(
-          () => handlers.triggerHook({ scopes: ['scope:a', 'scope:b'], name: 'group/name', payload: {} }),
+          () =>
+            handlers.triggerHook({
+              scopes: ['assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'],
+              name: 'project-test/decision-hook',
+              payload: {},
+            }),
           err => {
+            assert.equal(err.code, 'InsufficientScopes');
             assert(
-              err.message.includes('Taskcluster-GitHub attempted to trigger a hook'),
-              'message should include context'
+              err.message.includes('github:trigger-hook:project-test/decision-hook'),
+              'message should name the missing scope'
             );
-            assert(err.message.includes('scope:a'), 'message should include the scopes');
-            assert(err.message.includes('original scope error'), 'message should include the original error');
+            assert(
+              err.message.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'),
+              'message should include the scopes that were expanded'
+            );
             return true;
           }
         );
+
+        assert(mockUse.notCalled, 'the hook must not have been triggered');
+      });
+
+      test('hooks:trigger-hook is not enough to trigger hooks from the github service', async () => {
+        repoExpandedScopes = ['hooks:trigger-hook:project-test/decision-hook'];
+
+        await assert.rejects(
+          () =>
+            handlers.triggerHook({
+              scopes: ['assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'],
+              name: 'project-test/decision-hook',
+              payload: {},
+            }),
+          /InsufficientScopes|github:trigger-hook/
+        );
+        assert(mockUse.notCalled, 'the hook must not have been triggered');
       });
 
       test('triggerHook throws on invalid name format without calling use()', async () => {
@@ -1738,11 +2065,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32o2';
     setup(() => {
-      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .returns({ status: 404, response: { error: { text: 'Resource not found' } } });
+      stubArtifacts();
     });
 
     teardown(async () => {
@@ -1908,14 +2231,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT })
-        .onSecondCall()
-        .returns({ status: 404 });
+      stubArtifacts({ artifacts: { [CUSTOM_CHECKRUN_TEXT_ARTIFACT]: CUSTOM_CHECKRUN_TEXT } });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -1940,14 +2256,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_HOOK_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
       sinon.stub(handlers.queueClient, 'task').resolves({
         metadata: { name: 'Task with custom check run', description: 'Task Description' },
-        extra: { github: { customCheckRun: { textArtifactName: 'public/text.md' } } },
+        extra: { github: { customCheckRun: { textArtifactName: CUSTOM_CHECKRUN_TEXT_ARTIFACT } } },
       });
-      const useSpy = sinon.spy(handlers.queueClient, 'use');
-      sinon.stub(utils, 'throttleRequest').returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT });
+      stubArtifacts({ artifacts: { [CUSTOM_CHECKRUN_TEXT_ARTIFACT]: CUSTOM_CHECKRUN_TEXT } });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -1959,8 +2272,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         resolved: RESOLVED,
       });
       assert(
-        useSpy.getCalls().some(c => c.args[0].authorizedScopes?.[0] === 'queue:get-artifact:public/text.md'),
-        'use should be called with queue:get-artifact scope for the artifact'
+        utils.downloadArtifactAsText
+          .getCalls()
+          .some(
+            c =>
+              c.args[0].artifactName === CUSTOM_CHECKRUN_TEXT_ARTIFACT && c.args[0].queueClient === handlers.queueClient
+          ),
+        'the artifact should be downloaded with the service queue client'
       );
       sinon.restore();
     });
@@ -1969,9 +2287,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -1996,9 +2312,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2029,9 +2343,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2058,14 +2370,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 418, response: { error: { text: "I'm a tea pot" } } })
-        .onSecondCall()
-        .returns({ status: 404 });
+      stubArtifacts({
+        artifacts: {
+          [CUSTOM_CHECKRUN_TEXT_ARTIFACT]: Object.assign(new Error("I'm a tea pot"), { statusCode: 418 }),
+        },
+      });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2086,14 +2395,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 404 })
-        .onSecondCall()
-        .returns({ status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS });
+      stubArtifacts({
+        log: LIVE_LOG_TEXT,
+        artifacts: { [CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT]: CUSTOM_CHECKRUN_ANNOTATIONS },
+      });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2113,14 +2418,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 404 })
-        .onSecondCall()
-        .returns({ status: 200, text: '{{{invalid json!!' });
+      stubArtifacts({ artifacts: { [CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT]: '{{{invalid json!!' } });
 
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -2147,14 +2445,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 404 })
-        .onSecondCall()
-        .returns({ status: 418, response: { error: { text: "I'm a tea pot" } } });
+      stubArtifacts({
+        artifacts: {
+          [CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT]: Object.assign(new Error("I'm a tea pot"), { statusCode: 418 }),
+        },
+      });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2187,9 +2482,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2219,11 +2512,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     setup(() => {
-      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => {} } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .returns({ status: 404, response: { error: { text: 'Resource not found' } } });
+      stubArtifacts();
     });
 
     teardown(async () => {

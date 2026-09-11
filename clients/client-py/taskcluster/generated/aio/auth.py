@@ -396,75 +396,6 @@ class Auth(AsyncBaseClient):
             self.funcinfo["awsS3Credentials"], *args, **kwargs
         )
 
-    async def azureAccounts(self, *args, **kwargs):
-        """
-        List Accounts Managed by Auth
-
-        Retrieve a list of all Azure accounts managed by Taskcluster Auth.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["azureAccounts"], *args, **kwargs)
-
-    async def azureTables(self, *args, **kwargs):
-        """
-        List Tables in an Account Managed by Auth
-
-        Retrieve a list of all tables in an account.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["azureTables"], *args, **kwargs)
-
-    async def azureTableSAS(self, *args, **kwargs):
-        """
-        Get Shared-Access-Signature for Azure Table
-
-        Get a shared access signature (SAS) string for use with a specific Azure
-        Table Storage table.
-
-        The `level` parameter can be `read-write` or `read-only` and determines
-        which type of credentials are returned.  If level is read-write, it will create the
-        table if it doesn't already exist.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["azureTableSAS"], *args, **kwargs)
-
-    async def azureContainers(self, *args, **kwargs):
-        """
-        List containers in an Account Managed by Auth
-
-        Retrieve a list of all containers in an account.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(
-            self.funcinfo["azureContainers"], *args, **kwargs
-        )
-
-    async def azureContainerSAS(self, *args, **kwargs):
-        """
-        Get Shared-Access-Signature for Azure Container
-
-        Get a shared access signature (SAS) string for use with a specific Azure
-        Blob Storage container.
-
-        The `level` parameter can be `read-write` or `read-only` and determines
-        which type of credentials are returned.  If level is read-write, it will create the
-        container if it doesn't already exist.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(
-            self.funcinfo["azureContainerSAS"], *args, **kwargs
-        )
-
     async def sentryDSN(self, *args, **kwargs):
         """
         Get DSN for Sentry Project
@@ -522,6 +453,33 @@ class Auth(AsyncBaseClient):
         """
 
         return await self._makeApiCall(self.funcinfo["gcpCredentials"], *args, **kwargs)
+
+    async def githubRepoToken(self, *args, **kwargs):
+        """
+        Get a repository scoped github token
+
+        Get a Github application installation token scoped to the given repositories
+        and permissions, using the configured app `appName`.
+
+        Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+        `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+        Levels and permissions are matched exactly to github token permissions
+        which can be found at
+        https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+        While token access is widened (requesting a write token will give a read+write one)
+        scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+        Both owner and repo must be in lowercase in the scope.
+
+        The token expires after an hour but this behavior is github dependent.
+        You should read the `expires` property from the response if you intend
+        to maintain active credentials in your task.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(
+            self.funcinfo["githubRepoToken"], *args, **kwargs
+        )
 
     async def authenticateHawk(self, *args, **kwargs):
         """
@@ -624,48 +582,6 @@ class Auth(AsyncBaseClient):
             "route": "/aws/s3/<level>/<bucket>/<prefix>",
             "stability": "stable",
         },
-        "azureAccounts": {
-            "args": [],
-            "method": "get",
-            "name": "azureAccounts",
-            "output": "v1/azure-account-list-response.json#",
-            "route": "/azure/accounts",
-            "stability": "deprecated",
-        },
-        "azureContainerSAS": {
-            "args": ["account", "container", "level"],
-            "method": "get",
-            "name": "azureContainerSAS",
-            "output": "v1/azure-container-response.json#",
-            "route": "/azure/<account>/containers/<container>/<level>",
-            "stability": "deprecated",
-        },
-        "azureContainers": {
-            "args": ["account"],
-            "method": "get",
-            "name": "azureContainers",
-            "output": "v1/azure-container-list-response.json#",
-            "query": ["continuationToken"],
-            "route": "/azure/<account>/containers",
-            "stability": "deprecated",
-        },
-        "azureTableSAS": {
-            "args": ["account", "table", "level"],
-            "method": "get",
-            "name": "azureTableSAS",
-            "output": "v1/azure-table-access-response.json#",
-            "route": "/azure/<account>/table/<table>/<level>",
-            "stability": "deprecated",
-        },
-        "azureTables": {
-            "args": ["account"],
-            "method": "get",
-            "name": "azureTables",
-            "output": "v1/azure-table-list-response.json#",
-            "query": ["continuationToken"],
-            "route": "/azure/<account>/tables",
-            "stability": "deprecated",
-        },
         "client": {
             "args": ["clientId"],
             "method": "get",
@@ -755,6 +671,15 @@ class Auth(AsyncBaseClient):
             "query": ["continuationToken", "limit"],
             "route": "/audit/<entityType>/<entityId>",
             "stability": "stable",
+        },
+        "githubRepoToken": {
+            "args": ["appName", "owner"],
+            "input": "v1/github-repo-token-request.json#",
+            "method": "post",
+            "name": "githubRepoToken",
+            "output": "v1/github-token-response.json#",
+            "route": "/github/<appName>/<owner>/repo-token",
+            "stability": "experimental",
         },
         "heartbeat": {
             "args": [],

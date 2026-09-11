@@ -1,9 +1,15 @@
-import { Queue, WorkerManager } from '@taskcluster/client-web';
+import { Auth, Queue, WorkerManager } from '@taskcluster/client-web';
 
-export const getClient = ({ Class, user, ...options }) => {
+export const getClient = ({ Class, credentialAgent, user, ...options }) => {
+  if (credentialAgent && user) {
+    throw new Error('Specify either credentialAgent or user, not both');
+  }
+
   return new Class({
     rootUrl: window.env.TASKCLUSTER_ROOT_URL,
-    credentials: user ? user.credentials : undefined,
+    ...(credentialAgent
+      ? { credentialAgent }
+      : { credentials: user?.credentials }),
     ...options,
   });
 };
@@ -39,4 +45,32 @@ export const changeTaskGroupPriority = async ({
   const queue = getClient({ Class: Queue, user });
 
   await queue.changeTaskGroupPriority(taskGroupId, { newPriority: priority });
+};
+export const getAuditHistory = async (
+  entityId,
+  entityType,
+  user,
+  { limit }
+) => {
+  const auth = getClient({
+    Class: Auth,
+    user,
+    authorizedScopes: [`auth:audit-history:${entityType}`],
+  });
+
+  return auth.getEntityHistory(entityType, entityId, {
+    limit,
+  });
+};
+
+export const getClientAuditHistory = async (clientId, user, { limit }) => {
+  const auth = getClient({
+    Class: Auth,
+    user,
+    authorizedScopes: [`auth:client-audit-history:${clientId}`],
+  });
+
+  return auth.listAuditHistory(clientId, {
+    limit,
+  });
 };

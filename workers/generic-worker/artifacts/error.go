@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v101/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
 )
 
 type ErrorArtifact struct {
@@ -24,6 +24,10 @@ func (errArtifact *ErrorArtifact) ProcessResponse(response any, logger Logger, s
 	printLog("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
 	// TODO: process error response
 	return nil
+}
+
+func (errArtifact *ErrorArtifact) SourcePath() string {
+	return errArtifact.Path
 }
 
 func (errArtifact *ErrorArtifact) RequestObject() any {

@@ -104,7 +104,7 @@ class EC2RegionResolver {
   getRegion(req) {
     const ip = requestIp.getClientIp(req);
     // discard ipv6 addresses
-    if (!/^(:?\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+    if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
       return null;
     }
     for (const { range, region } of this.ipRanges) {

@@ -1,55 +1,84 @@
 import crypto from 'node:crypto';
-import request from 'superagent';
-import util from 'node:util';
+import { PassThrough } from 'node:stream';
+import { downloadManagedArtifact } from '@taskcluster/client';
 
 import { ISSUE_COMMENT_ACTIONS } from './constants.js';
 
-const setTimeoutPromise = util.promisify(setTimeout);
-
 /**
- * Retry a request call with the given URL and method.
+ * Download a task artifact with a queue client limited to reading that one artifact.
  *
- * Responses with status 5xx are retried, and if 5 retries are exceeded then the last
- * response is returned.
- *
- * All other HTTP responses, including 4xx-series responses, are returned (not thrown).
- *
- * All other errors from superagent are thrown.
+ * This uses downloadManagedArtifact, so a `reference` artifact is refused rather than fetched:
+ * its URL is supplied by the task, and this service can reach hosts no task can.
  */
-export const throttleRequest = async ({ url, method, response = { status: 0 }, attempt = 1, delay = 100 }) => {
-  if (attempt > 5) {
-    return response;
-  }
+const downloadArtifact = async ({ queueClient, taskId, runId, artifactName, streamFactory, retries }) => {
+  const limitedQueueClient = queueClient.use({
+    authorizedScopes: [`queue:get-artifact:${artifactName}`],
+  });
 
-  let res;
-  try {
-    res = await throttleRequest.request(method, url);
-  } catch (e) {
-    if (e.status >= 400 && e.status < 500) {
-      return e;
-    }
-
-    if (e.status >= 500) {
-      const newDelay = 2 ** attempt * delay;
-      return await setTimeoutPromise(
-        newDelay,
-        throttleRequest({
-          url,
-          method,
-          response: e,
-          attempt: attempt + 1,
-          delay,
-        })
-      );
-    }
-
-    throw e;
-  }
-  return res;
+  return await downloadManagedArtifact({
+    taskId,
+    runId,
+    name: artifactName,
+    queue: limitedQueueClient,
+    streamFactory,
+    retries,
+  });
 };
 
-// for overriding in testing..
-throttleRequest.request = request;
+export const downloadArtifactAsText = async ({ queueClient, taskId, runId, artifactName }) => {
+  let chunks;
+
+  await downloadArtifact({
+    queueClient,
+    taskId,
+    runId,
+    artifactName,
+    streamFactory: async () => {
+      chunks = [];
+      const stream = new PassThrough();
+      stream.on('data', chunk => chunks.push(chunk));
+      return stream;
+    },
+  });
+
+  return Buffer.concat(chunks).toString();
+};
+
+export const downloadArtifactAsStream = async ({ queueClient, taskId, runId, artifactName, consume }) => {
+  const stream = new PassThrough();
+  let consumerError = null;
+
+  stream.on('error', () => {});
+
+  // start consuming before downloading, as the download does not complete until the stream drains
+  const consumed = consume(stream).catch(err => {
+    consumerError = err;
+    stream.destroy();
+    throw err;
+  });
+  consumed.catch(() => {});
+
+  try {
+    await downloadArtifact({
+      queueClient,
+      taskId,
+      runId,
+      artifactName,
+      retries: 0,
+      streamFactory: async () => stream,
+    });
+  } catch (err) {
+    if (consumerError) {
+      throw consumerError;
+    }
+
+    stream.destroy();
+    await consumed.catch(() => {});
+    throw err;
+  }
+
+  return await consumed;
+};
 
 export const ciSkipRegexp = /\[(skip ci|ci skip)\]/i;
 
@@ -297,7 +326,8 @@ export const checkGithubSignature = (secret, payload, signature) => {
 };
 
 export default {
-  throttleRequest,
+  downloadArtifactAsText,
+  downloadArtifactAsStream,
   shouldSkipCommit,
   shouldSkipPullRequest,
   ansi2txt,

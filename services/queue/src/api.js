@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import _ from 'lodash';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
-import taskcluster from '@taskcluster/client';
 import taskCreds from './task-creds.js';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data.js';
@@ -582,6 +581,11 @@ builder.declare(
       '',
       'Task group can be sealed once and is irreversible. Calling it multiple times',
       'will return same result and will not update it again.',
+      '',
+      'Sealing makes `cancelTaskGroup` meaningful by stopping task creators',
+      'from adding more tasks to a group being cancelled. It is not a',
+      'security feature: the check is not atomic with task creation, so a',
+      '`createTask` racing this call may still succeed.',
     ].join('\n'),
   },
   async function (req, res) {
@@ -1439,23 +1443,13 @@ builder.declare(
   }
 );
 
-// Hack to get promises that resolve after 20s without creating a setTimeout
-// for each, instead we create a new promise every 2s and reuse that.
-const _lastTime = 0;
-let _sleeping = null;
-const sleep20Seconds = () => {
-  const time = Date.now();
-  if (!_sleeping || time - _lastTime > 2000) {
-    _sleeping = new Promise(accept => setTimeout(accept, 20 * 1000));
-  }
-  return _sleeping;
-};
+const CLAIM_WORK_TIMEOUT_MS = 20 * 1000;
 
 /** Claim any task */
 builder.declare(
   {
     method: 'post',
-    route: '/claim-work/:taskQueueId(*)',
+    route: '/claim-work/{*taskQueueId}',
     name: 'claimWork',
     stability: APIBuilder.stability.stable,
     category: 'Worker Interface',
@@ -1488,42 +1482,51 @@ builder.declare(
 
     const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
-    // Don't claim tasks when worker is quarantined (but do record the worker
-    // being seen, and be sure to wait the 20 seconds so as not to cause a
-    // tight loop of claimWork calls from the worker
-    if (worker && worker.quarantineUntil.getTime() > Date.now()) {
-      await Promise.all([this.workerInfo.seen(taskQueueId, workerGroup, workerId), sleep20Seconds()]);
+    let timer;
+    const timeout = new Promise(accept => {
+      timer = setTimeout(accept, CLAIM_WORK_TIMEOUT_MS);
+    });
+
+    try {
+      // Don't claim tasks when worker is quarantined (but do record the worker
+      // being seen, and be sure to wait the 20 seconds so as not to cause a
+      // tight loop of claimWork calls from the worker
+      if (worker && worker.quarantineUntil.getTime() > Date.now()) {
+        await Promise.all([this.workerInfo.seen(taskQueueId, workerGroup, workerId), timeout]);
+        return res.reply({
+          tasks: [],
+        });
+      }
+
+      // Allow request to abort their claim request, if the connection closes
+      const aborted = new Promise(accept => {
+        timeout.then(accept);
+        res.once('close', accept);
+      });
+
+      const [result] = await Promise.all([
+        this.workClaimer.claim(taskQueueId, workerGroup, workerId, count, aborted),
+        this.workerInfo.seen(taskQueueId, workerGroup, workerId),
+      ]);
+
+      result.forEach(({ runId, status: { taskId } }) => {
+        this.monitor.log.taskClaimed({
+          taskQueueId,
+          workerGroup,
+          workerId,
+          taskId,
+          runId,
+        });
+      });
+
+      await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
+
       return res.reply({
-        tasks: [],
+        tasks: result,
       });
+    } finally {
+      clearTimeout(timer);
     }
-
-    // Allow request to abort their claim request, if the connection closes
-    const aborted = new Promise(accept => {
-      sleep20Seconds().then(accept);
-      res.once('close', accept);
-    });
-
-    const [result] = await Promise.all([
-      this.workClaimer.claim(taskQueueId, workerGroup, workerId, count, aborted),
-      this.workerInfo.seen(taskQueueId, workerGroup, workerId),
-    ]);
-
-    result.forEach(({ runId, status: { taskId } }) => {
-      this.monitor.log.taskClaimed({
-        taskQueueId,
-        workerGroup,
-        workerId,
-        taskId,
-        runId,
-      });
-    });
-
-    await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
-
-    return res.reply({
-      tasks: result,
-    });
   }
 );
 
@@ -2134,68 +2137,11 @@ builder.declare(
   }
 );
 
-/** Update a provisioner */
-builder.declare(
-  {
-    method: 'put',
-    route: '/provisioners/:provisionerId',
-    name: 'declareProvisioner',
-    stability: APIBuilder.stability.deprecated,
-    category: 'Worker Metadata',
-    scopes: {
-      AllOf: [
-        {
-          for: 'property',
-          in: 'properties',
-          each: 'queue:declare-provisioner:<provisionerId>#<property>',
-        },
-      ],
-    },
-    output: 'provisioner-response.yml',
-    input: 'update-provisioner-request.yml',
-    title: 'Update a provisioner',
-    description: [
-      'Declare a provisioner, supplying some details about it.',
-      '',
-      '`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are',
-      'possessed. For example, a request to update the `my-provisioner`',
-      "provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope",
-      '`queue:declare-provisioner:my-provisioner#description`.',
-      '',
-      'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
-      'This does not necessarily mean there is an associated service performing any',
-      'provisioning activity.',
-    ].join('\n'),
-  },
-  async function (req, res) {
-    const provisionerId = req.params.provisionerId;
-
-    await req.authorize({
-      provisionerId,
-      properties: Object.keys(req.body),
-    });
-
-    const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
-
-    if (!provisioner) {
-      return res.reportError(
-        'ResourceNotFound',
-        'Provisioner `{{provisionerId}}` not found. Are you sure it was created?',
-        {
-          provisionerId,
-        }
-      );
-    }
-
-    return res.reply(provisioner.serialize());
-  }
-);
-
 /** Count pending tasks for workerType */
 builder.declare(
   {
     method: 'get',
-    route: '/pending/:taskQueueId(*)',
+    route: '/pending/{*taskQueueId}',
     name: 'pendingTasks',
     scopes: 'queue:pending-count:<taskQueueId>',
     stability: APIBuilder.stability.deprecated,
@@ -2228,11 +2174,62 @@ builder.declare(
   }
 );
 
+/** Pending and claimed counts for multiple queues */
+builder.declare(
+  {
+    method: 'post',
+    route: '/task-queues/counts',
+    name: 'taskQueueCountsBatch',
+    scopes: {
+      AllOf: [
+        {
+          for: 'taskQueueId',
+          in: 'taskQueueIds',
+          each: 'queue:pending-count:<taskQueueId>',
+        },
+        {
+          for: 'taskQueueId',
+          in: 'taskQueueIds',
+          each: 'queue:claimed-count:<taskQueueId>',
+        },
+      ],
+    },
+    input: 'task-queue-counts-request.yml',
+    stability: APIBuilder.stability.experimental,
+    category: 'Worker Metadata',
+    output: 'task-queue-counts-list-response.yml',
+    title: 'Get Pending and Claimed Task Counts for Multiple Task Queues',
+    description: [
+      'Get approximate pending and claimed task counts for the given task queues.',
+      '',
+      'The caller must have both `queue:pending-count:<taskQueueId>` and',
+      '`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.',
+      'If any task queue is unauthorized, the entire request will fail.',
+      '',
+      'As task states may change rapidly, these counts may not represent the exact',
+      'number of pending and claimed tasks, but are very good approximations.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { taskQueueIds } = req.body;
+
+    await req.authorize({ taskQueueIds });
+
+    const counts = await this.queueService.countTasksByTaskQueues(taskQueueIds);
+    const taskQueueCounts = counts.map(count => ({
+      ...splitTaskQueueId(count.taskQueueId),
+      ...count,
+    }));
+
+    return res.reply({ taskQueueCounts });
+  }
+);
+
 /** Pending and claimed counts for a queue */
 builder.declare(
   {
     method: 'get',
-    route: '/task-queues/:taskQueueId(*)/counts',
+    route: '/task-queues/{*taskQueueId}/counts',
     name: 'taskQueueCounts',
     scopes: {
       AllOf: ['queue:pending-count:<taskQueueId>', 'queue:claimed-count:<taskQueueId>'],
@@ -2273,7 +2270,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/task-queues/:taskQueueId(*)/pending',
+    route: '/task-queues/{*taskQueueId}/pending',
     query: paginateResults.query,
     name: 'listPendingTasks',
     scopes: 'queue:pending-list:<taskQueueId>',
@@ -2321,7 +2318,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/task-queues/:taskQueueId(*)/claimed',
+    route: '/task-queues/{*taskQueueId}/claimed',
     query: paginateResults.query,
     name: 'listClaimedTasks',
     scopes: 'queue:claimed-list:<taskQueueId>',
@@ -2450,64 +2447,7 @@ builder.declare(
     const tqResult = tQueue.serialize();
     addSplitFields(tqResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, tqResult, { actions }));
-  }
-);
-
-/** Update a worker-type */
-builder.declare(
-  {
-    method: 'put',
-    route: '/provisioners/:provisionerId/worker-types/:workerType',
-    name: 'declareWorkerType',
-    stability: APIBuilder.stability.deprecated,
-    category: 'Worker Metadata',
-    scopes: {
-      AllOf: [
-        {
-          for: 'property',
-          in: 'properties',
-          each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
-        },
-      ],
-    },
-    output: 'workertype-response.yml',
-    input: 'update-workertype-request.yml',
-    title: 'Update a worker-type',
-    description: [
-      'Declare a workerType, supplying some details about it.',
-      '',
-      '`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are',
-      'possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`',
-      "provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope",
-      '`queue:declare-worker-type:my-provisioner/highmem#description`.',
-    ].join('\n'),
-  },
-  async function (req, res) {
-    const { provisionerId, workerType } = req.params;
-    const { stability, description, expires } = req.body;
-    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
-
-    await req.authorize({
-      provisionerId,
-      workerType,
-      properties: Object.keys(req.body),
-    });
-
-    await this.db.fns.task_queue_seen({
-      task_queue_id_in: taskQueueId,
-      stability_in: stability,
-      description_in: description,
-      expires_in: expires || taskcluster.fromNow('5 days'),
-    });
-
-    const tQueue = await TaskQueue.get(this.db, taskQueueId, new Date());
-    const tqResult = tQueue.serialize();
-    addSplitFields(tqResult);
-
-    const actions = [];
-    return res.reply(Object.assign({}, tqResult, { actions }));
+    return res.reply(tqResult);
   }
 );
 
@@ -2709,8 +2649,7 @@ builder.declare(
     const workerResult = worker.serialize();
     addSplitFields(workerResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 
@@ -2766,8 +2705,7 @@ builder.declare(
     const workerResult = worker.serialize();
     addSplitFields(workerResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 
@@ -2829,8 +2767,7 @@ builder.declare(
     const workerResult = worker.serialize();
     addSplitFields(workerResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 

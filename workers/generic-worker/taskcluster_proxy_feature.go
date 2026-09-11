@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
-	"github.com/taskcluster/taskcluster/v101/internal/scopes"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/tcproxy"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/tcproxy"
 )
 
 type TaskclusterProxyFeature struct {
@@ -55,6 +55,14 @@ func sweepStaleDockerResources() {
 			log.Printf("startup: could not remove stale docker network %s: %s (output: %s)", n, err, rmOut)
 		}
 	}
+}
+
+func dockerDefaultBridgeHasIPv6() bool {
+	out, err := host.Output("docker", "network", "inspect", "bridge", "--format", "{{.EnableIPv6}}")
+	if err != nil {
+		return false
+	}
+	return strings.TrimSpace(out) == "true"
 }
 
 func (feature *TaskclusterProxyFeature) IsEnabled() bool {
@@ -102,7 +110,11 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		// Create a per-task Docker network for isolation. Each container
 		// will only be able to reach its own tc-proxy instance.
 		networkName := fmt.Sprintf("gw-task-%s-%d", l.task.TaskID[:12], l.task.RunID)
-		_, err := host.Output("docker", "network", "create", networkName)
+		createArgs := []string{"network", "create"}
+		if dockerDefaultBridgeHasIPv6() {
+			createArgs = append(createArgs, "--ipv6")
+		}
+		_, err := host.Output("docker", append(createArgs, networkName)...)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("could not create Docker network %s: %s", networkName, err))
 		}

@@ -247,6 +247,10 @@ export const createClient = (reference, name) => {
       throw new Error('options.randomizationFactor must be between 0 and 1!');
     }
 
+    if (this._options.authorizedScopes != null && !Array.isArray(this._options.authorizedScopes)) {
+      throw new Error('options.authorizedScopes must be an array of scopes');
+    }
+
     if (this._options.agent) {
       // We have explicit options for new agent create one...
       this._httpAgent = {
@@ -286,7 +290,7 @@ export const createClient = (reference, name) => {
 
       // If set of authorized scopes is provided, we'll restrict the request
       // to only use these scopes
-      if (Array.isArray(this._options.authorizedScopes)) {
+      if (this._options.authorizedScopes) {
         ext.authorizedScopes = this._options.authorizedScopes;
       }
 

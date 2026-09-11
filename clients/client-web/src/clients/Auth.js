@@ -33,14 +33,10 @@ export default class Auth extends Client {
     this.expandScopes.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"expandScopes","output":true,"query":[],"route":"/scopes/expand","scopes":"auth:expand-scopes","stability":"stable","type":"function"};
     this.currentScopes.entry = {"args":[],"category":"Scopes and Auth","method":"get","name":"currentScopes","output":true,"query":[],"route":"/scopes/current","scopes":"auth:current-scopes","stability":"stable","type":"function"};
     this.awsS3Credentials.entry = {"args":["level","bucket","prefix"],"category":"AWS Credentials","method":"get","name":"awsS3Credentials","output":true,"query":["format"],"route":"/aws/s3/<level>/<bucket>/<prefix>","scopes":{"else":"auth:aws-s3:read-write:<bucket>/<prefix>","if":"levelIsReadOnly","then":{"AnyOf":["auth:aws-s3:read-only:<bucket>/<prefix>","auth:aws-s3:read-write:<bucket>/<prefix>"]}},"stability":"stable","type":"function"};
-    this.azureAccounts.entry = {"args":[],"category":"Azure Credentials","method":"get","name":"azureAccounts","output":true,"query":[],"route":"/azure/accounts","scopes":"auth:azure-table:list-accounts","stability":"deprecated","type":"function"};
-    this.azureTables.entry = {"args":["account"],"category":"Azure Credentials","method":"get","name":"azureTables","output":true,"query":["continuationToken"],"route":"/azure/<account>/tables","scopes":"auth:azure-table:list-tables:<account>","stability":"deprecated","type":"function"};
-    this.azureTableSAS.entry = {"args":["account","table","level"],"category":"Azure Credentials","method":"get","name":"azureTableSAS","output":true,"query":[],"route":"/azure/<account>/table/<table>/<level>","scopes":{"else":"auth:azure-table:read-write:<account>/<table>","if":"levelIsReadOnly","then":{"AnyOf":["auth:azure-table:read-only:<account>/<table>","auth:azure-table:read-write:<account>/<table>"]}},"stability":"deprecated","type":"function"};
-    this.azureContainers.entry = {"args":["account"],"category":"Azure Credentials","method":"get","name":"azureContainers","output":true,"query":["continuationToken"],"route":"/azure/<account>/containers","scopes":"auth:azure-container:list-containers:<account>","stability":"deprecated","type":"function"};
-    this.azureContainerSAS.entry = {"args":["account","container","level"],"category":"Azure Credentials","method":"get","name":"azureContainerSAS","output":true,"query":[],"route":"/azure/<account>/containers/<container>/<level>","scopes":{"else":"auth:azure-container:read-write:<account>/<container>","if":"levelIsReadOnly","then":{"AnyOf":["auth:azure-container:read-only:<account>/<container>","auth:azure-container:read-write:<account>/<container>"]}},"stability":"deprecated","type":"function"};
     this.sentryDSN.entry = {"args":["project"],"category":"Sentry Credentials","method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"};
     this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"category":"Websocktunnel Credentials","method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"};
     this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"category":"GCP Credentials","method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"};
+    this.githubRepoToken.entry = {"args":["appName","owner"],"category":"Github Credentials","input":true,"method":"post","name":"githubRepoToken","output":true,"query":[],"route":"/github/<appName>/<owner>/repo-token","scopes":{"AllOf":[{"each":"auth:github-repo-token:<appName>/<owner>/<repoPerm>","for":"repoPerm","in":"repoPerms"}]},"stability":"experimental","type":"function"};
     this.authenticateHawk.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"};
     this.testAuthenticate.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"};
     this.testAuthenticateGet.entry = {"args":[],"category":"Scopes and Auth","method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"};
@@ -270,44 +266,6 @@ export default class Auth extends Client {
 
     return this.request(this.awsS3Credentials.entry, args);
   }
-  // Retrieve a list of all Azure accounts managed by Taskcluster Auth.
-  azureAccounts(...args) {
-    this.validate(this.azureAccounts.entry, args);
-
-    return this.request(this.azureAccounts.entry, args);
-  }
-  // Retrieve a list of all tables in an account.
-  azureTables(...args) {
-    this.validate(this.azureTables.entry, args);
-
-    return this.request(this.azureTables.entry, args);
-  }
-  // Get a shared access signature (SAS) string for use with a specific Azure
-  // Table Storage table.
-  // The `level` parameter can be `read-write` or `read-only` and determines
-  // which type of credentials are returned.  If level is read-write, it will create the
-  // table if it doesn't already exist.
-  azureTableSAS(...args) {
-    this.validate(this.azureTableSAS.entry, args);
-
-    return this.request(this.azureTableSAS.entry, args);
-  }
-  // Retrieve a list of all containers in an account.
-  azureContainers(...args) {
-    this.validate(this.azureContainers.entry, args);
-
-    return this.request(this.azureContainers.entry, args);
-  }
-  // Get a shared access signature (SAS) string for use with a specific Azure
-  // Blob Storage container.
-  // The `level` parameter can be `read-write` or `read-only` and determines
-  // which type of credentials are returned.  If level is read-write, it will create the
-  // container if it doesn't already exist.
-  azureContainerSAS(...args) {
-    this.validate(this.azureContainerSAS.entry, args);
-
-    return this.request(this.azureContainerSAS.entry, args);
-  }
   // Get temporary DSN (access credentials) for a sentry project.
   // The credentials returned can be used with any Sentry client for up to
   // 24 hours, after which the credentials will be automatically disabled.
@@ -343,6 +301,24 @@ export default class Auth extends Client {
     this.validate(this.gcpCredentials.entry, args);
 
     return this.request(this.gcpCredentials.entry, args);
+  }
+  // Get a Github application installation token scoped to the given repositories
+  // and permissions, using the configured app `appName`.
+  // Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+  // `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+  // Levels and permissions are matched exactly to github token permissions
+  // which can be found at
+  // https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+  // While token access is widened (requesting a write token will give a read+write one)
+  // scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+  // Both owner and repo must be in lowercase in the scope.
+  // The token expires after an hour but this behavior is github dependent.
+  // You should read the `expires` property from the response if you intend
+  // to maintain active credentials in your task.
+  githubRepoToken(...args) {
+    this.validate(this.githubRepoToken.entry, args);
+
+    return this.request(this.githubRepoToken.entry, args);
   }
   // Validate the request signature given on input and return list of scopes
   // that the authenticating client has.

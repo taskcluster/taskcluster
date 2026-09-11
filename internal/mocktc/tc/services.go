@@ -3,16 +3,17 @@
 package tc
 
 import (
+	"io"
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcindex"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcworkermanager"
 )
 
 type Auth interface {
@@ -71,5 +72,5 @@ type Object interface {
 	StartDownload(name string, payload *tcobject.DownloadObjectRequest) (*tcobject.DownloadObjectResponse, error)
 
 	// non-API functions
-	UploadFromFile(projectID string, name string, contentType string, expires time.Time, uploadID string, filepath string) error
+	UploadFromReadSeekerWithHashes(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) (map[string]string, error)
 }

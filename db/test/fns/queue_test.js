@@ -2538,6 +2538,61 @@ suite(testing.suiteName(), () => {
       await db.fns.queue_pending_tasks_add(taskQueueId, 0, 'pending-task-id', 0, 'hint', fromNow('1 hour'));
       await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 1, claimed_count: 1 });
     });
+
+    helper.dbTest('workers and pending tasks with no claimed tasks yields a single row', async db => {
+      const taskQueueId = 'p3/wt3';
+
+      await db.fns.queue_worker_seen_with_last_date_active({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker1',
+        expires_in: fromNow('12 hours'),
+      });
+      await db.fns.queue_pending_tasks_add(taskQueueId, 0, 'pending-task-id', 0, 'hint', fromNow('1 hour'));
+
+      const result = await db.fns.queue_worker_stats();
+      assert.deepEqual(result, [
+        {
+          task_queue_id: taskQueueId,
+          worker_count: 1,
+          quarantined_count: 0,
+          claimed_count: 0,
+          pending_count: 1,
+        },
+      ]);
+    });
+  });
+
+  suite('queue_task_queue_counts method', () => {
+    setup(async () => {
+      await helper.withDbClient(async client => {
+        await client.query('DELETE FROM queue_claimed_tasks');
+        await client.query('DELETE FROM queue_pending_tasks');
+      });
+    });
+
+    helper.dbTest('returns counts for only the requested task queues', async db => {
+      await db.fns.queue_pending_tasks_add('p1/w1', 0, 'pending-1', 0, 'hint-1', fromNow('1 hour'));
+      await db.fns.queue_pending_tasks_add('p2/w2', 0, 'pending-2', 0, 'hint-2', fromNow('1 hour'));
+      await db.fns.queue_pending_tasks_add('not/requested', 0, 'pending-3', 0, 'hint-3', fromNow('1 hour'));
+      await db.fns.queue_pending_tasks_add('p1/w1', 0, 'expired', 0, 'hint-4', fromNow('-1 hour'));
+
+      // Reclaims can leave multiple claimed rows for one task run; it must only be counted once.
+      await db.fns.queue_claimed_task_put('claimed-1', 0, fromNow('1 hour'), 'p2/w2', 'wg', 'w1');
+      await db.fns.queue_claimed_task_put('claimed-1', 0, fromNow('2 hours'), 'p2/w2', 'wg', 'w1');
+      await db.fns.queue_claimed_task_put('expired-claim', 0, fromNow('-1 hour'), 'p2/w2', 'wg', 'w1');
+
+      const result = await db.fns.queue_task_queue_counts(JSON.stringify(['p2/w2', 'missing/queue', 'p1/w1']));
+      assert.deepEqual(Object.fromEntries(result.map(({ task_queue_id, ...counts }) => [task_queue_id, counts])), {
+        'p2/w2': { pending_count: 1, claimed_count: 1 },
+        'missing/queue': { pending_count: 0, claimed_count: 0 },
+        'p1/w1': { pending_count: 1, claimed_count: 0 },
+      });
+    });
+
+    helper.dbTest('returns an empty result for an empty request', async db => {
+      assert.deepEqual(await db.fns.queue_task_queue_counts(JSON.stringify([])), []);
+    });
   });
 
   suite('priority change helpers', () => {

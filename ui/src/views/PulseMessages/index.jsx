@@ -26,7 +26,7 @@ import SpeedDial from '../../components/SpeedDial';
 import SpeedDialAction from '../../components/SpeedDialAction';
 import DataTable from '../../components/DataTable';
 import PulseBindings from '../../components/PulseBindings';
-import pulseMessagesQuery from './pulseMessages.graphql';
+import subscribeToPulseMessages from '../../utils/pulseListener';
 import removeKeys from '../../utils/removeKeys';
 import exchangesList from '../../utils/exchangesList';
 
@@ -90,7 +90,7 @@ export default class PulseMessages extends Component {
     };
   }
 
-  subscriptionObserver = null;
+  unsubscribeFn = null;
 
   constructor(props) {
     super(props);
@@ -153,23 +153,18 @@ export default class PulseMessages extends Component {
   handleStartListening = () => {
     this.setState({ listening: true, error: null });
 
-    this.subscriptionObserver = this.props.client
-      .subscribe({
-        query: pulseMessagesQuery,
-        variables: {
-          subscriptions: this.state.bindings,
+    this.unsubscribeFn = subscribeToPulseMessages(
+      this.props.client,
+      this.state.bindings,
+      {
+        onMessage: message => {
+          this.addMessage(message);
         },
-      })
-      .subscribe({
-        next: ({ data: { pulseMessages } }) => {
-          // ... call updateQuery to integrate the new comment
-          // into the existing list of comments
-          this.addMessage(pulseMessages);
-        },
-        error: error => {
+        onError: error => {
           this.setState({ error, listening: false });
         },
-      });
+      }
+    );
   };
 
   handleStopListening = () => {
@@ -209,8 +204,9 @@ export default class PulseMessages extends Component {
   }
 
   unsubscribe() {
-    if (this.subscriptionObserver) {
-      this.subscriptionObserver.unsubscribe();
+    if (this.unsubscribeFn) {
+      this.unsubscribeFn();
+      this.unsubscribeFn = null;
     }
   }
 

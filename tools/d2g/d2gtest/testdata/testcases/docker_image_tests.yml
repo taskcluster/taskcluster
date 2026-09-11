@@ -37,6 +37,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -88,6 +89,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -140,6 +142,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
@@ -198,6 +201,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
@@ -257,6 +261,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
@@ -315,6 +320,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
@@ -372,6 +378,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
@@ -430,6 +437,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
@@ -491,6 +499,7 @@ testSuite:
         - __TASK_DIR__/cache0:/builds/worker/checkouts
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:

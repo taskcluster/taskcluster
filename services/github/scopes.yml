@@ -1,4 +1,6 @@
 - assume:repo:github.com/*
+- auth:expand-scopes
+- hooks:trigger-hook:*
 - queue:scheduler-id:taskcluster-github
 - queue:route:statuses
 - queue:route:checks

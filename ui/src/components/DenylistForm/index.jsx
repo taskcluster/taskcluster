@@ -214,7 +214,11 @@ export default class DenylistForm extends Component {
                 required
                 label="Address"
                 name="notificationAddress"
-                type={notificationType === 'EMAIL' ? 'email' : 'text'}
+                type={
+                  notificationType === DENYLIST_NOTIFICATION_TYPES.EMAIL
+                    ? 'email'
+                    : 'text'
+                }
                 helperText={validation.address.message}
                 onChange={this.handleAddressChange}
                 fullWidth

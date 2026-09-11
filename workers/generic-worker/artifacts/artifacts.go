@@ -1,12 +1,31 @@
 package artifacts
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
-	"github.com/taskcluster/taskcluster/v101/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/gwconfig"
+	"io"
+	"os"
+
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
 )
 
 type (
+	// ContentSource streams an artifact's content it opens as the task user.
+	ContentSource interface {
+		WriteContent(w io.Writer) (int64, error)
+	}
+
+	// OpenableContentSource should only be implemented when the worker can open
+	// the content itself safely. It is used to upload artifacts without a
+	// staging copy which means the file is read as the worker user. This
+	// should only ever be used by the insecure engine or for artifacts that
+	// the worker creates itself and open through safefs to avoid a task
+	// redirecting it.
+	OpenableContentSource interface {
+		ContentSource
+		OpenForUpload() (*os.File, error)
+	}
+
 	// TaskArtifact is the interface that all artifact types implement
 	// (S3Artifact, RedirectArtifact, ErrorArtifact), for publishing artifacts
 	// according to the tcqueue.CreateArtifact docs.
@@ -54,6 +73,17 @@ type (
 		// Base returns a *BaseArtifact which stores the properties common to
 		// all implementations
 		Base() *BaseArtifact
+
+		// SourcePath is the path the content was declared from, or "" for
+		// artifact types that have no content.
+		SourcePath() string
+
+		// PrepareContent reads the content into a temporary file owned by the
+		// worker, unless it can be uploaded from where it already is.
+		PrepareContent() error
+
+		// DiscardContent closes and removes what PrepareContent opened.
+		DiscardContent()
 	}
 
 	// Common properties across all implementations.
@@ -61,8 +91,24 @@ type (
 		Name     string
 		Expires  tcclient.Time
 		Optional bool
+		// SHA256 of the artifact content, computed from the bytes that were
+		// actually uploaded. Empty until the upload has succeeded.
+		SHA256 string
 	}
 )
+
+// ContentError distinguishes a failure to read an artifact's content, which
+// the task is responsible for from a failure to copy it on the worker,
+// which it isn't.
+type ContentError struct{ Err error }
+
+func (e ContentError) Error() string {
+	return e.Err.Error()
+}
+
+func (e ContentError) Unwrap() error {
+	return e.Err
+}
 
 func (base *BaseArtifact) Base() *BaseArtifact {
 	return base
@@ -76,3 +122,13 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 func (*BaseArtifact) FinishArtifact(response any, queue tc.Queue, taskID, runID, name string) error {
 	return nil
 }
+
+func (*BaseArtifact) SourcePath() string {
+	return ""
+}
+
+func (*BaseArtifact) PrepareContent() error {
+	return nil
+}
+
+func (*BaseArtifact) DiscardContent() {}

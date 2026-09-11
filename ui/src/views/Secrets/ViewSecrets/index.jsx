@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { Secrets } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -11,33 +10,24 @@ import Search from '../../../components/Search';
 import SecretsTable from '../../../components/SecretsTable';
 import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
-import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
 import DialogAction from '../../../components/DialogAction';
-import secretsQuery from './secrets.graphql';
-import deleteSecretQuery from './deleteSecret.graphql';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
-@graphql(secretsQuery, {
-  options: props => {
-    const { search } = qs.parse(props.location.search.slice(1));
-
-    return {
-      fetchPolicy: 'network-only',
-      variables: {
-        secretsConnection: {
-          limit: VIEW_SECRETS_PAGE_SIZE,
-        },
-        searchTerm: search || null,
-      },
-    };
-  },
-})
 @withStyles(theme => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch: props => options =>
+    props.createTaskclusterClient({ Class: Secrets }).list(options),
+  payload: { limit: VIEW_SECRETS_PAGE_SIZE },
+  select: response => response.secrets,
+})
 export default class ViewSecrets extends Component {
   state = {
     dialogOpen: false,
@@ -45,23 +35,25 @@ export default class ViewSecrets extends Component {
     dialogError: null,
   };
 
-  handleSecretSearchSubmit = async secretSearch => {
-    const {
-      data: { refetch },
-    } = this.props;
+  get searchTerm() {
+    return qs.parse(this.props.location.search.slice(1)).search || null;
+  }
 
-    await refetch({
-      secretsConnection: {
-        limit: VIEW_SECRETS_PAGE_SIZE,
-      },
-      searchTerm: secretSearch || null,
-    });
+  get secretsClient() {
+    return this.props.createTaskclusterClient({ Class: Secrets });
+  }
 
-    const query = qs.parse(window.location.search.slice(1));
+  handleSearchSubmit = secretSearch => {
+    const { history, location, reload } = this.props;
 
-    this.props.history.push({
+    if ((secretSearch || null) === this.searchTerm) {
+      reload();
+      return;
+    }
+
+    history.push({
       search: qs.stringify({
-        ...query,
+        ...qs.parse(location.search.slice(1)),
         search: secretSearch,
       }),
     });
@@ -71,56 +63,12 @@ export default class ViewSecrets extends Component {
     this.props.history.push('/secrets/create');
   };
 
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      data: { fetchMore },
-    } = this.props;
-    const query = qs.parse(this.props.location.search.slice(1));
-    const secretSearch = query.search;
-
-    return fetchMore({
-      query: secretsQuery,
-      variables: {
-        secretsConnection: {
-          limit: VIEW_SECRETS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-        searchTerm: secretSearch || null,
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.secrets;
-
-        return dotProp.set(previousResult, 'secrets', secrets =>
-          dotProp.set(
-            dotProp.set(secrets, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
-
-  handleDeleteSecret = () => {
-    this.setState({ dialogError: null });
-
-    const name = this.state.deleteSecretName;
-
-    return this.props.client.mutate({
-      mutation: deleteSecretQuery,
-      variables: { name },
-    });
-  };
-
-  handleDialogActionError = error => {
-    this.setState({ dialogError: error });
-  };
+  handleDeleteSecret = () =>
+    this.secretsClient.remove(this.state.deleteSecretName);
 
   handleDialogActionComplete = () => {
     this.setState({ dialogOpen: false, deleteSecretName: null });
-
-    this.props.data.refetch();
+    this.props.reload();
   };
 
   handleDialogActionClose = () => {
@@ -131,19 +79,37 @@ export default class ViewSecrets extends Component {
     });
   };
 
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error });
+  };
+
   handleDialogActionOpen = secretName => {
     this.setState({ dialogOpen: true, deleteSecretName: secretName });
   };
 
   render() {
-    const { dialogOpen, deleteSecretName, dialogError } = this.state;
     const {
       classes,
       description,
-      data: { loading, error, secrets },
+      items,
+      loading,
+      error,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
     } = this.props;
-    const query = qs.parse(this.props.location.search.slice(1));
-    const secretSearch = query.search;
+    const { dialogOpen, deleteSecretName, dialogError } = this.state;
+    const { searchTerm } = this;
+    const secrets = searchTerm
+      ? items.filter(name =>
+          name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : items;
+    // Separates the first load, which has nothing to show yet, from paging,
+    // where the table stays up and the pagination row spins.
+    const initialLoad = loading && !items.length;
 
     return (
       <Dashboard
@@ -152,18 +118,23 @@ export default class ViewSecrets extends Component {
         search={
           <Search
             disabled={loading}
-            defaultValue={secretSearch}
-            onSubmit={this.handleSecretSearchSubmit}
+            defaultValue={searchTerm}
+            onSubmit={this.handleSearchSubmit}
             placeholder="Secret contains"
           />
         }>
-        {loading && <Spinner loading />}
+        {initialLoad && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {secrets && (
+        {!initialLoad && (
           <SecretsTable
-            searchTerm={secretSearch}
-            onPageChange={this.handlePageChange}
-            secretsConnection={secrets}
+            secrets={secrets}
+            searchTerm={searchTerm}
+            loading={loading}
+            page={page}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            onNextPage={nextPage}
+            onPreviousPage={previousPage}
             onDialogActionOpen={this.handleDialogActionOpen}
           />
         )}

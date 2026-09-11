@@ -26,8 +26,15 @@ run_standalone() {
     exit 2
   fi
 
+  # Copy the bind-mounted config into the container and chmod it to 0600
+  # before handing it to generic-worker. Without the copy, generic-worker's
+  # auto-tightening would chmod the host-side file via the bind mount.
+  worker_config=/run/config.json
+  cp /etc/generic-worker/config.json "${worker_config}"
+  chmod 0600 "${worker_config}"
+
   generic-worker --version
-  generic-worker run --config /etc/generic-worker/config.json
+  generic-worker run --config "${worker_config}"
 }
 
 run_static() {

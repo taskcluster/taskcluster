@@ -109,7 +109,7 @@ yarn db:renumber    # Renumber migration files
 ### UI Development
 ```bash
 cd ui
-export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+export TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com
 yarn start  # Runs on http://localhost:5080
 ```
 
@@ -247,7 +247,7 @@ yarn test                    # Run migration tests
 ```bash
 cd ui
 yarn
-export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+export TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com
 yarn start
 # OR with local services:
 # Terminal 1: yarn dev:start web-server-web
@@ -280,7 +280,7 @@ yarn start
 
 ## Resources
 
-- Main deployment: https://community-tc.services.mozilla.com
+- Main deployment: https://firefox-ci-tc.services.mozilla.com
 - RFCs: https://github.com/taskcluster/taskcluster-rfcs
 - Retrospectives: https://github.com/taskcluster/taskcluster-retrospectives
 - Documentation: See `dev-docs/` for architectural details

@@ -1,4 +1,4 @@
-import glob from 'glob';
+import { globSync } from 'glob';
 import path from 'node:path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
@@ -16,7 +16,7 @@ export default ({ tasks }) => {
         utils,
       });
 
-      const artifacts = glob.sync('generic-worker-*', { cwd: artifactsDir });
+      const artifacts = globSync('generic-worker-*', { cwd: artifactsDir });
 
       return {
         'generic-worker-artifacts': artifacts,

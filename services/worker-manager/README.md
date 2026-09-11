@@ -40,7 +40,11 @@ curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?ap
 # ]
 ```
 
-Note: new signature might be signed by one of the two intermediate certificates (`azure/azure-ca-certs/microsoft_rsa_tls_ca_[12].pem`). This is important for `test/provider_azure_test.js` as it relies on the intermediate cert to do proper tests.
+Note: a refreshed signature may be signed by a different intermediate certificate than the previous one (Azure rotates leaf certs roughly every 180 days, and is migrating regions to the `Microsoft TLS G2 RSA CA OCSP NN` hierarchy). This matters for `test/provider_azure_test.js`, which pins the intermediate. After refreshing the fixture:
+
+1. Work out which intermediate signed it (see the collapsed section below).
+2. If that intermediate is not already in `src/providers/azure/azure-ca-certs/`, add it to `certificates.json` and run `node download-certs.js` in that directory — otherwise the tests will reach out to the network on every happy-path registration.
+3. Update the `intermediateCert*` constants near the top of `test/provider_azure_test.js`, plus the `getAuthorityAccessInfo` expectation in the `helpers` suite (the AIA entries differ per intermediate, and the download-failure tests log one entry per `CA Issuer` location).
 
 Another way would be to create a task in one of the Azure worker pools with the following payload and parse logs to get the document:
 

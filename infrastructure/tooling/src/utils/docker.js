@@ -1,229 +1,37 @@
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import Docker from 'dockerode';
-import Observable from 'zen-observable';
-import { PassThrough, Transform } from 'node:stream';
 import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import got from 'got';
-import { execCommand } from './command.js';
+import { execCommand, execCommandOutput } from './command.js';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
 
 /**
- * Set up to call docker in the given baseDir (internal use only)
- */
-const _dockerSetup = ({ baseDir }) => {
-  const inner = async ({ baseDir }) => {
-    const docker = new Docker();
-    // when running a docker container, always remove the container when finished,
-    // mount the workdir at /workdir, and run as the current (non-container) user
-    // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
-    // to define names for those uid/gid, too.
-    const { uid, gid } = os.userInfo();
-    fs.writeFileSync(
-      path.join(baseDir, 'passwd'),
-      `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`
-    );
-    fs.writeFileSync(path.join(baseDir, 'group'), `root:x:0:\nbuilder:x:${gid}:\n`);
-    const dockerRunOpts = {
-      AutoRemove: true,
-      User: `${uid}:${gid}`,
-      Env: ['HOME=/base/app'],
-      Mounts: [
-        {
-          Type: 'bind',
-          Target: '/etc/passwd',
-          Source: `${baseDir}/passwd`,
-          ReadOnly: true,
-        },
-        {
-          Type: 'bind',
-          Target: '/etc/group',
-          Source: `${baseDir}/group`,
-          ReadOnly: true,
-        },
-      ],
-    };
-
-    return { docker, dockerRunOpts, uid, gid };
-  };
-
-  if (!(baseDir in _dockerSetup.memos)) {
-    // cache the promise to return multiple times
-    _dockerSetup.memos[baseDir] = inner({ baseDir });
-  }
-  return _dockerSetup.memos[baseDir];
-};
-_dockerSetup.memos = {};
-
-/**
- * Run a command (`docker run`), logging the output to TaskGraph and to a local
- * logfile
- *
- * - baseDir -- base directory for operations
- * - logfile -- name of the file to write the log to
- * - command -- command to run
- * - env -- environment variables to set
- * - workingDir -- directory to run in
- * - image -- image to run it in
- * - asRoot -- run as root
- * - utils -- taskgraph utils (waitFor, etc.)
- */
-export const dockerRun = async ({ baseDir, logfile, command, env, mounts, workingDir, image, asRoot, utils }) => {
-  const { docker, dockerRunOpts } = await _dockerSetup({ baseDir });
-
-  const output = new PassThrough().pipe(new DemuxDockerStream());
-  let errorAddendum = '';
-  if (logfile) {
-    output.pipe(fs.createWriteStream(logfile));
-    errorAddendum = ` Logs available in ${logfile}`;
-  }
-
-  const { Mounts, Env, ...otherOpts } = dockerRunOpts;
-  const containerOpts = {
-    Image: image,
-    AttachStdin: false,
-    AttachStdout: true,
-    AttachStderr: true,
-    OpenStdin: false,
-    StdinOnce: false,
-    Tty: false,
-    Env: [...Env, ...(env || [])],
-    WorkingDir: workingDir,
-    Cmd: command,
-    HostConfig: {
-      Mounts: [...Mounts, ...(mounts || [])],
-      // AutoRemove would help clean up stray containers, but means we cannot reliably
-      // get the exit status of the container
-      AutoRemove: false,
-    },
-    ...otherOpts,
-  };
-
-  if (asRoot) {
-    delete containerOpts.User;
-  }
-
-  // this is roughly the equivalent of `docker run`, performed as individual
-  // docker API calls.
-  const container = await docker.createContainer(containerOpts);
-  const stream = await container.attach({ stream: true, stdout: true, stderr: true });
-  stream.pipe(output, { end: true });
-  await container.start({});
-
-  // wait for the output to close, then wait for the container to exit
-  await utils.waitFor(output);
-  const result = await utils.waitFor(container.wait());
-  await utils.waitFor(container.remove());
-
-  if (result.StatusCode !== 0) {
-    throw new Error(`Container exited with status ${result.StatusCode}.${errorAddendum}`);
-  }
-};
-
-// Decode the multiplexed stream from Docker.  See
-// https://docs.docker.com/engine/api/v1.37/#operation/ContainerAttach
-// for protocol details.
-class DemuxDockerStream extends Transform {
-  constructor() {
-    super();
-    this.buffer = Buffer.alloc(0);
-  }
-
-  _transform(chunk, _encoding, callback) {
-    if (this.buffer.length) {
-      this.buffer = Buffer.concat([this.buffer, chunk]);
-    } else {
-      this.buffer = chunk;
-    }
-
-    // The data stream is an 8-byte header: [type, 0, 0, 0, SIZE1, SIZE2,
-    // SIZE3, SIZE4] followed by the payload.  We don't care about the type, so
-    // just read the size and then dump the payload to the stream output.
-    while (this.buffer.length >= 8) {
-      const len = this.buffer.readUInt32BE(4);
-      if (this.buffer.length < len + 8) {
-        break;
-      }
-      const payload = this.buffer.slice(8, len + 8);
-      this.buffer = this.buffer.slice(len + 8);
-      this.push(payload);
-    }
-    callback();
-  }
-}
-
-/**
  * Pull an image from a docker registry (`docker pull`)
  *
- * - baseDir -- base directory for operations
- * - image -- image to run it in
+ * - image -- image to pull
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-export const dockerPull = async ({ baseDir, image, utils }) => {
-  const { docker } = await _dockerSetup({ baseDir });
-
+export const dockerPull = async ({ image, utils }) => {
   utils.status({ message: `docker pull ${image}` });
-  const dockerStream = await new Promise((resolve, reject) =>
-    docker.pull(image, (err, stream) => (err ? reject(err) : resolve(stream)))
-  );
-
-  await utils.waitFor(
-    new Observable(observer => {
-      const downloading = {},
-        extracting = {},
-        totals = {};
-      docker.modem.followProgress(
-        dockerStream,
-        err => (err ? observer.error(err) : observer.complete()),
-        update => {
-          // The format of this stream appears undocumented, but we can fake it based on observations..
-          // general messages seem to lack progressDetail
-          if (!update.progressDetail) {
-            return;
-          }
-
-          let progressed = false;
-          if (update.status === 'Waiting') {
-            totals[update.id] = 104857600; // a guess: 100MB
-            progressed = true;
-          } else if (update.status === 'Downloading') {
-            downloading[update.id] = update.progressDetail.current;
-            totals[update.id] = update.progressDetail.total;
-            progressed = true;
-          } else if (update.status === 'Extracting') {
-            extracting[update.id] = update.progressDetail.current;
-            totals[update.id] = update.progressDetail.total;
-            progressed = true;
-          }
-
-          if (progressed) {
-            // calculate overall progress by assuming that every image must be
-            // downloaded and extracted, and that those both take the same amount
-            // of time per byte.
-            const total = Object.values(totals).reduce((a, b) => a + b, 0) * 2;
-            const current =
-              Object.values(downloading).reduce((a, b) => a + b, 0) +
-              Object.values(extracting).reduce((a, b) => a + b, 0);
-            utils.status({ progress: (current * 100) / total });
-          }
-        }
-      );
-    })
-  );
+  await execCommand({ command: ['docker', 'pull', image], utils });
 };
 
 /**
- * List locally-loaded docker images (`docker images`)
+ * Check whether an image is present locally (`docker image inspect`)
  *
- * - baseDir -- base directory for operations
+ * - tag -- the tag to check for
  */
-export const dockerImages = async ({ baseDir }) => {
-  const { docker } = await _dockerSetup({ baseDir });
-
-  return docker.listImages();
+export const dockerImageExists = async ({ tag }) => {
+  try {
+    await execCommandOutput({ command: ['docker', 'image', 'inspect', tag] });
+    return true;
+  } catch (err) {
+    if (err.exitCode === undefined) {
+      throw err;
+    }
+    return false;
+  }
 };
 
 /**

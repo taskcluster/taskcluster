@@ -1,6 +1,5 @@
 import React, { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import { pipe, map, sort as rSort } from 'ramda';
 import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
@@ -19,7 +18,6 @@ const sorted = pipe(
   map(({ roleId }) => roleId)
 );
 
-@withRouter
 @withStyles(theme => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -45,7 +43,7 @@ export default class RoleScopesTable extends Component {
   };
 
   static propTypes = {
-    /** A GraphQL roles response. */
+    /** A list of roles, each including its expanded scopes. */
     roles: arrayOf(role).isRequired,
     /** A message to display when there are no items to display. */
     noItemsMessage: string,

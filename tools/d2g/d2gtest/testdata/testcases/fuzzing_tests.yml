@@ -70,6 +70,7 @@ testSuite:
         - --add-host=taskcluster:__TASKCLUSTER_PROXY_GATEWAY__
         - --env-file
         - env.list
+        - --
         - __D2G_IMAGE_ID__
       features:
         backingLog: true

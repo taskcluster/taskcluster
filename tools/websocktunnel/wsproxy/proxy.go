@@ -12,8 +12,8 @@ import (
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v101/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v101/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v108/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v108/tools/websocktunnel/wsmux"
 
 	"maps"
 
@@ -335,10 +335,10 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 	// parse jwt token
 	// default parser verifies iat token if present. This can be a problem because of clocks not being
 	// in sync.
-	parser := &jwt.Parser{
-		ValidMethods:         []string{"HS256"},
-		SkipClaimsValidation: true, // Claims will be verified if token can be decoded using secret
-	}
+	parser := jwt.NewParser(
+		jwt.WithValidMethods([]string{"HS256"}),
+		jwt.WithoutClaimsValidation(), // Claims will be verified if token can be decoded using secret
+	)
 
 	token, err := parser.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

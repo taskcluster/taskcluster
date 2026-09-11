@@ -1,5 +1,5 @@
 import tc from '@taskcluster/client';
-const { Auth, Github, Hooks, Index, PurgeCache, Queue, QueueEvents, Secrets, Notify, WorkerManager } = tc;
+const { Auth, Github, Hooks, Index, PurgeCache, Queue, QueueEvents, Secrets, WorkerManager } = tc;
 
 export default options => ({
   auth: new Auth(options),
@@ -10,6 +10,5 @@ export default options => ({
   queue: new Queue(options),
   secrets: new Secrets(options),
   queueEvents: new QueueEvents(options),
-  notify: new Notify(options),
   workerManager: new WorkerManager(options),
 });

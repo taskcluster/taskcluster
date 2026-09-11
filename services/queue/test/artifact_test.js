@@ -721,6 +721,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       );
     });
 
+    test('finish an artifact that is not an object', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({
+        name: 'public/error.json',
+        storageType: 'error',
+        expires: taskcluster.fromNowJSON('1 day'),
+        reason: 'file-missing-on-worker',
+        message: 'Some user-defined message',
+      });
+
+      await assert.rejects(
+        () => helper.queue.finishArtifact(taskId, 0, 'public/error.json', { uploadId: taskcluster.slugid() }),
+        err => err.code === 'InputError' && err.statusCode === 400
+      );
+    });
+
     test('Post and get error artifact', async () => {
       await makeAndClaimTask();
       await makeArtifact({

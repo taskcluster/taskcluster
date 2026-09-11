@@ -1,36 +1,28 @@
 import React, { Component } from 'react';
-import { withApollo, graphql } from '@apollo/client/react/hoc';
+import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { bool } from 'prop-types';
 import { Typography, Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import createWorkerPoolQuery from './createWorkerPool.graphql';
-import updateWorkerPoolQuery from './updateWorkerPool.graphql';
-import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
-import workerPoolQuery from './workerPool.graphql';
-import providersQuery from './providers.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import { splitWorkerPoolId } from '../../../utils/workerPool';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
+import { VIEW_PROVIDERS_PAGE_SIZE } from '../../../utils/constants';
 
-@withApollo
-@graphql(providersQuery, {
-  name: 'providersData',
-})
-@graphql(workerPoolQuery, {
-  skip: props => !props.match.params.workerPoolId || props.isNewWorkerPool,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      workerPoolId: decodeURIComponent(params?.workerPoolId),
-    },
-  }),
-})
+@withTaskclusterClient
 export default class WMEditWorkerPool extends Component {
   state = {
+    loading: true,
+    providers: [],
+    providersTruncated: false,
+    workerPool: null,
+    errorStats: null,
+    error: null,
+    errorStatsError: null,
     dialogError: null,
     dialogOpen: false,
   };
@@ -43,37 +35,95 @@ export default class WMEditWorkerPool extends Component {
     isNewWorkerPool: bool,
   };
 
-  createWorkerPoolRequest = async ({ workerPoolId, payload }) => {
-    await this.props.client.mutate({
-      mutation: createWorkerPoolQuery,
-      variables: {
-        workerPoolId,
-        payload,
-      },
-    });
+  componentDidMount() {
+    this.load();
+  }
+
+  get workerManagerClient() {
+    return this.props.createTaskclusterClient({ Class: WorkerManager });
+  }
+
+  get queueClient() {
+    return this.props.createTaskclusterClient({ Class: Queue });
+  }
+
+  get workerPoolId() {
+    return decodeURIComponent(this.props.match.params.workerPoolId ?? '');
+  }
+
+  load = async () => {
+    const { isNewWorkerPool } = this.props;
+
+    this.setState({ loading: true, error: null });
+
+    try {
+      const [{ providers, continuationToken }, workerPool] = await Promise.all([
+        this.loadProviders(),
+        isNewWorkerPool ? null : this.loadWorkerPool(),
+      ]);
+
+      this.setState({
+        loading: false,
+        providers,
+        providersTruncated: Boolean(continuationToken),
+        workerPool,
+      });
+    } catch (error) {
+      this.setState({ loading: false, error });
+
+      return;
+    }
+
+    if (!isNewWorkerPool) {
+      this.loadErrorStats();
+    }
   };
 
-  updateWorkerPoolRequest = async ({ workerPoolId, payload }) => {
-    await this.props.client.mutate({
-      mutation: updateWorkerPoolQuery,
-      variables: {
-        workerPoolId,
-        payload,
-      },
+  loadProviders = () =>
+    this.workerManagerClient.listProviders({
+      limit: VIEW_PROVIDERS_PAGE_SIZE,
     });
+
+  loadWorkerPool = async () => {
+    const { workerPoolId } = this;
+    const [workerPool, pendingTasks] = await Promise.all([
+      this.workerManagerClient.workerPool(workerPoolId),
+      // `pendingTasks` was a field on the WorkerPool resolver, which read it
+      // from the queue -- a worker pool id is also a task queue id. A user who
+      // cannot read the count gets a blank tile rather than a failed page.
+      this.queueClient
+        .pendingTasks(workerPoolId)
+        .then(result => result.pendingTasks)
+        .catch(() => null),
+    ]);
+
+    return { ...workerPool, pendingTasks };
   };
+
+  loadErrorStats = async () => {
+    try {
+      const errorStats = await this.workerManagerClient.workerPoolErrorStats({
+        workerPoolId: this.workerPoolId,
+      });
+
+      this.setState({ errorStats, errorStatsError: null });
+    } catch (errorStatsError) {
+      this.setState({ errorStatsError });
+    }
+  };
+
+  createWorkerPoolRequest = ({ workerPoolId, payload }) =>
+    this.workerManagerClient.createWorkerPool(workerPoolId, payload);
+
+  updateWorkerPoolRequest = ({ workerPoolId, payload }) =>
+    this.workerManagerClient.updateWorkerPool(workerPoolId, payload);
 
   deleteRequest = ({ workerPoolId }) => {
     this.setState({ dialogError: null });
 
     // Note that deleting a worker pool doesn't really "delete" it, but just
     // marks it as to be deleted (NULL_PROVISIONER).
-    return this.props.client.mutate({
-      mutation: deleteWorkerPoolQuery,
-      variables: {
-        workerPoolId,
-      },
-    });
+    return this.workerManagerClient.deleteWorkerPool(workerPoolId);
   };
 
   handleDialogActionError = error => {
@@ -96,27 +146,28 @@ export default class WMEditWorkerPool extends Component {
   };
 
   render() {
-    const { dialogError, dialogOpen } = this.state;
-    const { isNewWorkerPool, data, providersData, match } = this.props;
+    const {
+      loading,
+      providers,
+      providersTruncated,
+      workerPool,
+      errorStats,
+      error,
+      errorStatsError,
+      dialogError,
+      dialogOpen,
+    } = this.state;
+    const { isNewWorkerPool } = this.props;
+    const { workerPoolId } = this;
 
     // detect a ridiculous number of providers and let the user know
-    if (providersData.WorkerManagerProviders?.pageInfo.hasNextPage) {
+    if (providersTruncated) {
       const err = new Error(
         'This deployment has a lot of providers; not all can be displayed here.'
       );
 
       return <ErrorPanel fixed error={err} />;
     }
-
-    const providers = providersData.WorkerManagerProviders
-      ? providersData.WorkerManagerProviders.edges.map(({ node }) => node)
-      : [];
-    const loading =
-      !providersData?.WorkerManagerProviders ||
-      providersData.loading ||
-      (!isNewWorkerPool && (!data?.WorkerPool || data.loading));
-    const error = providersData?.error || data?.error;
-    const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
 
     return (
       <Dashboard
@@ -154,6 +205,13 @@ export default class WMEditWorkerPool extends Component {
         </Box>
 
         <ErrorPanel fixed error={error} />
+        <ErrorPanel
+          warning
+          error={
+            errorStatsError &&
+            `Failed to load worker pool error stats: ${errorStatsError.message}`
+          }
+        />
         {loading && <Spinner loading />}
         {!loading &&
           (isNewWorkerPool ? (
@@ -163,19 +221,21 @@ export default class WMEditWorkerPool extends Component {
               isNewWorkerPool
             />
           ) : (
-            <WMWorkerPoolEditor
-              workerPool={data.WorkerPool}
-              errorStats={data.WorkerManagerErrorsStats}
-              providers={providers}
-              saveRequest={this.updateWorkerPoolRequest}
-              deleteRequest={this.deleteRequest}
-              dialogError={dialogError}
-              dialogOpen={dialogOpen}
-              onDialogActionError={this.handleDialogActionError}
-              onDialogActionComplete={this.handleDialogActionComplete}
-              onDialogActionClose={this.handleDialogActionClose}
-              onDialogActionOpen={this.handleDialogActionOpen}
-            />
+            workerPool && (
+              <WMWorkerPoolEditor
+                workerPool={workerPool}
+                errorStats={errorStats}
+                providers={providers}
+                saveRequest={this.updateWorkerPoolRequest}
+                deleteRequest={this.deleteRequest}
+                dialogError={dialogError}
+                dialogOpen={dialogOpen}
+                onDialogActionError={this.handleDialogActionError}
+                onDialogActionComplete={this.handleDialogActionComplete}
+                onDialogActionClose={this.handleDialogActionClose}
+                onDialogActionOpen={this.handleDialogActionOpen}
+              />
+            )
           ))}
       </Dashboard>
     );

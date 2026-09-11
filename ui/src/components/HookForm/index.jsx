@@ -37,10 +37,11 @@ import ErrorPanel from '../ErrorPanel';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
-import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
+import HookBindingDebugger from '../HookBindingDebugger';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
@@ -178,6 +179,7 @@ export default class HookForm extends Component {
     hook: object.isRequired,
     /** Part of the same Grahql hook response as above containing info
      about some last hook fired attempts */
+    loading: bool,
     hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
@@ -209,6 +211,7 @@ export default class HookForm extends Component {
   static defaultProps = {
     isNewHook: false,
     hook: initialHook,
+    loading: false,
     hookLastFires: null,
     onTriggerHook: null,
     onCreateHook: null,
@@ -238,6 +241,7 @@ export default class HookForm extends Component {
     validation: {},
     drawerOpen: false,
     drawerData: null,
+    debuggerOpen: false,
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -267,6 +271,18 @@ export default class HookForm extends Component {
         },
       },
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    // The debugger only renders while the saved hook has bindings; if a save
+    // removes them, close it so it does not re-open when bindings return.
+    if (
+      this.state.debuggerOpen &&
+      prevProps.hook?.bindings?.length &&
+      !this.props.hook?.bindings?.length
+    ) {
+      this.setState({ debuggerOpen: false });
+    }
   }
 
   getHookDefinition = () => {
@@ -485,6 +501,14 @@ export default class HookForm extends Component {
     });
   };
 
+  handleDebuggerOpen = () => {
+    this.setState({ debuggerOpen: true });
+  };
+
+  handleDebuggerClose = () => {
+    this.setState({ debuggerOpen: false });
+  };
+
   handleRoutingKeyPatternChange = ({ target: { value } }) => {
     this.setState({ routingKeyPattern: value });
   };
@@ -531,6 +555,7 @@ export default class HookForm extends Component {
     const {
       actionLoading,
       dialogOpen,
+      loading,
       deleteDialogOpen,
       dialogError,
       classes,
@@ -675,57 +700,54 @@ export default class HookForm extends Component {
             </List>
           </ListItem>
           {!isNewHook && (
-            <Fragment>
-              <ListItem>
-                <ListItemText
-                  primary="Next Scheduled Fire"
-                  secondary={
-                    hook.status.nextScheduledDate ? (
-                      <DateDistance from={hook.status.nextScheduledDate} />
-                    ) : (
-                      'n/a'
-                    )
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="subtitle1">
-                      Last Fired Attempts
-                    </Typography>
-                  }
-                  secondary={
-                    hookLastFires ? (
-                      <HookLastFiredTable
-                        items={hookLastFires}
-                        onErrorClick={this.handleDrawerOpen}
-                        paginate
-                      />
-                    ) : (
-                      'n/a'
-                    )
-                  }
-                />
-              </ListItem>
-            </Fragment>
+            <ListItem>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="subtitle1">
+                    Last Fired Attempts
+                  </Typography>
+                }
+                secondary={
+                  hookLastFires ? (
+                    <HookLastFiredTable
+                      items={hookLastFires}
+                      onErrorClick={this.handleDrawerOpen}
+                      paginate
+                    />
+                  ) : (
+                    'n/a'
+                  )
+                }
+              />
+            </ListItem>
           )}
           <ListItem>
             <ListItemText
               disableTypography
               primary={<Typography variant="subtitle1">Bindings</Typography>}
               secondary={
-                <PulseBindings
-                  bindings={hook.bindings}
-                  onBindingAdd={this.handleAddBinding}
-                  onBindingRemove={this.handleDeleteBinding}
-                  onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
-                  onPulseExchangeChange={this.handlePulseExchangeChange}
-                  pulseExchange={pulseExchange}
-                  pattern={routingKeyPattern}
-                  exchangesDictionary={exchangesDictionary}
-                />
+                <Fragment>
+                  <PulseBindings
+                    bindings={hook.bindings}
+                    onBindingAdd={this.handleAddBinding}
+                    onBindingRemove={this.handleDeleteBinding}
+                    onRoutingKeyPatternChange={
+                      this.handleRoutingKeyPatternChange
+                    }
+                    onPulseExchangeChange={this.handlePulseExchangeChange}
+                    pulseExchange={pulseExchange}
+                    pattern={routingKeyPattern}
+                    exchangesDictionary={exchangesDictionary}
+                  />
+                  {!isNewHook && this.props.hook.bindings?.length ? (
+                    <Button
+                      variant="outlined"
+                      onClick={this.handleDebuggerOpen}>
+                      Debug bindings
+                    </Button>
+                  ) : null}
+                </Fragment>
               }
             />
           </ListItem>
@@ -832,6 +854,11 @@ export default class HookForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="hook"
+                entityId={`${hook.hookGroupId}/${hook.hookId}`}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
@@ -954,6 +981,14 @@ export default class HookForm extends Component {
             </List>
           </div>
         </Drawer>
+        {!isNewHook && this.props.hook.bindings?.length ? (
+          <HookBindingDebugger
+            open={this.state.debuggerOpen}
+            onClose={this.handleDebuggerClose}
+            bindings={this.props.hook.bindings}
+            triggerSchema={this.props.hook.triggerSchema}
+          />
+        ) : null}
       </Fragment>
     );
   }

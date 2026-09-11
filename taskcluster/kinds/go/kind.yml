@@ -32,6 +32,8 @@ task-defaults:
         git checkout -f "${{GITHUB_SHA}}"
         git reset --hard "${{GITHUB_SHA}}"
         git clean -fd
+  attributes:
+    code-review: true
   worker:
     max-run-time: 600
     mounts:

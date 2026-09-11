@@ -774,177 +774,6 @@ impl Auth {
         (path, query)
     }
 
-    /// List Accounts Managed by Auth
-    ///
-    /// Retrieve a list of all Azure accounts managed by Taskcluster Auth.
-    pub async fn azureAccounts(&self) -> Result<Value, Error> {
-        let method = "GET";
-        let (path, query) = Self::azureAccounts_details();
-        let body = None;
-        let resp = self.client.request(method, path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Generate an unsigned URL for the azureAccounts endpoint
-    pub fn azureAccounts_url(&self) -> Result<String, Error> {
-        let (path, query) = Self::azureAccounts_details();
-        self.client.make_url(path, query)
-    }
-
-    /// Generate a signed URL for the azureAccounts endpoint
-    pub fn azureAccounts_signed_url(&self, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::azureAccounts_details();
-        self.client.make_signed_url(path, query, ttl)
-    }
-
-    /// Determine the HTTP request details for azureAccounts
-    fn azureAccounts_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
-        let path = "azure/accounts";
-        let query = None;
-
-        (path, query)
-    }
-
-    /// List Tables in an Account Managed by Auth
-    ///
-    /// Retrieve a list of all tables in an account.
-    pub async fn azureTables(&self, account: &str, continuationToken: Option<&str>) -> Result<Value, Error> {
-        let method = "GET";
-        let (path, query) = Self::azureTables_details(account, continuationToken);
-        let body = None;
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Generate an unsigned URL for the azureTables endpoint
-    pub fn azureTables_url(&self, account: &str, continuationToken: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::azureTables_details(account, continuationToken);
-        self.client.make_url(&path, query)
-    }
-
-    /// Generate a signed URL for the azureTables endpoint
-    pub fn azureTables_signed_url(&self, account: &str, continuationToken: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::azureTables_details(account, continuationToken);
-        self.client.make_signed_url(&path, query, ttl)
-    }
-
-    /// Determine the HTTP request details for azureTables
-    fn azureTables_details<'a>(account: &'a str, continuationToken: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("azure/{}/tables", urlencode(account));
-        let mut query = None;
-        if let Some(q) = continuationToken {
-            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
-        }
-
-        (path, query)
-    }
-
-    /// Get Shared-Access-Signature for Azure Table
-    ///
-    /// Get a shared access signature (SAS) string for use with a specific Azure
-    /// Table Storage table.
-    ///
-    /// The `level` parameter can be `read-write` or `read-only` and determines
-    /// which type of credentials are returned.  If level is read-write, it will create the
-    /// table if it doesn't already exist.
-    pub async fn azureTableSAS(&self, account: &str, table: &str, level: &str) -> Result<Value, Error> {
-        let method = "GET";
-        let (path, query) = Self::azureTableSAS_details(account, table, level);
-        let body = None;
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Generate an unsigned URL for the azureTableSAS endpoint
-    pub fn azureTableSAS_url(&self, account: &str, table: &str, level: &str) -> Result<String, Error> {
-        let (path, query) = Self::azureTableSAS_details(account, table, level);
-        self.client.make_url(&path, query)
-    }
-
-    /// Generate a signed URL for the azureTableSAS endpoint
-    pub fn azureTableSAS_signed_url(&self, account: &str, table: &str, level: &str, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::azureTableSAS_details(account, table, level);
-        self.client.make_signed_url(&path, query, ttl)
-    }
-
-    /// Determine the HTTP request details for azureTableSAS
-    fn azureTableSAS_details<'a>(account: &'a str, table: &'a str, level: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("azure/{}/table/{}/{}", urlencode(account), urlencode(table), urlencode(level));
-        let query = None;
-
-        (path, query)
-    }
-
-    /// List containers in an Account Managed by Auth
-    ///
-    /// Retrieve a list of all containers in an account.
-    pub async fn azureContainers(&self, account: &str, continuationToken: Option<&str>) -> Result<Value, Error> {
-        let method = "GET";
-        let (path, query) = Self::azureContainers_details(account, continuationToken);
-        let body = None;
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Generate an unsigned URL for the azureContainers endpoint
-    pub fn azureContainers_url(&self, account: &str, continuationToken: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::azureContainers_details(account, continuationToken);
-        self.client.make_url(&path, query)
-    }
-
-    /// Generate a signed URL for the azureContainers endpoint
-    pub fn azureContainers_signed_url(&self, account: &str, continuationToken: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::azureContainers_details(account, continuationToken);
-        self.client.make_signed_url(&path, query, ttl)
-    }
-
-    /// Determine the HTTP request details for azureContainers
-    fn azureContainers_details<'a>(account: &'a str, continuationToken: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("azure/{}/containers", urlencode(account));
-        let mut query = None;
-        if let Some(q) = continuationToken {
-            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
-        }
-
-        (path, query)
-    }
-
-    /// Get Shared-Access-Signature for Azure Container
-    ///
-    /// Get a shared access signature (SAS) string for use with a specific Azure
-    /// Blob Storage container.
-    ///
-    /// The `level` parameter can be `read-write` or `read-only` and determines
-    /// which type of credentials are returned.  If level is read-write, it will create the
-    /// container if it doesn't already exist.
-    pub async fn azureContainerSAS(&self, account: &str, container: &str, level: &str) -> Result<Value, Error> {
-        let method = "GET";
-        let (path, query) = Self::azureContainerSAS_details(account, container, level);
-        let body = None;
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Generate an unsigned URL for the azureContainerSAS endpoint
-    pub fn azureContainerSAS_url(&self, account: &str, container: &str, level: &str) -> Result<String, Error> {
-        let (path, query) = Self::azureContainerSAS_details(account, container, level);
-        self.client.make_url(&path, query)
-    }
-
-    /// Generate a signed URL for the azureContainerSAS endpoint
-    pub fn azureContainerSAS_signed_url(&self, account: &str, container: &str, level: &str, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::azureContainerSAS_details(account, container, level);
-        self.client.make_signed_url(&path, query, ttl)
-    }
-
-    /// Determine the HTTP request details for azureContainerSAS
-    fn azureContainerSAS_details<'a>(account: &'a str, container: &'a str, level: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("azure/{}/containers/{}/{}", urlencode(account), urlencode(container), urlencode(level));
-        let query = None;
-
-        (path, query)
-    }
-
     /// Get DSN for Sentry Project
     ///
     /// Get temporary DSN (access credentials) for a sentry project.
@@ -1056,6 +885,39 @@ impl Auth {
     /// Determine the HTTP request details for gcpCredentials
     fn gcpCredentials_details<'a>(projectId: &'a str, serviceAccount: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("gcp/credentials/{}/{}", urlencode(projectId), urlencode(serviceAccount));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get a repository scoped github token
+    ///
+    /// Get a Github application installation token scoped to the given repositories
+    /// and permissions, using the configured app `appName`.
+    ///
+    /// Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+    /// `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+    /// Levels and permissions are matched exactly to github token permissions
+    /// which can be found at
+    /// https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+    /// While token access is widened (requesting a write token will give a read+write one)
+    /// scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+    /// Both owner and repo must be in lowercase in the scope.
+    ///
+    /// The token expires after an hour but this behavior is github dependent.
+    /// You should read the `expires` property from the response if you intend
+    /// to maintain active credentials in your task.
+    pub async fn githubRepoToken(&self, appName: &str, owner: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::githubRepoToken_details(appName, owner);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for githubRepoToken
+    fn githubRepoToken_details<'a>(appName: &'a str, owner: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("github/{}/{}/repo-token", urlencode(appName), urlencode(owner));
         let query = None;
 
         (path, query)

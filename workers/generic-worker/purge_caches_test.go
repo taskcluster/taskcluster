@@ -12,9 +12,9 @@ import (
 func TestPurgeCaches(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -28,18 +28,18 @@ func TestPurgeCaches(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
 	logtext := LogText(t)
-	substring := "[mounts] Removing cache banana-cache from cache table"
+	substring := "[mounts] Removing cache tc-test-cache-1 from cache table"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
 	}
 
-	substring = "[mounts] Deleting cache banana-cache file(s) at"
+	substring = "[mounts] Deleting cache tc-test-cache-1 file(s) at"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
@@ -59,9 +59,9 @@ func TestPurgeCaches(t *testing.T) {
 func TestPurgeCachesCommandFailure(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -75,7 +75,7 @@ func TestPurgeCachesCommandFailure(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
@@ -94,9 +94,9 @@ func TestPurgeCachesCommandFailure(t *testing.T) {
 func TestPurgeCachesCommandSuccess(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -110,7 +110,7 @@ func TestPurgeCachesCommandSuccess(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -129,9 +129,9 @@ func TestPurgeCachesCommandSuccess(t *testing.T) {
 func TestPurgeCachesListCommand(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -145,18 +145,18 @@ func TestPurgeCachesListCommand(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
 	logtext := LogText(t)
-	substring := "[mounts] Removing cache banana-cache from cache table"
+	substring := "[mounts] Removing cache tc-test-cache-1 from cache table"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
 	}
 
-	substring = "[mounts] Deleting cache banana-cache file(s) at"
+	substring = "[mounts] Deleting cache tc-test-cache-1 file(s) at"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
@@ -176,9 +176,9 @@ func TestPurgeCachesListCommand(t *testing.T) {
 func TestPurgeCachesEmptyListCommandSuccess(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -192,7 +192,7 @@ func TestPurgeCachesEmptyListCommandSuccess(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -211,9 +211,9 @@ func TestPurgeCachesEmptyListCommandSuccess(t *testing.T) {
 func TestPurgeCachesEmptyListCommandFailure(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -227,7 +227,7 @@ func TestPurgeCachesEmptyListCommandFailure(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
@@ -246,9 +246,9 @@ func TestPurgeCachesEmptyListCommandFailure(t *testing.T) {
 func TestPurgeCachesNegativeExitCode(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -262,7 +262,7 @@ func TestPurgeCachesNegativeExitCode(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
@@ -278,9 +278,9 @@ func TestPurgeCachesNegativeExitCode(t *testing.T) {
 func TestPurgeTaskCaches(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:apple-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-2"
 		&WritableDirectoryCache{
-			CacheName: "apple-cache",
+			CacheName: "tc-test-cache-2",
 			Directory: filepath.Join("my-task-caches", "apples"),
 		},
 	}
@@ -291,16 +291,16 @@ func TestPurgeTaskCaches(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:apple-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-2"}
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 	ensureDirContainsNFiles(t, cachesDir, 1)
 
 	mounts = []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -314,18 +314,18 @@ func TestPurgeTaskCaches(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td = testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
 	logtext := LogText(t)
-	substring := "[mounts] Removing cache banana-cache from cache table"
+	substring := "[mounts] Removing cache tc-test-cache-1 from cache table"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
 	}
 
-	substring = "[mounts] Deleting cache banana-cache file(s) at"
+	substring = "[mounts] Deleting cache tc-test-cache-1 file(s) at"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)

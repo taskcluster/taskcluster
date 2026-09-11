@@ -27,56 +27,6 @@ type WorkerManagerWorkerPoolSummaryEdge implements Edge {
   node: WorkerManagerWorkerPoolSummary
 }
 
-type WorkerManagerError {
-    workerPoolId: String!
-    errorId: ID!
-    kind: String!
-    title: String!
-    description: String!
-    reported: DateTime!
-    extra: JSON!
-    launchConfigId: String
-}
-
-type WorkerManagerErrorsStatsConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [WorkerManagerErrorsEdge]
-}
-
-type WorkerManagerErrorsConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [WorkerManagerErrorsEdge]
-}
-
-type WorkerManagerErrorsEdge implements Edge {
-  cursor: String
-  node: WorkerManagerError
-}
-
-type WorkerManagerProvider {
-    providerId: String!
-    providerType: String!
-}
-
-type WorkerManagerProvidersConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [WorkerManagerProvidersEdge]
-}
-
-type WorkerManagerProvidersEdge implements Edge {
-  cursor: String
-  node: WorkerManagerProvider
-}
-
-input WorkerPoolInput {
-    providerId: String!
-    description: String!
-    owner: String!
-    emailOnError: Boolean!
-    config: JSON!
-}
-
-
 type WorkerPoolErrorTotals {
   total: Int!
   hourly: JSON!
@@ -106,74 +56,12 @@ type WMWorker {
   launchConfigId: String
 }
 
-type WorkerManagerWorkerEdge implements Edge {
-  cursor: String
-  node: WMWorker
-}
-
-type WorkerManagerWorkerConnection {
-  pageInfo: PageInfo
-  edges: [WorkerManagerWorkerEdge]
-}
-
-type WorkerPoolLaunchConfig {
-  launchConfigId: String!
-  workerPoolId: String!
-  isArchived: Boolean!
-  configuration: JSON!
-  created: DateTime!
-  lastModified: DateTime!
-}
-
-type WorkerPoolLaunchConfigConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [WorkerPoolLaunchConfigEdge]
-}
-
-type WorkerPoolLaunchConfigEdge implements Edge {
-  cursor: String
-  node: WorkerPoolLaunchConfig
-}
-
-type WorkerPoolLaunchConfigStats {
-  workerPoolId: String!
-  launchConfigId: String!
-  currentCapacity: Int!
-  requestedCapacity: Int!
-  runningCapacity: Int!
-  stoppingCapacity: Int!
-  stoppedCapacity: Int!
-  requestedCount: Int!
-  runningCount: Int!
-  stoppingCount: Int!
-  stoppedCount: Int!
-}
-
-type WorkerPoolStats {
-  launchConfigStats: [WorkerPoolLaunchConfigStats!]!
-}
-
 extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, searchTerm: String): WorkerManagerWorkerPoolSummaryConnection!
 
-    WorkerManagerErrors(workerPoolId: String, launchConfigId: String, connection: PageConnection): WorkerManagerErrorsConnection!
     WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
-    WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!
-    WorkerPoolStats(workerPoolId: String!): WorkerPoolStats!
-
-    WorkerManagerProviders(connection: PageConnection): WorkerManagerProvidersConnection!
-
-    WorkerManagerWorkers(workerPoolId: String!, state: String, launchConfigId: String, connection: PageConnection): WorkerManagerWorkerConnection!
 
     WorkerManagerWorker(workerPoolId: String!, workerGroup: String!, workerId: ID!): WMWorker
-}
-
-extend type Mutation {
-    createWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
-
-    updateWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
-
-    deleteWorkerPool(workerPoolId: String!): String
 }

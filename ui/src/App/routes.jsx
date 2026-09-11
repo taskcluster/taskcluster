@@ -11,6 +11,7 @@ import hookRoutes from '../views/Hooks/routes';
 import denylistRoutes from '../views/Denylist/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
+import auditHistoryRoutes from '../views/AuditHistory/routes';
 
 const SwitchEntryPoint = lazy(() => import('../views/SwitchEntryPoint'));
 const Tasks = lazy(() => import('../views/Tasks'));
@@ -18,6 +19,7 @@ const Provisioners = lazy(() => import('../views/Provisioners'));
 const Clients = lazy(() => import('../views/Clients'));
 const Roles = lazy(() => import('../views/Roles'));
 const Scopes = lazy(() => import('../views/Scopes'));
+const AuditHistory = lazy(() => import('../views/AuditHistory'));
 const Hooks = lazy(() => import('../views/Hooks'));
 const WorkerManager = lazy(() => import('../views/WorkerManager'));
 const Secrets = lazy(() => import('../views/Secrets'));
@@ -46,6 +48,11 @@ export default [
     component: Provisioners,
     path: '/provisioners',
     routes: provisionerRoutes('/provisioners'),
+  },
+  {
+    component: AuditHistory,
+    path: '/audit',
+    routes: auditHistoryRoutes('/audit'),
   },
   {
     component: Clients,

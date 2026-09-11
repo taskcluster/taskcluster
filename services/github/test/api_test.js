@@ -834,5 +834,28 @@ tasks: []
       });
       assert.deepEqual(tasks, []);
     });
+    test('invalid template returns a 400', async () => {
+      const tcYaml = `version: 1
+reporting: checks-v1
+tasks:
+  - metadata:
+      name:
+        $eval: '$string($now())'
+`;
+      await assert.rejects(
+        () =>
+          helper.apiClient.renderTaskclusterYml({
+            body: tcYaml,
+            fakeEvent: { type: 'github-push' },
+            repository: 'repo',
+            organization: 'org',
+          }),
+        err => {
+          assert.equal(err.code, 'InputError');
+          assert.equal(err.statusCode, 400);
+          return true;
+        }
+      );
+    });
   });
 });

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
 )
 
 func ownerOf(t *testing.T, path string) string {
@@ -28,7 +28,7 @@ func TestWritableDirectoryCacheReclaimsOwnership(t *testing.T) {
 
 	mounts := []MountEntry{
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: "ownership-cache",
 		},
 	}
@@ -42,14 +42,14 @@ func TestWritableDirectoryCacheReclaimsOwnership(t *testing.T) {
 
 	runTask := func() {
 		td := testTask(t)
-		td.Scopes = append(td.Scopes, "generic-worker:cache:banana-cache")
+		td.Scopes = append(td.Scopes, "generic-worker:cache:tc-test-cache-1")
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
 	}
 
 	cacheLocation := func() string {
-		entries := directoryCaches["banana-cache"]
+		entries := directoryCaches["tc-test-cache-1"]
 		if len(entries) == 0 {
-			t.Fatal("expected a persisted banana-cache entry after the task ran")
+			t.Fatal("expected a persisted tc-test-cache-1 entry after the task ran")
 		}
 		return entries[0].Location
 	}

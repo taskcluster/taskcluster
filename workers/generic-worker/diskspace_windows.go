@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/win32"
 )
 
 func freeDiskSpaceBytes(dir string) (uint64, error) {
@@ -17,6 +16,5 @@ func freeDiskSpaceBytes(dir string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	log.Printf("Disk available: %v bytes", freeBytes)
 	return freeBytes, nil
 }

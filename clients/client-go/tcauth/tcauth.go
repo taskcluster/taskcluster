@@ -46,7 +46,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type Auth tcclient.Client
@@ -711,179 +711,6 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 	return (&cd).SignedURL("/aws/s3/"+url.PathEscape(level)+"/"+url.PathEscape(bucket)+"/"+url.PathEscape(prefix), v, duration)
 }
 
-// Stability: *** DEPRECATED ***
-//
-// Retrieve a list of all Azure accounts managed by Taskcluster Auth.
-//
-// Required scopes:
-//
-//	auth:azure-table:list-accounts
-//
-// See #azureAccounts
-func (auth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/accounts", new(AzureListAccountResponse), nil)
-	return responseObject.(*AzureListAccountResponse), err
-}
-
-// Returns a signed URL for AzureAccounts, valid for the specified duration.
-//
-// Required scopes:
-//
-//	auth:azure-table:list-accounts
-//
-// See AzureAccounts for more details.
-func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/accounts", nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Retrieve a list of all tables in an account.
-//
-// Required scopes:
-//
-//	auth:azure-table:list-tables:<account>
-//
-// See #azureTables
-func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTableResponse, error) {
-	v := url.Values{}
-	if continuationToken != "" {
-		v.Add("continuationToken", continuationToken)
-	}
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/tables", new(AzureListTableResponse), v)
-	return responseObject.(*AzureListTableResponse), err
-}
-
-// Returns a signed URL for AzureTables, valid for the specified duration.
-//
-// Required scopes:
-//
-//	auth:azure-table:list-tables:<account>
-//
-// See AzureTables for more details.
-func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
-	v := url.Values{}
-	if continuationToken != "" {
-		v.Add("continuationToken", continuationToken)
-	}
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/tables", v, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Get a shared access signature (SAS) string for use with a specific Azure
-// Table Storage table.
-//
-// The `level` parameter can be `read-write` or `read-only` and determines
-// which type of credentials are returned.  If level is read-write, it will create the
-// table if it doesn't already exist.
-//
-// Required scopes:
-//
-//	If levelIsReadOnly:
-//	  Any of:
-//	  - auth:azure-table:read-only:<account>/<table>
-//	  - auth:azure-table:read-write:<account>/<table>
-//
-// See #azureTableSAS
-func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableSharedAccessSignature, error) {
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/table/"+url.PathEscape(table)+"/"+url.PathEscape(level), new(AzureTableSharedAccessSignature), nil)
-	return responseObject.(*AzureTableSharedAccessSignature), err
-}
-
-// Returns a signed URL for AzureTableSAS, valid for the specified duration.
-//
-// Required scopes:
-//
-//	If levelIsReadOnly:
-//	  Any of:
-//	  - auth:azure-table:read-only:<account>/<table>
-//	  - auth:azure-table:read-write:<account>/<table>
-//
-// See AzureTableSAS for more details.
-func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/table/"+url.PathEscape(table)+"/"+url.PathEscape(level), nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Retrieve a list of all containers in an account.
-//
-// Required scopes:
-//
-//	auth:azure-container:list-containers:<account>
-//
-// See #azureContainers
-func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureListContainersResponse, error) {
-	v := url.Values{}
-	if continuationToken != "" {
-		v.Add("continuationToken", continuationToken)
-	}
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/containers", new(AzureListContainersResponse), v)
-	return responseObject.(*AzureListContainersResponse), err
-}
-
-// Returns a signed URL for AzureContainers, valid for the specified duration.
-//
-// Required scopes:
-//
-//	auth:azure-container:list-containers:<account>
-//
-// See AzureContainers for more details.
-func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
-	v := url.Values{}
-	if continuationToken != "" {
-		v.Add("continuationToken", continuationToken)
-	}
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/containers", v, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Get a shared access signature (SAS) string for use with a specific Azure
-// Blob Storage container.
-//
-// The `level` parameter can be `read-write` or `read-only` and determines
-// which type of credentials are returned.  If level is read-write, it will create the
-// container if it doesn't already exist.
-//
-// Required scopes:
-//
-//	If levelIsReadOnly:
-//	  Any of:
-//	  - auth:azure-container:read-only:<account>/<container>
-//	  - auth:azure-container:read-write:<account>/<container>
-//
-// See #azureContainerSAS
-func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlobSharedAccessSignature, error) {
-	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/containers/"+url.PathEscape(container)+"/"+url.PathEscape(level), new(AzureBlobSharedAccessSignature), nil)
-	return responseObject.(*AzureBlobSharedAccessSignature), err
-}
-
-// Returns a signed URL for AzureContainerSAS, valid for the specified duration.
-//
-// Required scopes:
-//
-//	If levelIsReadOnly:
-//	  Any of:
-//	  - auth:azure-container:read-only:<account>/<container>
-//	  - auth:azure-container:read-write:<account>/<container>
-//
-// See AzureContainerSAS for more details.
-func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/containers/"+url.PathEscape(container)+"/"+url.PathEscape(level), nil, duration)
-}
-
 // Get temporary DSN (access credentials) for a sentry project.
 // The credentials returned can be used with any Sentry client for up to
 // 24 hours, after which the credentials will be automatically disabled.
@@ -980,6 +807,35 @@ func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredenti
 func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
 	return (&cd).SignedURL("/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a Github application installation token scoped to the given repositories
+// and permissions, using the configured app `appName`.
+//
+// Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+// `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+// Levels and permissions are matched exactly to github token permissions
+// which can be found at
+// https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+// While token access is widened (requesting a write token will give a read+write one)
+// scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+// Both owner and repo must be in lowercase in the scope.
+//
+// The token expires after an hour but this behavior is github dependent.
+// You should read the `expires` property from the response if you intend
+// to maintain active credentials in your task.
+//
+// Required scopes:
+//
+//	For repoPerm in repoPerms each auth:github-repo-token:<appName>/<owner>/<repoPerm>
+//
+// See #githubRepoToken
+func (auth *Auth) GithubRepoToken(appName, owner string, payload *GithubRepositoryTokenRequest) (*GithubTokenResponse, error) {
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/github/"+url.PathEscape(appName)+"/"+url.PathEscape(owner)+"/repo-token", new(GithubTokenResponse), nil)
+	return responseObject.(*GithubTokenResponse), err
 }
 
 // Validate the request signature given on input and return list of scopes

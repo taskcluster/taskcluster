@@ -2,7 +2,7 @@ import appRootDir from 'app-root-dir';
 
 import {
   dockerPull,
-  dockerImages,
+  dockerImageExists,
   dockerRegistryCheck,
   ensureTask,
   dockerPush,
@@ -38,9 +38,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
       utils.step({ title: 'Check for Existing Images' });
 
-      const imageLocal = (await dockerImages({ baseDir })).some(
-        image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1
-      );
+      const imageLocal = await dockerImageExists({ tag });
 
       let imageOnRegistry;
       try {
@@ -61,7 +59,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
-        await dockerPull({ image: tag, utils, baseDir });
+        await dockerPull({ image: tag, utils });
         return utils.skip({ provides });
       } else if (imageLocal) {
         return utils.skip({ provides });

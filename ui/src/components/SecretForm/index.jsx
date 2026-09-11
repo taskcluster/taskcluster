@@ -20,6 +20,7 @@ import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
 @withStyles(theme => ({
@@ -57,7 +58,7 @@ import { secret } from '../../utils/prop-types';
 /** A form to view/edit/create a secret */
 export default class SecretForm extends Component {
   static propTypes = {
-    /** A GraphQL secret response. Not needed when creating a new secret.  */
+    /** A secret response. Not needed when creating a new secret.  */
     secret,
     /** Set to `true` when creating a new secret. */
     isNewSecret: bool,
@@ -262,6 +263,11 @@ export default class SecretForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="secret"
+                entityId={secretName}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

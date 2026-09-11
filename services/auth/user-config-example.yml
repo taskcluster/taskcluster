@@ -1,13 +1,7 @@
 defaults:
 test:
-  app:
-    azureAccounts:
-      taskclusterdev: "..."
   test:
     testBucket: "test-bucket-for-any-garbage"
-  azure:
-    accountId:  "taskclusterdev"
-    accessKey:   "..."
   aws:
     accessKeyId:        "..."
     secretAccessKey:    "..."

@@ -12,10 +12,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/distribution/reference"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v101/internal/scopes"
-	"github.com/taskcluster/taskcluster/v101/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v101/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/genericworker"
 
 	"slices"
 
@@ -266,55 +267,81 @@ func validateDockerWorkerScopes(
 	}
 
 	dummyExpander := scopes.DummyExpander()
-	var requiredScopes scopes.Required
+	var requiredScopes []scopes.Required
 
 	if dwPayload.Capabilities.Privileged {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:privileged"},
-			[]string{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:privileged"},
+				{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
+			},
+		)
+	}
+
+	if dwPayload.Capabilities.DisableSeccomp {
+		requiredScopes = append(requiredScopes,
+			scopes.Required{
+				{"docker-worker:capability:disableSeccomp"},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:hostSharedMemory"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:hostSharedMemory"},
+				{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.KVM {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:kvm"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:kvm"},
+				{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.LoopbackAudio {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:loopbackAudio"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:loopbackAudio"},
+				{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.LoopbackVideo {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:loopbackVideo"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:loopbackVideo"},
+				{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Features.AllowPtrace {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:feature:allowPtrace"},
+			scopes.Required{
+				{"docker-worker:feature:allowPtrace"},
+			},
 		)
 	}
 
-	scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-	if err != nil {
-		return nil, fmt.Errorf("error expanding scopes: %v", err)
+	var missingScopes []string
+	for _, required := range requiredScopes {
+		scopesSatisfied, err := expandedScopes.Satisfies(required, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			missingScopes = append(missingScopes, fmt.Sprintf("(%s)", required.String()))
+		}
 	}
-	if !scopesSatisfied {
-		return nil, fmt.Errorf("d2g task requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+	if len(missingScopes) > 0 {
+		return nil, fmt.Errorf("d2g task requires scopes:\n\n%s\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", strings.Join(missingScopes, "\nAND\n"), expandedScopes)
 	}
 
 	return expandedScopes, nil
@@ -447,6 +474,7 @@ func runCommand(
 	args = append(args, nonEnvListArgs...)
 	// Use env file that's created by D2G task feature
 	args = append(args, "--env-file", "env.list")
+	args = append(args, "--")
 	args = append(args, dwImage.String())
 	args = append(args, dwPayload.Command...)
 
@@ -618,6 +646,9 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 	switch val := parsed.(type) {
 	case string:
+		if _, err := reference.ParseNormalizedNamed(val); err != nil {
+			return nil, fmt.Errorf("invalid image name %q: %w", val, err)
+		}
 		din := DockerImageName(val)
 		return &din, nil
 	case map[string]any: // NamedDockerImage|IndexedDockerImage|DockerImageArtifact
@@ -625,7 +656,15 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 		case "docker-image": // NamedDockerImage
 			namedDockerImage := NamedDockerImage{}
 			err = json.Unmarshal(*payloadImage, &namedDockerImage)
-			return &namedDockerImage, err
+			if err != nil {
+				return nil, err
+			}
+
+			if _, err := reference.ParseNormalizedNamed(namedDockerImage.Name); err != nil {
+				return nil, fmt.Errorf("invalid image name %q: %w", namedDockerImage.Name, err)
+			}
+
+			return &namedDockerImage, nil
 		case "indexed-image": // IndexedDockerImage
 			indexDockerImage := IndexedDockerImage{}
 			err = json.Unmarshal(*payloadImage, &indexDockerImage)

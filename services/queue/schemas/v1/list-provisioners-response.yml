@@ -37,7 +37,6 @@ properties:
             Date and time where the provisioner was last seen active
           type:         string
           format:       date-time
-        actions:        {$ref: "actions.json#"}
       additionalProperties: false
       required:
         - provisionerId
@@ -45,7 +44,6 @@ properties:
         - stability
         - expires
         - lastDateActive
-        - actions
   continuationToken:
     type:             string
     title:            "Continuation Token"

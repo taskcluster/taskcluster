@@ -10,6 +10,7 @@ const UNREFERENCED_SCHEMAS = [
   // schemas used in documentation
   { service: 'github', schema: 'v1/taskcluster-github-config.json#' },
   { service: 'github', schema: 'v1/taskcluster-github-config.v1.json#' },
+  { service: 'web-server', schema: 'v1/registered-clients.json#' },
 
   // schemas for webhook endpoint (server-side only, not published to clients)
   { service: 'github', schema: 'v1/github-webhook-event.json#' },

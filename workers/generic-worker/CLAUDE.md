@@ -31,7 +31,7 @@ cd workers/generic-worker
 # Quick test (insecure engine, current platform)
 # Note: the module version in the ldflags path changes with each major release.
 # Check go.mod for the current version.
-go test -tags insecure -count 1 -ldflags "-X github.com/taskcluster/taskcluster/v101/workers/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+go test -tags insecure -count 1 -ldflags "-X github.com/taskcluster/taskcluster/v108/workers/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
 
 # Quick build (insecure engine, current platform)
 go build -tags insecure -ldflags "-X main.revision=$(git rev-parse HEAD)" .
@@ -141,8 +141,8 @@ Features implement the `Feature` / `TaskFeature` interfaces:
 - Cache scopes are defined in the
   [community-tc-config](https://github.com/taskcluster/community-tc-config) repo
   at `config/projects/taskcluster.yml`.
-- Available test cache scopes: `apple-cache`, `banana-cache`, `devtools-app`,
-  `test-modifications`, `unknown-issuer-app-cache`.
+- Available test cache scopes: `tc-test-cache-1`, `tc-test-cache-2`, `tc-test-artifact-cache`,
+  `tc-test-url-cache`, `tc-test-modifications-cache`.
 - Adding new cache names requires a PR to the community-tc-config repo.
 
 ### Test helpers
@@ -163,7 +163,7 @@ Features implement the `Feature` / `TaskFeature` interfaces:
 Generic worker has several subcommands used internally by the multiuser engine:
 - `generic-worker create-file --create-file <path>` — create a file as the task user
 - `generic-worker create-dir --create-dir <path>` — create a directory as the task user
-- `generic-worker copy-to-temp-file --copy-file <path>` — copy file to task user's temp dir
+- `generic-worker cat-file --cat-file <path>` — write the contents of a file to stdout as the task user
 - `generic-worker unarchive --archive-src <src> --archive-dst <dst> --archive-fmt <fmt>` — extract archive
 
 ## Generic Worker Validation Checklist

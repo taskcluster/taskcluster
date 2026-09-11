@@ -136,6 +136,7 @@
    * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
    * [`queue_task_deadline_get`](#queue_task_deadline_get)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
+   * [`queue_task_queue_counts`](#queue_task_queue_counts)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_stats`](#queue_worker_stats)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -2895,6 +2896,7 @@ end
 * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
 * [`queue_task_deadline_get`](#queue_task_deadline_get)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
+* [`queue_task_queue_counts`](#queue_task_queue_counts)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_stats`](#queue_worker_stats)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -5676,6 +5678,37 @@ end
 
 </details>
 
+### queue_task_queue_counts
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_ids_in jsonb`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `pending_count integer`
+  * `claimed_count integer`
+* *Last defined on version*: 129
+
+Count pending and claimed tasks for each requested task queue.
+The result contains one row per input task queue, including queues with no
+pending or claimed tasks.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN QUERY
+  SELECT
+    requested.task_queue_id,
+    queue_pending_tasks_count(requested.task_queue_id) AS pending_count,
+    queue_claimed_tasks_count(requested.task_queue_id) AS claimed_count
+  FROM jsonb_array_elements_text(task_queue_ids_in) AS requested(task_queue_id);
+end
+```
+
+</details>
+
 ### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
@@ -5733,7 +5766,7 @@ end
   * `quarantined_count integer`
   * `claimed_count integer`
   * `pending_count integer`
-* *Last defined on version*: 113
+* *Last defined on version*: 128
 
 Retrieve comprehensive statistics for task queues including worker counts,
 quarantined workers, claimed tasks, and pending tasks. This method performs
@@ -5747,8 +5780,6 @@ Returns one row per task_queue_id with the following metrics:
 - pending_count: Number of distinct tasks waiting to be claimed
 
 All counts default to 0 when no data exists for a given metric.
-
-Updated from 112 version to increase distinct performance
 
 
 <details><summary>Function Body</summary>
@@ -5789,7 +5820,7 @@ begin
     COALESCE(ps.pending_count, 0) AS pending_count
   FROM worker_stats ws
   FULL OUTER JOIN claimed_stats cs ON ws.task_queue_id = cs.task_queue_id
-  FULL OUTER JOIN pending_stats ps ON cs.task_queue_id = ps.task_queue_id;
+  FULL OUTER JOIN pending_stats ps ON COALESCE(ws.task_queue_id, cs.task_queue_id) = ps.task_queue_id;
 end
 ```
 
@@ -7125,10 +7156,6 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `get_authorization_code(code_in text)` (compatibility guaranteed until v102.0.0)
 
 ## worker_manager
 
@@ -9045,7 +9072,3 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `get_non_stopped_workers_with_launch_config_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond_in text, providers_filter_value_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v102.0.0)

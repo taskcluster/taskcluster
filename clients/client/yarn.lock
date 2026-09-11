@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 9
+  version: 10
   cacheKey: 10c0
 
 "@hapi/b64@npm:5.x.x":
@@ -187,11 +187,11 @@ __metadata:
   linkType: hard
 
 "brace-expansion@npm:^2.0.2":
-  version: 2.1.0
-  resolution: "brace-expansion@npm:2.1.0"
+  version: 2.1.2
+  resolution: "brace-expansion@npm:2.1.2"
   dependencies:
     balanced-match: "npm:^1.0.0"
-  checksum: 10c0/439cedf3e23d7993b37919f1d6fdc653ec21a42437ec3e7460bea9ca8b17edf7a24a633273c31d61aa4335877cf29a443f1871814131c87997a1e6223e1f1502
+  checksum: 10c0/5442ecab84045d21826268bc56c81a6ef4215327ee1f5ee153f67928e93f7a915d130ecec9966623143277fa3cce036ebb50020024bcc4d78853cdd6af9a19f8
   languageName: node
   linkType: hard
 
@@ -452,8 +452,8 @@ __metadata:
   linkType: hard
 
 "got@npm:^15.0.3":
-  version: 15.0.7
-  resolution: "got@npm:15.0.7"
+  version: 15.1.0
+  resolution: "got@npm:15.1.0"
   dependencies:
     "@sindresorhus/is": "npm:^8.0.0"
     byte-counter: "npm:^0.1.0"
@@ -467,7 +467,7 @@ __metadata:
     responselike: "npm:^4.0.2"
     type-fest: "npm:^5.6.0"
     uint8array-extras: "npm:^1.5.0"
-  checksum: 10c0/d9fee7259a47dc2dbc4c57f9ce8013cfd8ad74bc2f6b4e07c2bf1c801ffeb4d71a9e352e6e0163cc223965d47115463b413dd6aec1f71d28ecfe69a75cf900cc
+  checksum: 10c0/3d506d6d0593ffa56eb0bb5826ca1dce237f6d440d61029d76e07de10dacffae15a49685a949e71e33922a8965a7edce80b1d8300f1b5598eb5a0ac63db6b760
   languageName: node
   linkType: hard
 
@@ -590,13 +590,13 @@ __metadata:
   linkType: hard
 
 "js-yaml@npm:^4.1.0":
-  version: 4.3.0
-  resolution: "js-yaml@npm:4.3.0"
+  version: 4.3.2
+  resolution: "js-yaml@npm:4.3.2"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
     js-yaml: bin/js-yaml.js
-  checksum: 10c0/058b30473d6915ca5b4feb11e2f7d4d97242f98d00a798ed48dd90b46b7c640398afe9128c5db22c5300f8c6528fe2a174b9a93f351a70ebc28c6203938d8bff
+  checksum: 10c0/dedd34c2e8fef1d504687f1bc94ed0ee1311a1f78770fa2800352c6d59c635ccf555009d74e9afe529ae62199da2b1ccef30e53dc84dcd8d2d8187c22574bc97
   languageName: node
   linkType: hard
 
@@ -687,8 +687,8 @@ __metadata:
   linkType: hard
 
 "mocha@npm:^11.7.1":
-  version: 11.7.6
-  resolution: "mocha@npm:11.7.6"
+  version: 11.8.0
+  resolution: "mocha@npm:11.8.0"
   dependencies:
     browser-stdout: "npm:^1.3.1"
     chokidar: "npm:^4.0.1"
@@ -714,7 +714,7 @@ __metadata:
   bin:
     _mocha: bin/_mocha
     mocha: bin/mocha.js
-  checksum: 10c0/95b3eeb52eaf253167d335d1c1a46659f6f282dc112a74fd0ac46380637ae3ee52894319e00a46412a1e5a6e3056128153dc87c1fe36565c748b9fbe8d705ad0
+  checksum: 10c0/ca0e1088485b62db2144e6e021471e9bef7e963a8209c5ce98f196621e8bebc2be7ff00852d4157c9eaf24c6a6c93770019288eebdf7b410067c525dd8af8b48
   languageName: node
   linkType: hard
 
@@ -726,13 +726,13 @@ __metadata:
   linkType: hard
 
 "nock@npm:^14.0.13":
-  version: 14.0.15
-  resolution: "nock@npm:14.0.15"
+  version: 14.0.17
+  resolution: "nock@npm:14.0.17"
   dependencies:
     "@mswjs/interceptors": "npm:^0.41.0"
     json-stringify-safe: "npm:^5.0.1"
     propagate: "npm:^2.0.0"
-  checksum: 10c0/f3bac19b3173d37e2f730ffac1ec2bd5c0bff153cae2f81e68504310a7830d765749908e3fe40eeab70de4adcb82fcb514a4fcef1ffdc8e7710ab070e92d879d
+  checksum: 10c0/4ea2f6c3ffcf1d6d1d23d708588cfe0c1815f59f63a15e6a6b9d0f01174e0b0224da7e485d6c3149df68dee929ce360ed8299d651d88e19021aa2e541e59aaf7
   languageName: node
   linkType: hard
 
@@ -994,9 +994,9 @@ __metadata:
   linkType: hard
 
 "taskcluster-lib-urls@npm:^13.0.0":
-  version: 13.0.2
-  resolution: "taskcluster-lib-urls@npm:13.0.2"
-  checksum: 10c0/682c9093e37b924fdb58f6ae1e2b2348ecf849456d8337f8f6b1c6b4576ed0b1bf0b538247c8c2280c2ae4d05197487f40f4b060b66fc5be36678f1df0aae50c
+  version: 13.1.0
+  resolution: "taskcluster-lib-urls@npm:13.1.0"
+  checksum: 10c0/c77c4d28bfee0fa4799b238fd2cfe63fadac3a8431a304808646ca95ac96cf77832c6dc624cd9c0195957c157fd20c185c2dfc9b194365a95b6d3c9aaa832d88
   languageName: node
   linkType: hard
 

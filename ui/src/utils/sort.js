@@ -1,5 +1,4 @@
 import { compareDesc, isDate, parseISO } from 'date-fns';
-import { or } from 'ramda';
 
 /**
  * Return a negative number if the reference element occurs before
@@ -24,7 +23,9 @@ const sort = (referenceElement, compareElement) => {
     return compareDesc(parseISO(referenceElement), parseISO(compareElement));
   }
 
-  return or(referenceElement, '').localeCompare(or(compareElement, ''));
+  return String(referenceElement ?? '').localeCompare(
+    String(compareElement ?? '')
+  );
 };
 
 export default sort;

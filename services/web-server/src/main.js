@@ -3,7 +3,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('app:main');
 import assert from 'node:assert';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@as-integrations/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 import compression from 'compression';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import depthLimit from './validation/guardedDepthLimit.js';
@@ -30,6 +30,7 @@ import resolvers from './resolvers/index.js';
 import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
 import scanner from './login/scanner.js';
+import { validateRegisteredClients } from './validateConfig.js';
 import './monitor.js';
 import { fileURLToPath } from 'node:url';
 
@@ -47,11 +48,15 @@ const load = loader(
   {
     cfg: {
       requires: ['profile'],
-      setup: ({ profile }) =>
-        config({
+      setup: ({ profile }) => {
+        const cfg = config({
           profile,
           serviceName: 'web-server',
-        }),
+        });
+
+        validateRegisteredClients(cfg.login.registeredClients);
+        return cfg;
+      },
     },
 
     monitor: {

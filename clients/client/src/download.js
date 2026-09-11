@@ -8,15 +8,26 @@ import { clients } from './client.js';
 const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) => ({
   retries: retries === undefined ? 5 : retries,
   delayFactor: delayFactor === undefined ? 100 : delayFactor,
-  randomizationFactor: randomizationFactor === undefined ? randomizationFactor : 0.25,
+  randomizationFactor: randomizationFactor === undefined ? 0.25 : randomizationFactor,
   maxDelay: maxDelay === undefined ? 30 * 1000 : maxDelay,
 });
+
+// got reports an HTTP status on `err.response.statusCode`, while Taskcluster client errors carry
+// it on `err.statusCode`; normalize onto the latter so callers need only check one place.
+const withStatusCode = err => {
+  if (err.statusCode === undefined && err.response?.statusCode !== undefined) {
+    err.statusCode = err.response.statusCode;
+  }
+  return err;
+};
 
 const s3 = async ({ url, streamFactory, retryCfg }) => {
   return await retry(retryCfg, async retriableError => {
     let contentType = 'application/binary';
     try {
       const src = got.stream(url, { retry: { limit: 0 } });
+      // aborted request emits again after pipeline() already rejected, crashes if unhandled
+      src.on('error', () => {});
       src.on('response', res => {
         contentType = res.headers['content-type'] || contentType;
       });
@@ -49,6 +60,8 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
     try {
       responseUsed = true;
       const src = got.stream(resp.url, { retry: { limit: 0 } });
+      // aborted request emits again after pipeline() already rejected, crashes if unhandled
+      src.on('error', () => {});
       src.on('response', res => {
         contentType = res.headers['content-type'] || contentType;
       });
@@ -122,46 +135,64 @@ export const download = async ({
   }
 };
 
-export const downloadArtifact = async ({
-  taskId,
-  runId,
-  name,
-  queue,
-  streamFactory,
-  retries,
-  delayFactor,
-  randomizationFactor,
-  maxDelay,
-}) => {
+// when managedOnly is set, a `reference` artifact is rejected before its URL is read.  The queue
+// resolves `link` artifacts server-side, so the storageType seen here is always the final one.
+const downloadArtifactImpl = async (
+  { taskId, runId, name, queue, streamFactory, retries, delayFactor, randomizationFactor, maxDelay },
+  managedOnly
+) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
-  const artifact = await (runId === undefined
-    ? queue.latestArtifact(taskId, name)
-    : queue.artifact(taskId, runId, name));
+  try {
+    const artifact = await (runId === undefined
+      ? queue.latestArtifact(taskId, name)
+      : queue.artifact(taskId, runId, name));
 
-  switch (artifact.storageType) {
-    case 'reference':
-    case 's3': {
-      return await s3({ url: artifact.url, streamFactory, retryCfg });
+    switch (artifact.storageType) {
+      case 'reference': {
+        if (managedOnly) {
+          const err = new Error(
+            'Refusing to download a `reference` artifact: its URL is supplied by the task.  Use ' +
+              '`downloadArtifact` if fetching a task-supplied URL is intended.'
+          );
+          err.code = 'ArtifactStorageTypeRejected';
+          err.storageType = 'reference';
+          throw err;
+        }
+        return await s3({ url: artifact.url, streamFactory, retryCfg });
+      }
+      case 's3': {
+        return await s3({ url: artifact.url, streamFactory, retryCfg });
+      }
+
+      case 'object': {
+        const object = new clients.Object({
+          rootUrl: queue._options._trueRootUrl,
+          credentials: artifact.credentials,
+        });
+        return await download({ name: artifact.name, object, streamFactory, ...retryCfg });
+      }
+
+      case 'error': {
+        const err = new Error(artifact.message);
+        err.code = 'ArtifactError';
+        err.reason = artifact.reason;
+        throw err;
+      }
+
+      default:
+        throw new Error(`Unsupported artifact storageType '${artifact.storageType}'`);
     }
-
-    case 'object': {
-      const object = new clients.Object({
-        rootUrl: queue._options._trueRootUrl,
-        credentials: artifact.credentials,
-      });
-      return await download({ name: artifact.name, object, streamFactory, ...retryCfg });
-    }
-
-    case 'error': {
-      const err = new Error(artifact.message);
-      err.reason = artifact.reason;
-      throw err;
-    }
-
-    default:
-      throw new Error(`Unsupported artifact storageType '${artifact.storageType}'`);
+  } catch (err) {
+    throw withStatusCode(err);
   }
 };
 
-export default { download, downloadArtifact };
+export const downloadArtifact = async options => await downloadArtifactImpl(options, false);
+
+// as downloadArtifact, but refuses `reference` artifacts, whose content is fetched from a URL of
+// the publishing task's choosing.  Callers reading artifacts of untrusted tasks should use this,
+// so that a task cannot direct them at an arbitrary URL reachable from their network position.
+export const downloadManagedArtifact = async options => await downloadArtifactImpl(options, true);
+
+export default { download, downloadArtifact, downloadManagedArtifact };

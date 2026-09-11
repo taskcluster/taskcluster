@@ -146,7 +146,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'post',
-      route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+      route: '/task/:taskId/runs/:runId/artifacts/{*name}',
       name: 'createArtifact',
       stability: APIBuilder.stability.stable,
       category: 'Artifacts',
@@ -275,7 +275,7 @@ export const loadArtifactsRoutes = builder => {
           uploadId = slugid.nice();
           objectName = artifactToObjectName(taskId, runId, name);
           const objectService = this.objectService.use({
-            authorizedScopes: `object:upload:${projectId}:t/${objectName}`,
+            authorizedScopes: [`object:upload:${projectId}:${objectName}`],
           });
 
           await objectService.createUpload(objectName, {
@@ -453,7 +453,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'put',
-      route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+      route: '/task/:taskId/runs/:runId/artifacts/{*name}',
       name: 'finishArtifact',
       stability: APIBuilder.stability.stable,
       category: 'Artifacts',
@@ -508,7 +508,7 @@ export const loadArtifactsRoutes = builder => {
 
       // if this is of a type that is already finished, that's not allowed
       if (!STORAGE_TYPE_NEEDS_FINISH[artifact.storageType]) {
-        return res.resportError('InputError', 'Only object artifacts can be finished', {});
+        return res.reportError('InputError', 'Only object artifacts can be finished', {});
       }
 
       // If already marked present, this is an idempotent call, in which case
@@ -648,7 +648,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'get',
-      route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+      route: '/task/:taskId/runs/:runId/artifacts/{*name}',
       name: 'getArtifact',
       stability: APIBuilder.stability.stable,
       category: 'Artifacts',
@@ -719,7 +719,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'get',
-      route: '/task/:taskId/artifacts/:name(*)',
+      route: '/task/:taskId/artifacts/{*name}',
       name: 'getLatestArtifact',
       stability: APIBuilder.stability.stable,
       category: 'Artifacts',
@@ -912,7 +912,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'get',
-      route: '/task/:taskId/runs/:runId/artifact-info/:name(*)',
+      route: '/task/:taskId/runs/:runId/artifact-info/{*name}',
       name: 'artifactInfo',
       scopes: 'queue:list-artifacts:<taskId>:<runId>',
       stability: APIBuilder.stability.stable,
@@ -936,7 +936,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'get',
-      route: '/task/:taskId/artifact-info/:name(*)',
+      route: '/task/:taskId/artifact-info/{*name}',
       name: 'latestArtifactInfo',
       scopes: 'queue:list-artifacts:<taskId>',
       stability: APIBuilder.stability.stable,
@@ -1019,7 +1019,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'get',
-      route: '/task/:taskId/runs/:runId/artifact-content/:name(*)',
+      route: '/task/:taskId/runs/:runId/artifact-content/{*name}',
       name: 'artifact',
       scopes: { AllOf: [{ for: 'name', in: 'names', each: 'queue:get-artifact:<name>' }] },
       stability: APIBuilder.stability.stable,
@@ -1045,7 +1045,7 @@ export const loadArtifactsRoutes = builder => {
   builder.declare(
     {
       method: 'get',
-      route: '/task/:taskId/artifact-content/:name(*)',
+      route: '/task/:taskId/artifact-content/{*name}',
       name: 'latestArtifact',
       scopes: { AllOf: [{ for: 'name', in: 'names', each: 'queue:get-artifact:<name>' }] },
       stability: APIBuilder.stability.stable,
