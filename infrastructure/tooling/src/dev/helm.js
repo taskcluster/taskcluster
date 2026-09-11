@@ -59,12 +59,12 @@ const actions = [
       const match = /(SemVer|Version):"(v[0-9]+.[0-9]+.[0-9]+-?[^"]*)"/g.exec(res);
       if (!match) {
         throw new Error(`Could not determine helm version from: ${res}`);
-      } else if (match[2].includes('v3')) {
-        return { 'helm-version': 3 };
-      } else if (match[2].includes('v2')) {
-        return { 'helm-version': 2 };
+      }
+      const major = parseInt(match[2].replace(/^v/, '').split('.')[0], 10);
+      if (major >= 3 && major <= 4) {
+        return { 'helm-version': major };
       } else {
-        throw new Error(`Must use supported helm version (2 or 3). You have ${match[2]}`);
+        throw new Error(`Must use a supported helm version (3 or 4). You have ${match[2]}`);
       }
     },
   },
@@ -74,9 +74,6 @@ const actions = [
     provides: ['target-templates'],
     run: async (requirements, utils) => {
       let command = ['helm', 'template'];
-      if (requirements['helm-version'] === 2) {
-        command.push('-n');
-      }
       command = command.concat(['taskcluster', '-f', 'dev-config.yml', 'infrastructure/k8s']);
       return {
         'target-templates': await execCommand({
