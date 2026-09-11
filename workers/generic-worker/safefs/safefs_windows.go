@@ -456,6 +456,36 @@ func Remove(path string) error {
 	return DeleteChild(parent, name, filepath.Dir(path))
 }
 
+// Returns whether or not a path exists. A path we refuse to follow is an
+// error, not an absence
+func Exists(path string) (bool, error) {
+	parent, name, err := OpenParent(path, traverseAccess)
+	if err != nil {
+		if absent(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	defer func() { _ = windows.CloseHandle(parent) }()
+
+	handle, err := OpenChild(parent, name, filepath.Dir(path), windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	if err != nil {
+		if absent(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	_ = windows.CloseHandle(handle)
+	return true, nil
+}
+
+func absent(err error) bool {
+	return errors.Is(err, windows.ERROR_FILE_NOT_FOUND) ||
+		errors.Is(err, windows.ERROR_PATH_NOT_FOUND) ||
+		errors.Is(err, windows.STATUS_OBJECT_NAME_NOT_FOUND) ||
+		errors.Is(err, windows.STATUS_OBJECT_PATH_NOT_FOUND)
+}
+
 // Whether path is an existing directory
 func IsExistingDir(path string) bool {
 	handle, err := OpenPath(path, windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
@@ -478,6 +508,11 @@ func Rename(oldpath, newpath string) error {
 	}
 	defer func() { _ = windows.CloseHandle(source) }()
 
+	sourceIsDir, _, err := Kind(source)
+	if err != nil {
+		return fmt.Errorf("could not stat %q: %w", oldpath, err)
+	}
+
 	parent, name, err := OpenParent(newpath, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
 	if err != nil {
 		return err
@@ -499,7 +534,9 @@ func Rename(oldpath, newpath string) error {
 
 	buffer := make([]byte, size)
 	rename := (*fileRenameInformation)(unsafe.Pointer(&buffer[0]))
-	rename.ReplaceIfExists = windows.FILE_RENAME_REPLACE_IF_EXISTS
+	if !sourceIsDir {
+		rename.ReplaceIfExists = windows.FILE_RENAME_REPLACE_IF_EXISTS
+	}
 	rename.RootDirectory = parent
 	rename.FileNameLength = uint32(nameLen)
 	// capped at the name itself, the buffer has no room for the terminator

@@ -157,6 +157,47 @@ func TestRename(t *testing.T) {
 			t.Error("planted inside the secret")
 		}
 	})
+
+	t.Run("refuses to replace an existing file", func(t *testing.T) {
+		base := t.TempDir()
+		src := mkdir(t, filepath.Join(base, "src"))
+		write(t, filepath.Join(src, "payload"), "mine")
+		dst := write(t, filepath.Join(base, "dst"), "important")
+
+		if err := Rename(src, dst); err == nil {
+			t.Error("replaced a file that was already there")
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "important" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses to replace an existing directory", func(t *testing.T) {
+		base := t.TempDir()
+		src := mkdir(t, filepath.Join(base, "src"))
+		write(t, filepath.Join(src, "payload"), "mine")
+		dst := mkdir(t, filepath.Join(base, "dst"))
+
+		if err := Rename(src, dst); err == nil {
+			t.Error("replaced a directory that was already there")
+		}
+		if _, err := os.Stat(filepath.Join(dst, "payload")); err == nil {
+			t.Error("source content overwritten in the destination")
+		}
+	})
+
+	t.Run("replaces a file with a file", func(t *testing.T) {
+		base := t.TempDir()
+		src := write(t, filepath.Join(base, "src"), "mine")
+		dst := write(t, filepath.Join(base, "dst"), "theirs")
+
+		if err := Rename(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "mine" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+	})
 }
 
 func TestRemove(t *testing.T) {

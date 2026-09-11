@@ -603,9 +603,9 @@ type (
 
 		// The filesystem location to mount the directory volume.
 		// This can be a path relative to the task directory, or an
-		// absolute path. The directory will be created as the task
-		// user, so the target location must be writable by the task
-		// user.
+		// absolute path. The directory must not already exist. It
+		// is created as the task user, so its parent must be
+		// writable by the task user.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -875,7 +875,7 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory must not already exist. It\nis created as the task user, so its parent must be\nwritable by the task user.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },

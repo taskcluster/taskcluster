@@ -326,7 +326,6 @@ func TestValidSHA256(t *testing.T) {
 	// Whether permission is granted to task user depends if running multiuser
 	// engine or insecure engine but is independent of whether running as current
 	// user or not.
-	grantingDir, _ := grantingDenying(t, "directory", false, "unknown_issuer_app_1")
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
 	// Required text from first task with no cached value
@@ -343,9 +342,6 @@ func TestValidSHA256(t *testing.T) {
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 		`Removing file '.*'`,
 	)
-	pass1 = append(pass1,
-		grantingDir...,
-	)
 
 	// Required text from second task when download is already cached
 	pass2 := append([]string{
@@ -358,9 +354,6 @@ func TestValidSHA256(t *testing.T) {
 	pass2 = append(pass2,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 		`Removing file '.*'`,
-	)
-	pass2 = append(pass2,
-		grantingDir...,
 	)
 
 	LogTest(
@@ -394,30 +387,21 @@ func TestFileMountNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// Whether permission is granted to task user depends if running multiuser
-	// engine or insecure engine but is independent of whether running as current
-	// user or not.
-	granting, _ := grantingDenying(t, "file", false, t.Name())
-
 	// No cache on first pass
-	pass1 := append([]string{
+	pass1 := []string{
 		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 		`Creating directory .*`,
 		`Copying .* to .*` + t.Name(),
-	},
-		granting...,
-	)
+	}
 
 	// On second pass, cache already exists
-	pass2 := append([]string{
+	pass2 := []string{
 		`No SHA256 specified in task mounts for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
 		`Creating directory .*`,
 		`Copying .* to .*` + t.Name(),
-	},
-		granting...,
-	)
+	}
 
 	LogTest(
 		&MountsLoggingTestCase{
@@ -450,29 +434,21 @@ func TestFileMountWithCompression(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "compressed-file-mount.txt.gz", "public/build/compressed-file-mount.txt.gz")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
-	granting, _ := grantingDenying(t, "file", false, t.Name())
-
 	// No cache on first pass
-	pass1 := append([]string{
+	pass1 := []string{
 		`Downloading task ` + taskID + ` artifact public/build/compressed-file-mount.txt.gz to .*`,
 		`Downloaded 89 bytes with SHA256 a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a from task ` + taskID + ` artifact public/build/compressed-file-mount.txt.gz to .*`,
 		`Content from task ` + taskID + ` artifact public/build/compressed-file-mount.txt.gz .* matches required SHA256 a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a`,
 		`Creating directory .*`,
 		`Decompressing gz file .* to .*` + t.Name(),
-	},
-		granting...,
-	)
+	}
 
 	// On second pass, cache already exists
-	pass2 := append([]string{
+	pass2 := []string{
 		`Found existing download for artifact:` + taskID + `:public/build/compressed-file-mount.txt.gz .* with correct SHA256 a37856e8cd10250f76dc076bb03d380b16a870dec31f3461223f753124a4b28a`,
 		`Creating directory .*`,
 		`Decompressing gz file .* to .*` + t.Name(),
-	},
-		granting...,
-	)
+	}
 
 	payload := GenericWorkerPayload{
 		Command:    printFileContents(t.Name()),
@@ -573,9 +549,6 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
 		`Removing file '.*'`,
-	)
-	pass1 = append(pass1,
-		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -907,6 +880,46 @@ func TestCachesCanBeModified(t *testing.T) {
 	})
 }
 
+func TestWritableDirectoryCacheOverExistingDirectory(t *testing.T) {
+	setup(t)
+
+	dir := worldWritableTempDir(t, "existing-cache-dir")
+	existingFile := filepath.Join(dir, "existing.txt")
+	if err := os.WriteFile(existingFile, []byte("data"), 0666); err != nil {
+		t.Fatalf("Could not create %v: %v", existingFile, err)
+	}
+
+	mounts := []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "tc-test-banana-cache",
+			Directory: dir,
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	td.Scopes = []string{"generic-worker:cache:tc-test-banana-cache"}
+
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "since it already exists") {
+		t.Fatalf("Was expecting log to report that the cache directory already exists, but it contains:\n%v", logtext)
+	}
+	if _, err := os.Stat(existingFile); err != nil {
+		t.Fatalf("Was expecting %v to be left in place, but: %v", existingFile, err)
+	}
+	if entries := directoryCaches["tc-test-banana-cache"]; len(entries) != 0 {
+		t.Fatalf("Was expecting no cache entry to have been created, but found %v", entries)
+	}
+}
+
 // TestCacheMoved tests that if a test mounts a cache, and then moves it to a
 // different location, that the test fails, and the worker doesn't crash.
 func TestCacheMoved(t *testing.T) {
@@ -917,7 +930,6 @@ func TestCacheMoved(t *testing.T) {
 	// engine or insecure engine but is independent of whether running as current
 	// user or not.
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -933,9 +945,6 @@ func TestCacheMoved(t *testing.T) {
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
 		`Removing file '.*'`,
-	)
-	pass1 = append(pass1,
-		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -957,9 +966,6 @@ func TestCacheMoved(t *testing.T) {
 	pass2 = append(pass2,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
 		`Removing file '.*'`,
-	)
-	pass2 = append(pass2,
-		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -1013,21 +1019,14 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// Whether permission is granted to task user depends if running multiuser
-	// engine or insecure engine but is independent of whether running as current
-	// user or not.
-	granting, _ := grantingDenying(t, "file", false, "file-located-here")
-
 	// No cache on first pass
-	pass1 := append([]string{
+	pass1 := []string{
 		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 		`Creating directory .*`,
 		`Copying .* to .*file-located-here`,
-	},
-		granting...,
-	)
+	}
 
 	pass1 = append(pass1,
 		`Found existing download for artifact:`+taskID+`:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
@@ -1037,13 +1036,11 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 	)
 
 	// On second pass, cache already exists
-	pass2 := append([]string{
+	pass2 := []string{
 		`No SHA256 specified in task mounts for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
 		`Creating directory .*`,
 		`Copying .* to .*file-located-here`,
-	},
-		granting...,
-	)
+	}
 
 	pass2 = append(pass2,
 		`Found existing download for artifact:`+taskID+`:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,

@@ -253,6 +253,16 @@ func Rename(oldpath, newpath string) error {
 	}
 	defer unix.Close(targetParent)
 
+	if isDirAt(sourceParent, sourceName) {
+		var st unix.Stat_t
+		switch err := unix.Fstatat(targetParent, targetName, &st, unix.AT_SYMLINK_NOFOLLOW); {
+		case err == nil:
+			return fmt.Errorf("refusing to rename %q to %q: something is already there", oldpath, newpath)
+		case !errors.Is(err, unix.ENOENT):
+			return fmt.Errorf("could not stat %q: %w", newpath, err)
+		}
+	}
+
 	if err := unix.Renameat(sourceParent, sourceName, targetParent, targetName); err != nil {
 		return fmt.Errorf("could not rename %q to %q: %w", oldpath, newpath, err)
 	}
@@ -283,6 +293,28 @@ func isDirAt(dirfd int, name string) bool {
 		return false
 	}
 	return st.Mode&unix.S_IFMT == unix.S_IFDIR
+}
+
+// Returns whether or not a path exists. A path we refuse to follow is an
+// error, not an absence
+func Exists(path string) (bool, error) {
+	parent, name, err := openParent(path)
+	if err != nil {
+		if errors.Is(err, unix.ENOENT) || errors.Is(err, unix.ENOTDIR) {
+			return false, nil
+		}
+		return false, err
+	}
+	defer unix.Close(parent)
+
+	var st unix.Stat_t
+	if err := unix.Fstatat(parent, name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		if errors.Is(err, unix.ENOENT) {
+			return false, nil
+		}
+		return false, fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	return true, nil
 }
 
 func IsExistingDir(path string) bool {

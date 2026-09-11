@@ -23,6 +23,7 @@ import (
 	"github.com/taskcluster/taskcluster/v109/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v109/internal/scopes"
 	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/safefs"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -896,6 +897,15 @@ func (f *FileMount) FSContent() (FSContent, error) {
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 	target := fileutil.AbsFrom(taskMount.task.TaskDir(), w.Directory)
 
+	exists, existsErr := safefs.Exists(target)
+	if existsErr != nil {
+		return fmt.Errorf("cannot mount writable directory cache '%v' at %v: %v", w.CacheName, target, existsErr)
+	}
+
+	if exists {
+		return fmt.Errorf("cannot mount writable directory cache '%v' at %v since it already exists", w.CacheName, target)
+	}
+
 	entry, created := acquireOrCreateCache(w.CacheName)
 
 	// released is set before any operation that can panic so recover
@@ -953,8 +963,12 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 			return fmt.Errorf("not able to move directory %v to %v: %v", cacheLocation, target, mvErr)
 		}
 		taskMount.poolEntries[w] = entry
+		if chownErr := makeDirReadWritableForTaskUser(taskMount, target); chownErr != nil {
+			_ = evictEntry()
+			return chownErr
+		}
 	} else {
-		taskMount.Infof("No existing writable directory cache '%v' - creating %v", w.CacheName, entry.Location)
+		taskMount.Infof("No existing writable directory cache '%v' - creating %v", w.CacheName, target)
 		if w.Content != nil {
 			c, fsErr := FSContentFrom(w.Content)
 			if fsErr != nil {
@@ -974,15 +988,6 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 		taskMount.poolEntries[w] = entry
 	}
 
-	// Regardless of whether we are running as current user, grant task
-	// user access. The mounted folder may be inside the task directory
-	// or at an absolute path outside it. Either way, the file system
-	// resources should be owned by the task user, even if commands
-	// execute as LocalSystem.
-	if chownErr := makeDirReadWritableForTaskUser(taskMount, target); chownErr != nil {
-		_ = evictEntry()
-		return chownErr
-	}
 	taskMount.Infof("Successfully mounted writable directory cache '%v'", target)
 	return nil
 }
@@ -1028,11 +1033,7 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
 	dir := fileutil.AbsFrom(taskMount.task.TaskDir(), r.Directory)
-	err = extract(c, r.Format, dir, taskMount)
-	if err != nil {
-		return err
-	}
-	return makeDirReadWritableForTaskUser(taskMount, dir)
+	return extract(c, r.Format, dir, taskMount)
 }
 
 // Nothing to do - original archive file wasn't moved
@@ -1063,12 +1064,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return handler(cachedFile, sha256)
 	}
 
-	err = decompress(fsContent, f.Format, file, taskMount)
-	if err != nil {
-		return err
-	}
-
-	return makeFileReadWritableForTaskUser(taskMount, file)
+	return decompress(fsContent, f.Format, file, taskMount)
 }
 
 // Nothing to do - original archive file was copied, not moved

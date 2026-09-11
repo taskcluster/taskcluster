@@ -743,7 +743,7 @@ type (
 
 		// The filesystem location to mount the directory volume.
 		// This can be a path relative to the task directory, or an
-		// absolute path.
+		// absolute path. The directory must not already exist.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -1057,7 +1057,7 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory must not already exist.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },
