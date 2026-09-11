@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 import { SNSClient, CreateTopicCommand, ListSubscriptionsByTopicCommand, SubscribeCommand } from '@aws-sdk/client-sns';
@@ -7,7 +8,6 @@ import {
   CreateQueueCommand,
   DeleteMessageCommand,
   GetQueueAttributesCommand,
-  PurgeQueueCommand,
   ReceiveMessageCommand,
   SetQueueAttributesCommand,
 } from '@aws-sdk/client-sqs';
@@ -67,6 +67,10 @@ helper.withDenier = skipping => {
   });
 };
 
+const emailToken = randomUUID().slice(0, 8);
+let emailSeq = 0;
+helper.emailAddress = () => `success+${emailToken}-${emailSeq++}@simulator.amazonses.com`;
+
 helper.withSES = (mock, skipping) => {
   let ses;
   let sqs;
@@ -90,9 +94,9 @@ helper.withSES = (mock, skipping) => {
       });
       load.inject('ses', ses);
 
-      helper.checkEmails = check => {
+      helper.checkEmails = address => {
         assert.equal(ses.emails.length, 1, 'Not exactly one email present!');
-        check(ses.emails.pop());
+        assert.deepEqual(ses.emails.pop().delivery.recipients, [address]);
       };
     } else {
       sqs = new SQSClient({
@@ -110,17 +114,9 @@ helper.withSES = (mock, skipping) => {
       const { Attributes: emailAttr } = await sqs.send(
         new GetQueueAttributesCommand({
           QueueUrl: emailSQSQueue,
-          AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
+          AttributeNames: ['QueueArn'],
         })
       );
-      if (emailAttr.ApproximateNumberOfMessages !== '0') {
-        debug(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
-        await sqs.send(
-          new PurgeQueueCommand({
-            QueueUrl: emailSQSQueue,
-          })
-        );
-      }
 
       // Send emails to sqs for testing
       const sns = new SNSClient({
@@ -180,27 +176,48 @@ helper.withSES = (mock, skipping) => {
         );
       }
 
-      helper.checkEmails = async check => {
-        const resp = await sqs.send(
-          new ReceiveMessageCommand({
-            QueueUrl: emailSQSQueue,
-            AttributeNames: ['ApproximateReceiveCount'],
-            MaxNumberOfMessages: 10,
-            VisibilityTimeout: 30,
-            WaitTimeSeconds: 20,
-          })
-        );
-        const messages = resp.Messages || [];
-        for (const message of messages) {
-          await sqs.send(
-            new DeleteMessageCommand({
+      helper.checkEmails = async address => {
+        // 25s from now so we dont get past the mocha timeout
+        const deadline = Date.now() + 25000;
+        let email;
+
+        while (!email && Date.now() < deadline) {
+          const remaining = Math.floor((deadline - Date.now()) / 1000);
+          const resp = await sqs.send(
+            new ReceiveMessageCommand({
               QueueUrl: emailSQSQueue,
-              ReceiptHandle: message.ReceiptHandle,
+              MaxNumberOfMessages: 10,
+              VisibilityTimeout: 0,
+              // Don't let that long poll blow past the deadline
+              WaitTimeSeconds: Math.max(1, Math.min(20, remaining)),
             })
           );
+
+          const messages = resp.Messages || [];
+
+          for (const message of messages) {
+            const notification = JSON.parse(JSON.parse(message.Body).Message);
+            if (!notification.delivery.recipients.includes(address)) {
+              debug(`Ignoring email notification for ${notification.delivery.recipients}`);
+              continue;
+            }
+            await sqs.send(
+              new DeleteMessageCommand({
+                QueueUrl: emailSQSQueue,
+                ReceiptHandle: message.ReceiptHandle,
+              })
+            );
+
+            email = notification;
+            break;
+          }
+
+          if (!email && messages.length > 0) {
+            await testing.sleep(1000);
+          }
         }
-        assert.equal(messages.length, 1);
-        check(JSON.parse(JSON.parse(messages[0].Body).Message));
+
+        assert(email, `expected an email delivered to ${address}`);
       };
     }
   });
