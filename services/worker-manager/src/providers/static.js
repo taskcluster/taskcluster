@@ -61,13 +61,17 @@ export class StaticProvider extends Provider {
     const lifecycle = Provider.getWorkerManagerData(worker);
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
     const now = Date.now();
+    // StaticProvider short-circuits straight to STOPPED (no separate stop
+    // event), so only removedAt applies; deprovisionDuration is N/A here.
+    const removedAtMs = await this._ensureRemovedAt(worker);
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
       workerId: worker.workerId,
       reason,
       workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
-      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+      runningDuration:
+        Number.isFinite(removedAtMs) && Number.isFinite(registeredAt) ? (removedAtMs - registeredAt) / 1000 : null,
     });
 
     await worker.update(this.db, worker => {
