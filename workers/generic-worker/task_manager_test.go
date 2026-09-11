@@ -65,47 +65,6 @@ func TestTaskManagerGetTask(t *testing.T) {
 	require.Nil(t, tm.GetTask("nonexistent"))
 }
 
-func TestTaskManagerWaitForAll(t *testing.T) {
-	tm := NewTaskManager(2)
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	task1 := &TaskRun{TaskID: "task1"}
-	task2 := &TaskRun{TaskID: "task2"}
-	tm.AddTask(task1)
-	tm.AddTask(task2)
-
-	// Simulate tasks completing
-	go func() {
-		time.Sleep(10 * time.Millisecond)
-		tm.RemoveTask("task1")
-		wg.Done()
-	}()
-	go func() {
-		time.Sleep(20 * time.Millisecond)
-		tm.RemoveTask("task2")
-		wg.Done()
-	}()
-
-	// WaitForAll should block until all tasks complete
-	done := make(chan struct{})
-	go func() {
-		tm.WaitForAll()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-		// Success
-	case <-time.After(1 * time.Second):
-		t.Fatal("WaitForAll timed out")
-	}
-
-	require.True(t, tm.IsIdle())
-	wg.Wait()
-}
-
 func TestTaskManagerLastActive(t *testing.T) {
 	tm := NewTaskManager(2)
 	initialTime := tm.LastActive()

@@ -26,6 +26,10 @@ func (errArtifact *ErrorArtifact) ProcessResponse(response any, logger Logger, s
 	return nil
 }
 
+func (errArtifact *ErrorArtifact) SourcePath() string {
+	return errArtifact.Path
+}
+
 func (errArtifact *ErrorArtifact) RequestObject() any {
 	return &tcqueue.ErrorArtifactRequest{
 		Expires:     errArtifact.Expires,

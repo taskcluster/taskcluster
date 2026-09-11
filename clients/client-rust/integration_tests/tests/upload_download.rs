@@ -11,10 +11,11 @@ use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use taskcluster_download::{download_to_buf, download_to_file, download_to_vec};
 use taskcluster_upload::{upload_from_buf, upload_from_file};
 
-/// Return a client built with TC credentials from the environment, or panic if the NO_TEST_SKIP is
-/// set and the env vars are not set.  The client is configured with authorized_scopes containing
-/// the scopes required for these tests.  If creating a new client for these tests, consult the
-/// scopes in the function body.
+/// Return a client built with TC credentials from the environment, skip a
+/// credential-free untrusted test, or panic if NO_TEST_SKIP is set and the env
+/// vars are not set. The client is configured with authorized_scopes containing
+/// the scopes required for these tests. If creating a new client for these
+/// tests, consult the scopes in the function body.
 fn get_client() -> Option<ClientBuilder> {
     let (creds, root_url) = if let (Ok(v), Ok(_), Ok(_)) = (
         env::var("TASKCLUSTER_ROOT_URL"),
@@ -26,6 +27,9 @@ fn get_client() -> Option<ClientBuilder> {
             v,
         )
     } else {
+        if env::var("TASKCLUSTER_UNTRUSTED_PR").as_deref() == Ok("true") {
+            return None;
+        }
         match env::var("NO_TEST_SKIP") {
             Ok(_) => panic!(
                 "{}",

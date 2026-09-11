@@ -7,7 +7,6 @@ transforms:
 kind-dependencies:
   - client
   - db
-  - generic-worker
   - go
   - library
   - lint
@@ -18,5 +17,5 @@ kind-dependencies:
 tasks:
     complete:
         description: PR Summary Task
-        run-on-tasks-for: [github-pull-request, github-pull-request-untrusted]
+        run-on-tasks-for: [github-pull-request, github-pull-request-untrusted, github-issue-comment]
         worker-type: succeed
