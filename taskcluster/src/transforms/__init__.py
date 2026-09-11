@@ -102,7 +102,7 @@ def configure_task(config, tasks):
         if is_untrusted_pull_request:
             task["expires-after"] = UNTRUSTED_TASK_EXPIRY
 
-            # The restricted Community-TC role is the security boundary. This
+            # The restricted Firefox-CI role is the security boundary. This
             # only makes explicitly secret-optional tasks creatable by that role.
             if task.get("attributes", {}).get(RUN_WITHOUT_SECRETS):
                 task["scopes"] = [

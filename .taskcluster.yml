@@ -10,12 +10,11 @@ tasks:
       trustDomain: taskcluster
       # We set some of these directly in tc because we don't have some mozilla-specific concepts
       ownerEmail: taskcluster-internal@mozilla.com
-      # Match Firefox CI trust levels: external pull requests use level 1,
-      # while trusted code and collaborator-approved runs use level 3.
+      # Pushes run at level 3, pull requests and comments at level 1.
       level:
-        $if: 'tasks_for == "github-pull-request-untrusted"'
-        then: 1
-        else: 3
+        $if: 'tasks_for == "github-push"'
+        then: 3
+        else: 1
 
       # Github events have this stuff in different places...
       baseRepoUrl:

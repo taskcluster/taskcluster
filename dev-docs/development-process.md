@@ -95,7 +95,7 @@ These checks will help keep the code clean and will potentially save CI resource
 ## Hacking on the UI
 
 To be able to run the UI locally, you will need to set up a Taskcluster deployment to point to.
-This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [community-tc](https://community-tc.services.mozilla.com/).
+This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [firefox-ci](https://firefox-ci-tc.services.mozilla.com/).
 
 If you just want to change the UI without changing the backend or graphql API, then you will only need the [latest node](#node) version and `yarn` installed:
 
@@ -104,7 +104,7 @@ cd ui
 # install dependencies if needed
 yarn
 # set the Taskcluster deployment to point to
-export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+export TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com
 # start the UI
 yarn start
 ```
@@ -158,7 +158,7 @@ To run the Taskcluster UI:
     For example:
 
     ```sh
-    export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+    export TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com
     ```
   * Change to the `services/web-server` directory and run `yarn start`.
     This will start a web server on port 3050.
