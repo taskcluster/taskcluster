@@ -69,7 +69,7 @@ async function createGithubBuildRecord({
     assert.equal(build.sha, sha);
     assert.equal(build.event_type, eventType);
     assert.equal(build.event_id, eventId);
-    return build;
+    return { ...build, pull_number: build.pull_request_number };
   }
 }
 
@@ -367,6 +367,7 @@ export async function jobHandler(message) {
   let hasHookFailures = false;
   if (graphConfig.hooks && graphConfig.hooks.length > 0) {
     debug('Triggering hooks from .taskcluster.yml');
+    const hookBuilds = [];
 
     await Promise.all(
       graphConfig.hooks.map(async hook => {
@@ -408,11 +409,7 @@ export async function jobHandler(message) {
             debug.refine({ taskId: returnedTaskId })(
               `Hook ${hook.name} triggered successfully, taskId: ${returnedTaskId}`
             );
-            if (graphConfig.autoCancelPreviousChecks !== false) {
-              if (pullNumber || message.payload.body.ref !== defaultBranch) {
-                await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: build });
-              }
-            }
+            hookBuilds.push(build);
           }
 
           if (!returnedTaskId) {
@@ -432,6 +429,13 @@ export async function jobHandler(message) {
         }
       })
     );
+
+    // all hook triggers finished, we can now seal and cancel
+    if (hookBuilds.length > 0 && graphConfig.autoCancelPreviousChecks !== false) {
+      if (pullNumber || message.payload.body.ref !== defaultBranch) {
+        await this.cancelSupersededTaskGroups({ instGithub, debug, newBuild: hookBuilds[0] });
+      }
+    }
   }
 
   // Create tasks (if present)
@@ -449,7 +453,15 @@ export async function jobHandler(message) {
         }
       }
     } catch (e) {
-      return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
+      return await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        error: e,
+        pullNumber,
+      });
     }
 
     const builds = [];
@@ -471,25 +483,39 @@ export async function jobHandler(message) {
       );
     }
 
+    let sealedTaskGroupIds;
     try {
       debug(`Creating tasks for ${organization}/${repository}@${sha} (${taskGroupMap.size} task group(s))`);
-      await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks });
+      sealedTaskGroupIds =
+        (await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks })) ?? new Set();
     } catch (e) {
       debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
-      return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
+      return await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        error: e,
+        pullNumber,
+      });
     }
 
-    // Only cancel previous tasks after we have successfully created new ones.
-    // Cancel existing builds for non-default branches.
-    // All sibling builds from this event share the same event_id, so they are already
-    // excluded by the event_id filter inside cancelPreviousTaskGroups.
+    // after task creation, cancel older deliveries or this delivery if a newer one exists
+    // skips initial status publication for any groups cancelled here
+    let cancelledTaskGroupIds = new Set();
     if (graphConfig.autoCancelPreviousChecks !== false) {
       if (pullNumber || message.payload.body.ref !== defaultBranch) {
-        await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: builds[0] });
+        cancelledTaskGroupIds = await this.cancelSupersededTaskGroups({ instGithub, debug, newBuild: builds[0] });
       }
     }
 
     for (const [taskGroupId, routes] of taskGroupMap.entries()) {
+      if (sealedTaskGroupIds.has(taskGroupId) || cancelledTaskGroupIds.has(taskGroupId)) {
+        debug(`Not publishing status exchange for sealed or cancelled task group ${taskGroupId}`);
+        continue;
+      }
+
       try {
         debug(
           `Publishing status exchange for ${organization}/${repository}@${sha} (${groupState}, taskGroupId: ${taskGroupId})`
