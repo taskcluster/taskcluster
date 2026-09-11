@@ -1,11 +1,13 @@
-""" Python client for Taskcluster """
+"""Python client for Taskcluster"""
 
 import logging
 import os
-from .asyncclient import createSession  # NOQA
-from taskcluster.utils import *  # NOQA
+
 from taskcluster.exceptions import *  # NOQA
+from taskcluster.utils import *  # NOQA
+
 from ..generated.aio._client_importer import *  # NOQA
+from .asyncclient import createSession  # NOQA
 
 log = logging.getLogger(__name__)
 

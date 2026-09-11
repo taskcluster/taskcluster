@@ -16,15 +16,15 @@ func TestResolveResolvedTask(t *testing.T) {
 func TestReclaimCancelledTask(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
 
 	td, payload := CancelTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 	payload.Command = append(payload.Command, sleep(300)...)
 	payload.Mounts = toMountArray(t, &mounts)
 	payload.Features.LiveLog = false
@@ -39,7 +39,7 @@ func TestReclaimCancelledTask(t *testing.T) {
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
 			Extracts: []string{
-				"Preserving cache: Moving",
+				"Purging caches since the task was aborted",
 			},
 			ContentType:     "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",
@@ -51,5 +51,37 @@ func TestReclaimCancelledTask(t *testing.T) {
 
 	if duration := end.Sub(start); duration.Seconds() > 280 {
 		t.Fatalf("Task should have expired long before the max run time (300s) but took %v", duration)
+	}
+}
+
+func TestStatusListenerCanCallBackIntoManager(t *testing.T) {
+	tsm := &TaskStatusManager{
+		task: &TaskRun{
+			TaskID: "task-id",
+			RunID:  0,
+			Status: claimed,
+		},
+		statusChangeListeners: map[*TaskStatusChangeListener]bool{},
+	}
+
+	done := make(chan struct{})
+	listener := &TaskStatusChangeListener{
+		Name: "self-reader",
+		Callback: func(ts TaskStatus) {
+			_ = tsm.LastKnownStatus()
+			close(done)
+		},
+	}
+	tsm.RegisterListener(listener)
+
+	err := tsm.updateStatus(reclaimed, func(task *TaskRun) error { return nil }, claimed)
+	if err != nil {
+		t.Fatalf("unexpected status update error: %v", err)
+	}
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("listener callback timed out; likely blocked on TaskStatusManager lock")
 	}
 }

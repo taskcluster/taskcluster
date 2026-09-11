@@ -7,8 +7,10 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+	"time"
 
 	"github.com/creack/pty"
+	"golang.org/x/sys/unix"
 )
 
 type CmdPty struct {
@@ -39,6 +41,29 @@ func (itj *InteractiveJob) Setup(cmd InteractiveCmdType) {
 		close(itj.done)
 	}()
 
+	// Wait for the spawned shell to clear ICANON before returning. Until that
+	// happens, any input we forward from the websocket goes through the
+	// kernel's canonical mode line discipline (line buffering + echo), and the
+	// resulting echo trail depends on which side wins the race between our
+	// write and readline taking over.
+	waitForICANONOff(itj.inner.pty, itj.done)
+}
+
+func waitForICANONOff(p *os.File, done <-chan struct{}) {
+	fd := int(p.Fd())
+	ticker := time.NewTicker(2 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		t, err := unix.IoctlGetTermios(fd, ioctlGetTermios)
+		if err == nil && t.Lflag&unix.ICANON == 0 {
+			return
+		}
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+		}
+	}
 }
 
 func (itj *InteractiveJob) resizePty(width uint16, height uint16) error {

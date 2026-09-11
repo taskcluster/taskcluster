@@ -1,15 +1,33 @@
 import debugFactory from 'debug';
 const debug = debugFactory('notify');
 import _ from 'lodash';
-import path from 'path';
-import crypto from 'crypto';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import { marked } from 'marked';
 import Email from 'email-templates';
+import juice from 'juice';
 import nodemailer from 'nodemailer';
-import { SendRawEmailCommand } from '@aws-sdk/client-ses';
+import { SendEmailCommand } from '@aws-sdk/client-sesv2';
 
 const __dirname = new URL('.', import.meta.url).pathname;
+
+class CssOnlyJuicedEmail extends Email {
+  async checkAndRender(type, template, locals) {
+    const rendered = await super.checkAndRender(type, template, locals);
+    if (type !== 'html' || !rendered) {
+      return rendered;
+    }
+
+    return juice(rendered, {
+      applyStyleTags: true,
+      removeStyleTags: true,
+      preserveImportant: true,
+    });
+  }
+}
+
+const TEMPLATES_ALLOWLIST = new Set(['simple', 'fullscreen']);
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -28,27 +46,19 @@ class Notifier {
     this.monitor = options.monitor;
 
     const transport = nodemailer.createTransport({
-      SES: { ses: options.ses, aws: { SendRawEmailCommand } },
+      SES: { sesClient: options.ses, SendEmailCommand },
     });
-    this.emailer = new Email({
+    this.emailer = new CssOnlyJuicedEmail({
       transport,
       send: true,
       preview: false,
       views: { root: path.join(__dirname, 'templates') },
-      juice: true,
-      juiceResources: {
-        webResources: {
-          relativeTo: path.join(__dirname, 'templates'),
-        },
-      },
+      juice: false,
     });
   }
 
   key(idents) {
-    return crypto
-      .createHash('md5')
-      .update(JSON.stringify(idents))
-      .digest('hex');
+    return crypto.createHash('md5').update(JSON.stringify(idents)).digest('hex');
   }
 
   isDuplicate(...idents) {
@@ -61,6 +71,11 @@ class Notifier {
   }
 
   async email({ address, subject, content, link, replyTo, template }) {
+    template = template || 'simple';
+    if (!TEMPLATES_ALLOWLIST.has(template)) {
+      throw new Error(`Unknown email template: ${template}`);
+    }
+
     if (this.isDuplicate(address, subject, content, link, replyTo)) {
       debug('Duplicate email send detected. Not attempting resend.');
       return false;
@@ -94,7 +109,7 @@ class Notifier {
         from: this.sender,
         to: address,
       },
-      template: template || 'simple',
+      template,
       locals: { address, subject, content, formatted, link, rateLimit },
     });
     this.rateLimit.markEvent(address);
@@ -122,7 +137,7 @@ class Notifier {
     return true;
   }
 
-  async matrix({ roomId, format, formattedBody, body, notice, msgtype }) {
+  async matrix({ roomId, format, formattedBody, body, msgtype }) {
     if (this.isDuplicate(roomId, format, formattedBody, body, msgtype)) {
       debug('Duplicate matrix send detected. Not attempting resend.');
       return false;
@@ -133,13 +148,13 @@ class Notifier {
       return false;
     }
 
-    await this._matrix.sendMessage({ roomId, format, formattedBody, body, notice, msgtype });
+    await this._matrix.sendMessage({ roomId, format, formattedBody, body, msgtype });
     this.markSent(roomId, format, formattedBody, body, msgtype);
     this.monitor.log.matrix({ dest: roomId });
     return true;
   }
 
-  async slack({ channelId, text, blocks, attachments }) {
+  async slack({ channelId, text, blocks, attachments, unfurlLinks, unfurlMedia }) {
     if (!this._slack) {
       this.monitor.warning(`Slack message sent to ${channelId} but Slack is not configured.`);
       return false;
@@ -155,7 +170,7 @@ class Notifier {
       return false;
     }
 
-    await this._slack.sendMessage({ channelId, text, blocks, attachments });
+    await this._slack.sendMessage({ channelId, text, blocks, attachments, unfurlLinks, unfurlMedia });
     this.markSent('slack-channel', channelId, text, blocks, attachments);
     this.monitor.log.slack({ channelId });
     return true;

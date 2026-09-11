@@ -1,8 +1,8 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -16,11 +16,11 @@ const __dirname = new URL('.', import.meta.url).pathname;
  * , where description will be amended with a section explaining that this
  * client is static and can't be modified at runtime.
  */
-export const syncStaticClients = async function(db, clients = []) {
+export const syncStaticClients = async (db, clients = []) => {
   const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, 'static-scopes.json'), 'utf8'));
 
   // Validate input for sanity (we hardly need perfect validation here...)
-  assert(clients instanceof Array, 'Expected clients to be am array');
+  assert(Array.isArray(clients), 'Expected clients to be am array');
   for (const client of clients) {
     assert(typeof client.clientId === 'string', 'expected clientId to be a string');
     assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
@@ -30,29 +30,29 @@ export const syncStaticClients = async function(db, clients = []) {
     if (client.clientId.startsWith('static/taskcluster')) {
       assert(!client.scopes, 'scopes are not allowed in configuration for static/taskcluster clients');
     } else {
-      assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
+      assert(Array.isArray(client.scopes), 'expected scopes to be an array of strings');
       assert(typeof client.description === 'string', 'expected description to be a string');
-      assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
+      assert(
+        client.scopes.every(s => typeof s === 'string'),
+        'scopes must be strings'
+      );
     }
   }
 
   // check that we have all of the expected static/taskcluster clients, and no more.  The staticClients
   // are generated from `services/*/scopes.yml` for all of the other services.
-  const seenTCClients = clients
-    .map(({ clientId }) => clientId)
-    .filter(c => c.startsWith('static/taskcluster/'));
-  const expectedTCClients = staticScopes
-    .map(({ clientId }) => clientId);
+  const seenTCClients = clients.map(({ clientId }) => clientId).filter(c => c.startsWith('static/taskcluster/'));
+  const expectedTCClients = staticScopes.map(({ clientId }) => clientId);
   const extraTCClients = _.difference(seenTCClients, expectedTCClients);
   const missingTCClients = _.difference(expectedTCClients, seenTCClients);
 
   if (extraTCClients.length > 0 || missingTCClients.length > 0) {
     let msg = 'Incorrect `static/taskcluster` static clients in STATIC_CLIENTS';
     if (extraTCClients.length > 0) {
-      msg = msg + `; extra clients ${JSON.stringify(extraTCClients)}`;
+      msg = `${msg}; extra clients ${JSON.stringify(extraTCClients)}`;
     }
     if (missingTCClients.length > 0) {
-      msg = msg + `; missing clients ${JSON.stringify(missingTCClients)}`;
+      msg = `${msg}; missing clients ${JSON.stringify(missingTCClients)}`;
     }
     throw new Error(msg);
   }
@@ -81,7 +81,7 @@ export const syncStaticClients = async function(db, clients = []) {
   const done = []; // list of clientIds we've already synchronized
   const rows = await db.fns.get_clients('static/', null, null);
 
-  for (let row of rows) {
+  for (const row of rows) {
     // Find target we should modify the client match
     const target = clients.find(c => c.clientId === row.client_id);
     // If client doesn't exist we delete it
@@ -107,7 +107,7 @@ export const syncStaticClients = async function(db, clients = []) {
         null, // expires
         null, // disabled
         JSON.stringify(target.scopes),
-        null, // delete_on_expiration
+        null // delete_on_expiration
       );
     }
 
@@ -119,7 +119,7 @@ export const syncStaticClients = async function(db, clients = []) {
   const newClients = clients.filter(c => !done.includes(c.clientId));
 
   // Create new clients
-  for (let target of newClients) {
+  for (const target of newClients) {
     try {
       await db.fns.create_client(
         target.clientId,
@@ -128,7 +128,7 @@ export const syncStaticClients = async function(db, clients = []) {
         taskcluster.fromNow('1000 year'), // expires never, basically
         false, // not disabled
         JSON.stringify(target.scopes),
-        false, // do not delete on expiration
+        false // do not delete on expiration
       );
     } catch (err) {
       // when lots of instances of this service start at once, conflict is not

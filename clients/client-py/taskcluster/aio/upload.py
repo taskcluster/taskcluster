@@ -15,14 +15,16 @@ file IO is important to the application.
 This module provides several pre-defined readers and reader factories for
 common cases.
 """
+
 import base64
 import hashlib
 
 import aiohttp
 
 import taskcluster
+
 from .asyncutils import ensureCoro
-from .reader_writer import streamingCopy, BufferReader, BufferWriter, FileReader
+from .reader_writer import BufferReader, BufferWriter, FileReader, streamingCopy
 from .retry import retry
 
 DATA_INLINE_MAX_SIZE = 8192
@@ -33,6 +35,7 @@ async def uploadFromBuf(*, data, **kwargs):
     Convenience method to upload data from an in-memory buffer.  Arguments are the same
     as `upload` except that `readerFactory` should not be supplied.
     """
+
     async def readerFactory():
         return BufferReader(data)
 
@@ -46,6 +49,7 @@ async def uploadFromFile(*, file, **kwargs):
     arguments are the same as `upload` except that `readerFactory` should not
     be supplied.
     """
+
     async def readerFactory():
         file.seek(0)
         return FileReader(file)
@@ -53,8 +57,18 @@ async def uploadFromFile(*, file, **kwargs):
     await upload(**kwargs, readerFactory=readerFactory)
 
 
-async def upload(*, projectId, name, contentType, contentLength, expires,
-                 readerFactory, maxRetries=5, uploadId=None, objectService):
+async def upload(
+    *,
+    projectId,
+    name,
+    contentType,
+    contentLength,
+    expires,
+    readerFactory,
+    maxRetries=5,
+    uploadId=None,
+    objectService,
+):
     """
     Upload the given data to the object service with the given metadata.
     The `maxRetries` parameter has the same meaning as for service clients.
@@ -79,32 +93,35 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
             writer = BufferWriter()
             await streamingCopy(reader, writer)
             encoded = base64.b64encode(writer.getbuffer())
-            proposedUploadMethods['dataInline'] = {
+            proposedUploadMethods["dataInline"] = {
                 "contentType": contentType,
                 "objectData": encoded,
             }
 
-        proposedUploadMethods['putUrl'] = {
+        proposedUploadMethods["putUrl"] = {
             "contentType": contentType,
             "contentLength": contentLength,
         }
 
-        uploadResp = await ensureCoro(objectService.createUpload)(name, {
-            "expires": expires,
-            "projectId": projectId,
-            "uploadId": uploadId,
-            "proposedUploadMethods": proposedUploadMethods,
-        })
+        uploadResp = await ensureCoro(objectService.createUpload)(
+            name,
+            {
+                "expires": expires,
+                "projectId": projectId,
+                "uploadId": uploadId,
+                "proposedUploadMethods": proposedUploadMethods,
+            },
+        )
 
         async def tryUpload(retryFor):
             try:
                 uploadMethod = uploadResp["uploadMethod"]
-                if 'dataInline' in uploadMethod:
+                if "dataInline" in uploadMethod:
                     # data is already uploaded -- nothing to do
                     pass
-                elif 'putUrl' in uploadMethod:
+                elif "putUrl" in uploadMethod:
                     reader = await hashingReaderFactory()
-                    await _putUrlUpload(uploadMethod['putUrl'], reader, session)
+                    await _putUrlUpload(uploadMethod["putUrl"], reader, session)
                 else:
                     raise RuntimeError("Could not negotiate an upload method")
             except aiohttp.ClientResponseError as exc:
@@ -121,11 +138,14 @@ async def upload(*, projectId, name, contentType, contentLength, expires,
 
         hashes = hashingReader.hashes(contentLength)
 
-        await ensureCoro(objectService.finishUpload)(name, {
-            "projectId": projectId,
-            "uploadId": uploadId,
-            "hashes": hashes,
-        })
+        await ensureCoro(objectService.finishUpload)(
+            name,
+            {
+                "projectId": projectId,
+                "uploadId": uploadId,
+                "hashes": hashes,
+            },
+        )
 
 
 async def _putUrlUpload(method, reader, session):
@@ -138,7 +158,9 @@ async def _putUrlUpload(method, reader, session):
                 break
             yield chunk
 
-    resp = await session.put(method['url'], headers=method['headers'], data=reader_gen())
+    resp = await session.put(
+        method["url"], headers=method["headers"], data=reader_gen()
+    )
     resp.raise_for_status()
 
 
@@ -165,7 +187,9 @@ class HashingReader:
         """Return the hashes in a format suitable for finishUpload, first checking that all the bytes
         in the content were hashed."""
         if contentLength != self.bytes:
-            raise RuntimeError(f"hashed {self.bytes} bytes but content length is {contentLength}")
+            raise RuntimeError(
+                f"hashed {self.bytes} bytes but content length is {contentLength}"
+            )
         return {
             "sha256": self.sha256.hexdigest(),
             "sha512": self.sha512.hexdigest(),

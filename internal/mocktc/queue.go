@@ -16,8 +16,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -407,7 +407,7 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 		return queue.GetLatestArtifact_SignedURL(taskId, a.Artifact, duration)
 	}
 	queue.t.Fatalf("Unknown artifact type %T", artifact)
-	return nil, fmt.Errorf("Unknown artifact type %T", artifact)
+	return nil, fmt.Errorf("unknown artifact type %T", artifact)
 }
 
 func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*tcqueue.ListArtifactsResponse, error) {
@@ -440,10 +440,19 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 			}
 		case *tcqueue.S3ArtifactRequest:
 			a = tcqueue.Artifact{
-				ContentType: A.ContentType,
-				Expires:     A.Expires,
-				Name:        name,
-				StorageType: A.StorageType,
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
+			}
+		case *tcqueue.ObjectArtifactRequest:
+			a = tcqueue.Artifact{
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
 			}
 		default:
 			queue.t.Fatalf("Invalid artifact request type for artifact %#v for task %v runId %v", a, taskId, runId)
@@ -514,6 +523,17 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 			StorageType: "error",
 			Message:     a.Message,
 			Reason:      a.Reason,
+		}
+		var err error
+		jsonResp, err = json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
+	case *tcqueue.RedirectArtifactRequest:
+		resp := tcqueue.GetArtifactContentResponse3{
+			StorageType: "reference",
+			URL:         a.URL,
 		}
 		var err error
 		jsonResp, err = json.Marshal(resp)

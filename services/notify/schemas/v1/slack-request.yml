@@ -26,6 +26,16 @@ properties:
     type: array
     description: |
       An array of Slack attachments. See https://api.slack.com/messaging/composing/layouts#attachments.
+  unfurlLinks:
+    type: boolean
+    default: false
+    description: |
+      Whether Slack should show previews for links in the message.
+  unfurlMedia:
+    type: boolean
+    default: false
+    description: |
+      Whether Slack should show previews for links to media in the message.
 additionalProperties: false
 required:
   - channelId

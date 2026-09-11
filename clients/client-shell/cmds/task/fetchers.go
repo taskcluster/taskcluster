@@ -12,9 +12,9 @@ import (
 
 	"github.com/spf13/pflag"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/clients/client-shell/config"
 )
 
 func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {
@@ -45,11 +45,14 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 		return nil
 	}
 
-	if runID >= len(s.Status.Runs) {
-		return fmt.Errorf("there is no run #%v", runID)
-	}
 	if runID == -1 {
 		runID = len(s.Status.Runs) - 1
+	}
+	if runID < 0 {
+		return fmt.Errorf("task has no runs")
+	}
+	if runID >= len(s.Status.Runs) {
+		return fmt.Errorf("there is no run #%v", runID)
 	}
 
 	fmt.Fprintln(out, getRunStatusString(s.Status.Runs[runID].State, s.Status.Runs[runID].ReasonResolved))
@@ -169,11 +172,14 @@ func runArtifacts(credentials *tcclient.Credentials, args []string, out io.Write
 	}
 
 	runID, _ := flagSet.GetInt("run")
-	if runID >= len(s.Status.Runs) {
-		return fmt.Errorf("there is no run #%v", runID)
-	}
 	if runID == -1 {
 		runID = len(s.Status.Runs) - 1
+	}
+	if runID < 0 {
+		return fmt.Errorf("task has no runs")
+	}
+	if runID >= len(s.Status.Runs) {
+		return fmt.Errorf("there is no run #%v", runID)
 	}
 
 	buf := bytes.NewBufferString("")
@@ -212,11 +218,26 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 		return fmt.Errorf("could not fetch the logs of task %s because it's in a %s state", taskID, state)
 	}
 
-	path := tcurls.API(config.RootURL(), "queue", "v1", "task/"+taskID+"/artifacts/public/logs/live.log")
+	// Try live.log first, fall back to live_backing.log if not found
+	logFiles := []string{
+		"live.log",
+		"live_backing.log",
+	}
 
-	resp, err := http.Get(path)
-	if err != nil {
-		return fmt.Errorf("error making request to %v: %v", path, err)
+	var resp *http.Response
+	for _, logFile := range logFiles {
+		path := tcurls.API(config.RootURL(), "queue", "v1", "task/"+taskID+"/artifacts/public/logs/"+logFile)
+
+		resp, err = http.Get(path)
+		if err != nil {
+			return fmt.Errorf("error making request to %v: %v", path, err)
+		}
+
+		if resp.StatusCode == http.StatusNotFound {
+			resp.Body.Close()
+			continue
+		}
+		break
 	}
 	defer resp.Body.Close()
 

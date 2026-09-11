@@ -6,89 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type (
-	// Actions provide a generic mechanism to expose additional features of a
-	// provisioner, worker type, or worker to Taskcluster clients.
-	//
-	// An action is comprised of metadata describing the feature it exposes,
-	// together with a webhook for triggering it.
-	//
-	// The Taskcluster tools site, for example, retrieves actions when displaying
-	// provisioners, worker types and workers. It presents the provisioner/worker
-	// type/worker specific actions to the user. When the user triggers an action,
-	// the web client takes the registered webhook, substitutes parameters into the
-	// URL (see `url`), signs the requests with the Taskcluster credentials of the
-	// user operating the web interface, and issues the HTTP request.
-	//
-	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
-	//
-	// The action context is used by the web client to determine where in the web
-	// interface to present the action to the user as follows:
-	//
-	// | `context`   | Tool where action is displayed |
-	// |-------------|--------------------------------|
-	// | provisioner | Provisioner Explorer           |
-	// | worker-type | Workers Explorer               |
-	// | worker      | Worker Explorer                |
-	//
-	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
-	// for more information.
-	Action struct {
-
-		// Actions have a "context" that is one of provisioner, worker-type, or worker, indicating
-		// which it applies to. `context` is used by the front-end to know where to display the action.
-		//
-		// | `context`   | Page displayed        |
-		// |-------------|-----------------------|
-		// | provisioner | Provisioner Explorer  |
-		// | worker-type | Workers Explorer      |
-		// | worker      | Worker Explorer       |
-		//
-		// Possible values:
-		//   * "provisioner"
-		//   * "worker-type"
-		//   * "worker"
-		Context string `json:"context"`
-
-		// Description of the provisioner.
-		Description string `json:"description"`
-
-		// Method to indicate the desired action to be performed for a given resource.
-		//
-		// Possible values:
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "PATCH"
-		Method string `json:"method"`
-
-		// Short names for things like logging/error messages.
-		Name string `json:"name"`
-
-		// Appropriate title for any sort of Modal prompt.
-		Title json.RawMessage `json:"title"`
-
-		// When an action is triggered, a request is made using the `url` and `method`.
-		// Depending on the `context`, the following parameters will be substituted in the url:
-		//
-		// | `context`   | Path parameters                                          |
-		// |-------------|----------------------------------------------------------|
-		// | provisioner | <provisionerId>                                          |
-		// | worker-type | <provisionerId>, <workerType>                            |
-		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-		//
-		// _Note: The request needs to be signed with the user's Taskcluster credentials._
-		URL string `json:"url"`
-	}
-
 	// Information about an artifact
 	Artifact struct {
+
+		// Size of the artifact content in bytes, if reported by the worker.
+		// This value is null if the worker did not report the size.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Expected content-type of the artifact.  This is informational only:
 		// it is suitable for use to choose an icon for the artifact, for example.
@@ -144,6 +73,23 @@ type (
 		// Array items:
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskIds []string `json:"taskIds"`
+	}
+
+	// Payload for task and task-group reprioritization endpoints.
+	ChangeTaskPriorityRequest struct {
+
+		// New priority to apply. Claimed runs keep their current run priority until
+		// they are retried.
+		//
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		NewPriority string `json:"newPriority"`
 	}
 
 	// Request to claim a task for a worker to process.
@@ -573,6 +519,12 @@ type (
 	// Request to create an artifact via the object service.
 	ObjectArtifactRequest struct {
 
+		// Optional size of the artifact content, in bytes.
+		// This is informational and used for monitoring purposes.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
+
 		// Artifact content type.  This is advisory in nature and can be used,
 		// for example, to select appropriate icons to display artifact links.
 		//
@@ -682,9 +634,6 @@ type (
 
 	ProvisionerInformation struct {
 
-		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
-		Actions []Action `json:"actions"`
-
 		// Description of the provisioner.
 		Description string `json:"description"`
 
@@ -715,36 +664,8 @@ type (
 		Stability string `json:"stability"`
 	}
 
-	// Request to update a provisioner.
-	ProvisionerRequest struct {
-
-		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
-		Actions []Action `json:"actions,omitempty"`
-
-		// Description of the provisioner.
-		Description string `json:"description,omitempty"`
-
-		// Date and time after which the provisioner will be automatically
-		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
-
-		// This is the stability of the provisioner. Accepted values:
-		//   * `experimental`
-		//   * `stable`
-		//   * `deprecated`
-		//
-		// Possible values:
-		//   * "experimental"
-		//   * "stable"
-		//   * "deprecated"
-		Stability string `json:"stability,omitempty"`
-	}
-
 	// Response containing information about a provisioner.
 	ProvisionerResponse struct {
-
-		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
-		Actions []Action `json:"actions"`
 
 		// Description of the provisioner.
 		Description string `json:"description"`
@@ -947,6 +868,12 @@ type (
 	// Request for a signed PUT URL that will allow you to upload an artifact
 	// to an S3 bucket managed by the queue.
 	S3ArtifactRequest struct {
+
+		// Optional size of the artifact content, in bytes.
+		// This is informational and used for monitoring purposes.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Artifact mime-type, when uploading artifact to the signed
 		// `PUT` URL returned from this request this must given with the
@@ -1234,8 +1161,7 @@ type (
 
 		// Priority of task. This defaults to `lowest` and the scope
 		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-		// to define a task with `<priority>`. The `normal` priority is treated as
-		// `lowest`.
+		// to define a task with `<priority>`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1245,7 +1171,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		//
 		// Default:    "lowest"
 		Priority string `json:"priority,omitempty"`
@@ -1429,8 +1354,7 @@ type (
 
 		// Priority of task. This defaults to `lowest` and the scope
 		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-		// to define a task with `<priority>`. The `normal` priority is treated as
-		// `lowest`.
+		// to define a task with `<priority>`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1440,7 +1364,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		//
 		// Default:    "lowest"
 		Priority string `json:"priority"`
@@ -1668,6 +1591,48 @@ type (
 		TaskGroupID string `json:"taskGroupId"`
 	}
 
+	// Response returned by the change task group priority call.
+	TaskGroupPriorityChangeResponse struct {
+
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		NewPriority string `json:"newPriority"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId"`
+
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+
+		// Task identifiers that were updated. Present even if the list is empty.
+		//
+		// Array items:
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskIds []string `json:"taskIds"`
+
+		// Mininum:    0
+		TasksAffected int64 `json:"tasksAffected"`
+	}
+
 	// Required task metadata
 	TaskMetadata struct {
 
@@ -1729,6 +1694,21 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		TaskQueueID string `json:"taskQueueId"`
+	}
+
+	// Pending and claimed task counts for multiple task queues.
+	TaskQueueCountsListResponse struct {
+		TaskQueueCounts []Var `json:"taskQueueCounts"`
+	}
+
+	// Request pending and claimed task counts for multiple task queues.
+	TaskQueueCountsRequest struct {
+
+		// Array items:
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueIds []string `json:"taskQueueIds"`
 	}
 
 	// Response to a task queue request from a provisioner.
@@ -1849,6 +1829,22 @@ type (
 		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
+
+		// Priority of task. This defaults to `lowest` and the scope
+		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+		// to define a task with `<priority>`.
+		//
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//
+		// Default:    "lowest"
+		Priority string `json:"priority,omitempty"`
 
 		// The name for the "project" with which this task is associated.  This
 		// value can be used to control permission to manipulate tasks as well as
@@ -2087,85 +2083,16 @@ type (
 		WorkerID string `json:"workerId"`
 	}
 
-	// Actions provide a generic mechanism to expose additional features of a
-	// provisioner, worker type, or worker to Taskcluster clients.
-	//
-	// An action is comprised of metadata describing the feature it exposes,
-	// together with a webhook for triggering it.
-	//
-	// The Taskcluster tools site, for example, retrieves actions when displaying
-	// provisioners, worker types and workers. It presents the provisioner/worker
-	// type/worker specific actions to the user. When the user triggers an action,
-	// the web client takes the registered webhook, substitutes parameters into the
-	// URL (see `url`), signs the requests with the Taskcluster credentials of the
-	// user operating the web interface, and issues the HTTP request.
-	//
-	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
-	//
-	// The action context is used by the web client to determine where in the web
-	// interface to present the action to the user as follows:
-	//
-	// | `context`   | Tool where action is displayed |
-	// |-------------|--------------------------------|
-	// | provisioner | Provisioner Explorer           |
-	// | worker-type | Workers Explorer               |
-	// | worker      | Worker Explorer                |
-	//
-	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
-	// for more information.
-	WorkerAction struct {
-
-		// Only actions with the context `worker` are included.
-		//
-		// Possible values:
-		//   * "worker"
-		Context string `json:"context"`
-
-		// Description of the provisioner.
-		Description string `json:"description"`
-
-		// Method to indicate the desired action to be performed for a given resource.
-		//
-		// Possible values:
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "PATCH"
-		Method string `json:"method"`
-
-		// Short names for things like logging/error messages.
-		Name string `json:"name"`
-
-		// Appropriate title for any sort of Modal prompt.
-		Title json.RawMessage `json:"title"`
-
-		// When an action is triggered, a request is made using the `url` and `method`.
-		// Depending on the `context`, the following parameters will be substituted in the url:
-		//
-		// | `context`   | Path parameters                                          |
-		// |-------------|----------------------------------------------------------|
-		// | provisioner | <provisionerId>                                          |
-		// | worker-type | <provisionerId>, <workerType>                            |
-		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-		//
-		// _Note: The request needs to be signed with the user's Taskcluster credentials._
-		URL string `json:"url"`
-	}
-
 	// Request to update a worker.
 	WorkerRequest struct {
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
+		Expires tcclient.Time `json:"expires"`
 	}
 
 	// Response containing information about a worker.
 	WorkerResponse struct {
-		Actions []WorkerAction `json:"actions"`
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
@@ -2278,99 +2205,8 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
-	// Actions provide a generic mechanism to expose additional features of a
-	// provisioner, worker type, or worker to Taskcluster clients.
-	//
-	// An action is comprised of metadata describing the feature it exposes,
-	// together with a webhook for triggering it.
-	//
-	// The Taskcluster tools site, for example, retrieves actions when displaying
-	// provisioners, worker types and workers. It presents the provisioner/worker
-	// type/worker specific actions to the user. When the user triggers an action,
-	// the web client takes the registered webhook, substitutes parameters into the
-	// URL (see `url`), signs the requests with the Taskcluster credentials of the
-	// user operating the web interface, and issues the HTTP request.
-	//
-	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
-	//
-	// The action context is used by the web client to determine where in the web
-	// interface to present the action to the user as follows:
-	//
-	// | `context`   | Tool where action is displayed |
-	// |-------------|--------------------------------|
-	// | provisioner | Provisioner Explorer           |
-	// | worker-type | Workers Explorer               |
-	// | worker      | Worker Explorer                |
-	//
-	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
-	// for more information.
-	WorkerTypeAction struct {
-
-		// Only actions with the context `worker-type` are included.
-		//
-		// Possible values:
-		//   * "worker-type"
-		Context string `json:"context"`
-
-		// Description of the provisioner.
-		Description string `json:"description"`
-
-		// Method to indicate the desired action to be performed for a given resource.
-		//
-		// Possible values:
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "PATCH"
-		Method string `json:"method"`
-
-		// Short names for things like logging/error messages.
-		Name string `json:"name"`
-
-		// Appropriate title for any sort of Modal prompt.
-		Title json.RawMessage `json:"title"`
-
-		// When an action is triggered, a request is made using the `url` and `method`.
-		// Depending on the `context`, the following parameters will be substituted in the url:
-		//
-		// | `context`   | Path parameters                                          |
-		// |-------------|----------------------------------------------------------|
-		// | provisioner | <provisionerId>                                          |
-		// | worker-type | <provisionerId>, <workerType>                            |
-		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-		//
-		// _Note: The request needs to be signed with the user's Taskcluster credentials._
-		URL string `json:"url"`
-	}
-
-	// Request to update a worker-type.
-	WorkerTypeRequest struct {
-
-		// Description of the provisioner.
-		Description string `json:"description,omitempty"`
-
-		// Date and time after which the worker-type will be automatically
-		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
-
-		// This is the stability of the provisioner. Accepted values:
-		//   * `experimental`
-		//   * `stable`
-		//   * `deprecated`
-		//
-		// Possible values:
-		//   * "experimental"
-		//   * "stable"
-		//   * "deprecated"
-		Stability string `json:"stability,omitempty"`
-	}
-
 	// Response to a worker-type request from a provisioner.
 	WorkerTypeResponse struct {
-		Actions []WorkerTypeAction `json:"actions"`
 
 		// Description of the worker-type.
 		Description string `json:"description"`

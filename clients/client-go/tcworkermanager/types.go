@@ -5,7 +5,7 @@ package tcworkermanager
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type (
@@ -133,6 +133,12 @@ type (
 		// Max length: 38
 		ProviderID string `json:"providerId"`
 
+		// The time that the worker's system booted.
+		// This is used to increase granularity of worker
+		// registration time metrics.
+		// See https://github.com/taskcluster/taskcluster/issues/8232.
+		SystemBootTime tcclient.Time `json:"systemBootTime,omitzero"`
+
 		// Worker group to which this worker belongs
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
@@ -250,6 +256,17 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
+	}
+
+	// Decision returned to a worker asking whether to keep running or be terminated
+	ShouldWorkerTerminateResponse struct {
+
+		// Reason why worker should be terminated
+		//
+		// Min length: 1
+		Reason string `json:"reason"`
+
+		Terminate bool `json:"terminate"`
 	}
 
 	// Link to source of this task, should specify a file, revision and
@@ -609,74 +626,6 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId,omitempty"`
-	}
-
-	// Actions provide a generic mechanism to expose additional features of a
-	// provisioner, worker type, or worker to Taskcluster clients.
-	//
-	// An action is comprised of metadata describing the feature it exposes,
-	// together with a webhook for triggering it.
-	//
-	// The Taskcluster tools site, for example, retrieves actions when displaying
-	// provisioners, worker types and workers. It presents the provisioner/worker
-	// type/worker specific actions to the user. When the user triggers an action,
-	// the web client takes the registered webhook, substitutes parameters into the
-	// URL (see `url`), signs the requests with the Taskcluster credentials of the
-	// user operating the web interface, and issues the HTTP request.
-	//
-	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
-	//
-	// The action context is used by the web client to determine where in the web
-	// interface to present the action to the user as follows:
-	//
-	// | `context`   | Tool where action is displayed |
-	// |-------------|--------------------------------|
-	// | provisioner | Provisioner Explorer           |
-	// | worker-type | Workers Explorer               |
-	// | worker      | Worker Explorer                |
-	//
-	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
-	// for more information.
-	WorkerAction struct {
-
-		// Only actions with the context `worker` are included.
-		//
-		// Possible values:
-		//   * "worker"
-		Context string `json:"context"`
-
-		// Description of the provisioner.
-		Description string `json:"description"`
-
-		// Method to indicate the desired action to be performed for a given resource.
-		//
-		// Possible values:
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "PATCH"
-		Method string `json:"method"`
-
-		// Short names for things like logging/error messages.
-		Name string `json:"name"`
-
-		// Appropriate title for any sort of Modal prompt.
-		Title json.RawMessage `json:"title"`
-
-		// When an action is triggered, a request is made using the `url` and `method`.
-		// Depending on the `context`, the following parameters will be substituted in the url:
-		//
-		// | `context`   | Path parameters                                          |
-		// |-------------|----------------------------------------------------------|
-		// | provisioner | <provisionerId>                                          |
-		// | worker-type | <provisionerId>, <workerType>                            |
-		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-		//
-		// _Note: The request needs to be signed with the user's Taskcluster credentials._
-		URL string `json:"url"`
 	}
 
 	// Request to create or update a worker. Capacity will default to 1 if not specified.
@@ -1130,7 +1079,6 @@ type (
 
 	// Response containing information about a worker.
 	WorkerResponse struct {
-		Actions []WorkerAction `json:"actions"`
 
 		// Number of tasks this worker can handle at once. A worker capacity of 0 means
 		// the worker is not managed by worker manager and is only known to the queue, the

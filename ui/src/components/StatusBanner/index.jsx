@@ -27,7 +27,7 @@ export default class StatusBanner extends Component {
     });
   }
 
-  handleSnackbarClose = (event, reason) => {
+  handleSnackbarClose = (_event, reason) => {
     // A banner message is pretty important for users to see so we should
     // require user interaction to hide it.
     // This would also avoid accidentally hiding the message

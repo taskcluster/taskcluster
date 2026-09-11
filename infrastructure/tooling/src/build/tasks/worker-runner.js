@@ -1,8 +1,8 @@
-import glob from 'glob';
-import path from 'path';
+import { globSync } from 'glob';
+import path from 'node:path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks }) => {
   ensureTask(tasks, {
     title: 'Build worker-runner artifacts',
     requires: ['clean-artifacts-dir'],
@@ -16,7 +16,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
-      const artifacts = glob.sync('start-worker-*', { cwd: artifactsDir });
+      const artifacts = globSync('start-worker-*', { cwd: artifactsDir });
 
       return {
         'worker-runner-artifacts': artifacts,
@@ -26,14 +26,9 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Worker-Runner Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'worker-runner-artifacts',
-    ],
-    provides: [
-      'target-worker-runner',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['clean-artifacts-dir', 'worker-runner-artifacts'],
+    provides: ['target-worker-runner'],
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-worker-runner': [

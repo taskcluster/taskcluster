@@ -1,9 +1,9 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import tcdb from '@taskcluster/db';
 import helper from './helper.js';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   const schema = tcdb.schema({ useDbDirectory: true });
@@ -40,7 +40,8 @@ suite(testing.suiteName(), function() {
 
   const assertNoPermissions = async () => {
     await helper.withDbClient(async client => {
-      const res = await client.query(`
+      const res = await client.query(
+        `
         select grantee, table_name, privilege_type
           from information_schema.table_privileges
           where table_schema = 'public'
@@ -53,26 +54,28 @@ suite(testing.suiteName(), function() {
           where table_schema = 'public'
            and grantee like $1 || '\\_%'
            and table_catalog = current_catalog
-           and table_name != 'tcversion'`, ['test']);
+           and table_name != 'tcversion'`,
+        ['test']
+      );
       assert.deepEqual(res.rows, []);
     });
   };
 
-  test('upgrade to latest version', async function() {
+  test('upgrade to latest version', async () => {
     await helper.upgradeTo(latestVersion.version);
   });
 
-  test('downgrade to version 0', async function() {
+  test('downgrade to version 0', async () => {
     await helper.downgradeTo(0);
     await assertEmptySchema();
     await assertNoPermissions();
   });
 
-  test('upgrade to latest version again', async function() {
+  test('upgrade to latest version again', async () => {
     await helper.upgradeTo(latestVersion.version);
   });
 
-  test('downgrade to version 0', async function() {
+  test('downgrade to version 0', async () => {
     await helper.downgradeTo(0);
     await assertEmptySchema();
     await assertNoPermissions();

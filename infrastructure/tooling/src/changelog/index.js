@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
 import semver from 'semver';
-import glob from 'glob';
+import { globSync } from 'glob';
 import chalk from 'chalk';
 import appRootDir from 'app-root-dir';
 
@@ -15,25 +15,18 @@ import {
 } from '../utils/index.js';
 
 import taskcluster from '@taskcluster/client';
-import path from 'path';
+import path from 'node:path';
 import openEditor from 'open-editor';
 import { Octokit } from '@octokit/rest';
 
 const ALLOWED_LEVELS = {
-  'major': 1,
-  'minor': 2,
-  'patch': 3,
-  'silent': 4,
+  major: 1,
+  minor: 2,
+  patch: 3,
+  silent: 4,
 };
 
-const ALLOWED_AUDIENCES = [
-  'general',
-  'deployers',
-  'worker-deployers',
-  'admins',
-  'users',
-  'developers',
-];
+const ALLOWED_AUDIENCES = ['general', 'deployers', 'worker-deployers', 'admins', 'users', 'developers'];
 
 /**
  * compare levels, with major being first
@@ -78,45 +71,50 @@ export class ChangeLog {
   }
 
   async loadSnippets() {
-    const snippetFiles = glob.sync('changelog/*.md', { cwd: appRootDir.get() })
-      .filter(filename => filename !== 'changelog/README.md');
+    const snippetFiles = globSync('changelog/*.md', { cwd: appRootDir.get() }).filter(
+      filename => filename !== 'changelog/README.md'
+    );
 
-    this.snippets = await Promise.all(snippetFiles.map(async filename => {
-      // include a trailing newline in case the file lacks one
-      const snippetContent = (await readRepoFile(filename)).trimEnd() + '\n';
-      const [headerYaml, body] = snippetContent.split('\n---\n', 2);
+    this.snippets = await Promise.all(
+      snippetFiles.map(async filename => {
+        // include a trailing newline in case the file lacks one
+        const snippetContent = `${(await readRepoFile(filename)).trimEnd()}\n`;
+        const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
-      let { level, audience, reference, ...extra } = yaml.load(headerYaml);
-      if (Object.keys(extra).length !== 0) {
-        throw new Error(`Snippet ${filename}: extra properties in header`);
-      }
-
-      if (!level || !ALLOWED_LEVELS[level]) {
-        throw new Error(`Snippet ${filename}: invalid level. Must be in ${JSON.stringify(ALLOWED_LEVELS)}`);
-      }
-
-      if (level !== 'silent' && (!body || body.trim().length === 0)) {
-        throw new Error(`Snippet ${filename} is malformed or has no body`);
-      }
-
-      if (!audience || !ALLOWED_AUDIENCES.includes(audience)) {
-        throw new Error(`Snippet ${filename}: invalid audience '${audience}'. Must be in ${JSON.stringify(ALLOWED_AUDIENCES)}`);
-      }
-
-      if (reference) {
-        reference = reference.trim();
-        if (reference.match(/^issue \d+$/)) {
-          reference = `[#${reference.slice(6)}](https://github.com/taskcluster` +
-          `/taskcluster/issues/${reference.slice(6)})`;
-        } else if (reference.match(/^bug \d+$/)) {
-          reference = `[${reference}](http://bugzil.la/${reference.slice(4)})`;
-        } else {
-          throw new Error(`Snippet ${filename}: invalid reference '${reference}'`);
+        let { level, audience, reference, ...extra } = yaml.load(headerYaml);
+        if (Object.keys(extra).length !== 0) {
+          throw new Error(`Snippet ${filename}: extra properties in header`);
         }
-      }
 
-      return { filename, audience, level, reference, body };
-    }));
+        if (!level || !ALLOWED_LEVELS[level]) {
+          throw new Error(`Snippet ${filename}: invalid level. Must be in ${JSON.stringify(ALLOWED_LEVELS)}`);
+        }
+
+        if (level !== 'silent' && (!body || body.trim().length === 0)) {
+          throw new Error(`Snippet ${filename} is malformed or has no body`);
+        }
+
+        if (level !== 'silent' && (!audience || !ALLOWED_AUDIENCES.includes(audience))) {
+          throw new Error(
+            `Snippet ${filename}: invalid audience '${audience}'. Must be in ${JSON.stringify(ALLOWED_AUDIENCES)}`
+          );
+        }
+
+        if (reference) {
+          reference = reference.trim();
+          if (reference.match(/^issue \d+$/)) {
+            reference =
+              `[#${reference.slice(6)}](https://github.com/taskcluster` + `/taskcluster/issues/${reference.slice(6)})`;
+          } else if (reference.match(/^bug \d+$/)) {
+            reference = `[${reference}](http://bugzil.la/${reference.slice(4)})`;
+          } else {
+            throw new Error(`Snippet ${filename}: invalid reference '${reference}'`);
+          }
+        }
+
+        return { filename, audience, level, reference, body };
+      })
+    );
 
     const cmp = (a, b) => {
       return levelcmp(a.level, b.level) || strcmp(a.body, b.body);
@@ -129,7 +127,7 @@ export class ChangeLog {
     const lastVersion = await this.lastVersion();
     this.updates = await gitLog({
       dir: REPO_ROOT,
-      args: [`v${lastVersion}..HEAD`, '--author=dependabot', "--pretty=%s (%h)"],
+      args: [`v${lastVersion}..HEAD`, '--author=dependabot', '--pretty=%s (%h)'],
     });
   }
 
@@ -139,7 +137,7 @@ export class ChangeLog {
    */
   level() {
     let minor = false;
-    for (let { level } of this.snippets) {
+    for (const { level } of this.snippets) {
       if (level === 'major') {
         return 'major';
       }
@@ -171,17 +169,18 @@ export class ChangeLog {
     }
 
     const levelLabels = {
-      'major': '[MAJOR]',
-      'minor': '[minor]',
-      'patch': '[patch]',
+      major: '[MAJOR]',
+      minor: '[minor]',
+      patch: '[patch]',
     };
 
     const silent = this.snippets.filter(sn => sn.level === 'silent' && sn.reference);
     const silentCount = silent.length;
     const silentLinks = silent.map(sn => sn.reference).join(', ');
-    const silentSuffix = silentCount === 0 ?
-      '' :
-      `\n\n### OTHER\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
+    const silentSuffix =
+      silentCount === 0
+        ? ''
+        : `\n\n### OTHER\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
 
     // These changelog snippets are already sorted in level-order so when we insert
     // them here they remain in order. no need to re-sort
@@ -196,37 +195,34 @@ export class ChangeLog {
       return acc;
     }, {});
 
-    const formattedSnippets = ALLOWED_AUDIENCES
-      .map(audience => {
-        if (!categorizedSnippets[audience]) {
-          return '';
-        }
-        const snippets = categorizedSnippets[audience]
-          .map(({ level, reference, body }) => (
-            '▶ ' + levelLabels[level] +
-            (reference ? ' ' + reference : '') + '\n' +
-            body.trim()
-          ))
-          .join('\n\n');
-        return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;
-      }).join('').trim();
+    const formattedSnippets = ALLOWED_AUDIENCES.map(audience => {
+      if (!categorizedSnippets[audience]) {
+        return '';
+      }
+      const snippets = categorizedSnippets[audience]
+        .map(
+          ({ level, reference, body }) => `▶ ${levelLabels[level]}${reference ? ` ${reference}` : ''}\n${body.trim()}`
+        )
+        .join('\n\n');
+      return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;
+    })
+      .join('')
+      .trim();
 
-    const formattedUpdates = this.updates.length > 0 ? (
-      [
-        '\n',
-        '### Automated Package Updates',
-        '',
-        '<details>',
-        `<summary>${this.updates.length} Dependabot updates</summary>`,
-        '', // without this newline, the list will not render correctly
-      ]
-        .concat(this.updates.map(u => `* ${u}`))
-        .concat([
-          '',
-          '</details>',
-        ])
-        .join('\n')
-    ) : '';
+    const formattedUpdates =
+      this.updates.length > 0
+        ? [
+            '\n',
+            '### Automated Package Updates',
+            '',
+            '<details>',
+            `<summary>${this.updates.length} Dependabot updates</summary>`,
+            '', // without this newline, the list will not render correctly
+          ]
+            .concat(this.updates.map(u => `* ${u}`))
+            .concat(['', '</details>'])
+            .join('\n')
+        : '';
 
     return formattedSnippets + silentSuffix + formattedUpdates;
   }
@@ -240,15 +236,19 @@ export class ChangeLog {
   }
 }
 
-const check_pr = async (pr) => {
+const check_pr = async prUrl => {
   const octokit = new Octokit();
-  const options = octokit.pulls.listFiles.endpoint.merge({
-    owner: 'taskcluster',
-    repo: 'taskcluster',
-    pull_number: pr,
-  });
-  const files = await octokit.paginate(options,
-    response => response.data.map(({ filename }) => filename));
+  if (!prUrl) {
+    throw new Error(
+      'Cannot check the changelog: --pull-request-url is unset. This check should only run in github pull requests.'
+    );
+  }
+  console.log(`Checking changelog requirement for ${prUrl}`);
+  const files = await octokit.paginate(`GET ${prUrl}/files`, response => response.data.map(({ filename }) => filename));
+  if (!files.length) {
+    throw new Error(`no changed files found for ${prUrl}; the pull request lookup returned nothing`);
+  }
+  console.log(`changed files (${files.length}):\n${files.map(f => `  ${f}`).join('\n')}`);
 
   // files that do not require a changelog entry if they are the only thing changed.  This
   // is similar to the list in .gitattributes., along with yarn and package.json
@@ -267,6 +267,7 @@ const check_pr = async (pr) => {
     /^clients\/client-web\/src\/clients\//,
     /^clients\/client-py\/taskcluster\/generated\//,
     /^clients\/client-py\/README\.md$/,
+    /^clients\/client-py\/uv\.lock$/,
     /^clients\/client\/src\/apis\.js$/,
     /^clients\/client-rust\/src\/generated\//,
     /^clients\/client-shell\/apis\/services\.go$/,
@@ -277,26 +278,28 @@ const check_pr = async (pr) => {
   const hasImportantFiles = files.some(filename => boringFiles.every(r => !r.test(filename)));
 
   if (!hasImportantFiles) {
-    console.log(`${chalk.bold.green(`PR ${pr} OK:`)} does not contain any changes requiring a changelog`);
+    console.log(`${chalk.bold.green(`PR ${prUrl} OK:`)} does not contain any changes requiring a changelog`);
     return true;
   }
 
   const changelogFiles = files.filter(filename => filename.startsWith('changelog/'));
 
   if (changelogFiles.some(filename => !filename.endsWith('.md'))) {
-    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} has an invalid file in 'changelog/'. All files must be '.md'`);
+    console.log(
+      `${chalk.bold.red('ERROR:')} Pull Request ${prUrl} has an invalid file in 'changelog/'. All files must be '.md'`
+    );
     return false;
   }
 
   if (hasImportantFiles && !changelogFiles.length) {
-    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} does not modify any files in 'changelog/'`);
+    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${prUrl} does not modify any files in 'changelog/'`);
     return false;
   }
-  console.log(chalk.bold.green(`PR ${pr} OK`));
+  console.log(chalk.bold.green(`PR ${prUrl} OK`));
   return true;
 };
 
-export const add = async (options) => {
+export const add = async options => {
   let level, bad;
   if (options.major) {
     level = 'major';
@@ -324,8 +327,9 @@ export const add = async (options) => {
     audience = 'users';
   } else if (options.developers) {
     audience = 'developers';
-  } else if (level === 'silent') { // We allow defaulting silent changes to `general` other levels _must_ specify
-    audience = 'general';
+  } else if (level === 'silent') {
+    // silent changes don't need an audience
+    audience = undefined;
   } else {
     console.log('Must specify one of --general, --deployers, --worker-deployers, --admins, --users, or --developers');
     bad = true;
@@ -343,7 +347,7 @@ export const add = async (options) => {
     reference = '';
   } else {
     const { ref } = await gitCurrentBranch({ dir: REPO_ROOT });
-    let m = ref.match(/(bug|issue)-?([0-9]+)/);
+    const m = ref.match(/(bug|issue)-?([0-9]+)/);
     if (m) {
       reference = `reference: ${m[1]} ${m[2]}\n`;
       name = `${m[1]}-${m[2]}`;
@@ -358,8 +362,9 @@ export const add = async (options) => {
   }
 
   // invent a unique filename
-  let filename, i = 0;
-  while (1) {
+  let filename,
+    i = 0;
+  while (true) {
     filename = path.join('changelog', `${name}${i > 0 ? `-${i}` : ''}.md`);
     try {
       await readRepoFile(filename);
@@ -374,7 +379,11 @@ export const add = async (options) => {
 
   const helpText =
     '<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->';
-  await writeRepoFile(filename, `audience: ${audience}\nlevel: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
+  const audienceLine = audience ? `audience: ${audience}\n` : '';
+  await writeRepoFile(
+    filename,
+    `${audienceLine}level: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`
+  );
   await gitAdd({ dir: REPO_ROOT, files: [filename] });
   console.log(`wrote ${filename}`);
 
@@ -383,7 +392,7 @@ export const add = async (options) => {
   }
 };
 
-export const show = async (options) => {
+export const show = async _options => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
@@ -392,13 +401,13 @@ export const show = async (options) => {
   console.log(await cl.format());
 };
 
-export const check = async (options) => {
+export const check = async options => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(chalk.bold.green('Changelog OK'));
 
-  if (options.pr) {
-    if (!(await check_pr(options.pr))) {
+  if (options.pullRequestUrl) {
+    if (!(await check_pr(options.pullRequestUrl))) {
       process.exit(1);
     }
   }

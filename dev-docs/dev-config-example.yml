@@ -7,6 +7,9 @@ ingressCertName: ...
 ingressType: ...
 ingressTlsSecretName: ''
 certManagerClusterIssuerName: ''
+gatewayClassName: ''
+gatewayStaticIpName: ''
+gcpManagedCertName: ''
 pulseHostname: ...
 pulseAmqps: true
 pulseVhost: ...
@@ -14,6 +17,7 @@ forceSSL: false
 trustProxy: true
 nodeEnv: production
 meta: {}
+podAnnotations: {}
 prometheus:
   enabled: true
   server:
@@ -60,9 +64,9 @@ auth:
   db_crypto_keys: {}
   pulse_username: ...
   pulse_password: ...
-  azure_accounts: {}
   aws_credentials_allowed_buckets: {}
   gcp_credentials_allowed_projects: {}
+  github_credentials_apps: {}
   audit_retention_days: ...
   procs:
     web:
@@ -204,6 +208,8 @@ queue:
       cpu: 10m
     claimResolver:
       cpu: 10m
+    workerRemovedResolver:
+      cpu: 10m
     deadlineResolver:
       cpu: 10m
     dependencyResolver:
@@ -253,6 +259,8 @@ web_server:
       cpu: 10m
     scanner:
       cpu: 10m
+    cleanup_session_storage:
+      cpu: 10m
     cleanup_expire_auth_codes:
       cpu: 10m
     cleanup_expire_access_tokens:
@@ -260,6 +268,7 @@ web_server:
 worker_manager:
   provisioner_iterate_config: {}
   worker_scanner_iterate_config: {}
+  worker_scanner_concurrency: ...
   taskcluster_access_token: ...
   read_db_url: ...
   write_db_url: ...

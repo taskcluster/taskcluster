@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type (
@@ -79,81 +79,6 @@ type (
 		// Possible values:
 		//   * "auth-success"
 		Status string `json:"status"`
-	}
-
-	// Response to a request for an Shared-Access-Signature to access an Azure
-	// Blob Storage container.
-	AzureBlobSharedAccessSignature struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		Sas string `json:"sas"`
-	}
-
-	// A list of Azure accounts managed by taskcluster-auth
-	AzureListAccountResponse struct {
-
-		// A list of accountIds that are managed by auth. These are
-		// the accounts that can have SAS credentials fetched for tables
-		// within them.
-		//
-		// Array items:
-		Accounts []string `json:"accounts"`
-	}
-
-	// A list of Azure containers in an account
-	AzureListContainersResponse struct {
-
-		// A list of containers that are in an account.  Credentials are available for
-		// these containers from the `azureBlobSAS` method.
-		//
-		// Array items:
-		Containers []string `json:"containers"`
-
-		// Opaque `continuationToken` to be given as query-string option to get the
-		// next set of containers.
-		// This property is only present if another request is necessary to fetch all
-		// results. In practice the next request with a `continuationToken` may not
-		// return additional results, but it can. Thus, you can only be sure to have
-		// all the results if you've called this method with `continuationToken`
-		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
-	}
-
-	// A list of Azure tables in an account
-	AzureListTableResponse struct {
-
-		// Opaque `continuationToken` to be given as query-string option to get the
-		// next set of tables.
-		// This property is only present if another request is necessary to fetch all
-		// results. In practice the next request with a `continuationToken` may not
-		// return additional results, but it can. Thus, you can only be sure to have
-		// all the results if you've called `azureAccountTables` with `continuationToken`
-		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
-
-		// A list of tables that are in an account. These are
-		// the tables that can have SAS credentials fetched for them.
-		//
-		// Array items:
-		Tables []string `json:"tables"`
-	}
-
-	// Response to a request for an Shared-Access-Signature to access and Azure
-	// Table Storage table.
-	AzureTableSharedAccessSignature struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		Sas string `json:"sas"`
 	}
 
 	// Properties to create a client.
@@ -450,6 +375,31 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	// The list of permissions and repositories to scope a repository level github token to.
+	GithubRepositoryTokenRequest struct {
+
+		// Repository level github app permissions to request. Mapping a permission
+		// name to the desired level of access. Names and levels are a direct mapping
+		// from [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).
+		Permissions RepositoryPermissions `json:"permissions"`
+
+		// Names of the repositories (within `:owner`) the token gets access to.
+		//
+		// Array items:
+		// Syntax:     ^[A-Za-z0-9._-]+$
+		Repositories []string `json:"repositories"`
+	}
+
+	// A github app installation access token.
+	GithubTokenResponse struct {
+
+		// Time at which the token expires
+		Expires tcclient.Time `json:"expires"`
+
+		// The installation access token
+		Token string `json:"token"`
+	}
+
 	// Request to authenticate a hawk request.
 	HawkSignatureAuthenticationRequest struct {
 
@@ -562,6 +512,152 @@ type (
 		// Possible values:
 		//   * "no-auth"
 		Status string `json:"status"`
+	}
+
+	// Repository level github app permissions to request. Mapping a permission
+	// name to the desired level of access. Names and levels are a direct mapping
+	// from [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).
+	RepositoryPermissions struct {
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Actions string `json:"actions,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Administration string `json:"administration,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Artifact_Metadata string `json:"artifact_metadata,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Attestations string `json:"attestations,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Checks string `json:"checks,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Code_Quality string `json:"code_quality,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Codespaces string `json:"codespaces,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Contents string `json:"contents,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Dependabot_Secrets string `json:"dependabot_secrets,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Deployments string `json:"deployments,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Discussions string `json:"discussions,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Environments string `json:"environments,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Issues string `json:"issues,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Merge_Queues string `json:"merge_queues,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Metadata string `json:"metadata,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Packages string `json:"packages,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Pages string `json:"pages,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Pull_Requests string `json:"pull_requests,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Repository_Custom_Properties string `json:"repository_custom_properties,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Repository_Hooks string `json:"repository_hooks,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		//   * "admin"
+		Repository_Projects string `json:"repository_projects,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Secret_Scanning_Alerts string `json:"secret_scanning_alerts,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Secrets string `json:"secrets,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Security_Events string `json:"security_events,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Single_File string `json:"single_file,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Statuses string `json:"statuses,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Vulnerability_Alerts string `json:"vulnerability_alerts,omitempty"`
+
+		// Possible values:
+		//   * "write"
+		Workflows string `json:"workflows,omitempty"`
 	}
 
 	// Sentry DSN for submitting errors.

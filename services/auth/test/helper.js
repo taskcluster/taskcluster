@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('test-helper');
 import _ from 'lodash';
@@ -6,25 +6,24 @@ import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
 import { default as mainLoad } from '../src/main.js';
 import slugid from 'slugid';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 import { v4 } from 'uuid';
 import { APIBuilder } from '@taskcluster/lib-api';
 import SchemaSet from '@taskcluster/lib-validate';
 import makeSentryManager from './../src/sentrymanager.js';
 import { syncStaticClients } from '../src/static-clients.js';
+import { makeInstallationCache } from '../src/github.js';
 import { stickyLoader, Secrets, withMonitor } from '@taskcluster/lib-testing';
 import * as libTesting from '@taskcluster/lib-testing';
-import { URL } from 'url';
-import path from 'path';
+import { URL } from 'node:url';
+import path from 'node:path';
 
 export const load = stickyLoader(mainLoad);
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suiteSetup(async function() {
-  process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
-    'invalid@mozilla.com',
-  ]);
+suiteSetup(async () => {
+  process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify(['invalid@mozilla.com']);
 
   load.inject('profile', 'test');
   load.inject('process', 'test');
@@ -41,34 +40,32 @@ withMonitor({ load });
 
 // set up the testing secrets
 helper.secrets = new Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-auth',
-    'project/taskcluster/testing/azure',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-auth'],
   secrets: {
-    azure: [
-      { env: 'AZURE_ACCOUNT', name: 'accountId' },
-      { env: 'AZURE_ACCOUNT_KEY', name: 'accessKey' },
-    ],
     aws: [
       { env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId' },
       { env: 'AWS_SECRET_ACCESS_KEY', name: 'awsSecretAccessKey' },
       { env: 'TEST_BUCKET', name: 'testBucket' },
     ],
     gcp: [
-      { env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {} },
+      {
+        env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS',
+        cfg: 'gcpCredentials.allowedProjects',
+        name: 'allowedProjects',
+        mock: {},
+      },
     ],
   },
   load,
 });
 
-helper.loadJson = async (filename) => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
+helper.loadJson = async filename => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
 
-helper.withCfg = (mock, skipping) => {
+helper.withCfg = skipping => {
   if (skipping()) {
     return;
   }
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -80,22 +77,17 @@ helper.withCfg = (mock, skipping) => {
     const staticScopes = await helper.loadJson('../src/static-scopes.json');
 
     // override app.staticClients based on the static scopes
-    load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
-      clientId,
-      accessToken: clientId === 'static/taskcluster/root' ? helper.rootAccessToken : 'must-be-at-least-22-characters',
-      description: 'testing',
-    })));
-
-    // override cfg.azureAccounts based on the azure secret, or mock it
-    if (mock) {
-      load.cfg('azureAccounts', undefined);
-    } else {
-      const sec = helper.secrets.get('azure');
-      load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
-    }
+    load.cfg(
+      'app.staticClients',
+      staticScopes.map(({ clientId }) => ({
+        clientId,
+        accessToken: clientId === 'static/taskcluster/root' ? helper.rootAccessToken : 'must-be-at-least-22-characters',
+        description: 'testing',
+      }))
+    );
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -111,9 +103,9 @@ helper.withDb = (mock, skipping) => {
 /**
  * Setup a fake sentry
  */
-helper.withSentry = (mock, skipping) => {
+helper.withSentry = skipping => {
   const sentryOrgs = {};
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -125,7 +117,7 @@ helper.withSentry = (mock, skipping) => {
         projects: org => Object.values(sentryOrgs[org]),
       },
       teams: {
-        createProject: (org, team, info) => {
+        createProject: (org, _team, info) => {
           if (!sentryOrgs[org]) {
             sentryOrgs[org] = {};
           }
@@ -155,14 +147,17 @@ helper.withSentry = (mock, skipping) => {
       },
     };
 
-    load.inject('sentryManager', makeSentryManager({
-      ...cfg.app.sentry,
-      sentryClient,
-    }));
+    load.inject(
+      'sentryManager',
+      makeSentryManager({
+        ...cfg.app.sentry,
+        sentryClient,
+      })
+    );
   });
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   libTesting.withPulse({ helper, skipping, namespace: 'taskcluster-auth' });
 };
 
@@ -173,19 +168,22 @@ const testServiceBuilder = new APIBuilder({
   apiVersion: 'v1',
 });
 
-testServiceBuilder.declare({
-  method: 'get',
-  route: '/resource',
-  name: 'resource',
-  scopes: 'myapi:resource',
-  title: 'Get Resource',
-  category: 'Auth Service',
-  description: '...',
-}, function(req, res) {
-  res.status(200).json({
-    message: 'Hello World',
-  });
-});
+testServiceBuilder.declare(
+  {
+    method: 'get',
+    route: '/resource',
+    name: 'resource',
+    scopes: 'myapi:resource',
+    title: 'Get Resource',
+    category: 'Auth Service',
+    description: '...',
+  },
+  (_req, res) => {
+    res.status(200).json({
+      message: 'Hello World',
+    });
+  }
+);
 
 /**
  * Set up API servers.  Call this after withDb, so the server
@@ -196,10 +194,10 @@ testServiceBuilder.declare({
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-helper.withServers = (mock, skipping) => {
+helper.withServers = skipping => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -239,7 +237,7 @@ helper.withServers = (mock, skipping) => {
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
-      monitor: (await load('monitor')),
+      monitor: await load('monitor'),
       rootUrl: rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,
@@ -247,10 +245,7 @@ helper.withServers = (mock, skipping) => {
     });
 
     // include this test API in the APIs served, alongside the normal auth service
-    load.inject('apis', [
-      await load('api'),
-      testServiceApi,
-    ]);
+    load.inject('apis', [await load('api'), testServiceApi]);
     webServer = await load('server');
   });
 
@@ -258,7 +253,7 @@ helper.withServers = (mock, skipping) => {
     helper.setupScopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -349,10 +344,7 @@ helper.withGcp = (mock, skipping) => {
         client_email: 'test_client@example.com',
       };
       const auth = { testCredentials: credentials };
-      const allowedServiceAccounts = [
-        credentials.client_email,
-        'invalid@mozilla.com',
-      ];
+      const allowedServiceAccounts = [credentials.client_email, 'invalid@mozilla.com'];
 
       load.inject('gcp', {
         auth,
@@ -380,13 +372,117 @@ helper.withGcp = (mock, skipping) => {
   });
 };
 
-helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
-    await libTesting.resetTables({ tableNames: [
-      'roles',
-      'clients',
-      'audit_history',
-    ] });
+helper.withGithub = skipping => {
+  const getAppDetails = (owner, id) => {
+    return {
+      data: {
+        id,
+        account: {
+          login: owner,
+        },
+      },
+    };
+  };
+
+  const githubError = (status, headers = {}, message = '') => {
+    const err = new Error(message);
+    err.status = status;
+    err.response = { headers };
+    return err;
+  };
+
+  const SECONDARY_LIMIT_MESSAGE =
+    'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. ' +
+    'Please retry your request again later.';
+
+  const fakeOctokit = {
+    getOrgInstallation: ({ org }) => {
+      helper.installationLookups += 1;
+      if (org === 'testorg') {
+        return getAppDetails('TestOrg', 12345);
+      } else if (org === 'testorgrenamed') {
+        return getAppDetails('amazingOrg', 12346);
+      } else if (org === 'notonrepo') {
+        return getAppDetails('notonrepo', 12422);
+      } else if (org === 'ratelimited') {
+        return getAppDetails('ratelimited', 12429);
+      } else if (org === 'primarylimited') {
+        return getAppDetails('primarylimited', 12403);
+      } else if (org === 'secondarylimited') {
+        return getAppDetails('secondarylimited', 13403);
+      } else if (org === 'secondarylimitednoheader') {
+        return getAppDetails('secondarylimitednoheader', 14403);
+      } else if (org === 'noowner') {
+        return { data: { id: 12600, account: null } };
+      } else if (org === 'lookuplimited') {
+        throw githubError(403, { 'x-ratelimit-remaining': '0' });
+      } else if (org === 'lookupsecondarylimited') {
+        throw githubError(403, { 'x-ratelimit-remaining': '42' }, SECONDARY_LIMIT_MESSAGE);
+      } else if (org === 'forbidden') {
+        throw githubError(403, { 'x-ratelimit-remaining': '42' });
+      }
+
+      throw githubError(404);
+    },
+
+    getUserInstallation: ({ username }) => {
+      helper.installationLookups += 1;
+      if (username === 'testuser') {
+        return getAppDetails('TestUser', 67890);
+      }
+
+      throw githubError(404);
+    },
+
+    createInstallationAccessToken: ({ installation_id, permissions, repositories }) => {
+      if (helper.githubUninstalled.has(installation_id)) {
+        throw githubError(404);
+      } else if (installation_id === 12422) {
+        throw githubError(422);
+      } else if (installation_id === 12429) {
+        throw githubError(429);
+      } else if (installation_id === 12403) {
+        throw githubError(403, { 'x-ratelimit-remaining': '0' });
+      } else if (installation_id === 13403) {
+        throw githubError(403, { 'retry-after': '42' });
+      } else if (installation_id === 14403) {
+        throw githubError(403, { 'x-ratelimit-remaining': '42' }, SECONDARY_LIMIT_MESSAGE);
+      }
+
+      const expiresAt = new Date(Date.now() + 3600000).toISOString();
+      const perms = Object.entries(permissions)
+        .map(([name, level]) => `${name}:${level}`)
+        .join(':');
+
+      return {
+        data: {
+          token: `token-${installation_id}-${perms}-${repositories.join(',')}`,
+          expires_at: expiresAt,
+        },
+      };
+    },
+  };
+
+  const app = { octokit: { apps: fakeOctokit }, installations: makeInstallationCache() };
+
+  suiteSetup('Github credentials', async () => {
+    if (skipping()) {
+      return;
+    }
+
+    load.inject('github', new Map([['testapp', app]]));
+  });
+
+  setup('reset test state', () => {
+    helper.installationLookups = 0;
+    helper.githubUninstalled = new Set();
+    app.installations.clear();
+  });
+};
+
+helper.resetTables = () => {
+  setup('reset tables', async () => {
+    await libTesting.resetTables({ tableNames: ['roles', 'clients', 'audit_history'] });
 
     // set up the static clients (which have already been overridden in withCfg)
     const cfg = await load('cfg');

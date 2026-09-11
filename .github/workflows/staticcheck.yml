@@ -1,8 +1,15 @@
 name: Staticcheck
 on: pull_request
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  STATICCHECK_VERSION: "2025.1.1"
+  STATICCHECK_VERSION: "2026.2"
 
 jobs:
   staticcheck-gw-multiuser:
@@ -13,14 +20,14 @@ jobs:
         os:  ["windows-latest", "ubuntu-latest", "macOS-latest"]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 1
         persist-credentials: false
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@v1.4.0
+    - uses: dominikh/staticcheck-action@9716614d4101e79b4340dd97b10e54d68234e431 # v1.4.1
       with:
         working-directory: workers/generic-worker
         build-tags: multiuser
@@ -35,14 +42,14 @@ jobs:
         os:  ["ubuntu-latest", "macOS-latest"]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 1
         persist-credentials: false
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@v1.4.0
+    - uses: dominikh/staticcheck-action@9716614d4101e79b4340dd97b10e54d68234e431 # v1.4.1
       with:
         working-directory: workers/generic-worker
         build-tags: insecure
@@ -57,14 +64,14 @@ jobs:
         dir:  ["clients/client-go", "internal", "tools"]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 1
         persist-credentials: false
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@v1.4.0
+    - uses: dominikh/staticcheck-action@9716614d4101e79b4340dd97b10e54d68234e431 # v1.4.1
       with:
         working-directory: ${{ matrix.dir }}
         install-go: false

@@ -124,6 +124,13 @@ services:
       - background
       - queue
       - queue-background
+  queue-background-workerRemovedResolver:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - background
+      - queue
+      - queue-background
   queue-background-deadlineResolver:
     environment:
       NODE_ENV: production
@@ -201,6 +208,13 @@ services:
     environment:
       NODE_ENV: production
   web-server-cron-scanner:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+  web-server-cron-cleanup-session-storage:
     environment:
       NODE_ENV: production
     profiles:

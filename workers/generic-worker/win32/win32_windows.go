@@ -51,24 +51,26 @@ var (
 	procGetThreadDesktop             = user32.NewProc("GetThreadDesktop")
 	procGetUserObjectInformationW    = user32.NewProc("GetUserObjectInformationW")
 	procDeleteProfileW               = userenv.NewProc("DeleteProfileW")
+	procCreateProfile                = userenv.NewProc("CreateProfile")
 	procGetDiskFreeSpaceExW          = kernel32.NewProc("GetDiskFreeSpaceExW")
 
 	FOLDERID_LocalAppData   = syscall.GUID{Data1: 0xF1B32785, Data2: 0x6FBA, Data3: 0x4FCF, Data4: [8]byte{0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91}}
+	FOLDERID_Public         = syscall.GUID{Data1: 0xDFDF76A2, Data2: 0xC82A, Data3: 0x4D63, Data4: [8]byte{0x90, 0x6A, 0x56, 0x44, 0xAC, 0x45, 0x73, 0x85}}
 	FOLDERID_RoamingAppData = syscall.GUID{Data1: 0x3EB685DB, Data2: 0x65F9, Data3: 0x4CF6, Data4: [8]byte{0xA0, 0x3A, 0xE3, 0xEF, 0x65, 0x72, 0x9F, 0x3D}}
 )
 
+// Win32 constants not exposed by golang.org/x/sys/windows. Constants
+// that ARE provided there — CREATE_BREAKAWAY_FROM_JOB,
+// CREATE_NEW_CONSOLE, CREATE_NEW_PROCESS_GROUP, CREATE_NO_WINDOW,
+// KF_FLAG_CREATE, and the TokenInformationClass enum (TokenUser
+// through MaxTokenInfoClass) — are referenced via windows.X at the
+// call sites rather than redefined here.
 const (
 	LOGON32_PROVIDER_DEFAULT = 0
 
 	LOGON32_LOGON_INTERACTIVE = 2
 
 	PI_NOUI = 1
-
-	KF_FLAG_CREATE uint32 = 0x00008000
-
-	CREATE_BREAKAWAY_FROM_JOB = 0x01000000
-	CREATE_NEW_CONSOLE        = 0x00000010
-	CREATE_NEW_PROCESS_GROUP  = 0x00000200
 
 	VER_MAJORVERSION     = 0x0000002
 	VER_MINORVERSION     = 0x0000001
@@ -77,51 +79,6 @@ const (
 	VER_GREATER_EQUAL    = 3
 
 	ERROR_OLD_WIN_VERSION syscall.Errno = 1150
-
-	// https://msdn.microsoft.com/en-us/library/windows/hardware/ff556838(v=vs.85).aspx
-	// TOKEN_INFORMATION_CLASS enumeration
-	TokenUser                            TOKEN_INFORMATION_CLASS = 1
-	TokenGroups                          TOKEN_INFORMATION_CLASS = 2
-	TokenPrivileges                      TOKEN_INFORMATION_CLASS = 3
-	TokenOwner                           TOKEN_INFORMATION_CLASS = 4
-	TokenPrimaryGroup                    TOKEN_INFORMATION_CLASS = 5
-	TokenDefaultDacl                     TOKEN_INFORMATION_CLASS = 6
-	TokenSourceX                         TOKEN_INFORMATION_CLASS = 7
-	TokenType                            TOKEN_INFORMATION_CLASS = 8
-	TokenImpersonationLevel              TOKEN_INFORMATION_CLASS = 9
-	TokenStatistics                      TOKEN_INFORMATION_CLASS = 10
-	TokenRestrictedSids                  TOKEN_INFORMATION_CLASS = 11
-	TokenSessionId                       TOKEN_INFORMATION_CLASS = 12
-	TokenGroupsAndPrivileges             TOKEN_INFORMATION_CLASS = 13
-	TokenSessionReference                TOKEN_INFORMATION_CLASS = 14
-	TokenSandBoxInert                    TOKEN_INFORMATION_CLASS = 15
-	TokenAuditPolicy                     TOKEN_INFORMATION_CLASS = 16
-	TokenOrigin                          TOKEN_INFORMATION_CLASS = 17
-	TokenElevationType                   TOKEN_INFORMATION_CLASS = 18
-	TokenLinkedToken                     TOKEN_INFORMATION_CLASS = 19
-	TokenElevation                       TOKEN_INFORMATION_CLASS = 20
-	TokenHasRestrictions                 TOKEN_INFORMATION_CLASS = 21
-	TokenAccessInformation               TOKEN_INFORMATION_CLASS = 22
-	TokenVirtualizationAllowed           TOKEN_INFORMATION_CLASS = 23
-	TokenVirtualizationEnabled           TOKEN_INFORMATION_CLASS = 24
-	TokenIntegrityLevel                  TOKEN_INFORMATION_CLASS = 25
-	TokenUIAccess                        TOKEN_INFORMATION_CLASS = 26
-	TokenMandatoryPolicy                 TOKEN_INFORMATION_CLASS = 27
-	TokenLogonSid                        TOKEN_INFORMATION_CLASS = 28
-	TokenIsAppContainer                  TOKEN_INFORMATION_CLASS = 29
-	TokenCapabilities                    TOKEN_INFORMATION_CLASS = 30
-	TokenAppContainerSid                 TOKEN_INFORMATION_CLASS = 31
-	TokenAppContainerNumber              TOKEN_INFORMATION_CLASS = 32
-	TokenUserClaimAttributes             TOKEN_INFORMATION_CLASS = 33
-	TokenDeviceClaimAttributes           TOKEN_INFORMATION_CLASS = 34
-	TokenRestrictedUserClaimAttributes   TOKEN_INFORMATION_CLASS = 35
-	TokenRestrictedDeviceClaimAttributes TOKEN_INFORMATION_CLASS = 36
-	TokenDeviceGroups                    TOKEN_INFORMATION_CLASS = 37
-	TokenRestrictedDeviceGroups          TOKEN_INFORMATION_CLASS = 38
-	TokenSecurityAttributes              TOKEN_INFORMATION_CLASS = 39
-	TokenIsRestricted                    TOKEN_INFORMATION_CLASS = 40
-	TokenProcessTrustLevel               TOKEN_INFORMATION_CLASS = 41
-	MaxTokenInfoClass                    TOKEN_INFORMATION_CLASS = 42
 )
 
 type TOKEN_INFORMATION_CLASS uint32
@@ -363,7 +320,7 @@ func SetAndCreateFolder(hUser syscall.Token, folder *syscall.GUID, value string)
 	if err != nil {
 		return
 	}
-	_, err = GetFolder(hUser, folder, KF_FLAG_CREATE)
+	_, err = GetFolder(hUser, folder, windows.KF_FLAG_CREATE)
 	return
 }
 
@@ -569,7 +526,7 @@ func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
 	var linkedToken TOKEN_LINKED_TOKEN
 	tokenInformationLength := uint32(unsafe.Sizeof(linkedToken))
 	returnLength := uint32(0)
-	err := GetTokenInformation(hToken, TokenLinkedToken, (*byte)(unsafe.Pointer(&linkedToken)), tokenInformationLength, &returnLength)
+	err := GetTokenInformation(hToken, windows.TokenLinkedToken, (*byte)(unsafe.Pointer(&linkedToken)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
 		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
@@ -610,7 +567,7 @@ func GetTokenSessionID(hToken syscall.Token) (uint32, error) {
 	var tokenSessionID uint32
 	tokenInformationLength := uint32(unsafe.Sizeof(tokenSessionID))
 	returnLength := uint32(0)
-	err := GetTokenInformation(hToken, TokenSessionId, (*byte)(unsafe.Pointer(&tokenSessionID)), tokenInformationLength, &returnLength)
+	err := GetTokenInformation(hToken, windows.TokenSessionId, (*byte)(unsafe.Pointer(&tokenSessionID)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
 		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
@@ -624,7 +581,7 @@ func GetTokenUIAccess(hToken syscall.Token) (uint32, error) {
 	var tokenUIAccess uint32
 	tokenInformationLength := uint32(unsafe.Sizeof(tokenUIAccess))
 	returnLength := uint32(0)
-	err := GetTokenInformation(hToken, TokenUIAccess, (*byte)(unsafe.Pointer(&tokenUIAccess)), tokenInformationLength, &returnLength)
+	err := GetTokenInformation(hToken, windows.TokenUIAccess, (*byte)(unsafe.Pointer(&tokenUIAccess)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
 		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
@@ -833,6 +790,38 @@ func DeleteProfile(
 	return
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createprofile
+// USERENVAPI HRESULT CreateProfile(
+//
+//	[in]  LPCWSTR pszUserSid,
+//	[in]  LPCWSTR pszUserName,
+//	[out] LPWSTR  pszProfilePath,
+//	[in]  DWORD   cchProfilePath
+//
+// );
+func CreateProfile(
+	lpSidString *uint16,
+	lpUserName *uint16,
+	lpProfilePath *uint16,
+	cchProfilePath uint32,
+) (err error) {
+	r1, _, e1 := procCreateProfile.Call(
+		uintptr(unsafe.Pointer(lpSidString)),
+		uintptr(unsafe.Pointer(lpUserName)),
+		uintptr(unsafe.Pointer(lpProfilePath)),
+		uintptr(cchProfilePath),
+	)
+	// HRESULT: S_OK = 0, failure < 0
+	// HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS) = 0x800700B7
+	if int32(r1) < 0 {
+		// Ignore if profile already exists
+		if uint32(r1) != 0x800700B7 {
+			err = os.NewSyscallError("CreateProfile", e1)
+		}
+	}
+	return
+}
+
 // ArgvToCommandLineW performs the reverse of shell32 CommandLineToArgvW:
 //
 //	https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
@@ -872,4 +861,22 @@ func CMDExeEscape(text string) string {
 		cmdEscaped += string(c)
 	}
 	return cmdEscaped
+}
+
+func VerSetConditionMask(lConditionMask uint64, typeBitMask uint32, conditionMask uint8) uint64 {
+	r1, _, _ := procVerSetConditionMask.Call(uintptr(lConditionMask), uintptr(typeBitMask), uintptr(conditionMask))
+	return uint64(r1)
+}
+
+func VerifyWindowsInfoW(vi OSVersionInfoEx, typeMask uint32, conditionMask uint64) (bool, error) {
+	vi.OSVersionInfoSize = uint32(unsafe.Sizeof(vi))
+
+	r1, _, e1 := procVerifyVersionInfoW.Call(uintptr(unsafe.Pointer(&vi)), uintptr(typeMask), uintptr(conditionMask))
+	if r1 != 0 {
+		return true, nil
+	}
+	if r1 == 0 && e1 == ERROR_OLD_WIN_VERSION {
+		return false, nil
+	}
+	return false, os.NewSyscallError("VerifyVersionInfoW", e1)
 }

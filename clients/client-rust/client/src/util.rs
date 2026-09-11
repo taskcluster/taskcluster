@@ -10,7 +10,7 @@ const NOT_ENCODED: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b'-')
     .remove(b'~');
 
-pub(crate) fn urlencode(input: &str) -> PercentEncode {
+pub(crate) fn urlencode(input: &str) -> PercentEncode<'_> {
     utf8_percent_encode(input, NOT_ENCODED)
 }
 

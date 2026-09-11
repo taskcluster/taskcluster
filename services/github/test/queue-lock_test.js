@@ -1,34 +1,29 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import QueueLock from '../src/queue-lock.js';
 
-suite(testing.suiteName(), function() {
-  suite('Lock', function() {
-    test('should lock by name', async function () {
+suite(testing.suiteName(), () => {
+  suite('Lock', () => {
+    test('should lock by name', async () => {
       const lock = new QueueLock();
 
       let counter = 0;
       const coroutine = async () => {
         const release = await lock.acquire('t1');
-        counter ++;
+        counter++;
         release();
       };
 
       await coroutine();
       assert.equal(1, counter);
 
-      const more = [
-        coroutine(),
-        coroutine(),
-        coroutine(),
-        coroutine(),
-      ];
+      const more = [coroutine(), coroutine(), coroutine(), coroutine()];
 
       assert.equal(1, counter);
       await Promise.all(more);
       assert.equal(5, counter);
     });
-    test('should run sequentially and not block other locks', async function () {
+    test('should run sequentially and not block other locks', async () => {
       const lock = new QueueLock();
       let results = [];
       const coroutine = async (name, result) => {
@@ -59,10 +54,10 @@ suite(testing.suiteName(), function() {
       assert.deepEqual([1, 2, 4, 3, 5, 6], results);
     });
 
-    test('should auto release after given timeout', async function () {
+    test('should auto release after given timeout', async () => {
       const lock = new QueueLock({ maxLockTimeMs: 1 });
 
-      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
       let counter = 0;
       const coroutine = async () => {
@@ -75,12 +70,7 @@ suite(testing.suiteName(), function() {
       await coroutine();
       assert.equal(1, counter);
 
-      const more = [
-        coroutine(),
-        coroutine(),
-        coroutine(),
-        coroutine(),
-      ];
+      const more = [coroutine(), coroutine(), coroutine(), coroutine()];
 
       assert.equal(1, counter);
       await Promise.all(more);

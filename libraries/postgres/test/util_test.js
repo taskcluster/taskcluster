@@ -1,25 +1,25 @@
 import _ from 'lodash';
 import { dollarQuote, paginatedIterator } from '../src/util.js';
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
 
 const { range } = _;
 const __filename = new URL('', import.meta.url).pathname;
 
-suite(path.basename(__filename), function() {
-  suite('dollarQuote', function() {
-    test('simple string', function() {
+suite(path.basename(__filename), () => {
+  suite('dollarQuote', () => {
+    test('simple string', () => {
       assert.equal(dollarQuote('abcd'), '$$abcd$$');
     });
 
-    test('string containing $$', function() {
+    test('string containing $$', () => {
       assert.equal(dollarQuote('pre $$abcd$$ post'), '$x$pre $$abcd$$ post$x$');
     });
   });
 
-  suite('paginatedIterator', function() {
-    suite('offset/limit', function() {
-      test('iterate in a few batches', async function() {
+  suite('paginatedIterator', () => {
+    suite('offset/limit', () => {
+      test('iterate in a few batches', async () => {
         const calls = [];
         const fetch = async (size, offset) => {
           calls.push([size, offset]);
@@ -27,29 +27,34 @@ suite(path.basename(__filename), function() {
         };
 
         const got = [];
-        for await (let v of paginatedIterator({ fetch, size: 13 })) {
+        for await (const v of paginatedIterator({ fetch, size: 13 })) {
           got.push(v);
         }
 
         assert.deepEqual(got, range(1000));
-        assert.deepEqual(calls, range(0, 1000, 13).map(i => [13, i]).concat([[13, 1000]]));
+        assert.deepEqual(
+          calls,
+          range(0, 1000, 13)
+            .map(i => [13, i])
+            .concat([[13, 1000]])
+        );
       });
 
-      test('batch size smaller than requested', async function() {
-        const fetch = async (size, offset) => {
+      test('batch size smaller than requested', async () => {
+        const fetch = async (_size, offset) => {
           return range(1000).slice(offset, offset + 10);
         };
 
         const got = [];
-        for await (let v of paginatedIterator({ fetch, size: 100 })) {
+        for await (const v of paginatedIterator({ fetch, size: 100 })) {
           got.push(v);
         }
 
         assert.deepEqual(got, range(1000));
       });
 
-      test('fetch fails', async function() {
-        const fetch = async (size, offset) => {
+      test('fetch fails', async () => {
+        const fetch = async (_size, offset) => {
           if (offset > 300) {
             throw new Error('oh noes');
           }
@@ -58,14 +63,14 @@ suite(path.basename(__filename), function() {
 
         assert.rejects(async () => {
           const got = [];
-          for await (let v of paginatedIterator({ fetch, size: 100 })) {
+          for await (const v of paginatedIterator({ fetch, size: 100 })) {
             got.push(v);
           }
         }, /oh noes/);
       });
     });
 
-    suite('index-based', function() {
+    suite('index-based', () => {
       const indexColumns = ['a', 'b'];
       const data = (A, B) => range(0, A).flatMap(a => range(0, B).map(b => ({ a, b })));
       let calls;
@@ -75,18 +80,18 @@ suite(path.basename(__filename), function() {
           if (maxSize) {
             size = Math.min(size, maxSize);
           }
-          const filtered = data(A, B)
-            .filter(({ a, b }) =>
-              after.after_a_in === null ||
-              a > after.after_a_in || (a === after.after_a_in && b > after.after_b_in));
+          const filtered = data(A, B).filter(
+            ({ a, b }) =>
+              after.after_a_in === null || a > after.after_a_in || (a === after.after_a_in && b > after.after_b_in)
+          );
           return filtered.slice(0, size);
         };
       };
 
-      test('iterate in a few batches', async function() {
+      test('iterate in a few batches', async () => {
         calls = [];
         const got = [];
-        for await (let v of paginatedIterator({
+        for await (const v of paginatedIterator({
           indexColumns,
           fetch: fetcher(20, 11),
           size: 13,
@@ -117,9 +122,9 @@ suite(path.basename(__filename), function() {
         ]);
       });
 
-      test('batch size smaller than requested', async function() {
+      test('batch size smaller than requested', async () => {
         const got = [];
-        for await (let v of paginatedIterator({
+        for await (const v of paginatedIterator({
           indexColumns,
           fetch: fetcher(20, 12, 15),
           size: 130,
@@ -130,11 +135,13 @@ suite(path.basename(__filename), function() {
         assert.deepEqual(got, data(20, 12));
       });
 
-      test('fetch fails', async function() {
+      test('fetch fails', async () => {
         assert.rejects(async () => {
-          for await (let _ of paginatedIterator({
+          for await (const _ of paginatedIterator({
             indexColumns,
-            fetch: async () => { throw new Error('uhoh'); },
+            fetch: async () => {
+              throw new Error('uhoh');
+            },
           })) {
             assert(false); // never gets here..
           }

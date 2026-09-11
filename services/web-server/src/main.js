@@ -1,17 +1,21 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
-import assert from 'assert';
+import assert from 'node:assert';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express5';
+import compression from 'compression';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import depthLimit from 'graphql-depth-limit';
+import depthLimit from './validation/guardedDepthLimit.js';
+import { NoFragmentCyclesRule } from 'graphql/validation/rules/NoFragmentCyclesRule.js';
 import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import queryLimit from 'graphql-query-count-limit';
 import loader from '@taskcluster/lib-loader';
 import config from '@taskcluster/lib-config';
 import libReferences from '@taskcluster/lib-references';
-import { createServer } from 'http';
+import SchemaSet from '@taskcluster/lib-validate';
+import builder from './api.js';
+import { createServer } from 'node:http';
 import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import taskcluster from '@taskcluster/client';
 import tcdb from '@taskcluster/db';
@@ -26,8 +30,9 @@ import resolvers from './resolvers/index.js';
 import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
 import scanner from './login/scanner.js';
+import { validateRegisteredClients } from './validateConfig.js';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 import githubStrategy from './login/strategies/github.js';
 import mozillaAuth0Strategy from './login/strategies/mozilla-auth0.js';
@@ -43,10 +48,15 @@ const load = loader(
   {
     cfg: {
       requires: ['profile'],
-      setup: ({ profile }) => config({
-        profile,
-        serviceName: 'web-server',
-      }),
+      setup: ({ profile }) => {
+        const cfg = config({
+          profile,
+          serviceName: 'web-server',
+        });
+
+        validateRegisteredClients(cfg.login.registeredClients);
+        return cfg;
+      },
     },
 
     monitor: {
@@ -64,10 +74,7 @@ const load = loader(
       requires: ['cfg', 'monitor'],
       setup: ({ cfg, monitor }) => {
         if (!cfg.pulse.username) {
-          assert(
-            process.env.NODE_ENV !== 'production',
-            'pulse credentials are required in production',
-          );
+          assert(process.env.NODE_ENV !== 'production', 'pulse credentials are required in production');
 
           return null;
         }
@@ -119,26 +126,54 @@ const load = loader(
         }),
     },
 
+    schemaset: {
+      requires: [],
+      setup: () =>
+        new SchemaSet({
+          serviceName: 'web-server',
+        }),
+    },
+
+    api: {
+      requires: ['cfg', 'clients', 'schemaset', 'monitor'],
+      setup: ({ cfg, clients, schemaset, monitor }) =>
+        builder.build({
+          rootUrl: cfg.taskcluster.rootUrl,
+          context: { clients, rootUrl: cfg.taskcluster.rootUrl },
+          schemaset,
+          monitor: monitor.childMonitor('api'),
+        }),
+    },
+
     generateReferences: {
-      requires: ['cfg'],
-      setup: async ({ cfg }) => libReferences.fromService({
-        references: [MonitorManager.reference('web-server'), MonitorManager.metricsReference('web-server')],
-      }).then(ref => ref.generateReferences()),
+      requires: ['schemaset'],
+      setup: async ({ schemaset }) =>
+        libReferences
+          .fromService({
+            schemaset,
+            references: [
+              builder.reference(),
+              MonitorManager.reference('web-server'),
+              MonitorManager.metricsReference('web-server'),
+            ],
+          })
+          .then(ref => ref.generateReferences()),
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'auth', 'monitor', 'db'],
-      setup: ({ cfg, strategies, auth, monitor, db }) =>
-        createApp({ cfg, strategies, auth, monitor, db }),
+      requires: ['cfg', 'strategies', 'auth', 'monitor', 'db', 'clients', 'api'],
+      setup: ({ cfg, strategies, auth, monitor, db, clients, api }) =>
+        createApp({ cfg, strategies, auth, monitor, db, clients, rootUrl: cfg.taskcluster.rootUrl, api }),
     },
 
     authFactory: {
       requires: ['cfg'],
       setup: ({ cfg }) => {
-        return ({ credentials }) => new taskcluster.Auth({
-          credentials,
-          rootUrl: cfg.taskcluster.rootUrl,
-        });
+        return ({ credentials }) =>
+          new taskcluster.Auth({
+            credentials,
+            rootUrl: cfg.taskcluster.rootUrl,
+          });
       },
     },
 
@@ -149,27 +184,24 @@ const load = loader(
         const server = new ApolloServer({
           schema,
           formatError,
-          status400ForVariableCoercionErrors: true, //https://www.apollographql.com/docs/apollo-server/migration#appropriate-400-status-codes
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
           csrfPrevention: true,
           introspection: true,
           parseOptions: {
             maxTokens: 100000,
           },
-          validationRules: [
-            queryLimit(1000),
-            depthLimit(10),
-            createComplexityLimitRule(4500),
-          ],
+          validationRules: [NoFragmentCyclesRule, queryLimit(1000), depthLimit(10), createComplexityLimitRule(4500)],
         });
         await server.start();
+        monitor.exposeMetrics('default');
 
         // https://www.apollographql.com/docs/apollo-server/migration
         app.use(
           '/graphql',
+          compression(),
           expressMiddleware(server, {
             context,
-          }),
+          })
         );
 
         createSubscriptionServer({
@@ -191,7 +223,7 @@ const load = loader(
       setup: ({ cfg, monitor, db }) => {
         const strategies = {};
 
-        Object.keys(cfg.login.strategies || {}).forEach((name) => {
+        Object.keys(cfg.login.strategies || {}).forEach(name => {
           const Strategy = loginStrategies[name];
           const options = { name, cfg, monitor, db };
 
@@ -220,15 +252,16 @@ const load = loader(
 
     db: {
       requires: ['cfg', 'process', 'monitor'],
-      setup: ({ cfg, process, monitor }) => tcdb.setup({
-        readDbUrl: cfg.postgres.readDbUrl,
-        writeDbUrl: cfg.postgres.writeDbUrl,
-        serviceName: 'web_server',
-        monitor: monitor.childMonitor('db'),
-        statementTimeout: process === 'server' ? 30000 : 0,
-        azureCryptoKey: cfg.azure.cryptoKey,
-        dbCryptoKeys: cfg.postgres.dbCryptoKeys,
-      }),
+      setup: ({ cfg, process, monitor }) =>
+        tcdb.setup({
+          readDbUrl: cfg.postgres.readDbUrl,
+          writeDbUrl: cfg.postgres.writeDbUrl,
+          serviceName: 'web_server',
+          monitor: monitor.childMonitor('db'),
+          statementTimeout: process === 'server' ? 30000 : 0,
+          azureCryptoKey: cfg.azure.cryptoKey,
+          dbCryptoKeys: cfg.postgres.dbCryptoKeys,
+        }),
     },
 
     'cleanup-expire-auth-codes': {
@@ -240,7 +273,7 @@ const load = loader(
 
           debug('Expiring authorization codes');
           const count = (await db.fns.expire_authorization_codes(now))[0].expire_authorization_codes;
-          debug('Expired ' + count + ' authorization codes');
+          debug(`Expired ${count} authorization codes`);
         });
       },
     },
@@ -254,18 +287,18 @@ const load = loader(
 
           debug('Expiring access tokens');
           const count = (await db.fns.expire_access_tokens(now))[0].expire_access_tokens;
-          debug('Expired ' + count + ' access tokens');
+          debug(`Expired ${count} access tokens`);
         });
       },
     },
 
     'cleanup-session-storage': {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({ cfg, monitor, db }) => {
+      requires: ['monitor', 'db'],
+      setup: ({ monitor, db }) => {
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
           debug('Expiring session storage entries');
           const count = (await db.fns.expire_sessions())[0].expire_sessions;
-          debug('Expired ' + count + ' session storage entries');
+          debug(`Expired ${count} session storage entries`);
         });
       },
     },
@@ -275,27 +308,20 @@ const load = loader(
       setup: async ({ cfg, httpServer }) => {
         // apply some sanity-checks
         assert(cfg.server.port, 'config server.port is required');
-        assert(
-          cfg.taskcluster.rootUrl,
-          'config taskcluster.rootUrl is required',
-        );
+        assert(cfg.taskcluster.rootUrl, 'config taskcluster.rootUrl is required');
 
         await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
 
-        /* eslint-disable no-console */
         console.log(`\n\nWeb server running on port ${cfg.server.port}.`);
         if (cfg.app.playground) {
           console.log(
             `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
-          http://localhost:${cfg.server.port}/playground\n`,
+          http://localhost:${cfg.server.port}/playground\n`
           );
         }
         if (!cfg.pulse.namespace) {
-          console.log(
-            `\nNo Pulse namespace defined; no Pulse messages will be received.\n`,
-          );
+          console.log(`\nNo Pulse namespace defined; no Pulse messages will be received.\n`);
         }
-        /* eslint-enable no-console */
       },
     },
 
@@ -311,7 +337,7 @@ const load = loader(
     // when running in development mode
     profile: process.env.NODE_ENV || 'development',
     process: process.argv[2] || 'devServer',
-  },
+  }
 );
 
 // If this file is executed launch component from first argument

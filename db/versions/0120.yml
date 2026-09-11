@@ -1,0 +1,27 @@
+version: 120
+description: Get claimed tasks by worker identity
+methods:
+  get_claimed_tasks_by_worker:
+    description: |-
+      Get all task_id and run_id pairs currently claimed by a specific worker,
+      identified by task_queue_id, worker_group, and worker_id.
+      Uses the existing queue_claimed_task_queue_idx index.
+    mode: read
+    serviceName: queue
+    args: task_queue_id_in text, worker_group_in text, worker_id_in text
+    returns: |-
+      table (
+        task_id text,
+        run_id integer
+      )
+    body: |-
+      begin
+        return query
+        select
+          q.task_id,
+          q.run_id
+        from queue_claimed_tasks q
+        where q.task_queue_id = task_queue_id_in
+          and q.worker_group = worker_group_in
+          and q.worker_id = worker_id_in;
+      end

@@ -1,0 +1,23 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Task Group Priority Changed Message"
+description: |
+  Summary emitted after a task group priority request completes.
+type: object
+properties:
+  version: {$const: message-version}
+  taskGroupId: {$ref: "task-group-response.json#/properties/taskGroupId"}
+  schedulerId: {$ref: "task-group-response.json#/properties/schedulerId"}
+  newPriority:
+    type: string
+    enum: {$const: task-priorities}
+  tasksAffected:
+    type: integer
+    description: Total number of tasks where priority was changed
+    minimum: 0
+additionalProperties: false
+required:
+  - version
+  - taskGroupId
+  - schedulerId
+  - newPriority
+  - tasksAffected

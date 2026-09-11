@@ -26,7 +26,7 @@ use crate::util::urlencode;
 /// * **Error artifacts**, only consists of meta-data which the queue will
 /// store for you. These artifacts are only meant to indicate that you the
 /// worker or the task failed to generate a specific artifact, that you
-/// would otherwise have uploaded. For example docker-worker will upload an
+/// would otherwise have uploaded. For example generic-worker will upload an
 /// error artifact, if the file it was supposed to upload doesn't exists or
 /// turns out to be a directory. Clients requesting an error artifact will
 /// get a `424` (Failed Dependency) response. This is mainly designed to
@@ -412,6 +412,11 @@ impl Queue {
     ///
     /// Task group can be sealed once and is irreversible. Calling it multiple times
     /// will return same result and will not update it again.
+    ///
+    /// Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+    /// from adding more tasks to a group being cancelled. It is not a
+    /// security feature: the check is not atomic with task creation, so a
+    /// `createTask` racing this call may still succeed.
     pub async fn sealTaskGroup(&self, taskGroupId: &str) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::sealTaskGroup_details(taskGroupId);
@@ -615,6 +620,51 @@ impl Queue {
     /// Determine the HTTP request details for cancelTask
     fn cancelTask_details<'a>(taskId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("task/{}/cancel", urlencode(taskId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Change Task Priority
+    ///
+    /// This method updates the priority of a single unresolved task.
+    ///
+    /// * Claimed or running tasks keep their current run priority until they are retried.
+    /// * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+    pub async fn changeTaskPriority(&self, taskId: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::changeTaskPriority_details(taskId);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for changeTaskPriority
+    fn changeTaskPriority_details<'a>(taskId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/priority", urlencode(taskId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Change Task Group Priority
+    ///
+    /// This method applies a new priority to unresolved tasks within a task group.
+    ///
+    /// * Updates run in bounded batches to avoid long locks.
+    /// * Claimed or running tasks keep their current run priority until they are retried.
+    /// * Emits `taskGroupPriorityChanged` summary event at the end.
+    pub async fn changeTaskGroupPriority(&self, taskGroupId: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::changeTaskGroupPriority_details(taskGroupId);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for changeTaskGroupPriority
+    fn changeTaskGroupPriority_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}/priority", urlencode(taskGroupId));
         let query = None;
 
         (path, query)
@@ -922,14 +972,49 @@ impl Queue {
     /// `anonymous` role.  The convention is to include
     /// `queue:get-artifact:public/*`.
     ///
-    /// **API Clients**, this method will redirect you to the artifact, if it is
-    /// stored externally. Either way, the response may not be JSON. So API
-    /// client users might want to generate a signed URL for this end-point and
-    /// use that URL with a normal HTTP client.
+    /// **Response**: the HTTP response to this method is a 303 redirect to the
+    /// URL from which the artifact can be downloaded.  The body of that response
+    /// contains the data described in the output schema, contianing the same URL.
+    /// Callers are encouraged to use whichever method of gathering the URL is
+    /// most convenient.  Standard HTTP clients will follow the redirect, while
+    /// API client libraries will return the JSON body.
+    ///
+    /// In order to download an artifact the following must be done:
+    ///
+    /// 1. Obtain queue url.  Building a signed url with a taskcluster client is
+    /// recommended
+    /// 1. Make a GET request which does not follow redirects
+    /// 1. In all cases, if specified, the
+    /// x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+    /// validated to be equal to the Content-Length and Sha256 checksum of the
+    /// final artifact downloaded. as well as any intermediate redirects
+    /// 1. If this response is a 500-series error, retry using an exponential
+    /// backoff.  No more than 5 retries should be attempted
+    /// 1. If this response is a 400-series error, treat it appropriately for
+    /// your context.  This might be an error in responding to this request or
+    /// an Error storage type body.  This request should not be retried.
+    /// 1. If this response is a 200-series response, the response body is the artifact.
+    /// If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+    /// x-taskcluster-location-content-encoding are specified, they should match
+    /// this response body
+    /// 1. If the response type is a 300-series redirect, the artifact will be at the
+    /// location specified by the `Location` header.  There are multiple artifact storage
+    /// types which use a 300-series redirect.
+    /// 1. For all redirects followed, the user must verify that the content-sha256, content-length,
+    /// transfer-sha256, transfer-length and content-encoding match every further request.  The final
+    /// artifact must also be validated against the values specified in the original queue response
+    /// 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+    /// must not occur
+    ///
+    /// **Headers**
+    /// The following important headers are set on the response to this method:
+    ///
+    /// * location: the url of the artifact if a redirect is to be performed
+    /// * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
     ///
     /// **Remark**, this end-point is slightly slower than
     /// `queue.getArtifact`, so consider that if you already know the `runId` of
-    /// the latest run. Otherwise, just us the most convenient API end-point.
+    /// the latest run. Otherwise, just use the most convenient API end-point.
     pub async fn getLatestArtifact(&self, taskId: &str, name: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::getLatestArtifact_details(taskId, name);
@@ -1274,34 +1359,6 @@ impl Queue {
         (path, query)
     }
 
-    /// Update a provisioner
-    ///
-    /// Declare a provisioner, supplying some details about it.
-    ///
-    /// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-    /// possessed. For example, a request to update the `my-provisioner`
-    /// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-    /// `queue:declare-provisioner:my-provisioner#description`.
-    ///
-    /// The term "provisioner" is taken broadly to mean anything with a provisionerId.
-    /// This does not necessarily mean there is an associated service performing any
-    /// provisioning activity.
-    pub async fn declareProvisioner(&self, provisionerId: &str, payload: &Value) -> Result<Value, Error> {
-        let method = "PUT";
-        let (path, query) = Self::declareProvisioner_details(provisionerId);
-        let body = Some(payload);
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Determine the HTTP request details for declareProvisioner
-    fn declareProvisioner_details<'a>(provisionerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("provisioners/{}", urlencode(provisionerId));
-        let query = None;
-
-        (path, query)
-    }
-
     /// Get Number of Pending Tasks
     ///
     /// Get an approximate number of pending tasks for the given `taskQueueId`.
@@ -1333,6 +1390,32 @@ impl Queue {
     /// Determine the HTTP request details for pendingTasks
     fn pendingTasks_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("pending/{}", urlencode(taskQueueId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Pending and Claimed Task Counts for Multiple Task Queues
+    ///
+    /// Get approximate pending and claimed task counts for the given task queues.
+    ///
+    /// The caller must have both `queue:pending-count:<taskQueueId>` and
+    /// `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+    /// If any task queue is unauthorized, the entire request will fail.
+    ///
+    /// As task states may change rapidly, these counts may not represent the exact
+    /// number of pending and claimed tasks, but are very good approximations.
+    pub async fn taskQueueCountsBatch(&self, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::taskQueueCountsBatch_details();
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for taskQueueCountsBatch
+    fn taskQueueCountsBatch_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "task-queues/counts";
         let query = None;
 
         (path, query)
@@ -1519,30 +1602,6 @@ impl Queue {
 
     /// Determine the HTTP request details for getWorkerType
     fn getWorkerType_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
-        let path = format!("provisioners/{}/worker-types/{}", urlencode(provisionerId), urlencode(workerType));
-        let query = None;
-
-        (path, query)
-    }
-
-    /// Update a worker-type
-    ///
-    /// Declare a workerType, supplying some details about it.
-    ///
-    /// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-    /// possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-    /// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-    /// `queue:declare-worker-type:my-provisioner/highmem#description`.
-    pub async fn declareWorkerType(&self, provisionerId: &str, workerType: &str, payload: &Value) -> Result<Value, Error> {
-        let method = "PUT";
-        let (path, query) = Self::declareWorkerType_details(provisionerId, workerType);
-        let body = Some(payload);
-        let resp = self.client.request(method, &path, query, body).await?;
-        Ok(resp.json().await?)
-    }
-
-    /// Determine the HTTP request details for declareWorkerType
-    fn declareWorkerType_details<'a>(provisionerId: &'a str, workerType: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("provisioners/{}/worker-types/{}", urlencode(provisionerId), urlencode(workerType));
         let query = None;
 

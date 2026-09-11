@@ -28,7 +28,7 @@
 // * **Error artifacts**, only consists of meta-data which the queue will
 // store for you. These artifacts are only meant to indicate that you the
 // worker or the task failed to generate a specific artifact, that you
-// would otherwise have uploaded. For example docker-worker will upload an
+// would otherwise have uploaded. For example generic-worker will upload an
 // error artifact, if the file it was supposed to upload doesn't exists or
 // turns out to be a directory. Clients requesting an error artifact will
 // get a `424` (Failed Dependency) response. This is mainly designed to
@@ -85,7 +85,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -179,7 +179,7 @@ func (queue *Queue) Version() error {
 // See #task
 func (queue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinitionResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId), new(TaskDefinitionResponse), nil)
 	return responseObject.(*TaskDefinitionResponse), err
 }
 
@@ -192,7 +192,7 @@ func (queue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
 // See Task for more details.
 func (queue *Queue) Task_SignedURL(taskId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -251,7 +251,7 @@ func (queue *Queue) Statuses(continuationToken, limit string, payload *TaskDefin
 // See #status
 func (queue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -264,7 +264,7 @@ func (queue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 // See Status for more details.
 func (queue *Queue) Status_SignedURL(taskId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/status", nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/status", nil, duration)
 }
 
 // List tasks sharing the same `taskGroupId`.
@@ -301,7 +301,7 @@ func (queue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) 
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.PathEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
 	return responseObject.(*ListTaskGroupResponse), err
 }
 
@@ -321,7 +321,7 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId)+"/list", v, duration)
+	return (&cd).SignedURL("/task-group/"+url.PathEscape(taskGroupId)+"/list", v, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -343,7 +343,7 @@ func (queue *Queue) ListTaskGroup_SignedURL(taskGroupId, continuationToken, limi
 // See #cancelTaskGroup
 func (queue *Queue) CancelTaskGroup(taskGroupId string) (*CancelTaskGroupResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/cancel", new(CancelTaskGroupResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.PathEscape(taskGroupId)+"/cancel", new(CancelTaskGroupResponse), nil)
 	return responseObject.(*CancelTaskGroupResponse), err
 }
 
@@ -362,7 +362,7 @@ func (queue *Queue) CancelTaskGroup(taskGroupId string) (*CancelTaskGroupRespons
 // See #getTaskGroup
 func (queue *Queue) GetTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId), new(TaskGroupDefinitionResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.PathEscape(taskGroupId), new(TaskGroupDefinitionResponse), nil)
 	return responseObject.(*TaskGroupDefinitionResponse), err
 }
 
@@ -375,7 +375,7 @@ func (queue *Queue) GetTaskGroup(taskGroupId string) (*TaskGroupDefinitionRespon
 // See GetTaskGroup for more details.
 func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task-group/"+url.QueryEscape(taskGroupId), nil, duration)
+	return (&cd).SignedURL("/task-group/"+url.PathEscape(taskGroupId), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -385,6 +385,11 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 // Task group can be sealed once and is irreversible. Calling it multiple times
 // will return same result and will not update it again.
 //
+// Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+// from adding more tasks to a group being cancelled. It is not a
+// security feature: the check is not atomic with task creation, so a
+// `createTask` racing this call may still succeed.
+//
 // Required scopes:
 //
 //	queue:seal-task-group:<schedulerId>/<taskGroupId>
@@ -392,7 +397,7 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 // See #sealTaskGroup
 func (queue *Queue) SealTaskGroup(taskGroupId string) (*TaskGroupDefinitionResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.QueryEscape(taskGroupId)+"/seal", new(TaskGroupDefinitionResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task-group/"+url.PathEscape(taskGroupId)+"/seal", new(TaskGroupDefinitionResponse), nil)
 	return responseObject.(*TaskGroupDefinitionResponse), err
 }
 
@@ -427,7 +432,7 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/dependents", new(ListDependentTasksResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/dependents", new(ListDependentTasksResponse), v)
 	return responseObject.(*ListDependentTasksResponse), err
 }
 
@@ -447,7 +452,7 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/dependents", v, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/dependents", v, duration)
 }
 
 // Create a new task, this is an **idempotent** operation, so repeat it if
@@ -493,7 +498,7 @@ func (queue *Queue) ListDependentTasks_SignedURL(taskId, continuationToken, limi
 // See #createTask
 func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.PathEscape(taskId), new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -524,7 +529,7 @@ func (queue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*
 // See #scheduleTask
 func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.PathEscape(taskId)+"/schedule", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -553,7 +558,7 @@ func (queue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // See #rerunTask
 func (queue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.PathEscape(taskId)+"/rerun", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -582,8 +587,47 @@ func (queue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
 // See #cancelTask
 func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.PathEscape(taskId)+"/cancel", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This method updates the priority of a single unresolved task.
+//
+// * Claimed or running tasks keep their current run priority until they are retried.
+// * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+//
+// Required scopes:
+//
+//	Any of:
+//	- queue:change-task-priority:<taskId>
+//	- queue:change-task-priority-in-queue:<taskQueueId>
+//
+// See #changeTaskPriority
+func (queue *Queue) ChangeTaskPriority(taskId string, payload *ChangeTaskPriorityRequest) (*TaskStatusResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.PathEscape(taskId)+"/priority", new(TaskStatusResponse), nil)
+	return responseObject.(*TaskStatusResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This method applies a new priority to unresolved tasks within a task group.
+//
+// * Updates run in bounded batches to avoid long locks.
+// * Claimed or running tasks keep their current run priority until they are retried.
+// * Emits `taskGroupPriorityChanged` summary event at the end.
+//
+// Required scopes:
+//
+//	queue:change-task-group-priority:<schedulerId>/<taskGroupId>
+//
+// See #changeTaskGroupPriority
+func (queue *Queue) ChangeTaskGroupPriority(taskGroupId string, payload *ChangeTaskPriorityRequest) (*TaskGroupPriorityChangeResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task-group/"+url.PathEscape(taskGroupId)+"/priority", new(TaskGroupPriorityChangeResponse), nil)
+	return responseObject.(*TaskGroupPriorityChangeResponse), err
 }
 
 // Claim pending task(s) for the given task queue.
@@ -604,7 +648,7 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 // See #claimWork
 func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(taskQueueId), new(ClaimWorkResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.PathEscape(taskQueueId), new(ClaimWorkResponse), nil)
 	return responseObject.(*ClaimWorkResponse), err
 }
 
@@ -621,7 +665,7 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *ClaimWorkRequest) (*C
 // See #claimTask
 func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/claim", new(TaskClaimResponse), nil)
 	return responseObject.(*TaskClaimResponse), err
 }
 
@@ -654,7 +698,7 @@ func (queue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (
 // See #reclaimTask
 func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskReclaimResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/reclaim", new(TaskReclaimResponse), nil)
 	return responseObject.(*TaskReclaimResponse), err
 }
 
@@ -667,7 +711,7 @@ func (queue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, err
 // See #reportCompleted
 func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/completed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -686,7 +730,7 @@ func (queue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, 
 // See #reportFailed
 func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/failed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -711,7 +755,7 @@ func (queue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, err
 // See #reportException
 func (queue *Queue) ReportException(taskId, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/exception", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
 
@@ -732,7 +776,7 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // See #createArtifact
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArtifactRequest) (*PostArtifactResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifacts/"+url.PathEscape(name), new(PostArtifactResponse), nil)
 	return responseObject.(*PostArtifactResponse), err
 }
 
@@ -752,7 +796,7 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArti
 // See #finishArtifact
 func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *FinishArtifactRequest) error {
 	cd := tcclient.Client(*queue)
-	_, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifacts/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -812,7 +856,7 @@ func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *FinishAr
 // See #getArtifact
 func (queue *Queue) GetArtifact(taskId, runId, name string) (*GetArtifactResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(GetArtifactResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifacts/"+url.PathEscape(name), new(GetArtifactResponse), nil)
 	return responseObject.(*GetArtifactResponse), err
 }
 
@@ -825,7 +869,7 @@ func (queue *Queue) GetArtifact(taskId, runId, name string) (*GetArtifactRespons
 // See GetArtifact for more details.
 func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifacts/"+url.PathEscape(name), nil, duration)
 }
 
 // Get artifact by `<name>` from the last run of a task.
@@ -837,14 +881,49 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 // `anonymous` role.  The convention is to include
 // `queue:get-artifact:public/*`.
 //
-// **API Clients**, this method will redirect you to the artifact, if it is
-// stored externally. Either way, the response may not be JSON. So API
-// client users might want to generate a signed URL for this end-point and
-// use that URL with a normal HTTP client.
+// **Response**: the HTTP response to this method is a 303 redirect to the
+// URL from which the artifact can be downloaded.  The body of that response
+// contains the data described in the output schema, contianing the same URL.
+// Callers are encouraged to use whichever method of gathering the URL is
+// most convenient.  Standard HTTP clients will follow the redirect, while
+// API client libraries will return the JSON body.
+//
+// In order to download an artifact the following must be done:
+//
+// 1. Obtain queue url.  Building a signed url with a taskcluster client is
+// recommended
+// 1. Make a GET request which does not follow redirects
+// 1. In all cases, if specified, the
+// x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+// validated to be equal to the Content-Length and Sha256 checksum of the
+// final artifact downloaded. as well as any intermediate redirects
+// 1. If this response is a 500-series error, retry using an exponential
+// backoff.  No more than 5 retries should be attempted
+// 1. If this response is a 400-series error, treat it appropriately for
+// your context.  This might be an error in responding to this request or
+// an Error storage type body.  This request should not be retried.
+// 1. If this response is a 200-series response, the response body is the artifact.
+// If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+// x-taskcluster-location-content-encoding are specified, they should match
+// this response body
+// 1. If the response type is a 300-series redirect, the artifact will be at the
+// location specified by the `Location` header.  There are multiple artifact storage
+// types which use a 300-series redirect.
+// 1. For all redirects followed, the user must verify that the content-sha256, content-length,
+// transfer-sha256, transfer-length and content-encoding match every further request.  The final
+// artifact must also be validated against the values specified in the original queue response
+// 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+// must not occur
+//
+// **Headers**
+// The following important headers are set on the response to this method:
+//
+// * location: the url of the artifact if a redirect is to be performed
+// * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
 //
 // **Remark**, this end-point is slightly slower than
 // `queue.getArtifact`, so consider that if you already know the `runId` of
-// the latest run. Otherwise, just us the most convenient API end-point.
+// the latest run. Otherwise, just use the most convenient API end-point.
 //
 // Required scopes:
 //
@@ -853,7 +932,7 @@ func (queue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration t
 // See #getLatestArtifact
 func (queue *Queue) GetLatestArtifact(taskId, name string) (*GetArtifactResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), new(GetArtifactResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/artifacts/"+url.PathEscape(name), new(GetArtifactResponse), nil)
 	return responseObject.(*GetArtifactResponse), err
 }
 
@@ -866,7 +945,7 @@ func (queue *Queue) GetLatestArtifact(taskId, name string) (*GetArtifactResponse
 // See GetLatestArtifact for more details.
 func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/artifacts/"+url.PathEscape(name), nil, duration)
 }
 
 // Returns a list of artifacts and associated meta-data for a given run.
@@ -893,7 +972,7 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), err
 }
 
@@ -913,7 +992,7 @@ func (queue *Queue) ListArtifacts_SignedURL(taskId, runId, continuationToken, li
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", v, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifacts", v, duration)
 }
 
 // Returns a list of artifacts and associated meta-data for the latest run
@@ -941,7 +1020,7 @@ func (queue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string)
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), err
 }
 
@@ -961,7 +1040,7 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts", v, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/artifacts", v, duration)
 }
 
 // Returns associated metadata for a given artifact, in the given task run.
@@ -977,7 +1056,7 @@ func (queue *Queue) ListLatestArtifacts_SignedURL(taskId, continuationToken, lim
 // See #artifactInfo
 func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifact-info/"+url.PathEscape(name), new(Artifact), nil)
 	return responseObject.(*Artifact), err
 }
 
@@ -990,7 +1069,7 @@ func (queue *Queue) ArtifactInfo(taskId, runId, name string) (*Artifact, error) 
 // See ArtifactInfo for more details.
 func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifact-info/"+url.PathEscape(name), nil, duration)
 }
 
 // Returns associated metadata for a given artifact, in the latest run of the
@@ -1006,7 +1085,7 @@ func (queue *Queue) ArtifactInfo_SignedURL(taskId, runId, name string, duration 
 // See #latestArtifactInfo
 func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), new(Artifact), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/artifact-info/"+url.PathEscape(name), new(Artifact), nil)
 	return responseObject.(*Artifact), err
 }
 
@@ -1019,7 +1098,7 @@ func (queue *Queue) LatestArtifactInfo(taskId, name string) (*Artifact, error) {
 // See LatestArtifactInfo for more details.
 func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-info/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/artifact-info/"+url.PathEscape(name), nil, duration)
 }
 
 // Returns information about the content of the artifact, in the given task run.
@@ -1037,7 +1116,7 @@ func (queue *Queue) LatestArtifactInfo_SignedURL(taskId, name string, duration t
 // See #artifact
 func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifact-content/"+url.PathEscape(name), new(GetArtifactContentResponse), nil)
 	return responseObject.(*GetArtifactContentResponse), err
 }
 
@@ -1050,7 +1129,7 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*GetArtifactContentRes
 // See Artifact for more details.
 func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/runs/"+url.PathEscape(runId)+"/artifact-content/"+url.PathEscape(name), nil, duration)
 }
 
 // Returns information about the content of the artifact, in the latest task run.
@@ -1068,7 +1147,7 @@ func (queue *Queue) Artifact_SignedURL(taskId, runId, name string, duration time
 // See #latestArtifact
 func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), new(GetArtifactContentResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(taskId)+"/artifact-content/"+url.PathEscape(name), new(GetArtifactContentResponse), nil)
 	return responseObject.(*GetArtifactContentResponse), err
 }
 
@@ -1081,7 +1160,7 @@ func (queue *Queue) LatestArtifact(taskId, name string) (*GetArtifactContentResp
 // See LatestArtifact for more details.
 func (queue *Queue) LatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifact-content/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(taskId)+"/artifact-content/"+url.PathEscape(name), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -1149,7 +1228,7 @@ func (queue *Queue) ListProvisioners_SignedURL(continuationToken, limit string, 
 // See #getProvisioner
 func (queue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId), new(ProvisionerResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId), new(ProvisionerResponse), nil)
 	return responseObject.(*ProvisionerResponse), err
 }
 
@@ -1162,31 +1241,7 @@ func (queue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse, 
 // See GetProvisioner for more details.
 func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId), nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Declare a provisioner, supplying some details about it.
-//
-// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-// possessed. For example, a request to update the `my-provisioner`
-// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-// `queue:declare-provisioner:my-provisioner#description`.
-//
-// The term "provisioner" is taken broadly to mean anything with a provisionerId.
-// This does not necessarily mean there is an associated service performing any
-// provisioning activity.
-//
-// Required scopes:
-//
-//	For property in properties each queue:declare-provisioner:<provisionerId>#<property>
-//
-// See #declareProvisioner
-func (queue *Queue) DeclareProvisioner(provisionerId string, payload *ProvisionerRequest) (*ProvisionerResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId), new(ProvisionerResponse), nil)
-	return responseObject.(*ProvisionerResponse), err
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -1205,7 +1260,7 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 // See #pendingTasks
 func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(taskQueueId), new(CountPendingTasksResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.PathEscape(taskQueueId), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), err
 }
 
@@ -1218,7 +1273,31 @@ func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse
 // See PendingTasks for more details.
 func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/pending/"+url.QueryEscape(taskQueueId), nil, duration)
+	return (&cd).SignedURL("/pending/"+url.PathEscape(taskQueueId), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get approximate pending and claimed task counts for the given task queues.
+//
+// The caller must have both `queue:pending-count:<taskQueueId>` and
+// `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+// If any task queue is unauthorized, the entire request will fail.
+//
+// As task states may change rapidly, these counts may not represent the exact
+// number of pending and claimed tasks, but are very good approximations.
+//
+// Required scopes:
+//
+//	All of:
+//	* For taskQueueId in taskQueueIds each queue:pending-count:<taskQueueId>
+//	* For taskQueueId in taskQueueIds each queue:claimed-count:<taskQueueId>
+//
+// See #taskQueueCountsBatch
+func (queue *Queue) TaskQueueCountsBatch(payload *TaskQueueCountsRequest) (*TaskQueueCountsListResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task-queues/counts", new(TaskQueueCountsListResponse), nil)
+	return responseObject.(*TaskQueueCountsListResponse), err
 }
 
 // Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
@@ -1235,7 +1314,7 @@ func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Dur
 // See #taskQueueCounts
 func (queue *Queue) TaskQueueCounts(taskQueueId string) (*Var, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId)+"/counts", new(Var), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.PathEscape(taskQueueId)+"/counts", new(Var), nil)
 	return responseObject.(*Var), err
 }
 
@@ -1250,7 +1329,7 @@ func (queue *Queue) TaskQueueCounts(taskQueueId string) (*Var, error) {
 // See TaskQueueCounts for more details.
 func (queue *Queue) TaskQueueCounts_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId)+"/counts", nil, duration)
+	return (&cd).SignedURL("/task-queues/"+url.PathEscape(taskQueueId)+"/counts", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -1274,7 +1353,7 @@ func (queue *Queue) ListPendingTasks(taskQueueId, continuationToken, limit strin
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId)+"/pending", new(ListPendingTasksResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.PathEscape(taskQueueId)+"/pending", new(ListPendingTasksResponse), v)
 	return responseObject.(*ListPendingTasksResponse), err
 }
 
@@ -1294,7 +1373,7 @@ func (queue *Queue) ListPendingTasks_SignedURL(taskQueueId, continuationToken, l
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId)+"/pending", v, duration)
+	return (&cd).SignedURL("/task-queues/"+url.PathEscape(taskQueueId)+"/pending", v, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -1318,7 +1397,7 @@ func (queue *Queue) ListClaimedTasks(taskQueueId, continuationToken, limit strin
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId)+"/claimed", new(ListClaimedTasksResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.PathEscape(taskQueueId)+"/claimed", new(ListClaimedTasksResponse), v)
 	return responseObject.(*ListClaimedTasksResponse), err
 }
 
@@ -1338,7 +1417,7 @@ func (queue *Queue) ListClaimedTasks_SignedURL(taskQueueId, continuationToken, l
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId)+"/claimed", v, duration)
+	return (&cd).SignedURL("/task-queues/"+url.PathEscape(taskQueueId)+"/claimed", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -1364,7 +1443,7 @@ func (queue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit stri
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types", new(ListWorkerTypesResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types", new(ListWorkerTypesResponse), v)
 	return responseObject.(*ListWorkerTypesResponse), err
 }
 
@@ -1384,7 +1463,7 @@ func (queue *Queue) ListWorkerTypes_SignedURL(provisionerId, continuationToken, 
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types", v, duration)
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -1398,7 +1477,7 @@ func (queue *Queue) ListWorkerTypes_SignedURL(provisionerId, continuationToken, 
 // See #getWorkerType
 func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerTypeResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType), new(WorkerTypeResponse), nil)
 	return responseObject.(*WorkerTypeResponse), err
 }
 
@@ -1411,27 +1490,7 @@ func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerType
 // See GetWorkerType for more details.
 func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Declare a workerType, supplying some details about it.
-//
-// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-// possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-// `queue:declare-worker-type:my-provisioner/highmem#description`.
-//
-// Required scopes:
-//
-//	For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>
-//
-// See #declareWorkerType
-func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload *WorkerTypeRequest) (*WorkerTypeResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
-	return responseObject.(*WorkerTypeResponse), err
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType), nil, duration)
 }
 
 // Get all active task queues.
@@ -1487,7 +1546,7 @@ func (queue *Queue) ListTaskQueues_SignedURL(continuationToken, limit string, du
 // See #getTaskQueue
 func (queue *Queue) GetTaskQueue(taskQueueId string) (*TaskQueueResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId), new(TaskQueueResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.PathEscape(taskQueueId), new(TaskQueueResponse), nil)
 	return responseObject.(*TaskQueueResponse), err
 }
 
@@ -1500,7 +1559,7 @@ func (queue *Queue) GetTaskQueue(taskQueueId string) (*TaskQueueResponse, error)
 // See GetTaskQueue for more details.
 func (queue *Queue) GetTaskQueue_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId), nil, duration)
+	return (&cd).SignedURL("/task-queues/"+url.PathEscape(taskQueueId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -1533,7 +1592,7 @@ func (queue *Queue) ListWorkers(provisionerId, workerType, continuationToken, li
 		v.Add("quarantined", quarantined)
 	}
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", new(ListWorkersResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers", new(ListWorkersResponse), v)
 	return responseObject.(*ListWorkersResponse), err
 }
 
@@ -1556,7 +1615,7 @@ func (queue *Queue) ListWorkers_SignedURL(provisionerId, workerType, continuatio
 		v.Add("quarantined", quarantined)
 	}
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", v, duration)
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -1570,7 +1629,7 @@ func (queue *Queue) ListWorkers_SignedURL(provisionerId, workerType, continuatio
 // See #getWorker
 func (queue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
 }
 
@@ -1583,7 +1642,7 @@ func (queue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId s
 // See GetWorker for more details.
 func (queue *Queue) GetWorker_SignedURL(provisionerId, workerType, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -1597,7 +1656,7 @@ func (queue *Queue) GetWorker_SignedURL(provisionerId, workerType, workerGroup, 
 // See #quarantineWorker
 func (queue *Queue) QuarantineWorker(provisionerId, workerType, workerGroup, workerId string, payload *QuarantineWorkerRequest) (*WorkerResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
 }
 
@@ -1615,7 +1674,7 @@ func (queue *Queue) QuarantineWorker(provisionerId, workerType, workerGroup, wor
 // See #declareWorker
 func (queue *Queue) DeclareWorker(provisionerId, workerType, workerGroup, workerId string, payload *WorkerRequest) (*WorkerResponse, error) {
 	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
 }
 

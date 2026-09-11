@@ -2,16 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -29,9 +31,9 @@ func TestMissingScopes(t *testing.T) {
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
 		},
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -52,7 +54,7 @@ func TestMissingScopes(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	logtext := LogText(t)
-	if !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
+	if !strings.Contains(logtext, "generic-worker:cache:tc-test-cache-1") {
 		t.Fatalf("Was expecting log file to contain missing worker-enforced scopes, but it doesn't")
 	}
 }
@@ -72,9 +74,9 @@ func TestMissingMountsDependency(t *testing.T) {
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
 		},
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
@@ -88,7 +90,7 @@ func TestMissingMountsDependency(t *testing.T) {
 
 	td := testTask(t)
 	td.Scopes = []string{
-		"generic-worker:cache:banana-cache",
+		"generic-worker:cache:tc-test-cache-1",
 		"queue:get-artifact:SampleArtifacts/_/X.txt",
 	}
 
@@ -102,9 +104,7 @@ func TestMissingMountsDependency(t *testing.T) {
 
 func Test32BitOverflow(t *testing.T) {
 	config = &gwconfig.Config{
-		PublicConfig: gwconfig.PublicConfig{
-			RequiredDiskSpaceMegabytes: 1024 * 10,
-		},
+		RequiredDiskSpaceMegabytes: 1024 * 10,
 	}
 	if requiredFreeSpace := requiredSpaceBytes(); requiredFreeSpace != 10737418240 {
 		t.Fatalf("Some kind of int overflow problem: requiredFreeSpace is %v but expected it to be 10737418240", requiredFreeSpace)
@@ -220,6 +220,7 @@ type MountsLoggingTestCase struct {
 // This is an extremely strict test helper, that requires you to specify
 // extracts from every log line that the mounts feature writes to the log
 func LogTest(m *MountsLoggingTestCase) {
+	m.Test.Helper()
 	payload := m.Payload
 	if payload == nil {
 		payload = &GenericWorkerPayload{
@@ -322,8 +323,9 @@ func TestValidSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	grantingDir, _ := grantingDenying(t, "directory", false, "unknown_issuer_app_1")
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
@@ -392,8 +394,9 @@ func TestFileMountNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "file", false, t.Name())
 
 	// No cache on first pass
@@ -550,14 +553,15 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
-		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`No existing writable directory cache 'tc-test-cache-1' - creating .*`,
 		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
@@ -571,7 +575,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -580,10 +584,10 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
-		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
+		`Moving existing writable directory cache tc-test-cache-1 from .* to .*` + t.Name(),
 		`Creating directory .*`,
 	},
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -595,7 +599,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 			Test: t,
 			Mounts: []MountEntry{
 				&WritableDirectoryCache{
-					CacheName: "banana-cache",
+					CacheName: "tc-test-cache-1",
 					Directory: t.Name(),
 					Content: json.RawMessage(`{
 						"taskId":   "` + taskID + `",
@@ -615,7 +619,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 				// Required text from second task when download is already cached
 				pass2,
 			},
-			Scopes: []string{"generic-worker:cache:banana-cache"},
+			Scopes: []string{"generic-worker:cache:tc-test-cache-1"},
 		},
 	)
 }
@@ -623,6 +627,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 func TestMounts(t *testing.T) {
 
 	setup(t)
+	absPathTestDir := worldWritableTempDir(t, t.Name())
 
 	taskID1 := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/build/mozharness.zip")
@@ -677,13 +682,13 @@ func TestMounts(t *testing.T) {
 
 		// empty writable directory cache
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 
 		// pre-loaded writable directory cache from artifact
 		&WritableDirectoryCache{
-			CacheName: "unknown-issuer-app-cache",
+			CacheName: "tc-test-artifact-cache",
 			Directory: filepath.Join("my-task-caches", "unknown_issuer_app_1"),
 			Content: json.RawMessage(`{
 				"taskId":   "` + taskID3 + `",
@@ -694,7 +699,7 @@ func TestMounts(t *testing.T) {
 
 		// pre-loaded writable directory cache from url
 		&WritableDirectoryCache{
-			CacheName: "devtools-app",
+			CacheName: "tc-test-url-cache",
 			Directory: filepath.Join("my-task-caches", "devtools-app"),
 			Content: json.RawMessage(`{
 				"url": "https://github.com/mozilla/gecko-dev/raw/233f30f2377f3df0f3388721901681f432b813fb/devtools/client/webide/test/app.zip"
@@ -720,6 +725,34 @@ func TestMounts(t *testing.T) {
 			}`),
 			Format: "tar.gz",
 		},
+
+		// file mount using absolute path (issue #6689)
+		// Uses a temp dir rather than taskContext.TaskDir since
+		// TaskDir changes with each task run (CreateArtifactFromFile
+		// above runs 3 tasks). The absolute path is outside the task
+		// directory, which is the key scenario this tests: AbsFrom
+		// should not prepend TaskDir.
+		&FileMount{
+			File: filepath.Join(absPathTestDir, "abs-path-test.txt"),
+			Content: json.RawMessage(`{
+				"raw": "Hello Absolute Path!"
+			}`),
+		},
+
+		// read only directory using absolute path (issue #6689)
+		&ReadOnlyDirectory{
+			Directory: filepath.Join(absPathTestDir, "abs-path-dir"),
+			Content: json.RawMessage(`{
+				"url": "https://github.com/taskcluster/logserver/raw/53134a5b9cbece05752c0ecc1a6c6d7c2fbf6580/node_modules/express/node_modules/connect/node_modules/multiparty/test/fixture/file/binaryfile.tar.gz"
+			}`),
+			Format: "tar.gz",
+		},
+
+		// writable directory cache using absolute path (issue #6689)
+		&WritableDirectoryCache{
+			CacheName: "tc-test-cache-2",
+			Directory: filepath.Join(absPathTestDir, "tc-test-cache-2"),
+		},
 	}
 
 	payload := GenericWorkerPayload{
@@ -743,13 +776,31 @@ func TestMounts(t *testing.T) {
 	}
 	td.Scopes = []string{
 		"queue:get-artifact:SampleArtifacts/_/X.txt",
-		"generic-worker:cache:banana-cache",
-		"generic-worker:cache:unknown-issuer-app-cache",
-		"generic-worker:cache:devtools-app",
+		"generic-worker:cache:tc-test-cache-1",
+		"generic-worker:cache:tc-test-artifact-cache",
+		"generic-worker:cache:tc-test-url-cache",
+		"generic-worker:cache:tc-test-cache-2",
 	}
 
 	// check task succeeded
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+
+	// Verify absolute path mounts (issue #6689)
+	checkSHA256(
+		t,
+		"72f67646b2476b2dfef67d0e2db47043fbabc8725a6476763fd53c9450074d8c",
+		filepath.Join(absPathTestDir, "abs-path-test.txt"),
+	)
+	checkSHA256(
+		t,
+		"19168d6dc3cc840bd02658e30d761cd555bb1f2bb42da18edf08917dcaa55cf5",
+		filepath.Join(absPathTestDir, "abs-path-dir", "package.json"),
+	)
+	if entries := directoryCaches["tc-test-cache-2"]; len(entries) == 0 {
+		t.Error("Expected tc-test-cache-2 to be persisted, but no pool entries found")
+	} else if _, err := os.Stat(entries[0].Location); err != nil {
+		t.Errorf("Expected tc-test-cache-2 to be persisted, but got: %v", err)
+	}
 
 	checkSHA256(
 		t,
@@ -786,61 +837,74 @@ func TestMounts(t *testing.T) {
 	checkSHA256(
 		t,
 		"51d818981374a447f0876610fd2baeeb911dd5ad60c6e6b4d2b6b6798ba5c071",
-		filepath.Join(directoryCaches["devtools-app"].Location, "foo.bar"),
+		filepath.Join(directoryCaches["tc-test-url-cache"][0].Location, "foo.bar"),
 	)
 }
 
+// TestCachesCanBeModified tests that writable directory caches persist data
+// across tasks. We run three consecutive tasks that increment a counter file
+// in the cache, then verify the counter has the expected value. This is
+// tested with both a relative path (inside the task directory) and an
+// absolute path (outside the task directory).
 func TestCachesCanBeModified(t *testing.T) {
 	setup(t)
-	// We're going to run three consecutive tasks here. The first will create
-	// a file called `counter` in the cache and the contents of the file will
-	// be `1`. The next task will overwrite this file with the number `2`. The
-	// third task will overwrite the file with the number `3`. Then we check
-	// the file `counter` has the number `3` as its contents.
 
-	mounts := []MountEntry{
-		&WritableDirectoryCache{
-			CacheName: "test-modifications",
-			Directory: filepath.Join("my-task-caches", "test-modifications"),
-		},
-	}
+	testCacheModifications := func(t *testing.T, cacheDir string) {
+		t.Helper()
 
-	payload := GenericWorkerPayload{
-		Mounts:     toMountArray(t, &mounts),
-		Command:    incrementCounterInCache(),
-		MaxRunTime: 180,
-	}
-	defaults.SetDefaults(&payload)
-
-	execute := func() {
-		td := testTask(t)
-		td.Scopes = []string{"generic-worker:cache:test-modifications"}
-		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	}
-
-	getCounter := func() int {
-		counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
-		bytes, err := os.ReadFile(counterFile)
-		if err != nil {
-			t.Fatalf("Error when trying to read cache file: %v", err)
+		mounts := []MountEntry{
+			&WritableDirectoryCache{
+				CacheName: "tc-test-modifications-cache",
+				Directory: cacheDir,
+			},
 		}
-		val, err := strconv.Atoi(string(bytes))
-		if err != nil {
-			t.Fatalf("Error reading int value from counter file")
+
+		payload := GenericWorkerPayload{
+			Mounts:     toMountArray(t, &mounts),
+			Command:    incrementCounterInCacheDir(cacheDir),
+			MaxRunTime: 180,
 		}
-		return val
+		defaults.SetDefaults(&payload)
+
+		execute := func() {
+			td := testTask(t)
+			td.Scopes = []string{"generic-worker:cache:tc-test-modifications-cache"}
+			_ = submitAndAssert(t, td, payload, "completed", "completed")
+		}
+
+		getCounter := func() int {
+			counterFile := filepath.Join(directoryCaches["tc-test-modifications-cache"][0].Location, "counter")
+			bytes, err := os.ReadFile(counterFile)
+			if err != nil {
+				t.Fatalf("Error when trying to read cache file: %v", err)
+			}
+			val, err := strconv.Atoi(string(bytes))
+			if err != nil {
+				t.Fatalf("Error reading int value from counter file")
+			}
+			return val
+		}
+
+		execute()
+		startCounter := getCounter()
+
+		execute()
+		execute()
+		endCounter := getCounter()
+
+		if endCounter != startCounter+2 {
+			t.Fatalf("Was expecting counter to have value %v but had %v", startCounter+2, endCounter)
+		}
 	}
 
-	execute()
-	startCounter := getCounter()
+	t.Run("RelativePath", func(t *testing.T) {
+		testCacheModifications(t, filepath.Join("my-task-caches", "tc-test-modifications-cache"))
+	})
 
-	execute()
-	execute()
-	endCounter := getCounter()
-
-	if endCounter != startCounter+2 {
-		t.Fatalf("Was expecting counter to have value %v but had %v", startCounter+2, endCounter)
-	}
+	t.Run("AbsolutePath", func(t *testing.T) {
+		absPathTestDir := worldWritableTempDir(t, "abs-path-cache-test")
+		testCacheModifications(t, filepath.Join(absPathTestDir, "tc-test-modifications-cache"))
+	})
 }
 
 // TestCacheMoved tests that if a test mounts a cache, and then moves it to a
@@ -849,14 +913,15 @@ func TestCacheMoved(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
-		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`No existing writable directory cache 'tc-test-cache-1' - creating .*`,
 		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
@@ -870,19 +935,19 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
-		`Removing cache banana-cache from cache table`,
-		`Deleting cache banana-cache file\(s\) at .*`,
-		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "banana-cache" due to .*'`,
+		`Removing cache tc-test-cache-1 from cache table`,
+		`Deleting cache tc-test-cache-1 file\(s\) at .*`,
+		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "tc-test-cache-1" due to .*'`,
 	)
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
-		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`No existing writable directory cache 'tc-test-cache-1' - creating .*`,
 		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*` + t.Name(),
 		`Copying file '.*' to '.*'`,
@@ -894,14 +959,14 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass2 = append(pass2,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
-		`Removing cache banana-cache from cache table`,
-		`Deleting cache banana-cache file\(s\) at .*`,
-		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "banana-cache" due to .*'`,
+		`Removing cache tc-test-cache-1 from cache table`,
+		`Deleting cache tc-test-cache-1 file\(s\) at .*`,
+		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "tc-test-cache-1" due to .*'`,
 	)
 
 	payload := GenericWorkerPayload{
@@ -915,7 +980,7 @@ func TestCacheMoved(t *testing.T) {
 			Test: t,
 			Mounts: []MountEntry{
 				&WritableDirectoryCache{
-					CacheName: "banana-cache",
+					CacheName: "tc-test-cache-1",
 					Directory: t.Name(),
 					Content: json.RawMessage(`{
 						"taskId": "` + taskID + `",
@@ -928,7 +993,7 @@ func TestCacheMoved(t *testing.T) {
 			Dependencies: []string{
 				taskID,
 			},
-			Scopes:                 []string{"generic-worker:cache:banana-cache"},
+			Scopes:                 []string{"generic-worker:cache:tc-test-cache-1"},
 			Payload:                &payload,
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
@@ -948,8 +1013,9 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "file", false, "file-located-here")
 
 	// No cache on first pass
@@ -1022,6 +1088,103 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 	)
 }
 
+func TestIndexedArtifact(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	for _, file := range []string{"unknown_issuer_app_1.zip", "mozharness.zip"} {
+		t.Run(file, func(t *testing.T) {
+			taskID := CreateArtifactFromFile(t, file, "public/indexed-artifact")
+			indexArtifact(t, namespace, taskID, 1)
+
+			mountTaskID := mountIndexedArtifact(t, namespace, file)
+
+			data1 := getArtifactContent(t, taskID, "public/indexed-artifact")
+			data2 := getArtifactContent(t, mountTaskID, "public/republished-artifact")
+			if string(data1) != string(data2) {
+				t.Fatalf("Artifact content from task %v and mount task %v should be identical but differ (%v vs %v bytes)", taskID, mountTaskID, len(data1), len(data2))
+			}
+		})
+	}
+}
+
+// TestIndexedArtifactCacheRedownloadOnNewTaskID verifies that when the index
+// is updated with a new taskID (pointing to a different artifact), a task that
+// mounts the indexed content downloads the new artifact rather than serving a
+// stale cached version.
+func TestIndexedArtifactCacheRedownloadOnNewTaskID(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	// Create first artifact and index it
+	taskID1 := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID1, 1)
+
+	// Mount the indexed artifact — this should download from taskID1
+	mountTaskID1 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+	data1 := getArtifactContent(t, mountTaskID1, "public/republished-artifact")
+
+	// Create a DIFFERENT artifact and update the index to point to it
+	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID2, 2)
+
+	// Mount again — index now points to taskID2 with different content,
+	// so the worker must download anew (not serve cached)
+	mountTaskID2 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+	data2 := getArtifactContent(t, mountTaskID2, "public/republished-artifact")
+
+	// The content from the two mount tasks should differ since the index was updated
+	if string(data1) == string(data2) {
+		t.Fatalf("Expected different artifact content after index update, but both mount tasks (%v and %v) returned identical content (%v bytes)", mountTaskID1, mountTaskID2, len(data1))
+	}
+
+	// Verify data2 matches the new artifact (taskID2)
+	originalData2 := getArtifactContent(t, taskID2, "public/indexed-artifact")
+	if string(data2) != string(originalData2) {
+		t.Fatalf("Republished artifact from mount task %v does not match original artifact from task %v", mountTaskID2, taskID2)
+	}
+}
+
+// TestIndexedArtifactCacheHitOnSameTaskID verifies that when the index is
+// updated (e.g. with a higher rank) but the taskID remains the same, the
+// worker serves the cached artifact rather than re-downloading it.
+func TestIndexedArtifactCacheHitOnSameTaskID(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	// Create an artifact and index it
+	taskID1 := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID1, 1)
+
+	// Mount the indexed artifact — first download
+	mountTaskID1 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+
+	// Update the index with a higher rank but SAME taskID
+	indexArtifact(t, namespace, taskID1, 100)
+
+	// Mount again — same taskID, so should use cache
+	mountTaskID2 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+
+	// Both mount tasks should produce identical content
+	data1 := getArtifactContent(t, mountTaskID1, "public/republished-artifact")
+	data2 := getArtifactContent(t, mountTaskID2, "public/republished-artifact")
+	if string(data1) != string(data2) {
+		t.Fatalf("Expected identical artifact content when index taskID unchanged, but mount tasks %v and %v returned different content", mountTaskID1, mountTaskID2)
+	}
+
+	// Verify the log from the second mount task shows a cache hit, not a
+	// fresh download. On cache hit the worker logs "No SHA256 specified in
+	// task mounts for" and does NOT log "Downloading" (since it skips the
+	// download entirely).
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "No SHA256 specified in task mounts for") {
+		t.Fatalf("Expected log to contain 'No SHA256 specified in task mounts for' but it didn't.\nLog:\n%v", logtext)
+	}
+	if strings.Contains(logtext, "Downloading") {
+		t.Fatalf("Expected no download on cache hit, but log contains 'Downloading'.\nLog:\n%v", logtext)
+	}
+}
+
 func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 
 	setup(t)
@@ -1029,7 +1192,7 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 
 	mounts := []MountEntry{
 		&WritableDirectoryCache{
-			CacheName: "unknown-issuer-app-cache",
+			CacheName: "tc-test-artifact-cache",
 			Directory: filepath.Join(t.Name(), "1"),
 		},
 		&ReadOnlyDirectory{
@@ -1056,7 +1219,7 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 		taskID,
 	}
 	td.Scopes = []string{
-		"generic-worker:cache:unknown-issuer-app-cache",
+		"generic-worker:cache:tc-test-artifact-cache",
 	}
 
 	// check task failed due to bad SHA256
@@ -1064,7 +1227,7 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 
 	mounts = []MountEntry{
 		&WritableDirectoryCache{
-			CacheName: "unknown-issuer-app-cache",
+			CacheName: "tc-test-artifact-cache",
 			Directory: filepath.Join(t.Name(), "1"),
 		},
 	}
@@ -1078,7 +1241,7 @@ func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 
 	td = testTask(t)
 	td.Scopes = []string{
-		"generic-worker:cache:unknown-issuer-app-cache",
+		"generic-worker:cache:tc-test-artifact-cache",
 	}
 
 	// check task succeeded, and worker didn't crash when trying to mount cache

@@ -237,7 +237,6 @@ export default class TaskGroupTable extends Component {
 
   static propTypes = {
     /** Task GraphQL PageConnection instance. */
-    // eslint-disable-next-line react/no-unused-prop-types
     taskGroupConnection: shape({
       edges: arrayOf(task),
       pageInfo,
@@ -269,7 +268,7 @@ export default class TaskGroupTable extends Component {
         return filteredTasks;
       }
 
-      return filteredTasks.sort((a, b) => {
+      return [...filteredTasks].sort((a, b) => {
         const firstElement =
           sortDirection === 'desc'
             ? valueFromNode(b.node, sortBy)
@@ -324,6 +323,7 @@ export default class TaskGroupTable extends Component {
     const itemCount = items.length;
 
     return (
+      // biome-ignore lint/a11y/useSemanticElements: the rows are virtualized with react-window, which cannot live inside a real <table>
       <div role="table">
         <Table className={classes.table} component="div">
           <TableHead
@@ -427,7 +427,8 @@ export default class TaskGroupTable extends Component {
               itemSize={48}
               className={classes.windowScrollerOverride}
               overscanCount={50}
-              itemData={{ iconSize, items, showTimings, classes }}>
+              itemData={{ iconSize, items, showTimings, classes }}
+              itemKey={(index, data) => data.items[index]?.node.taskId}>
               {ItemRendererMemo}
             </List>
           </Fragment>

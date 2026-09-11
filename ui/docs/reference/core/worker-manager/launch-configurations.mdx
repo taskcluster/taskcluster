@@ -3,13 +3,15 @@ title: Worker-Manager - Launch Configurations
 order: 100
 ---
 
+import WeightPlayground from '@taskcluster/ui/views/Documentation/components/WeightPlayground';
+
 # Worker-Manager - Launch Configurations
 
 Launch configurations define how Worker-Manager should create and manage cloud instances for worker pools.
 This feature is supported by the following cloud providers:
-- [AWS Provider](/docs/reference/core/worker-manager/aws.mdx)
-- [Azure Provider](/docs/reference/core/worker-manager/azure.mdx)
-- [Google Provider](/docs/reference/core/worker-manager/google.mdx)
+- [AWS Provider](/docs/reference/core/worker-manager/aws)
+- [Azure Provider](/docs/reference/core/worker-manager/azure)
+- [Google Provider](/docs/reference/core/worker-manager/google)
 
 ## Configuration
 
@@ -54,6 +56,12 @@ Initial weight determines how likely a configuration will be selected during pro
 **Three Configurations:**
 - Config A: `1.0`, Config B: `0.5`, Config C: `0.5`
 - Result: `~50%` A, `~25%` B, `~25%` C
+
+#### Weight Distribution Playground
+
+Adjust weights below to see how workers would be distributed across configurations (out of 1000).
+
+<WeightPlayground />
 
 #### Use Cases
 - Cost optimization: Assign higher weights to cheaper regions

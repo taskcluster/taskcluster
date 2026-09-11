@@ -17,16 +17,21 @@ spec:
       activeDeadlineSeconds: 86340
       template:
         metadata:
+          annotations: {{ merge (dict) (.Values.worker_manager.procs.expire_workers.podAnnotations | default dict) (.Values.podAnnotations | default dict) | toJson }}
           labels: *ref_0
         spec:
           restartPolicy: OnFailure
           imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+          securityContext:
+            runAsNonRoot: true
           containers:
             - name: taskcluster-worker-manager-expire-workers
               image: '{{ .Values.dockerImage }}'
               imagePullPolicy: Always
               args:
                 - worker-manager/expire-workers
+              securityContext:
+                allowPrivilegeEscalation: false
               resources:
                 requests:
                   cpu: '{{ .Values.worker_manager.procs.expire_workers.cpu }}'

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import SchemaSet from '../src/index.js';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
@@ -16,22 +16,19 @@ suite(testing.suiteName(), () => {
   };
 
   test('abstract schemas available', () => {
-    let schemas = makeSchemaSet().abstractSchemas();
+    const schemas = makeSchemaSet().abstractSchemas();
     assert.equal(_.keys(schemas).length, 9);
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
-    assert.equal(
-      schemas['v1/default-schema.json'].$id,
-      '/schemas/whatever/v1/default-schema.json#',
-    );
+    assert.equal(schemas['v1/default-schema.json'].$id, '/schemas/whatever/v1/default-schema.json#');
   });
 
   test('absolute schemas available', () => {
-    let schemas = makeSchemaSet().absoluteSchemas(rootUrl);
+    const schemas = makeSchemaSet().absoluteSchemas(rootUrl);
     assert.equal(_.keys(schemas).length, 9);
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(
       schemas['v1/default-schema.json'].$id,
-      'https://tc-tests.example.com/schemas/whatever/v1/default-schema.json#',
+      'https://tc-tests.example.com/schemas/whatever/v1/default-schema.json#'
     );
   });
 
@@ -41,7 +38,7 @@ suite(testing.suiteName(), () => {
         folder: 'test/invalid-schemas/schema-with-id',
         serviceName: 'whatever',
       });
-      assert(false, 'Bad schema should\'ve thrown an exception!');
+      assert(false, "Bad schema should've thrown an exception!");
     } catch (e) {
       if (!e.toString().match(/attempts to set own id/)) {
         throw e;

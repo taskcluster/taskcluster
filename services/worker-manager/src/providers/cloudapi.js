@@ -1,6 +1,5 @@
-import pqueue from 'p-queue';
+import PQueue from 'p-queue';
 import { measureTime } from '../util.js';
-const PQueue = pqueue.default;
 
 const defaultMetrics = () => ({
   total: 0,
@@ -28,8 +27,8 @@ const defaultMetrics = () => ({
  * p-queue documentation. For each of these you can also specify a default for if you
  * have not set a value for a type.
  *
- * To avoid calls being stuck for a long period of time, we can also pass `timeout` and
- * `throwOnTimeout`.
+ * To avoid calls being stuck for a long period of time, we can also pass `timeout`.
+ * Note: as of p-queue 8+, timeouts always throw a `TimeoutError`.
  *
  * You must provide a @taskcluster/lib-monitor logger to this class.
  *
@@ -46,7 +45,6 @@ const defaultMetrics = () => ({
  * retries and status codes. Call `.resetMetrics()` to reset collected stats between runs if needed.
  */
 export class CloudAPI {
-
   constructor({
     types,
     apiRateLimits,
@@ -56,7 +54,6 @@ export class CloudAPI {
     errorHandler,
     providerId,
     timeout = undefined,
-    throwOnTimeout = false,
     collectMetrics = false,
   }) {
     this.queues = {};
@@ -66,12 +63,11 @@ export class CloudAPI {
     this.collectMetrics = collectMetrics;
     this.metrics = defaultMetrics();
     for (const type of types) {
-      const { interval, intervalCap } = (apiRateLimits[type] || {});
+      const { interval, intervalCap } = apiRateLimits[type] || {};
       this.queues[type] = new PQueue({
         interval: interval || intervalDefault,
         intervalCap: intervalCap || intervalCapDefault,
         timeout,
-        throwOnTimeout,
       });
     }
   }
@@ -87,18 +83,21 @@ export class CloudAPI {
     try {
       return await queue.add(func, { priority: tries });
     } catch (err) {
-      let { backoff, level, reason } = this.errorHandler({ err, tries });
+      const { backoff, level, reason } = this.errorHandler({ err, tries });
       success = false;
       statusCode = err.statusCode || err.code || 500;
 
       if (!queue.isPaused) {
-        this.monitor.log.cloudApiPaused({
-          providerId: this.providerId,
-          queueName: type,
-          reason: reason || 'unknown',
-          queueSize: queue.size,
-          duration: backoff,
-        }, { level: level || 'notice' });
+        this.monitor.log.cloudApiPaused(
+          {
+            providerId: this.providerId,
+            queueName: type,
+            reason: reason || 'unknown',
+            queueSize: queue.size,
+            duration: backoff,
+          },
+          { level: level || 'notice' }
+        );
         queue.pause();
         setTimeout(() => {
           this.monitor.log.cloudApiResumed({
@@ -156,7 +155,7 @@ export class CloudAPI {
     const len = durations.length;
 
     /** @param {number} p */
-    const getPercentile = (p) => durations[Math.floor(len * p)];
+    const getPercentile = p => durations[Math.floor(len * p)];
 
     this.monitor.log.cloudApiMetrics({
       providerId: this.providerId,

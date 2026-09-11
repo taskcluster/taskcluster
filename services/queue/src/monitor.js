@@ -30,7 +30,7 @@ MonitorManager.register({
     A task has been created (createTask).  This is logged when the task-defined
     pulse message is sent.`,
   fields: {
-    taskId: 'The task\'s taskId.',
+    taskId: "The task's taskId.",
   },
 });
 
@@ -44,7 +44,7 @@ MonitorManager.register({
     A task is now pending and ready to be executed.  This is logged when the task-pending pulse
     message is sent.`,
   fields: {
-    taskId: 'The task\'s taskId.',
+    taskId: "The task's taskId.",
     runId: 'The runId that is now pending.',
   },
 });
@@ -58,7 +58,7 @@ MonitorManager.register({
   description: `
     A task is now being executed.  This is logged when the task-running pulse message is sent.`,
   fields: {
-    taskId: 'The task\'s taskId.',
+    taskId: "The task's taskId.",
     runId: 'The runId that is now running.',
   },
 });
@@ -73,7 +73,7 @@ MonitorManager.register({
     A task run has been resolved as completed.  This is logged when the task-completed pulse
     message is sent.`,
   fields: {
-    taskId: 'The task\'s taskId.',
+    taskId: "The task's taskId.",
     runId: 'The runId that was resolved.',
   },
 });
@@ -88,7 +88,7 @@ MonitorManager.register({
     A task run has been resolved as failed.  This is logged when the task-failed pulse
     message is sent.`,
   fields: {
-    taskId: 'The task\'s taskId.',
+    taskId: "The task's taskId.",
     runId: 'The runId that was resolved.',
   },
 });
@@ -118,8 +118,28 @@ MonitorManager.register({
     A task run has been resolved as an exception.  This is logged when the task-exception pulse
     message is sent.`,
   fields: {
-    taskId: 'The task\'s taskId.',
+    taskId: "The task's taskId.",
     runId: 'The runId that was resolved.',
+  },
+});
+
+MonitorManager.register({
+  name: 'taskResolvedByWorkerRemoved',
+  title: 'Task Resolved By Worker Removed',
+  type: 'task-resolved-by-worker-removed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task was resolved as exception/worker-shutdown because worker-manager
+    reported the worker was removed. This prevents the ~20 minute wait for
+    claim expiration.`,
+  fields: {
+    taskId: "The task's taskId.",
+    runId: 'The runId that was resolved.',
+    workerPoolId: 'The worker pool the worker belonged to.',
+    workerGroup: 'The worker group.',
+    workerId: 'The worker id.',
+    reason: 'The reason the worker was removed.',
   },
 });
 
@@ -133,7 +153,7 @@ MonitorManager.register({
     A worker has claimed a task.  In cases where multple tasks were claimed,
     one log message will be produced for each task.`,
   fields: {
-    taskQueueId: "The task queue ID for which work is being claimed",
+    taskQueueId: 'The task queue ID for which work is being claimed',
     workerGroup: 'Group of worker claiming work.',
     workerId: 'The id of the claiming worker.',
     taskId: 'The task given to the worker.',
@@ -171,6 +191,37 @@ MonitorManager.register({
     schedulerId: 'Id of the reclaiming worker.',
     expires: 'Date and time of task group expiration',
     sealed: 'Date and time when task group was sealed',
+  },
+});
+
+MonitorManager.register({
+  name: 'taskPriorityChanged',
+  title: 'Task Priority Changed',
+  type: 'task-priority-changed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task priority value was updated via APIs.`,
+  fields: {
+    taskId: 'The task being reprioritized.',
+    oldPriority: 'Previous priority value.',
+    newPriority: 'New priority value.',
+  },
+});
+
+MonitorManager.register({
+  name: 'taskGroupPriorityChanged',
+  title: 'Task Group Priority Changed',
+  type: 'task-group-priority-changed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task group reprioritization completed.`,
+  fields: {
+    taskGroupId: 'Task group that was reprioritized.',
+    schedulerId: 'Scheduler of the task group.',
+    tasksAffected: 'Total number of tasks updated during the request.',
+    newPriority: 'Priority value applied to each task.',
   },
 });
 
@@ -221,7 +272,10 @@ MonitorManager.registerMetric('failedTasks', {
   type: 'counter',
   title: 'Counter for failed tasks',
   description: 'Counter for failed tasks',
-  labels: commonLabels,
+  labels: {
+    ...commonLabels,
+    reasonResolved: 'Reason for task failure',
+  },
   registers: ['default'],
 });
 
@@ -230,8 +284,11 @@ MonitorManager.registerMetric('exceptionTasks', {
   type: 'counter',
   title: 'Counter for task exception',
   description: 'Counter for task exception',
-  labels: commonLabels,
-  registers: ['default'],
+  labels: {
+    ...commonLabels,
+    reasonResolved: 'Reason for task exception',
+  },
+  registers: ['default', 'resolvers'],
 });
 
 MonitorManager.registerMetric('pendingTasks', {

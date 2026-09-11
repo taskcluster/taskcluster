@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 
 /**
@@ -35,16 +35,18 @@ class HintPoller {
     assert(!this.destroyed, 'requestClaim() called after destroy()');
     return new Promise((resolve, reject) => {
       // Make a request for count tasks
-      let request = { resolve, reject, count };
+      const request = { resolve, reject, count };
       this.requests.push(request);
 
       // Remove request if aborted
-      aborted.then(() => {
-        // Remove request from requests, but modifying the requests array
-        _.pull(this.requests, request);
-        // Resolve request empty array
-        request.resolve([]);
-      }).catch(reject);
+      aborted
+        .then(() => {
+          // Remove request from requests, but modifying the requests array
+          _.pull(this.requests, request);
+          // Resolve request empty array
+          request.resolve([]);
+        })
+        .catch(reject);
 
       // Start polling
       this.start();
@@ -54,16 +56,18 @@ class HintPoller {
   start() {
     if (!this.started) {
       this.started = true;
-      this.poll().catch(err => {
-        this.started = false;
-        // Resolve everything as failed
-        let requests = this.requests;
-        this.requests = [];
-        this.destroy();
-        requests.map(r => r.reject(err));
-      }).catch(err => {
-        process.nextTick(() => this.onError(err));
-      });
+      this.poll()
+        .catch(err => {
+          this.started = false;
+          // Resolve everything as failed
+          const requests = this.requests;
+          this.requests = [];
+          this.destroy();
+          requests.map(r => r.reject(err));
+        })
+        .catch(err => {
+          process.nextTick(() => this.onError(err));
+        });
     }
   }
 
@@ -79,22 +83,27 @@ class HintPoller {
 
       // While limit of hints requested is greater zero, and we are getting
       // hints from the queue we continue to claim from this queue
-      let limit, hints;
       let i = 10; // count iterations a limit to 10, before we start over
-      while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
-          (hints = await this.pollPendingQueue(limit)).length > 0 && i-- > 0) {
+      let limit = _.sumBy(this.requests, 'count');
+      while (limit > 0) {
+        const hints = await this.pollPendingQueue(limit);
+        if (hints.length === 0 || i-- <= 0) {
+          break;
+        }
         // Count hints claimed
         claimed += hints.length;
 
         // While we have hints and requests for hints we resolve requests
         while (hints.length > 0 && this.requests.length > 0) {
-          let { resolve, count } = this.requests.shift();
+          const { resolve, count } = this.requests.shift();
           resolve(hints.splice(0, count));
         }
 
         // Release remaining hints (this shouldn't happen often!)
         await Promise.all(hints.map(hint => hint.release()));
         released += hints.length;
+
+        limit = _.sumBy(this.requests, 'count');
       }
 
       // If nothing was claimed, we sleep 1000ms before polling again
@@ -118,8 +127,7 @@ class HintPoller {
     // Remove entry from parent
     this.destroyed = true;
     this.onDestroy();
-    assert(_.sumBy(this.requests, 'count') === 0,
-      'destroying while we have pending requests is not allowed');
+    assert(_.sumBy(this.requests, 'count') === 0, 'destroying while we have pending requests is not allowed');
   }
 }
 

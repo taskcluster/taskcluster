@@ -1,22 +1,22 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import load from '../src/built-services.js';
 import mockFs from 'mock-fs';
 import References from '../src/index.js';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  suiteSetup(async function() {
+suite(testing.suiteName(), () => {
+  suiteSetup(async () => {
     // getCommonSchemas is memoized, but references files that are not present in the
     // mockFs, so fetch it once before setting up the mockFs.
     await getCommonSchemas();
   });
 
-  teardown(function() {
+  teardown(() => {
     mockFs.restore();
   });
 
-  test('fails on files in the input dir', async function() {
+  test('fails on files in the input dir', async () => {
     mockFs({ '/test/input/some.data': 'junk' });
 
     try {
@@ -39,7 +39,7 @@ suite(testing.suiteName(), function() {
     });
   };
 
-  test('reads references', async function() {
+  test('reads references', async () => {
     setupFs();
     const { references, schemas } = await load({ directory: '/test/input' });
     assert.deepEqual(references.map(ref => JSON.stringify(ref.content)).sort(), [
@@ -51,7 +51,7 @@ suite(testing.suiteName(), function() {
     assert.deepEqual(schemas, []);
   });
 
-  test('References.fromBuiltServices reads references and adds common', async function() {
+  test('References.fromBuiltServices reads references and adds common', async () => {
     setupFs();
     const references = await References.fromBuiltServices({ directory: '/test/input' });
     assert.deepEqual(references.references.map(ref => JSON.stringify(ref.content)).sort(), [
@@ -65,7 +65,7 @@ suite(testing.suiteName(), function() {
     assert(ids.some(id => id === '/schemas/common/manifest-v3.json#'));
   });
 
-  test('reads schemas at all nesting levels', async function() {
+  test('reads schemas at all nesting levels', async () => {
     mockFs({
       '/test/input/svc1/metadata.json': '{"version": 1}',
       '/test/input/svc1/schemas': {
@@ -84,7 +84,6 @@ suite(testing.suiteName(), function() {
     });
     const { references, schemas } = await load({ directory: '/test/input' });
     assert.deepEqual(references, []);
-    assert.deepEqual(schemas.map(sch => JSON.stringify(sch.content)).sort(),
-      ['"deeper"', '"root"', '"versioned"']);
+    assert.deepEqual(schemas.map(sch => JSON.stringify(sch.content)).sort(), ['"deeper"', '"root"', '"versioned"']);
   });
 });

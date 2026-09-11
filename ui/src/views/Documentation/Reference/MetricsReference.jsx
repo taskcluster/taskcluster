@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import MDX from '@mdx-js/runtime';
+import MDX from './MDX';
 import Typography from '@material-ui/core/Typography';
 import { titleCase } from 'title-case';
 import Entry from './Entry';

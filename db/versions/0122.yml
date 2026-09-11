@@ -1,0 +1,65 @@
+version: 122
+description: Fix listTaskGroup pagination stability by adding ORDER BY task_id
+methods:
+  get_tasks_by_task_group_projid:
+    description: |-
+      Get all properties of all tasks in the given task group.
+    mode: read
+    serviceName: queue
+    args: task_group_id_in text, page_size_in integer, page_offset_in integer
+    returns: |-
+      table (
+        task_id text,
+        task_queue_id text,
+        scheduler_id text,
+        project_id text,
+        task_group_id text,
+        dependencies jsonb,
+        requires task_requires,
+        routes jsonb,
+        priority task_priority,
+        retries integer,
+        retries_left int,
+        created timestamptz,
+        deadline timestamptz,
+        expires timestamptz,
+        scopes jsonb,
+        payload jsonb,
+        metadata jsonb,
+        tags jsonb,
+        extra jsonb,
+        runs jsonb,
+        taken_until timestamptz
+      )
+    body: |-
+      begin
+        return query
+        select
+          tasks.task_id,
+          tasks.task_queue_id,
+          tasks.scheduler_id,
+          -- treat null project_id as 'none'
+          coalesce(tasks.project_id, 'none') as project_id,
+          tasks.task_group_id,
+          tasks.dependencies,
+          tasks.requires,
+          tasks.routes,
+          tasks.priority,
+          tasks.retries,
+          tasks.retries_left,
+          tasks.created,
+          tasks.deadline,
+          tasks.expires,
+          tasks.scopes,
+          tasks.payload,
+          tasks.metadata,
+          tasks.tags,
+          tasks.extra,
+          tasks.runs,
+          tasks.taken_until
+        from tasks
+        where tasks.task_group_id = task_group_id_in
+        order by tasks.task_id  -- to avoid pagination overlaps
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

@@ -2,7 +2,6 @@ import slugid from 'slugid';
 import _ from 'lodash';
 
 export default async ({ userConfig, answer, configTmpl }) => {
-
   function setDefault(path, val) {
     if (!_.has(userConfig, path, val)) {
       _.set(userConfig, path, val);

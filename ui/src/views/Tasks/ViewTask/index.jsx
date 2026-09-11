@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { withApollo, graphql } from 'react-apollo';
+import { withApollo, graphql } from '@apollo/client/react/hoc';
 import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import { withStyles } from '@material-ui/core/styles';
@@ -12,6 +12,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import dotProp from 'dot-prop-immutable';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
+import { Queue } from '@taskcluster/client-web';
 import HammerIcon from 'mdi-react/HammerIcon';
 import CreationIcon from 'mdi-react/CreationIcon';
 import PencilIcon from 'mdi-react/PencilIcon';
@@ -21,6 +22,8 @@ import CloseIcon from 'mdi-react/CloseIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
+import ChartIcon from 'mdi-react/ChartBarIcon';
+import SortIcon from 'mdi-react/SortIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import Markdown from '../../../components/Markdown';
@@ -32,18 +35,19 @@ import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
+import ChangeTaskPriorityDialog from '../../../components/ChangeTaskPriorityDialog';
 import TaskActionForm from '../../../components/TaskActionForm';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import splitTaskQueueId from '../../../utils/splitTaskQueueId';
 import { gqlTaskToApi } from '../../../utils/gqlToApi';
 import {
-  ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
   DEPENDENTS_PAGE_SIZE,
   VALID_TASK,
   TASK_ADDED_FIELDS,
   TASK_POLL_INTERVAL,
   UI_SCHEDULER_ID,
+  TASK_STATE,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -52,6 +56,8 @@ import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
 import Link from '../../../utils/Link';
+import { changeTaskPriority, getClient } from '../../../utils/client';
+import { AuthContext } from '../../../utils/Auth';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import taskSubscription from './taskSubscription.graphql';
@@ -60,15 +66,22 @@ import rerunTaskQuery from './rerunTask.graphql';
 import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
-import createTaskQuery from '../createTask.graphql';
-import { AuthContext } from '../../../utils/Auth';
 
-const updateTaskIdHistory = id => {
+const updateTaskIdHistory = (id, task) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
 
-  db.taskIdsHistory.put({ taskId: id });
+  db.taskIdsHistory.put({
+    taskId: id,
+    name: task?.metadata?.name,
+    source: task?.metadata?.source,
+    taskQueueId: task?.taskQueueId,
+    created: task?.created,
+    deadline: task?.deadline,
+    state: task?.status?.state,
+    viewedAt: Date.now(),
+  });
 };
 
 const taskInContext = (tagSetList, taskTags) =>
@@ -112,20 +125,12 @@ const getCachesFromTask = task =>
       dependentsConnection: {
         limit: DEPENDENTS_PAGE_SIZE,
       },
-      taskActionsFilter: {
-        kind: {
-          $in: ACTIONS_JSON_KNOWN_KINDS,
-        },
-        context: {
-          $not: {
-            $size: 0,
-          },
-        },
-      },
     },
   }),
 })
 export default class ViewTask extends Component {
+  static contextType = AuthContext;
+
   static getDerivedStateFromProps(props, state) {
     const taskId = props.match.params.taskId || '';
     const {
@@ -133,7 +138,7 @@ export default class ViewTask extends Component {
     } = props;
 
     if (taskId !== state.previousTaskId && task) {
-      updateTaskIdHistory(taskId);
+      updateTaskIdHistory(taskId, task);
 
       const caches = getCachesFromTask(task);
 
@@ -161,8 +166,7 @@ export default class ViewTask extends Component {
         // if an action with this name has already been selected,
         // don't consider this version
         if (
-          task &&
-          task.tags &&
+          task?.tags &&
           taskInContext(action.context, task.tags) &&
           !taskActions.some(({ name }) => name === action.name)
         ) {
@@ -182,13 +186,13 @@ export default class ViewTask extends Component {
   }
 
   state = {
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
     selectedAction: null,
     dialogOpen: false,
     actionLoading: false,
     dialogActionProps: null,
     dialogError: null,
+    changePriorityDialogOpen: false,
     caches: null,
     selectedCaches: null,
     formInputs: null,
@@ -289,26 +293,29 @@ export default class ViewTask extends Component {
     }
   };
 
-  handleActionTaskSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionTaskSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const {
-      client,
-      data: { task },
-    } = this.props;
-    const { formInputs } = this.state;
-    const { actionData } = this.getTaskActionsData();
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions: task.taskActions,
-      form: formInputs,
-      action,
-      apolloClient: client,
-    });
+      const {
+        client,
+        data: { task },
+      } = this.props;
+      const { formInputs } = this.state;
+      const { actionData } = this.getTaskActionsData();
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions: task.taskActions,
+        form: formInputs,
+        action,
+        apolloClient: client,
+        user: this.context.user,
+      });
 
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
     const {
@@ -483,13 +490,9 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: createTaskQuery,
-        variables: {
-          taskId,
-          task,
-        },
-      });
+      const queue = getClient({ Class: Queue, user: this.context.user });
+
+      await queue.createTask(taskId, task);
 
       return taskId;
     } catch (error) {
@@ -536,6 +539,30 @@ export default class ViewTask extends Component {
     this.setState({
       formInputs: value,
     });
+
+  handleOpenLogProfiler = () => {
+    const { taskId } = this.props.match.params;
+    const profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task/${taskId}/profile`;
+    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(
+      profileUrl
+    )}`;
+
+    window.open(profilerUrl, '_blank');
+  };
+
+  handleChangePriorityClick = () => {
+    this.setState({ changePriorityDialogOpen: true });
+  };
+
+  handleChangePriorityClose = () => {
+    this.setState({ changePriorityDialogOpen: false });
+  };
+
+  handleChangePriorityComplete = () => {
+    this.setState({ changePriorityDialogOpen: false });
+    // refresh the task so the new priority is reflected immediately
+    this.props.data.refetch();
+  };
 
   handlePurgeWorkerCacheClick = () => {
     const title = 'Purge Worker Cache';
@@ -651,7 +678,6 @@ export default class ViewTask extends Component {
   };
 
   handleSelectCacheClick = cache => () => {
-    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedCaches = new Set([...this.state.selectedCaches]);
 
     if (selectedCaches.has(cache)) {
@@ -663,7 +689,6 @@ export default class ViewTask extends Component {
     this.setState({
       selectedCaches,
       dialogActionProps: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.dialogActionProps,
         body: this.renderPurgeWorkerCacheDialogBody(selectedCaches),
       },
@@ -791,13 +816,9 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: createTaskQuery,
-        variables: {
-          taskId,
-          task,
-        },
-      });
+      const queue = getClient({ Class: Queue, user: this.context.user });
+
+      await queue.createTask(taskId, task);
 
       return taskId;
     } catch (error) {
@@ -896,7 +917,7 @@ export default class ViewTask extends Component {
             defaultValue={match.params.taskId}
           />
         }>
-        <Helmet state={task && task.status.state} />
+        <Helmet state={task?.status.state} />
         {loading && (
           <Fragment>
             <Spinner loading />
@@ -949,16 +970,13 @@ export default class ViewTask extends Component {
             <br />
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <AuthContext.Consumer>
-                  {auth => (
-                    <TaskDetailsCard
-                      task={task}
-                      user={auth.user}
-                      dependents={dependents}
-                      onDependentsPageChange={this.handleDependentsPageChange}
-                    />
-                  )}
-                </AuthContext.Consumer>
+                <TaskDetailsCard
+                  task={task}
+                  user={this.context.user}
+                  dependents={dependents}
+                  onDependentsPageChange={this.handleDependentsPageChange}
+                  onChangePriority={this.handleChangePriorityClick}
+                />
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -1044,6 +1062,16 @@ export default class ViewTask extends Component {
                 FabProps={{
                   disabled: actionLoading,
                 }}
+                icon={<SortIcon />}
+                tooltipTitle="Change Priority"
+                onClick={this.handleChangePriorityClick}
+              />
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                FabProps={{
+                  disabled: actionLoading,
+                }}
                 icon={<PencilIcon />}
                 tooltipTitle="Edit"
                 onClick={this.handleEditTaskClick}
@@ -1060,8 +1088,20 @@ export default class ViewTask extends Component {
                   onClick={this.handleCreateInteractiveTaskClick}
                 />
               )}
-              {taskActions &&
-                taskActions.length &&
+              <SpeedDialAction
+                tooltipOpen
+                icon={<ChartIcon />}
+                FabProps={{
+                  disabled: [
+                    TASK_STATE.PENDING,
+                    TASK_STATE.RUNNING,
+                    TASK_STATE.UNSCHEDULED,
+                  ].includes(task.status.state),
+                }}
+                tooltipTitle="Profile Task Log"
+                onClick={this.handleOpenLogProfiler}
+              />
+              {taskActions?.length &&
                 taskActions.map(action => (
                   <SpeedDialAction
                     requiresAuth
@@ -1096,6 +1136,23 @@ export default class ViewTask extends Component {
                 error={dialogError}
                 onError={this.handleTaskActionError}
                 onClose={this.handleActionDialogClose}
+              />
+            )}
+            {this.state.changePriorityDialogOpen && (
+              <ChangeTaskPriorityDialog
+                open={this.state.changePriorityDialogOpen}
+                currentPriority={task.priority
+                  ?.toLowerCase()
+                  .replace(/_/g, '-')}
+                onSubmit={priority =>
+                  changeTaskPriority({
+                    taskId: match.params.taskId,
+                    priority,
+                    user: this.context.user,
+                  })
+                }
+                onClose={this.handleChangePriorityClose}
+                onComplete={this.handleChangePriorityComplete}
               />
             )}
           </Fragment>

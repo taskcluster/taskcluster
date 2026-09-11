@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v88/internal/mocktc/mocks3"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc/mocks3"
 )
 
 type mock struct {
@@ -38,8 +38,8 @@ func (m *mock) Close() {
 
 func mockTcServices(t *testing.T) mock {
 	t.Helper()
-	m := mock{}
-	m.router = mux.NewRouter().UseEncodedPath()
+	m := mock{
+		router: mux.NewRouter().UseEncodedPath()}
 	m.router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
 		_, _ = w.Write(fmt.Appendf(nil, "URL %v with method %v NOT FOUND\n", req.URL, req.Method))

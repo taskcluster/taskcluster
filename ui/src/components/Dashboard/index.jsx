@@ -35,6 +35,7 @@ import Logo from '../../images/brandLogo.png';
 import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
 import SkipNavigation from '../SkipNavigation';
+import versionInfo from '../../../../version.json';
 
 @withRouter
 @withWidth()
@@ -229,10 +230,7 @@ export default class Dashboard extends Component {
   }
 
   getDeploymentVersion() {
-    const importer = require.context('../../../..', false, /version\.json/);
-    const file = importer.keys()[0];
-
-    return file ? importer(file).version : null;
+    return versionInfo.version;
   }
 
   handleDrawerToggle = () => {
@@ -406,14 +404,12 @@ export default class Dashboard extends Component {
               ModalProps={{
                 keepMounted: true,
               }}>
-              <Fragment>
-                <IconButton
-                  onClick={this.handleHelpViewToggle}
-                  className={classes.helpCloseIcon}>
-                  <CloseIcon />
-                </IconButton>
-                {helpView}
-              </Fragment>
+              <IconButton
+                onClick={this.handleHelpViewToggle}
+                className={classes.helpCloseIcon}>
+                <CloseIcon />
+              </IconButton>
+              {helpView}
             </Drawer>
           </Fragment>
         )}

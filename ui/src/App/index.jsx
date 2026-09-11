@@ -1,32 +1,31 @@
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
-import storage from 'localforage';
-import { ApolloProvider } from 'react-apollo';
-import { ApolloClient } from 'apollo-client';
-import { WebSocketLink } from 'apollo-link-ws';
-import { getMainDefinition } from 'apollo-utilities';
-import { from, split } from 'apollo-link';
-import { createHttpLink } from 'apollo-link-http';
-import { setContext } from 'apollo-link-context';
-import { ErrorBoundary } from 'react-error-boundary';
 import {
+  ApolloClient,
+  ApolloProvider,
   InMemoryCache,
-  IntrospectionFragmentMatcher,
+  createHttpLink,
   defaultDataIdFromObject,
-} from 'apollo-cache-inmemory';
-import { CachePersistor } from 'apollo-cache-persist';
-import ReactGA from 'react-ga';
+  from,
+  split,
+} from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { setContext } from '@apollo/client/link/context';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { ErrorBoundary } from 'react-error-boundary';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
+import { TaskclusterClientContext } from '../utils/TaskclusterClient';
+import { getClient } from '../utils/client';
 import db from '../utils/db';
 import reportError from '../utils/reportError';
 import ErrorPanel from '../components/ErrorPanel';
 import theme from '../theme';
-import introspectionQueryResultData from '../fragments/fragmentTypes.json';
+import possibleTypes from '../fragments/possibleTypes.json';
 import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 import './index.css';
@@ -39,19 +38,8 @@ export default class App extends Component {
     routes: arrayOf(route).isRequired,
   };
 
-  /**
-   * This is deprecated in apollo client v3
-   * https://www.apollographql.com/docs/react/migrating/apollo-client-3-migration/#breaking-cache-changes
-   * After upgrade InMemoryCache would have { possibleTypes } option
-   * which will accept fragmentTypes.json contents directly
-   */
-  fragmentMatcher = new IntrospectionFragmentMatcher({
-    introspectionQueryResultData,
-  });
-
   cache = new InMemoryCache({
-    fragmentMatcher: this.fragmentMatcher,
-    /* eslint-disable no-underscore-dangle */
+    possibleTypes,
     dataIdFromObject: object => {
       switch (object.__typename) {
         case 'TaskStatus': {
@@ -68,12 +56,6 @@ export default class App extends Component {
         }
       }
     },
-    /* eslint-enable no-underscore-dangle */
-  });
-
-  persistence = new CachePersistor({
-    cache: this.cache,
-    storage,
   });
 
   httpLink = createHttpLink({
@@ -91,6 +73,7 @@ export default class App extends Component {
       lazy: true,
       connectionCallback: error => {
         if (error?.message?.includes('InsufficientScopes')) {
+          this.setState({ subscriptionError: error });
           // close without reconnect
           // note: immediate is used to ensure error is propagated
           // to the subscriber before channel is closed
@@ -100,7 +83,7 @@ export default class App extends Component {
       connectionParams: async () => {
         const user = await this.authController.getUser();
 
-        if (user && user.credentials) {
+        if (user?.credentials) {
           return {
             Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
           };
@@ -114,24 +97,26 @@ export default class App extends Component {
    * context.noAuthorizationHeader; the latter can be set on
    * a request as an argument to `client.query({..})`.
    */
-  authLink = setContext(async (request, { noAuthorizationHeader, headers }) => {
-    if (noAuthorizationHeader) {
-      return {};
+  authLink = setContext(
+    async (_request, { noAuthorizationHeader, headers }) => {
+      if (noAuthorizationHeader) {
+        return {};
+      }
+
+      const user = await this.authController.getUser();
+
+      if (!user?.credentials) {
+        return {};
+      }
+
+      return {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+        },
+      };
     }
-
-    const user = await this.authController.getUser();
-
-    if (!user || !user.credentials) {
-      return {};
-    }
-
-    return {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
-      },
-    };
-  });
+  );
 
   apolloClient = new ApolloClient({
     cache: this.cache,
@@ -164,23 +149,28 @@ export default class App extends Component {
         authorize: this.authorize,
         unauthorize: this.unauthorize,
       },
+      subscriptionError: null,
     };
-
-    if (window.env.GA_TRACKING_ID) {
-      // Unique Google Analytics tracking number
-      ReactGA.initialize(`UA-${window.env.GA_TRACKING_ID}`);
-    }
 
     if (window.env.SENTRY_DSN) {
       // Data Source Name (DSN), a configuration required by the Sentry SDK
       initSentry({
         dsn: window.env.SENTRY_DSN,
-        autoSessionTracking: false,
+        // autoSessionTracking was removed in Sentry v8+; disable
+        // session tracking by filtering out the BrowserSession integration.
+        integrations: defaults =>
+          defaults.filter(i => i.name !== 'BrowserSession'),
       });
     }
 
     this.state = state;
   }
+
+  createTaskclusterClient = options =>
+    getClient({
+      ...options,
+      credentialAgent: this.authController,
+    });
 
   handleUserChanged = user => {
     this.setState({
@@ -236,7 +226,7 @@ export default class App extends Component {
 
   render() {
     const { routes } = this.props;
-    const { auth, error, theme } = this.state;
+    const { auth, error, theme, subscriptionError } = this.state;
 
     // Note that there are two error boundaries here.  The first will catch
     // errors in the stack of providers, but presents its error panel without
@@ -247,24 +237,28 @@ export default class App extends Component {
       <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
         <ApolloProvider client={this.apolloClient}>
           <AuthContext.Provider value={auth}>
-            <ToggleThemeContext.Provider value={this.toggleTheme}>
-              <MuiThemeProvider theme={theme}>
-                <CssBaseline />
-                <ErrorBoundary
-                  FallbackComponent={ErrorPanel}
-                  onError={reportError}>
-                  <Main
-                    error={error}
-                    key={
-                      auth.user && auth.user.credentials
-                        ? auth.user.credentials.clientId
-                        : ''
-                    }
-                    routes={routes}
-                  />
-                </ErrorBoundary>
-              </MuiThemeProvider>
-            </ToggleThemeContext.Provider>
+            <TaskclusterClientContext.Provider
+              value={this.createTaskclusterClient}>
+              <ToggleThemeContext.Provider value={this.toggleTheme}>
+                <MuiThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <ErrorBoundary
+                    FallbackComponent={ErrorPanel}
+                    onError={reportError}>
+                    <Main
+                      error={error}
+                      subscriptionError={subscriptionError}
+                      key={
+                        auth.user?.credentials
+                          ? auth.user.credentials.clientId
+                          : ''
+                      }
+                      routes={routes}
+                    />
+                  </ErrorBoundary>
+                </MuiThemeProvider>
+              </ToggleThemeContext.Provider>
+            </TaskclusterClientContext.Provider>
           </AuthContext.Provider>
         </ApolloProvider>
       </ErrorBoundary>

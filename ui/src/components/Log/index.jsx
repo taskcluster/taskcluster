@@ -212,7 +212,7 @@ export default class Log extends Component {
   };
 
   handleHighlight = range => {
-    if (this.highlightRange && this.highlightRange.equals(range)) {
+    if (this.highlightRange?.equals(range)) {
       return;
     }
 
@@ -315,8 +315,7 @@ export default class Log extends Component {
               <Button
                 size="small"
                 spanProps={{
-                  className:
-                    FollowLogButtonProps && FollowLogButtonProps.className,
+                  className: FollowLogButtonProps?.className,
                 }}
                 tooltipProps={{
                   title: follow && stream ? 'Unfollow Log' : 'Follow Log',

@@ -1,5 +1,5 @@
-import { hrtime } from 'process';
-import assert from 'assert';
+import { hrtime } from 'node:process';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 
 /**
@@ -43,6 +43,7 @@ export const createCredentials = (worker, expires, cfg) => {
       `queue:claim-work:${worker.workerPoolId}`,
       `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
       `worker-manager:reregister-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+      `worker-manager:should-worker-terminate:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
     ],
     start: taskcluster.fromNow('-15 minutes'),
     expiry: expires,
@@ -80,4 +81,35 @@ export const sanitizeRegisterWorkerPayload = (obj = {}) => {
 export const measureTime = (precision = 1e6) => {
   const start = hrtime.bigint();
   return () => Number(hrtime.bigint() - start) / precision;
+};
+
+export class TimeoutError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
+/**
+ * Run a promise with a timeout. If the promise does not settle
+ * within `ms` milliseconds, the returned promise rejects with a
+ * `TimeoutError` carrying `message`.
+ * The timer is always cleaned up to avoid leaks.
+ *
+ * @param {(abortSignal: AbortSignal) => Promise<*>} cb
+ * @param {number} ms
+ * @param {string} message
+ */
+export const withTimeout = (cb, ms, message) => {
+  let timer;
+  const abortController = new AbortController();
+  return Promise.race([
+    cb(abortController.signal),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new TimeoutError(message)), ms);
+    }),
+  ]).finally(() => {
+    abortController.abort();
+    clearTimeout(timer);
+  });
 };

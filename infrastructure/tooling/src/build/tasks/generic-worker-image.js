@@ -2,14 +2,14 @@ import appRootDir from 'app-root-dir';
 
 import {
   dockerPull,
-  dockerImages,
+  dockerImageExists,
   dockerRegistryCheck,
   ensureTask,
   dockerPush,
   execCommand,
 } from '../../utils/index.js';
 
-import path from 'path';
+import path from 'node:path';
 
 /**
  * This builds generic worker docker image containing all tools required to run generic worker
@@ -19,10 +19,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Build Generic Worker Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
+    requires: ['release-version', 'docker-flow-version'],
     provides: [
       'generic-worker-docker-image', // image tag
       'generic-worker-image-on-registry', // true if the image is already on registry
@@ -41,8 +38,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
       utils.step({ title: 'Check for Existing Images' });
 
-      const imageLocal = (await dockerImages({ baseDir }))
-        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
+      const imageLocal = await dockerImageExists({ tag });
 
       let imageOnRegistry;
       try {
@@ -58,13 +54,12 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
       };
 
       if (imageOnRegistry && !cmdOptions.cache) {
-        throw new Error(
-          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+        throw new Error(`Image ${tag} already exists on the registry, but --no-cache was given.`);
       }
 
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
-        await dockerPull({ image: tag, utils, baseDir });
+        await dockerPull({ image: tag, utils });
         return utils.skip({ provides });
       } else if (imageLocal) {
         return utils.skip({ provides });
@@ -72,20 +67,22 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
       utils.step({ title: `Building Docker Image ${tag}` });
 
-      let versionJson = requirements['docker-flow-version'];
-      let command = [
-        'docker',
-        'build',
-      ];
+      const versionJson = requirements['docker-flow-version'];
+      let command = ['docker', 'build'];
       if (!cmdOptions.cache) {
         command.push('--no-cache');
       }
       command = command.concat([
-        '-f', 'generic-worker.Dockerfile',
-        '--progress', 'plain',
-        '--tag', tag,
-        '--build-arg', 'DOCKER_FLOW_VERSION=' + versionJson,
-        '.']);
+        '-f',
+        'generic-worker.Dockerfile',
+        '--progress',
+        'plain',
+        '--tag',
+        tag,
+        '--build-arg',
+        `DOCKER_FLOW_VERSION=${versionJson}`,
+        '.',
+      ]);
       await execCommand({
         command,
         dir: sourceDir,
@@ -100,16 +97,11 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
   ensureTask(tasks, {
     title: `Generic Worker Docker Image' - Push Image`,
-    requires: [
-      `generic-worker-docker-image`,
-      `generic-worker-image-on-registry`,
-    ],
-    provides: [
-      `generic-worker-push`,
-    ],
+    requires: [`generic-worker-docker-image`, `generic-worker-image-on-registry`],
+    provides: [`generic-worker-push`],
     run: async (requirements, utils) => {
       const tag = requirements[`generic-worker-docker-image`];
-      const provides = { [`generic-worker-push`]: tag };
+      const provides = { 'generic-worker-push': tag };
 
       if (!cmdOptions.push) {
         return utils.skip({ provides });
@@ -141,13 +133,9 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
 
   ensureTask(tasks, {
     title: `Generic worker image - Complete`,
-    requires: [
-      `generic-worker-push`,
-    ],
-    provides: [
-      `generic-worker-image`,
-    ],
-    run: async (requirements, utils) => {
+    requires: [`generic-worker-push`],
+    provides: [`generic-worker-image`],
+    run: async (requirements, _utils) => {
       return {
         'generic-worker-image': `Generic worker docker image: ${requirements['generic-worker-push']}`,
       };

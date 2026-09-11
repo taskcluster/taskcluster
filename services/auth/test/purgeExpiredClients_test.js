@@ -3,11 +3,11 @@ import assume from 'assume';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
-  helper.withCfg(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
+  helper.withCfg(skipping);
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
 
@@ -25,8 +25,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   };
 
   const assertClientPresent = async () => {
-    let client = await helper.apiClient.client(CLIENT_ID);
+    const client = await helper.apiClient.client(CLIENT_ID);
     assume(client.clientId).to.equal(CLIENT_ID);
+  };
+
+  const auditActions = async () => {
+    const rows = await helper.db.fns.get_combined_audit_history(null, CLIENT_ID, 'client', 100, 0);
+    return rows.map(({ action_type }) => action_type);
   };
 
   const assertClientAbsent = async () => {
@@ -53,10 +58,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   test('deletes expired clients with deleteOnExpiration', async () => {
     await testClient({ expires: '-1 hour', deleteOnExpiration: true });
+    const before = await auditActions();
+
     await helper.load('purge-expired-clients');
     await assertClientAbsent();
 
-    const results = await helper.db.fns.get_combined_audit_history(null, CLIENT_ID, 'client', 10, 0);
-    assume(results.map(({ action_type }) => action_type).includes('expired'));
+    const after = await auditActions();
+    // the purge must record exactly one new 'expired' audit entry
+    assume(after.filter(a => a === 'expired')).has.length(before.filter(a => a === 'expired').length + 1);
   });
 });

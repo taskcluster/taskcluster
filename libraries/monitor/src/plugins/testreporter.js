@@ -7,14 +7,14 @@ export class TestReporter {
     this.log = log;
   }
 
-  report(error, level, extra) {
+  report(error, _level, _extra) {
     this.internal.push(error);
     return slugid.v4();
   }
 
   // Try to simulate this needing to be awaited
   async flush() {
-    await new Promise((accept, reject) => {
+    await new Promise((accept, _reject) => {
       setTimeout(accept, 500);
     });
     this.internal.forEach(e => {

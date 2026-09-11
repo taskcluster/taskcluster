@@ -40,3 +40,8 @@ node_modules
 # Gitbook docs
 _book
 /.vscode
+*.tgz
+
+# Vitest artifacts
+.vitest-attachments
+__screenshots__

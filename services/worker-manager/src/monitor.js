@@ -6,7 +6,7 @@ MonitorManager.register({
   type: 'worker-pool-provisioned',
   version: 2,
   level: 'info',
-  description: 'A worker pool\'s provisioning run has completed',
+  description: "A worker pool's provisioning run has completed",
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
@@ -34,13 +34,14 @@ MonitorManager.register({
   name: 'workerRunning',
   title: 'Worker Running',
   type: 'worker-running',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been marked as running',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is running',
+    registrationDuration: 'Time in seconds from worker creation to registration',
   },
 });
 
@@ -48,13 +49,15 @@ MonitorManager.register({
   name: 'workerStopped',
   title: 'Worker Stopped',
   type: 'worker-stopped',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been marked as stopped',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that was stopped',
+    workerAge: 'Total time in seconds since worker was created',
+    runningDuration: 'Time in seconds since worker registered (null if never registered)',
   },
 });
 
@@ -62,7 +65,7 @@ MonitorManager.register({
   name: 'workerRemoved',
   title: 'Worker Removed',
   type: 'worker-removed',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: `
     A request has been made to stop a worker.  This operation can sometimes
@@ -73,6 +76,8 @@ MonitorManager.register({
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is being removed',
     reason: 'The reason this worker is being removed',
+    workerAge: 'Total time in seconds since worker was created',
+    runningDuration: 'Time in seconds since worker registered (null if never registered)',
   },
 });
 
@@ -221,6 +226,24 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'registrationRejectedIntermediateCertificateUrl',
+  title: 'Registration Rejected Intermediate Certificate URL',
+  type: 'registration-rejected-intermediate-certificate-url',
+  version: 1,
+  level: 'warning',
+  description: `
+    A worker registration attempted to download an intermediate certificate from
+    a URL that is outside the configured AIA allowlist.
+  `,
+  fields: {
+    url: 'The rejected intermediate certificate URL',
+    workerPoolId: 'The worker pool ID',
+    providerId: 'The provider that did the work for this worker pool.',
+    workerId: 'The worker that failed',
+  },
+});
+
+MonitorManager.register({
   name: 'launchConfigSelectorsDebug',
   title: 'Launch Config Selector Debug Information',
   type: 'launch-config-selector-debug',
@@ -239,8 +262,95 @@ MonitorManager.register({
   },
 });
 
+MonitorManager.register({
+  name: 'azureResourceGroupEnsured',
+  title: 'Azure Resource Group Create or Update Information',
+  type: 'azure-resource-group-ensure',
+  version: 1,
+  level: 'notice',
+  description: `
+    When ARM template is being deployed with custom resource group name,
+    Azure provider would create or update the resource group.
+    This is to make sure that deployment is run in the existing resource group.
+  `,
+  fields: {
+    workerPoolId: 'Worker Pool ID',
+    resourceGroupName: 'Resource Group Name',
+    location: 'Location',
+  },
+});
+
+MonitorManager.register({
+  name: 'azureInstanceViewRepeated404',
+  title: 'Azure InstanceView Repeated 404',
+  type: 'azure-instance-view-repeated-404',
+  version: 1,
+  level: 'warning',
+  description: `
+    Azure VM instanceView returned 404 repeatedly for the same worker.
+    Worker Manager treats this as missing to avoid getting stuck in a transient loop.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    workerPoolId: 'Worker Pool ID',
+    workerGroup: 'Worker Group',
+    workerId: 'Worker ID',
+    vmName: 'Azure VM name',
+    provisioningState: 'Provisioning state returned by virtualMachines.get',
+    instanceView404Streak: 'Consecutive count of instanceView 404 responses',
+  },
+});
+
+MonitorManager.register({
+  name: 'azureThrottled',
+  title: 'Azure API Throttled (429)',
+  type: 'azure-throttled',
+  version: 1,
+  level: 'warning',
+  description: `
+    Azure ARM API returned HTTP 429 (Too Many Requests).
+    Includes rate-limit headers from the throttled response for diagnosing
+    which subscription limits are being hit.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    operationType: 'HTTP operation category: read, write, or delete',
+    retryAfterSeconds: 'Retry-After header value in seconds, or null if absent',
+    remainingReads: 'x-ms-ratelimit-remaining-subscription-reads value, or null',
+    remainingWrites: 'x-ms-ratelimit-remaining-subscription-writes value, or null',
+    remainingDeletes: 'x-ms-ratelimit-remaining-subscription-deletes value, or null',
+    remainingResource: 'x-ms-ratelimit-remaining-resource raw value, or null',
+  },
+});
+
+MonitorManager.register({
+  name: 'azureTeardownMode',
+  title: 'Azure Worker Teardown Mode',
+  type: 'azure-teardown-mode',
+  version: 1,
+  level: 'info',
+  description: `
+    Records how an Azure worker's resources were torn down: 'fast' when the VM's
+    NIC/IP/disks cascade-delete with the VM (so the per-resource GET/delete walk
+    is skipped), or 'slow' for the resource-by-resource walk. Lets us measure the
+    API-call reduction and confirm the fast path engages on cascading ARM pools.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    workerPoolId: 'Worker Pool ID',
+    launchConfigId: 'Launch Config ID',
+    workerId: 'Worker ID',
+    mode: "Teardown mode: 'fast' (cascade short-circuit) or 'slow' (full walk)",
+  },
+});
+
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
+  providerId: 'ID of the provider',
+};
+const labelsWithWorkerGroup = {
+  ...commonLabels,
+  workerGroup: 'Worker group (region/zone/location)',
 };
 
 MonitorManager.registerMetric('existingCapacity', {
@@ -250,7 +360,7 @@ MonitorManager.registerMetric('existingCapacity', {
   description: `
     This number represents the running capacity of running and not quarantined workers.
   `,
-  labels: commonLabels,
+  labels: labelsWithWorkerGroup,
   registers: ['provision'],
 });
 
@@ -261,7 +371,7 @@ MonitorManager.registerMetric('stoppingCapacity', {
   description: `
     This number represents the running capacity of workers that are stopping.
   `,
-  labels: commonLabels,
+  labels: labelsWithWorkerGroup,
   registers: ['provision'],
 });
 
@@ -272,7 +382,7 @@ MonitorManager.registerMetric('requestedCapacity', {
   description: `
     This number represents the running capacity of workers that are requested.
   `,
-  labels: commonLabels,
+  labels: labelsWithWorkerGroup,
   registers: ['provision'],
 });
 
@@ -343,12 +453,75 @@ MonitorManager.registerMetric('provisionDuration', {
   type: 'histogram',
   title: 'Worker pool provision duration',
   description: 'Time it took to provision a single worker pool',
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['provision'],
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
+});
+
+MonitorManager.registerMetric('workerRegistrationDuration', {
+  name: 'worker_manager_worker_registration_seconds',
+  type: 'histogram',
+  title: 'Worker registration duration',
+  description: `
+    Time for a worker to go from being requested to successfully registering
+    with worker-manager
+  `,
+  labels: commonLabels,
+  registers: ['default', 'provision', 'scan'],
+  buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
+});
+
+MonitorManager.registerMetric('workerProvisionDuration', {
+  name: 'worker_manager_worker_provision_seconds',
+  type: 'histogram',
+  title: 'Worker provision duration',
+  description: `
+    Time from when a worker was requested to when the system booted,
+    measuring cloud VM provisioning time. Only recorded when the worker
+    provides systemBootTime in its registration request.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['default', 'provision'],
+  buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
+});
+
+MonitorManager.registerMetric('workerStartupDuration', {
+  name: 'worker_manager_worker_startup_seconds',
+  type: 'histogram',
+  title: 'Worker startup duration',
+  description: `
+    Time from when the system booted to when the worker registered with
+    worker-manager, measuring worker startup time. Only recorded when
+    the worker provides systemBootTime in its registration request.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['default', 'provision'],
+  buckets: [5, 10, 15, 30, 45, 60, 90, 120, 180, 300, 600],
+});
+
+MonitorManager.registerMetric('workerLifetime', {
+  name: 'worker_manager_worker_lifetime_seconds',
+  type: 'histogram',
+  title: 'Worker lifetime',
+  description: `
+    Time for a worker to go from running to either being removed or fully
+    stopped
+  `,
+  labels: commonLabels,
+  registers: ['default', 'provision', 'scan'],
+  buckets: [60, 300, 900, 1800, 3600, 7200, 14400, 28800, 86400, 172800, 604800, 1209600],
+});
+
+MonitorManager.registerMetric('workerRegistrationFailure', {
+  name: 'worker_manager_worker_registration_failures_total',
+  type: 'counter',
+  title: 'Workers that never registered',
+  description: `
+    Counts workers that were requested but never registered before being
+    removed or stopped.
+  `,
+  labels: commonLabels,
+  registers: ['default', 'provision', 'scan'],
 });
 
 MonitorManager.registerMetric('scanSeen', {
@@ -356,10 +529,7 @@ MonitorManager.registerMetric('scanSeen', {
   type: 'gauge',
   title: 'Worker pool workers checked during scan',
   description: 'Total number of workers checked for given workerPoolId during scanning.',
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['scan'],
 });
 
@@ -368,9 +538,78 @@ MonitorManager.registerMetric('scanErrors', {
   type: 'gauge',
   title: 'Worker pool errors during scan',
   description: 'Total number of errors for worker pool during scanning',
+  labels: commonLabels,
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('workersToTerminate', {
+  name: 'worker_manager_workers_to_terminate',
+  type: 'gauge',
+  title: 'Workers marked for termination',
+  description: 'Number of workers marked for termination per worker pool during scanning, labeled by reason.',
   labels: {
     ...commonLabels,
-    providerId: 'ID of the provider',
+    reason: 'Reason for termination (over_capacity, launch_config_archived)',
   },
   registers: ['scan'],
+});
+
+MonitorManager.registerMetric('azureThrottleCount', {
+  name: 'worker_manager_azure_throttle_total',
+  type: 'counter',
+  title: 'Azure API throttle events',
+  description: 'Count of HTTP 429 responses from Azure ARM API',
+  labels: {
+    providerId: 'ID of the provider',
+    operationType: 'HTTP operation category: read, write, or delete',
+  },
+  registers: ['provision', 'scan'],
+});
+
+MonitorManager.registerMetric('azureTeardownCount', {
+  name: 'worker_manager_azure_teardown_total',
+  type: 'counter',
+  title: 'Azure worker teardowns',
+  description:
+    "Count of Azure worker teardowns by mode: 'fast' (cascade short-circuit) vs 'slow' (per-resource walk), per worker pool",
+  labels: {
+    providerId: 'ID of the provider',
+    workerPoolId: 'The worker pool ID',
+    mode: "Teardown mode: 'fast' or 'slow'",
+  },
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('azureArmDeploymentError', {
+  name: 'worker_manager_azure_arm_deployment_errors_total',
+  type: 'counter',
+  title: 'Azure ARM deployment errors',
+  description:
+    'Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details',
+  labels: {
+    providerId: 'ID of the provider',
+    workerPoolId: 'The worker pool ID',
+    workerGroup: 'Worker group (region/zone/location)',
+    errorKind: 'Worker-manager error kind',
+    errorCode: 'Azure error code',
+    statusCode: 'Operation status code from the resource provider',
+    provisioningState: 'Azure provisioning state',
+    provisioningOperation: 'Azure provisioning operation',
+    targetResourceType: 'Azure target resource type',
+    vmSize: 'Azure VM size',
+    priority: 'Azure VM priority',
+  },
+  registers: ['provision', 'scan'],
+});
+
+MonitorManager.registerMetric('azureRateLimitRemaining', {
+  name: 'worker_manager_azure_ratelimit_remaining',
+  type: 'gauge',
+  title: 'Azure rate limit remaining quota',
+  description: 'Most recently observed value of Azure x-ms-ratelimit-remaining-subscription-* headers',
+  labels: {
+    providerId: 'ID of the provider',
+    limitType: 'Rate limit category: reads, writes, or deletes',
+  },
+  registers: ['provision', 'scan'],
 });

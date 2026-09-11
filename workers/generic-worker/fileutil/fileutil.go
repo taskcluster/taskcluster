@@ -1,17 +1,22 @@
 package fileutil
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
+	"syscall"
 
-	"github.com/mholt/archiver/v3"
+	"github.com/mholt/archives"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
 func WriteToFileAsJSON(obj any, filename string) error {
@@ -54,18 +59,25 @@ func CalculateSHA256(file string) (hash string, err error) {
 	return
 }
 
-func Copy(dst, src string) (nBytes int64, err error) {
-	var sourceFileStat os.FileInfo
-	sourceFileStat, err = os.Stat(src)
+func OpenRegularFile(src string) (*os.File, error) {
+	source, err := os.OpenFile(src, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
-		return
+		return nil, err
+	}
+	sourceFileStat, err := source.Stat()
+	if err != nil {
+		source.Close()
+		return nil, err
 	}
 	if !sourceFileStat.Mode().IsRegular() {
-		err = fmt.Errorf("cannot copy %s to %s: %s is not a regular file", src, dst, src)
-		return
+		source.Close()
+		return nil, fmt.Errorf("cannot read %s: it is not a regular file", src)
 	}
-	var source *os.File
-	source, err = os.Open(src)
+	return source, nil
+}
+
+func Copy(dst, src string) (nBytes int64, err error) {
+	source, err := OpenRegularFile(src)
 	if err != nil {
 		return
 	}
@@ -76,8 +88,8 @@ func Copy(dst, src string) (nBytes int64, err error) {
 		}
 	}
 	defer closeFile(source)
-	var destination *os.File
-	destination, err = os.Create(dst)
+
+	destination, err := safefs.Create(dst, 0666)
 	if err != nil {
 		return
 	}
@@ -86,22 +98,15 @@ func Copy(dst, src string) (nBytes int64, err error) {
 	return
 }
 
-func CopyToTempFile(src string) (tempFilePath string, err error) {
-	baseName := filepath.Base(src)
-	var tempFile *os.File
-	tempFile, err = os.CreateTemp("", baseName)
+func CatFile(src string, dst io.Writer) error {
+	source, err := OpenRegularFile(src)
 	if err != nil {
-		return
+		return err
 	}
-	defer func() {
-		err2 := tempFile.Close()
-		if err == nil {
-			err = err2
-		}
-	}()
-	tempFilePath = tempFile.Name()
-	_, err = Copy(tempFilePath, src)
-	return
+	defer source.Close()
+
+	_, err = io.Copy(dst, source)
+	return err
 }
 
 func CreateFile(file string) (err error) {
@@ -121,34 +126,76 @@ func CreateDir(dir string) error {
 }
 
 func Unarchive(source, destination, format string) error {
-	var unarchiver archiver.Unarchiver
-	switch format {
-	case "zip":
-		unarchiver = &archiver.Zip{}
-	case "tar.gz":
-		unarchiver = &archiver.TarGz{
-			Tar: &archiver.Tar{},
-		}
-	case "rar":
-		unarchiver = &archiver.Rar{}
-	case "tar.bz2":
-		unarchiver = &archiver.TarBz2{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.xz":
-		unarchiver = &archiver.TarXz{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.zst":
-		unarchiver = &archiver.TarZstd{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.lz4":
-		unarchiver = &archiver.TarLz4{
-			Tar: &archiver.Tar{},
-		}
-	default:
-		return fmt.Errorf("unsupported archive format %v", format)
+	f, err := os.Open(source)
+	if err != nil {
+		return fmt.Errorf("opening archive %v: %w", source, err)
 	}
-	return unarchiver.Unarchive(source, destination)
+	defer f.Close()
+
+	// Identify the archive format using the format string as a filename
+	// hint (the actual source files have random slugid names with no
+	// extension). Identify also validates the stream content matches.
+	detected, stream, err := archives.Identify(context.Background(), "archive."+format, f)
+	if err != nil {
+		return fmt.Errorf("unsupported or unrecognized archive format %v: %w", format, err)
+	}
+
+	extractor, ok := detected.(archives.Extractor)
+	if !ok {
+		return fmt.Errorf("format %v does not support extraction", format)
+	}
+
+	cleanDest := filepath.Clean(destination) + string(os.PathSeparator)
+
+	return extractor.Extract(context.Background(), stream, func(ctx context.Context, info archives.FileInfo) error {
+		destPath := filepath.Join(destination, info.NameInArchive)
+
+		// Prevent path traversal (zip-slip)
+		if !strings.HasPrefix(destPath, cleanDest) && destPath != filepath.Clean(destination) {
+			return fmt.Errorf("illegal file path in archive: %s", info.NameInArchive)
+		}
+
+		if info.IsDir() {
+			return os.MkdirAll(destPath, info.Mode()|0700)
+		}
+
+		if info.LinkTarget != "" {
+			if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+				return err
+			}
+			if info.Mode()&fs.ModeSymlink != 0 {
+				// Validate symlink target resolves within destination to prevent path traversal
+				resolvedTarget := filepath.Clean(filepath.Join(filepath.Dir(destPath), info.LinkTarget))
+				if !strings.HasPrefix(resolvedTarget, cleanDest) && resolvedTarget != filepath.Clean(destination) {
+					return fmt.Errorf("illegal symlink target in archive: %s -> %s", info.NameInArchive, info.LinkTarget)
+				}
+				return os.Symlink(info.LinkTarget, destPath)
+			}
+			// Hardlink - validate target resolves within destination to prevent path traversal
+			hardlinkTarget := filepath.Clean(filepath.Join(destination, info.LinkTarget))
+			if !strings.HasPrefix(hardlinkTarget, cleanDest) && hardlinkTarget != filepath.Clean(destination) {
+				return fmt.Errorf("illegal hardlink target in archive: %s -> %s", info.NameInArchive, info.LinkTarget)
+			}
+			return os.Link(hardlinkTarget, destPath)
+		}
+
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return err
+		}
+
+		inFile, err := info.Open()
+		if err != nil {
+			return err
+		}
+		defer inFile.Close()
+
+		outFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+
+		_, err = io.Copy(outFile, inFile)
+		return err
+	})
 }

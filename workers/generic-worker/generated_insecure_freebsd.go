@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type (
@@ -19,23 +19,29 @@ type (
 		// compressed:
 		//
 		// * 7z
+		// * aab
+		// * apk
 		// * bz2
 		// * deb
 		// * dmg
 		// * flv
 		// * gif
 		// * gz
+		// * jar
 		// * jpeg
 		// * jpg
 		// * npz
+		// * pkg
 		// * png
 		// * swf
 		// * tbz
 		// * tgz
+		// * wasm
 		// * webp
 		// * whl
 		// * woff
 		// * woff2
+		// * xpi
 		// * xz
 		// * zip
 		// * zst
@@ -86,9 +92,9 @@ type (
 		// Default:    false
 		Optional bool `json:"optional" default:"false"`
 
-		// Relative path of the file/directory from the task directory. Note this is not an absolute
-		// path as is typically used in docker-worker, since the absolute task directory name is not
-		// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+		// Filesystem path of the file/directory relative to the
+		// task directory, or an absolute path.
+		// Example: `dist\regedit.exe`. It doesn't matter if
 		// forward slashes or backslashes are used.
 		//
 		// Since: generic-worker 1.0.0
@@ -171,7 +177,7 @@ type (
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageArtifact struct {
 		Path string `json:"path"`
 
@@ -182,7 +188,7 @@ type (
 		Type string `json:"type"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageName string
 
 	DockerWorkerArtifact struct {
@@ -218,16 +224,6 @@ type (
 		// Default:    false
 		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
 
-		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-		//
-		// Default:    false
-		Dind bool `json:"dind" default:"false"`
-
-		// Uploads docker images as artifacts
-		//
-		// Default:    false
-		DockerSave bool `json:"dockerSave" default:"false"`
-
 		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
 		//
 		// Default:    false
@@ -250,7 +246,7 @@ type (
 		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
 		// Artifacts can be an individual `file`, a `directory` containing
 		// potentially multiple files with recursively included subdirectories,
-		// or a `volume` which will create a volume mount from the
+		// or a `volume` (d2g only) which will create a volume mount from the
 		// host to the running container. Unlike `directory` artifacts, the
 		// `volume` directory will already exist as the task starts. Since the
 		// artifacts will be created directly on the host, they do not need to
@@ -289,7 +285,7 @@ type (
 		// Used to enable additional functionality.
 		Features DockerWorkerFeatureFlags `json:"features,omitzero"`
 
-		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+		// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
 		// One of:
 		//   * DockerImageName
@@ -464,7 +460,8 @@ type (
 		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
-		// The filesystem location to mount the file.
+		// The filesystem location to mount the file. This can be a
+		// path relative to the task directory, or an absolute path.
 		//
 		// Since: generic-worker 5.4.0
 		File string `json:"file"`
@@ -474,11 +471,16 @@ type (
 		// Since: generic-worker 55.3.0
 		//
 		// Possible values:
+		//   * "br"
 		//   * "bz2"
 		//   * "gz"
+		//   * "lz"
 		//   * "lz4"
+		//   * "mz"
+		//   * "sz"
 		//   * "xz"
 		//   * "zst"
+		//   * "zz"
 		Format string `json:"format,omitempty"`
 	}
 
@@ -565,9 +567,10 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitzero"`
 
-		// A list of OS Groups that the task user should be a member of. Not yet implemented on
-		// non-Windows platforms, therefore this optional property may only be an empty array if
-		// provided.
+		// A list of OS Groups that the task user should be a member of. On the
+		// insecure engine, the task runs as the current user (no separate task
+		// user is created), so only OS Groups that the current user (the user
+		// account running generic-worker) already belongs to may be specified.
 		//
 		// Since: generic-worker 6.0.0
 		//
@@ -603,7 +606,7 @@ type (
 		Namespace string `json:"namespace"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	IndexedDockerImage struct {
 		Namespace string `json:"namespace"`
 
@@ -636,7 +639,7 @@ type (
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	NamedDockerImage struct {
 		Name string `json:"name"`
 
@@ -674,6 +677,8 @@ type (
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
+		// This can be a path relative to the task directory, or an
+		// absolute path.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -683,12 +688,19 @@ type (
 		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
+		//   * "7z"
 		//   * "rar"
+		//   * "tar"
+		//   * "tar.br"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz"
 		//   * "tar.lz4"
+		//   * "tar.mz"
+		//   * "tar.sz"
 		//   * "tar.xz"
 		//   * "tar.zst"
+		//   * "tar.zz"
 		//   * "zip"
 		Format string `json:"format"`
 	}
@@ -730,6 +742,8 @@ type (
 		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
+		// This can be a path relative to the task directory, or an
+		// absolute path.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -739,12 +753,19 @@ type (
 		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
+		//   * "7z"
 		//   * "rar"
+		//   * "tar"
+		//   * "tar.br"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz"
 		//   * "tar.lz4"
+		//   * "tar.mz"
+		//   * "tar.sz"
 		//   * "tar.xz"
 		//   * "tar.zst"
+		//   * "tar.zz"
 		//   * "zip"
 		Format string `json:"format,omitempty"`
 	}
@@ -928,18 +949,23 @@ func JSONSchema() string {
           "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
         },
         "file": {
-          "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the file. This can be a\npath relative to the task directory, or an absolute path.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
         },
         "format": {
           "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
           "enum": [
+            "br",
             "bz2",
             "gz",
+            "lz",
             "lz4",
+            "mz",
+            "sz",
             "xz",
-            "zst"
+            "zst",
+            "zz"
           ],
           "title": "Format",
           "type": "string"
@@ -975,19 +1001,26 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path.\n\nSince: generic-worker 5.4.0",
           "title": "Directory",
           "type": "string"
         },
         "format": {
           "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
           "enum": [
+            "7z",
             "rar",
+            "tar",
+            "tar.br",
             "tar.bz2",
             "tar.gz",
+            "tar.lz",
             "tar.lz4",
+            "tar.mz",
+            "tar.sz",
             "tar.xz",
             "tar.zst",
+            "tar.zz",
             "zip"
           ],
           "title": "Format",
@@ -1024,19 +1057,26 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },
         "format": {
           "description": "Archive format of the preloaded content (if ` + "`" + `content` + "`" + ` provided).\n\nSince: generic-worker 5.4.0",
           "enum": [
+            "7z",
             "rar",
+            "tar",
+            "tar.br",
             "tar.bz2",
             "tar.gz",
+            "tar.lz",
             "tar.lz4",
+            "tar.mz",
+            "tar.sz",
             "tar.xz",
             "tar.zst",
+            "tar.zz",
             "zip"
           ],
           "title": "Format",
@@ -1062,7 +1102,7 @@ func JSONSchema() string {
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -1093,7 +1133,7 @@ func JSONSchema() string {
                 "type": "boolean"
               },
               "path": {
-                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "description": "Filesystem path of the file/directory relative to the\ntask directory, or an absolute path.\nExample: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
                 "title": "Artifact location",
                 "type": "string"
               },
@@ -1257,7 +1297,7 @@ func JSONSchema() string {
           "type": "object"
         },
         "osGroups": {
-          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "description": "A list of OS Groups that the task user should be a member of. On the\ninsecure engine, the task runs as the current user (no separate task\nuser is created), so only OS Groups that the current user (the user\naccount running generic-worker) already belongs to may be specified.\n\nSince: generic-worker 6.0.0",
           "items": {
             "type": "string"
           },
@@ -1296,7 +1336,7 @@ func JSONSchema() string {
           "additionalProperties": {
             "$ref": "#/definitions/artifact"
           },
-          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
           "title": "Artifacts",
           "type": "object"
         },
@@ -1403,18 +1443,6 @@ func JSONSchema() string {
               "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
               "type": "boolean"
             },
-            "dind": {
-              "default": false,
-              "description": "Runs docker-in-docker and binds ` + "`" + `/var/run/docker.sock` + "`" + ` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
-              "title": "Docker in Docker",
-              "type": "boolean"
-            },
-            "dockerSave": {
-              "default": false,
-              "description": "Uploads docker images as artifacts",
-              "title": "Docker save",
-              "type": "boolean"
-            },
             "interactive": {
               "default": false,
               "description": "This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.",
@@ -1439,7 +1467,7 @@ func JSONSchema() string {
           "type": "object"
         },
         "image": {
-          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
           "oneOf": [
             {
               "title": "Docker image name",
@@ -1566,7 +1594,7 @@ func JSONSchema() string {
         "image",
         "maxRunTime"
       ],
-      "title": "Docker worker payload",
+      "title": "Docker Worker payload",
       "type": "object"
     }
   ],

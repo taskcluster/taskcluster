@@ -40,7 +40,11 @@ curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?ap
 # ]
 ```
 
-Note: new signature might be signed by one of the two intermediate certificates (`azure/azure-ca-certs/microsoft_rsa_tls_ca_[12].pem`). This is important for `test/provider_azure_test.js` as it relies on the intermediate cert to do proper tests.
+Note: a refreshed signature may be signed by a different intermediate certificate than the previous one (Azure rotates leaf certs roughly every 180 days, and is migrating regions to the `Microsoft TLS G2 RSA CA OCSP NN` hierarchy). This matters for `test/provider_azure_test.js`, which pins the intermediate. After refreshing the fixture:
+
+1. Work out which intermediate signed it (see the collapsed section below).
+2. If that intermediate is not already in `src/providers/azure/azure-ca-certs/`, add it to `certificates.json` and run `node download-certs.js` in that directory — otherwise the tests will reach out to the network on every happy-path registration.
+3. Update the `intermediateCert*` constants near the top of `test/provider_azure_test.js`, plus the `getAuthorityAccessInfo` expectation in the `helpers` suite (the AIA entries differ per intermediate, and the download-failure tests log one entry per `CA Issuer` location).
 
 Another way would be to create a task in one of the Azure worker pools with the following payload and parse logs to get the document:
 
@@ -87,6 +91,10 @@ openssl x509 -noout -subject -in intermediate.pem
 openssl x509 -noout -fingerprint -in intermediate.pem
 # Verify the issuer for the intermediate certificate
 openssl x509 -noout -issuer -in intermediate.pem
+
+# Check expiry dates
+openssl x509 -noout -enddate -in signer.pem
+openssl x509 -noout -enddate -in intermediate.pem
 ```
 
 Last three lines would contain the values that should match `intermediateCertFingerprint`, `intermediateCertSubject`, `intermediateCertIssuer`, `intermediateCertPath` variables in `test/provider_azure_test.js`.
@@ -127,9 +135,13 @@ subgraph provision loop
     poolIterateStart[Iterate worker pools] --> takeWorkerPool
     takeWorkerPool[Get next worker pool] --> estimator
     estimator[Estimate number of workers to spawn] --> hasToSpawn{To spawn > 0 ?}
-    hasToSpawn -- Yes, Azure --> requestAzure[Request azure: create DB record]
-    requestAzure --> checkWorker[(Create worker with config <br>state: Requested)]
-    checkWorker --> requestWorker([Start provisioning<br>See Azure checkWorker below])
+    hasToSpawn -- Yes, Azure --> azureProvisionFlow{{Deployment method?}}
+    azureProvisionFlow -- Sequential resources --> requestAzureSequential[Request Azure: sequential<br>create DB record]
+    azureProvisionFlow -- ARM template --> requestAzureArm[Request Azure: ARM deployment<br>create DB record + trigger template]
+    requestAzureSequential --> checkWorkerSequential[(Create worker<br>state: Requested)]
+    requestAzureArm --> checkWorkerArm[(Create worker<br>state: Requested<br>deployment pending)]
+    checkWorkerSequential --> requestWorker([Start provisioning<br>See Azure checkWorker below])
+    checkWorkerArm --> requestWorker
     hasToSpawn -- Yes, Google --> requestGoogle([Create instance: compute.instances.insert])
     requestGoogle --> createWorker1[(new workers)]
     hasToSpawn -- Yes, AWS --> requestAWS([Create instance: ec2.runInstances])
@@ -197,7 +209,11 @@ graph TD;
   subgraph azureCheckWorker [Azure checkWorker]
     azureCheckStates --> isStopping{state == Stopping ?}
     isStopping -- Yes --> deprovisionResources[Deprovision resources]
-    isStopping -- No --> queryInstance([Cloud API: get instance info])
+    isStopping -- No --> isARMTemplate{deploymentMethod<br>== arm-template ?}
+    isARMTemplate -- Yes --> checkArmDeployment[checkARMDeployment()]
+    checkArmDeployment -- returns false --> azureCheckEnd
+    checkArmDeployment -- returns true --> queryInstance([Cloud API: get instance info])
+    isARMTemplate -- No --> queryInstance
 
     queryInstance -- VM exists --> checkTerminateAfter{terminateAfter < now ?}
     checkTerminateAfter -- Yes --> removeWorker[(Remove worker)]
@@ -210,7 +226,10 @@ graph TD;
     isRequestedAndNotProvisioned -- No ----> removeWorker
 
     subgraph Deprovisioning
-      deprovisionResources --> deprovisionVm([Deprovision VM])
+      deprovisionResources --> deleteDeployment{deploymentMethod<br>== arm-template ?}
+      deleteDeployment -- Yes --> deprovisionArmDeployment([Delete ARM deployment])
+      deleteDeployment -- No --> skipDeployment[skip]
+      (deprovisionArmDeployment & skipDeployment) --> deprovisionVm([Deprovision VM])
       deprovisionVm --> deprovisionNic([Deprovision NIC])
       deprovisionNic --> deprovisionIp([Deprovision IP])
       deprovisionIp --> deprovisionDisks([Deprovision all disks])

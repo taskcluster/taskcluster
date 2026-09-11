@@ -10,7 +10,7 @@ import sluglib from 'slugid';
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNow = function(offset, reference) {
+export const fromNow = (offset, reference) => {
   if (reference === undefined) {
     reference = new Date();
   }
@@ -19,15 +19,15 @@ export const fromNow = function(offset, reference) {
   offset.days += 30 * offset.months;
   offset.days += 365 * offset.years;
 
-  let retval = new Date(
-    reference.getTime()
-    //    + offset.years * 365 * 24 * 60 * 60 * 1000
-    //   + offset.month  * 30 * 24 * 60 * 60 * 1000
-    + offset.weeks * 7 * 24 * 60 * 60 * 1000
-    + offset.days * 24 * 60 * 60 * 1000
-    + offset.hours * 60 * 60 * 1000
-    + offset.minutes * 60 * 1000
-    + offset.seconds * 1000,
+  const retval = new Date(
+    reference.getTime() +
+      //    + offset.years * 365 * 24 * 60 * 60 * 1000
+      //   + offset.month  * 30 * 24 * 60 * 60 * 1000
+      offset.weeks * 7 * 24 * 60 * 60 * 1000 +
+      offset.days * 24 * 60 * 60 * 1000 +
+      offset.hours * 60 * 60 * 1000 +
+      offset.minutes * 60 * 1000 +
+      offset.seconds * 1000
   );
   return retval;
 };
@@ -45,9 +45,7 @@ export const fromNow = function(offset, reference) {
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNowJSON = function(offset, reference) {
-  return fromNow(offset, reference).toJSON();
-};
+export const fromNowJSON = (offset, reference) => fromNow(offset, reference).toJSON();
 
 // Export function to generate _nice_ slugids
 export const slugid = () => sluglib.nice();

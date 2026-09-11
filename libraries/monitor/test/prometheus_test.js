@@ -1,5 +1,4 @@
-import assert from 'assert';
-import _ from 'lodash';
+import assert from 'node:assert';
 import request from 'superagent';
 import nock from 'nock';
 import MonitorManager from '../src/monitormanager.js';
@@ -34,9 +33,18 @@ MonitorManager.registerMetric('testingServiceGauge', {
   registers: ['extra'],
 });
 
+MonitorManager.registerMetric('testingGlobalCounter', {
+  name: 'testing_global_counter',
+  type: 'counter',
+  title: 'A global test counter',
+  description: 'A global counter that should propagate to any exposed registry',
+  labels: { op: 'Operation name' },
+  global: true,
+});
+
 const TEST_PORT = 39090;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const configDefaults = {
     serviceName: 'testing-service',
     level: 'debug',
@@ -56,11 +64,11 @@ suite(testing.suiteName(), function() {
     },
   };
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     nock.cleanAll();
   });
 
-  test('starts server and responds to metrics', async function() {
+  test('starts server and responds to metrics', async () => {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
     monitor.metric.testingServiceTestCounter(1);
@@ -74,26 +82,61 @@ suite(testing.suiteName(), function() {
     await monitor.terminate();
   });
 
-  test('server ignores other urls and methods', async function () {
+  test('server ignores other urls and methods', async () => {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
-    await assert.rejects(
-      async () => await request.post(`http://localhost:${TEST_PORT}/metrics`),
-      /Not Found/);
+    await assert.rejects(async () => await request.post(`http://localhost:${TEST_PORT}/metrics`), /Not Found/);
 
-    await assert.rejects(
-      async () => await request.get(`http://localhost:${TEST_PORT}/other`),
-      /Not Found/);
+    await assert.rejects(async () => await request.get(`http://localhost:${TEST_PORT}/other`), /Not Found/);
 
     await monitor.terminate();
   });
 
-  test('push gateway successfully sends metrics', async function() {
+  test('global metrics propagate to non-default registries on exposeMetrics', async () => {
+    const monitor = MonitorManager.setup({
+      ...configDefaults,
+      prometheusConfig: { server: { port: TEST_PORT } },
+    });
+    try {
+      // Expose a non-default registry — global metrics should be copied into it
+      monitor.exposeMetrics('extra');
+      monitor.metric.testingGlobalCounter(1, { op: 'test-op' });
+
+      const res = await request.get(`http://localhost:${TEST_PORT}/metrics`);
+      assert(res.ok);
+      // Global counter appears in the 'extra' registry
+      assert.match(res.text, /testing_global_counter/);
+      assert.match(res.text, /op="test-op"/);
+      // The non-global default-only counter does NOT appear
+      assert.doesNotMatch(res.text, /testing_service_test_counter/);
+    } finally {
+      await monitor.terminate();
+    }
+  });
+
+  test('global metrics appear in default registry', async () => {
+    const monitor = MonitorManager.setup({
+      ...configDefaults,
+      prometheusConfig: { server: { port: TEST_PORT } },
+    });
+    try {
+      monitor.exposeMetrics(); // default registry
+      monitor.metric.testingGlobalCounter(1, { op: 'default-op' });
+
+      const res = await request.get(`http://localhost:${TEST_PORT}/metrics`);
+      assert(res.ok);
+      assert.match(res.text, /testing_global_counter/);
+    } finally {
+      await monitor.terminate();
+    }
+  });
+
+  test('push gateway successfully sends metrics', async () => {
     const pushGateway = nock('http://push-gateway.test:9091')
-      .put('/metrics/job/push-test-job/instance/test-instance', (body) => {
-        return body.includes('http_requests_total') &&
-               body.includes('label1="push-value"') &&
-               body.includes('label2="test"');
+      .put('/metrics/job/push-test-job/instance/test-instance', body => {
+        return (
+          body.includes('http_requests_total') && body.includes('label1="push-value"') && body.includes('label2="test"')
+        );
       })
       .reply(200, 'OK');
 
@@ -105,5 +148,4 @@ suite(testing.suiteName(), function() {
     assert.ok(pushGateway.isDone(), 'Push gateway received the metrics with correct data');
     await monitor.terminate();
   });
-
 });

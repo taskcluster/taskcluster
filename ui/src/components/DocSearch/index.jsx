@@ -105,7 +105,6 @@ export default class DocSearch extends Component {
 
   render() {
     const { options, classes } = this.props;
-    const that = this;
 
     return (
       <Autocomplete
@@ -129,7 +128,7 @@ export default class DocSearch extends Component {
             <Link
               key={`${option.path}-${option.title}-${option.subtitle}`}
               className={classes.autoCompleteItem}
-              to={that.linkFromOption(option)}>
+              to={this.linkFromOption(option)}>
               <Typography
                 color="textSecondary"
                 variant="body2"

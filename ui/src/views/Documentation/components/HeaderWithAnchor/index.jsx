@@ -5,6 +5,22 @@ import { string, oneOf } from 'prop-types';
 import { paramCase } from 'param-case';
 import Typography from '@material-ui/core/Typography';
 
+const childrenToText = node => {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(childrenToText).join('');
+  }
+
+  if (React.isValidElement(node)) {
+    return childrenToText(node.props.children);
+  }
+
+  return '';
+};
+
 @withStyles(theme => ({
   header: {
     color: theme.palette.text.primary,
@@ -69,7 +85,7 @@ export default class HeaderWithAnchor extends Component {
   render() {
     const { classes, type, children, id, className, ...props } = this.props;
     const variant = this.getVariantFromType(type);
-    const anchorId = id || paramCase(children);
+    const anchorId = id || paramCase(childrenToText(children));
 
     return (
       <Typography

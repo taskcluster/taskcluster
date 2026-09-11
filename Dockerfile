@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:22.18.0 AS build
+FROM node:24.20.0 AS build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -14,6 +14,7 @@ COPY /.yarn /base/yarn/.yarn/
 RUN mkdir -p /base/yarn-ui
 COPY /ui/yarn.lock /.yarnrc.yml /ui/package.json /base/yarn-ui/
 COPY /.yarn /base/yarn-ui/.yarn/
+COPY /ui/.yarn/patches /base/yarn-ui/.yarn/patches/
 # prepare clients/client dependencies
 RUN mkdir -p /base/yarn-client
 COPY /clients/client/yarn.lock /.yarnrc.yml /clients/client/package.json /base/yarn-client/
@@ -42,7 +43,7 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > version.json; \
 else \
-    echo \{\"version\": \"88.0.5\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
+    echo \{\"version\": \"108.1.0\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
 fi
 
 # Build the UI and discard everything else in that directory
@@ -62,9 +63,20 @@ RUN /bin/bash -c "\
 ##
 # build the final image
 
-FROM node:22.18.0-alpine AS image
-RUN apk --no-cache add --update nginx bash
-COPY --from=build /base/app /app
+FROM node:24.20.0-alpine AS image
+RUN apk --no-cache add --update bash nginx nginx-mod-http-brotli
+COPY --from=build --chown=1000:1000 /base/app /app
 ENV HOME=/app
 WORKDIR /app
+
+# Create /references directory for references service with proper ownership
+RUN mkdir -p /references && chown 1000:1000 /references
+
+# Allow nginx to write its default log path when running as non-root
+RUN mkdir -p /var/lib/nginx/logs && chown -R 1000:1000 /var/lib/nginx
+
+# use non-root, node user
+# https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#non-root-user
+USER 1000
+
 ENTRYPOINT ["/app/entrypoint"]

@@ -1,29 +1,18 @@
 import { Octokit } from '@octokit/rest';
-import fs from 'fs';
-import util from 'util';
-import path from 'path';
+import fs from 'node:fs';
+import util from 'node:util';
+import path from 'node:path';
 
-import {
-  ensureTask,
-  npmPublish,
-  cargoPublish,
-  execCommand,
-  pyClientRelease,
-  readRepoFile,
-  dockerPush,
-  REPO_ROOT,
-} from '../../utils/index.js';
+import { ensureTask, cargoPublish, execCommand, pyClientRelease, readRepoFile, REPO_ROOT } from '../../utils/index.js';
 
 const readFile = util.promisify(fs.readFile);
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
-    provides: [
-      'changelog-text',
-    ],
-    run: async (requirements, utils) => {
+    provides: ['changelog-text'],
+    run: async (requirements, _utils) => {
       if (cmdOptions.staging) {
         return {
           'changelog-text': '(staging release)',
@@ -42,94 +31,6 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       return {
         'changelog-text': match[1],
       };
-    },
-  });
-
-  ensureTask(tasks, {
-    title: 'Build Websocktunnel Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
-    provides: [
-      'websocktunnel-docker-image', // image tag
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      utils.step({ title: 'Check Repository' });
-
-      const tag = `taskcluster/websocktunnel:${requirements['release-version']}`;
-      const provides = {
-        'websocktunnel-docker-image': tag,
-      };
-
-      utils.step({ title: 'Building Websocktunnel' });
-
-      const contextDir = path.join(baseDir, 'websocktunnel-build');
-      await execCommand({
-        command: [
-          'go', 'build',
-          '-o', path.join(contextDir, 'websocktunnel'),
-          './tools/websocktunnel/cmd/websocktunnel',
-        ],
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'websocktunnel-build.log'),
-        utils,
-        env: { CGO_ENABLED: '0', ...process.env },
-      });
-
-      utils.step({ title: 'Building Docker Image' });
-
-      fs.writeFileSync(
-        path.join(contextDir, 'version.json'),
-        requirements['docker-flow-version']);
-
-      // this simple Dockerfile just packages the binary into a Docker image
-      const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(dockerfile, [
-        'FROM scratch',
-        'COPY websocktunnel /websocktunnel',
-        'COPY version.json /app/version.json',
-        'ENTRYPOINT ["/websocktunnel"]',
-      ].join('\n'));
-      let command = [
-        'docker', 'build',
-        '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
-        contextDir,
-      ];
-      await execCommand({
-        command,
-        dir: REPO_ROOT,
-        logfile: path.join(logsDir, 'websocktunnel-docker-build.log'),
-        utils,
-        env: { DOCKER_BUILDKIT: 1, ...process.env },
-      });
-
-      if (cmdOptions.staging || !cmdOptions.push) {
-        return provides;
-      }
-
-      utils.step({ title: 'Pushing Docker Image' });
-
-      const dockerPushOptions = {};
-      if (credentials.dockerUsername && credentials.dockerPassword) {
-        dockerPushOptions.credentials = {
-          username: credentials.dockerUsername,
-          password: credentials.dockerPassword,
-        };
-      }
-
-      await dockerPush({
-        logfile: path.join(logsDir, 'websocktunnel-docker-push.log'),
-        tag,
-        utils,
-        baseDir,
-        ...dockerPushOptions,
-      });
-
-      return provides;
     },
   });
 
@@ -152,10 +53,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'taskcluster-proxy-docker-image',
       'generic-worker-image',
       'livelog-artifacts',
+      'npm-client-artifact',
+      'npm-client-web-artifact',
     ],
-    provides: [
-      'github-release',
-    ],
+    provides: ['github-release'],
     run: async (requirements, utils) => {
       const octokit = new Octokit({ auth: `token ${credentials.ghToken}` });
       const artifactsDir = requirements['clean-artifacts-dir'];
@@ -167,7 +68,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         tag_name: `v${requirements['release-version']}`,
         name: `v${requirements['release-version']}`,
         body: await requirements['changelog-text'],
-        draft: cmdOptions.staging ? true : false,
+        draft: !!cmdOptions.staging,
         prerelease: false,
       });
       const { upload_url } = release.data;
@@ -177,8 +78,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])
+        .concat([requirements['npm-client-artifact']])
+        .concat([requirements['npm-client-web-artifact']])
         .map(name => ({ name, contentType: 'application/octet-stream' }));
-      for (let { name, contentType } of files) {
+      for (const { name, contentType } of files) {
         utils.status({ message: `Upload Release asset ${name}` });
         const data = await readFile(path.join(artifactsDir, name));
 
@@ -215,53 +118,65 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   });
 
   ensureTask(tasks, {
-    title: `Publish clients/client to npm`,
-    requires: [
-      'github-release', // to make sure the release finishes first..
-    ],
-    provides: [
-      `publish-clients/client`,
-    ],
+    title: `Pack clients/client for npm`,
+    requires: ['clean-artifacts-dir'],
+    provides: ['npm-client-artifact'],
     run: async (requirements, utils) => {
-      if (cmdOptions.staging || !cmdOptions.push) {
-        return utils.skip();
-      }
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      const dir = path.join(REPO_ROOT, 'clients/client');
 
-      await npmPublish({
-        dir: path.join(REPO_ROOT, 'clients/client'),
-        apiToken: credentials.npmToken,
-        logfile: path.join(logsDir, `publish-clients-client.log`),
-        utils });
+      const output = await execCommand({
+        dir,
+        command: ['npm', 'pack'],
+        utils,
+        keepAllOutput: true,
+        logfile: path.join(logsDir, 'pack-clients-client.log'),
+      });
+
+      // npm pack prints the tarball filename on the last line of stdout
+      const tarball = output.trim().split('\n').pop();
+      const tarballPath = path.join(dir, tarball);
+      fs.copyFileSync(tarballPath, path.join(artifactsDir, tarball));
+      fs.unlinkSync(tarballPath);
+
+      return {
+        'npm-client-artifact': tarball,
+      };
     },
   });
 
   ensureTask(tasks, {
-    title: `Publish clients/client-web to npm`,
-    requires: [
-      'github-release', // to make sure the release finishes first..
-    ],
-    provides: [
-      `publish-clients/client-web`,
-    ],
+    title: `Pack clients/client-web for npm`,
+    requires: ['clean-artifacts-dir'],
+    provides: ['npm-client-web-artifact'],
     run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
       const dir = path.join(REPO_ROOT, 'clients/client-web');
 
       await execCommand({
         dir,
         command: ['yarn', 'install'],
         utils,
-        logfile: path.join(logsDir, `install-clients-client-web.log`),
+        logfile: path.join(logsDir, 'install-clients-client-web.log'),
       });
 
-      if (cmdOptions.staging || !cmdOptions.push) {
-        return;
-      }
-
-      await npmPublish({
+      const output = await execCommand({
         dir,
-        apiToken: credentials.npmToken,
-        logfile: path.join(logsDir, `publish-clients-client-web.log`),
-        utils });
+        command: ['npm', 'pack'],
+        utils,
+        keepAllOutput: true,
+        logfile: path.join(logsDir, 'pack-clients-client-web.log'),
+      });
+
+      // npm pack prints the tarball filename on the last line of stdout
+      const tarball = output.trim().split('\n').pop();
+      const tarballPath = path.join(dir, tarball);
+      fs.copyFileSync(tarballPath, path.join(artifactsDir, tarball));
+      fs.unlinkSync(tarballPath);
+
+      return {
+        'npm-client-web-artifact': tarball,
+      };
     },
   });
 
@@ -270,10 +185,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-py`,
-    ],
-    run: async (requirements, utils) => {
+    provides: [`publish-clients/client-py`],
+    run: async (_requirements, utils) => {
       if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
       }
@@ -283,7 +196,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
         logfile: path.join(logsDir, 'publish-client-py.log'),
-        utils });
+        utils,
+      });
     },
   });
 
@@ -292,10 +206,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-rust`,
-    ],
-    run: async (requirements, utils) => {
+    provides: [`publish-clients/client-rust`],
+    run: async (_requirements, utils) => {
       // upload each of the individual crates, in dependency order; note that
       // integration-tests does not get published!
       for (const dir of ['client', 'download', 'upload']) {
@@ -304,7 +216,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           token: credentials.cratesioToken,
           push: cmdOptions.push && !cmdOptions.staging,
           logfile: path.join(logsDir, `publish-client-${dir}-rust.log`),
-          utils });
+          utils,
+        });
       }
     },
   });
@@ -315,15 +228,11 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'release-version',
       'monoimage-docker-image',
       'github-release',
-      'publish-clients/client',
-      'publish-clients/client-web',
       'publish-clients/client-py',
       'publish-clients/client-rust',
     ],
-    provides: [
-      'target-publish',
-    ],
-    run: async (requirements, utils) => {
+    provides: ['target-publish'],
+    run: async (requirements, _utils) => {
       return {
         'target-publish': [
           `Release version: ${requirements['release-version']}`,

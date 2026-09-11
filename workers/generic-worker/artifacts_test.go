@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -10,9 +12,9 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
 )
 
 var (
@@ -29,6 +31,12 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	}
 	defaults.SetDefaults(&payload)
 
+	// Get platform data for the test context
+	pd, err := platformDataForTaskContext(taskContext)
+	if err != nil {
+		t.Fatalf("Failed to get platform data: %v", err)
+	}
+
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
 	// artifacts would get uploaded...
@@ -37,7 +45,8 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 		Definition: tcqueue.TaskDefinitionResponse{
 			Expires: inAnHour,
 		},
-		pd: currentPlatformData(),
+		pd:      pd,
+		Context: taskContext,
 	}
 	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
 	atf := ArtifactTaskFeature{
@@ -46,15 +55,17 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	atf.FindArtifacts()
 	got := atf.artifacts
 
-	// remove the ContentPath field from the got artifacts
-	// if it's of type S3Artifact. We can't compare this
-	// as it's non-deterministic
 	for _, a := range got {
-		s3Artifact, ok := a.(*artifacts.S3Artifact)
-		if !ok {
-			continue
+		if err := a.PrepareContent(); err != nil {
+			t.Fatalf("Could not prepare content of artifact %v: %v", a.Base().Name, err)
 		}
-		s3Artifact.ContentPath = ""
+		a.DiscardContent()
+		switch artifact := a.(type) {
+		case *artifacts.S3Artifact:
+			artifact.Content = nil
+		case *artifacts.ObjectArtifact:
+			artifact.Content = nil
+		}
 	}
 
 	if !reflect.DeepEqual(got, expected) {
@@ -86,6 +97,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 		})
@@ -116,7 +128,39 @@ func TestFileArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "application/octet-stream",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
+			},
+		})
+}
+
+func TestFileArtifactWithJSONLContentType(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload - note: no ContentType, so the worker
+		// must guess it from the .jsonl extension via customMimeMappings
+		[]Artifact{
+			{
+				Expires: inAnHour,
+				Path:    "SampleArtifactsExtra/sample.jsonl",
+				Type:    "file",
+				Name:    "public/logs/sample.jsonl",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/logs/sample.jsonl",
+					Expires: inAnHour,
+				},
+				ContentType:     "application/jsonl",
+				ContentEncoding: "gzip",
+				ContentLength:   16,
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifactsExtra", "sample.jsonl"),
 			},
 		})
 }
@@ -145,8 +189,9 @@ func TestFileArtifactAsObjectWithContentType(t *testing.T) {
 					Name:    "public/build/firefox.exe",
 					Expires: inAnHour,
 				},
-				ContentType: "application/octet-stream",
-				Path:        filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
+				ContentType:   "application/octet-stream",
+				ContentLength: 14,
+				Path:          filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 		})
 }
@@ -214,6 +259,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -223,6 +269,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -232,6 +279,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -241,6 +289,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "gzip",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
@@ -250,6 +299,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
@@ -259,6 +309,7 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -297,6 +348,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -306,6 +358,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -345,6 +398,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -354,6 +408,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -411,6 +466,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -420,6 +476,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -429,6 +486,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
@@ -438,6 +496,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -477,6 +536,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				ContentLength:   14,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
@@ -486,6 +546,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -593,6 +654,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 				},
 				ContentType:     "image/jpeg",
 				ContentEncoding: "identity",
+				ContentLength:   17,
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		},
@@ -701,6 +763,33 @@ func TestMissingOptionalFileArtifactDoesNotFailTest(t *testing.T) {
 		},
 	}
 	expectedArtifacts.Validate(t, taskID, 0)
+}
+
+func TestOptionalArtifactUploadFailureFailsTask(t *testing.T) {
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
+	}
+
+	setup(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:     "SampleArtifacts/_/X.txt",
+				Expires:  expires,
+				Type:     "file",
+				Name:     "public/fail-with-403/X.txt",
+				Optional: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "resource-unavailable")
 }
 
 func TestMissingOptionalDirectoryArtifactDoesNotFailTest(t *testing.T) {
@@ -877,27 +966,27 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
-	queue := serviceFactory.Queue(nil, config.RootURL)
-	artifacts, err := queue.ListArtifacts(taskID, "0", "", "")
-
-	if err != nil {
-		t.Fatalf("Error listing artifacts: %v", err)
+	expectedArtifacts := ExpectedArtifacts{
+		"public/build/X.txt": {
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			ContentLength:   14,
+			Expires:         expires,
+		},
+		"public/logs/live_backing.log": {
+			ContentType:      "text/plain; charset=utf-8",
+			ContentEncoding:  "gzip",
+			Expires:          td.Expires,
+			SkipContentCheck: true,
+		},
+		"public/logs/live.log": {
+			ContentType:      "text/plain; charset=utf-8",
+			ContentEncoding:  "gzip",
+			Expires:          td.Expires,
+			SkipContentCheck: true,
+		},
 	}
-
-	if l := len(artifacts.Artifacts); l != 3 {
-		t.Fatalf("Was expecting 3 artifacts, but got %v: %#v", l, artifacts)
-	}
-
-	// use the artifact names as keys in a map, so we can look up that each key exists
-	a := map[string]bool{
-		artifacts.Artifacts[0].Name: true,
-		artifacts.Artifacts[1].Name: true,
-		artifacts.Artifacts[2].Name: true,
-	}
-
-	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
-		t.Fatalf("Wrong artifacts presented in task %v: %#v", taskID, a)
-	}
+	expectedArtifacts.Validate(t, taskID, 0)
 }
 
 func TestConflictingFileArtifactsInPayload(t *testing.T) {
@@ -1141,4 +1230,142 @@ func TestObjectArtifact(t *testing.T) {
 
 	td := testTask(t)
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+func TestFileArtifactWithAbsolutePath(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]Artifact{
+			{
+				Expires: inAnHour,
+				Path:    filepath.Join(testdataDir, "SampleArtifacts", "b", "c", "d.jpg"),
+				Type:    "file",
+				Name:    "public/build/firefox.exe",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/build/firefox.exe",
+					Expires: inAnHour,
+				},
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
+				ContentLength:   17,
+				Path:            filepath.Join(testdataDir, "SampleArtifacts", "b", "c", "d.jpg"),
+			},
+		})
+}
+
+// TestFileArtifactUploadFromAbsolutePath verifies that a task can create
+// a file at an absolute path outside the task directory and publish it
+// as an artifact.
+func TestFileArtifactUploadFromAbsolutePath(t *testing.T) {
+	setup(t)
+	absDir := worldWritableTempDir(t, t.Name())
+	absFile := filepath.Join(absDir, "artifact.txt")
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/_/X.txt", absFile),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: absFile,
+				Type: "file",
+				Name: "public/abs-path-artifact.txt",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	// Verify the artifact content matches the original file
+	expectedData, err := os.ReadFile(filepath.Join(testdataDir, "SampleArtifacts", "_", "X.txt"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actualData := getArtifactContent(t, taskID, "public/abs-path-artifact.txt")
+	if string(expectedData) != string(actualData) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expectedData), len(actualData))
+	}
+}
+
+func TestDirectoryArtifactUploadFromAbsolutePath(t *testing.T) {
+	setup(t)
+	absDir := worldWritableTempDir(t, t.Name())
+	nestedFile := filepath.Join(absDir, "sub", "nested.jpg")
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/b/c/d.jpg", nestedFile),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:    absDir,
+				Expires: inAnHour,
+				Type:    "directory",
+				Name:    "public/abs-dir",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	expectedArtifacts := ExpectedArtifacts{
+		"public/abs-dir/sub/nested.jpg": {
+			ContentType:      "image/jpeg",
+			ContentLength:    17,
+			Expires:          inAnHour,
+			StorageType:      "s3",
+			SkipContentCheck: true,
+		},
+		"public/logs/live_backing.log": {
+			ContentType:      "text/plain; charset=utf-8",
+			ContentEncoding:  "gzip",
+			Expires:          td.Expires,
+			SkipContentCheck: true,
+		},
+		"public/logs/live.log": {
+			ContentType:      "text/plain; charset=utf-8",
+			ContentEncoding:  "gzip",
+			Expires:          td.Expires,
+			SkipContentCheck: true,
+		},
+	}
+	expectedArtifacts.Validate(t, taskID, 0)
+}
+
+func TestBinaryFileArtifactUpload(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("mozharness.zip"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "mozharness.zip",
+				Type: "file",
+				Name: "public/mozharness.zip",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	expected, err := os.ReadFile(filepath.Join(testdataDir, "mozharness.zip"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actual := getArtifactContent(t, taskID, "public/mozharness.zip")
+	if !bytes.Equal(expected, actual) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expected), len(actual))
+	}
 }

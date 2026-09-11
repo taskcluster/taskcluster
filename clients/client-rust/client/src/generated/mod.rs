@@ -7,6 +7,7 @@ mod object;
 mod purgecache;
 mod queue;
 mod secrets;
+mod webserver;
 mod workermanager;
 
 pub use auth::Auth;
@@ -18,4 +19,5 @@ pub use object::Object;
 pub use purgecache::PurgeCache;
 pub use queue::Queue;
 pub use secrets::Secrets;
+pub use webserver::WebServer;
 pub use workermanager::WorkerManager;

@@ -1,8 +1,11 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import pulse from '@taskcluster/lib-pulse';
 import pSynchronize from 'p-synchronize';
 import _ from 'lodash';
 import { queueUtils, hookUtils } from './utils.js';
+import { validateTriggerPayload } from './trigger-schema.js';
+
+const DISCARD_LOG_INTERVAL = 100;
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages
@@ -35,27 +38,33 @@ class HookListeners {
    * Setup a new pulse client using the credentials
    * Additionally create pulse consumers for the exchanges -
    * `hook-created, `hook-updated` and  `hook-deleted`
-  */
+   */
   async setup() {
     this.monitor.debug('Setting up the listeners');
     assert(this.listeners === null, 'Cannot setup twice');
 
     const client = this.client;
-    let consumer = await pulse.consume({
-      client,
-      bindings: [{
-        exchange: 'exchange/taskcluster-hooks/v1/hook-created',
-        routingKeyPattern: '#',
-      }, {
-        exchange: 'exchange/taskcluster-hooks/v1/hook-updated',
-        routingKeyPattern: '#',
-      }, {
-        exchange: 'exchange/taskcluster-hooks/v1/hook-deleted',
-        routingKeyPattern: '#',
-      }],
-      queueName: 'hookChanged',
-      maxLength: 50,
-    }, (msg) => this.reconcileConsumers(),
+    const consumer = await pulse.consume(
+      {
+        client,
+        bindings: [
+          {
+            exchange: 'exchange/taskcluster-hooks/v1/hook-created',
+            routingKeyPattern: '#',
+          },
+          {
+            exchange: 'exchange/taskcluster-hooks/v1/hook-updated',
+            routingKeyPattern: '#',
+          },
+          {
+            exchange: 'exchange/taskcluster-hooks/v1/hook-deleted',
+            routingKeyPattern: '#',
+          },
+        ],
+        queueName: 'hookChanged',
+        maxLength: 50,
+      },
+      _msg => this.reconcileConsumers()
     );
     this.monitor.debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;
@@ -73,24 +82,49 @@ class HookListeners {
     this.monitor.debug(`${queueName}: creating listener (and queue if necessary)`);
 
     const client = this.client;
-    const listener = await pulse.consume({
-      client,
-      queueName,
-      maxLength: 50,
-      // we manage bindings manually in syncBindings
-      bindings: [],
-    }, async ({ payload }) => {
-      // Get a fresh copy of the hook and fire it, if it still exists
-      const latestHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
-      if (latestHook) {
-        try {
-          await this.taskcreator.fire(latestHook, { firedBy: 'pulseMessage', payload });
-        } catch (err) {
-          // any errors were already reported via the LastFire table, so they
-          // can be safely ignored here
+    let triggerSchemaDiscards = 0;
+    const listener = await pulse.consume(
+      {
+        client,
+        queueName,
+        maxLength: 50,
+        // we manage bindings manually in syncBindings
+        bindings: [],
+      },
+      async ({ exchange, routingKey, payload }) => {
+        // Get a fresh copy of the hook and fire it, if it still exists
+        const latestHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+        if (latestHook) {
+          const validationError = validateTriggerPayload(latestHook.triggerSchema, payload);
+          if (validationError) {
+            triggerSchemaDiscards += 1;
+            this.monitor.count('fire.pulseMessage.triggerSchemaInvalid');
+
+            if (triggerSchemaDiscards === 1 || triggerSchemaDiscards % DISCARD_LOG_INTERVAL === 0) {
+              this.monitor.log.hookPulseMessageDiscarded({
+                hookGroupId,
+                hookId,
+                exchange,
+                routingKey,
+                reason: 'triggerSchema',
+                validationError,
+                discardedCount: triggerSchemaDiscards,
+                message: 'Pulse message discarded because payload does not match hook triggerSchema',
+              });
+            }
+
+            return;
+          }
+
+          try {
+            await this.taskcreator.fire(latestHook, { firedBy: 'pulseMessage', payload });
+          } catch {
+            // any errors were already reported via the LastFire table, so they
+            // can be safely ignored here
+          }
         }
       }
-    });
+    );
 
     this.listeners[queueName] = listener;
   }
@@ -132,7 +166,7 @@ class HookListeners {
       return newBindings;
     }
 
-    let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
+    const intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
     const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
     const addBindings = _.differenceWith(newBindings, intersection, _.isEqual);
     if (!addBindings.length && !delBindings.length) {
@@ -144,10 +178,9 @@ class HookListeners {
     // do any special error handling here.
     if (delBindings.length > 0) {
       await this.client.withChannel(async channel => {
-        for (let { exchange, routingKeyPattern } of delBindings) {
+        for (const { exchange, routingKeyPattern } of delBindings) {
           await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
-          result = result.filter(
-            ({ exchange: e, routingKeyPattern: r }) => e !== exchange || r !== routingKeyPattern);
+          result = result.filter(({ exchange: e, routingKeyPattern: r }) => e !== exchange || r !== routingKeyPattern);
         }
       });
     }
@@ -155,10 +188,9 @@ class HookListeners {
     // We performe each of the bind operations in a distinct channel, as a failure of the operation
     // will invalidate the channel.  Failures are handled by simply not marking the binding
     // as complete and leaving if for the next reconciliation to try again.
-    for (let { exchange, routingKeyPattern } of addBindings) {
+    for (const { exchange, routingKeyPattern } of addBindings) {
       try {
-        await this.client.withChannel(channel =>
-          channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
+        await this.client.withChannel(channel => channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
         // success! add that binding to the list
         result.push({ exchange, routingKeyPattern });
       } catch (err) {
@@ -182,9 +214,8 @@ class HookListeners {
    * Run only one exeuction of this function at a time, reporting any errors to the monitor.
    */
   _synchronise(asyncfunc) {
-    return this._reconcileDone = this._reconcileDone
-      .then(asyncfunc)
-      .catch(err => this.monitor.reportError(err));
+    this._reconcileDone = this._reconcileDone.then(asyncfunc).catch(err => this.monitor.reportError(err));
+    return this._reconcileDone;
   }
 
   /**
@@ -204,7 +235,7 @@ class HookListeners {
 
     const hooks = (await this.db.fns.get_hooks(null, null, null, null)).map(hookUtils.fromDb);
 
-    for (let hook of hooks) {
+    for (const hook of hooks) {
       if (hook.bindings.length === 0) {
         continue;
       }
@@ -229,7 +260,7 @@ class HookListeners {
             await this.db.fns.update_hooks_queue_bindings(
               queue.hookGroupId,
               queue.hookId,
-              JSON.stringify(boundBindings),
+              JSON.stringify(boundBindings)
             );
           }
 
@@ -244,7 +275,7 @@ class HookListeners {
             hookGroupId,
             hookId,
             `${hookGroupId}/${hookId}`,
-            JSON.stringify(boundBindings),
+            JSON.stringify(boundBindings)
           );
         }
       } catch (err) {
@@ -254,7 +285,7 @@ class HookListeners {
     }
 
     // Delete the queues now left in the queues list.
-    for (let queue of queues) {
+    for (const queue of queues) {
       if (this.listeners[queue.queueName]) {
         await this.removeListener(queue.queueName);
       }
@@ -266,7 +297,7 @@ class HookListeners {
   async terminate() {
     // stop all consumers
     if (!this.client.isFakeClient) {
-      this.listeners.forEach(async (consumer) => {
+      this.listeners.forEach(async consumer => {
         await consumer.stop();
       });
     }

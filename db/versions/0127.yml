@@ -1,0 +1,55 @@
+version: 127
+description: Remove the `else 0` fallback for priority `normal` in `queue_pending_tasks_add_for_task`
+methods:
+  queue_pending_tasks_add_for_task:
+    description: |-
+      Enqueue a pending task run into queue_pending_tasks atomically with its
+      caller. Intended to be called from DB functions that transition a run to
+      `pending` (schedule_task, rerun_task, resolve_task, check_task_claim).
+      Skips enqueue if the task's deadline has already passed (the deadline
+      resolver will resolve it as `deadline-exceeded`). Otherwise delegates to
+      queue_pending_tasks_add (which does the INSERT ... ON CONFLICT DO UPDATE
+      and NOTIFY task_pending).
+
+      The caller passes task_queue_id, priority, and deadline from its own
+      FOR UPDATE-locked SELECT on the tasks row, avoiding a redundant lookup
+      here.
+    mode: write
+    serviceName: queue
+    args: task_queue_id_in text, priority_in task_priority, deadline_in timestamptz, task_id_in text, run_id_in integer
+    returns: void
+    body: |-
+      declare
+        priority_int integer;
+      begin
+        -- Skip if the task's deadline has already passed; the deadline
+        -- resolver will resolve it as `deadline-exceeded`. Matches the
+        -- pre-fix JS behavior of `QueueService.putPendingMessage`.
+        if deadline_in < now() then
+          return;
+        end if;
+
+        -- This mapping is duplicated in `PRIORITY_TO_CONSTANT` in
+        -- `services/queue/src/queueservice.js`. If you add or reorder
+        -- priority tiers, update both. `normal` is no longer an accepted
+        -- priority (see issue #8858), so this case is now exhaustive over
+        -- the full set of priorities the API allows.
+        priority_int := case priority_in
+          when 'highest'   then 7
+          when 'very-high' then 6
+          when 'high'      then 5
+          when 'medium'    then 4
+          when 'low'       then 3
+          when 'very-low'  then 2
+          when 'lowest'    then 1
+        end;
+
+        perform queue_pending_tasks_add(
+          task_queue_id_in,
+          priority_int,
+          task_id_in,
+          run_id_in,
+          public.gen_random_uuid()::text,
+          deadline_in::timestamp
+        );
+      end

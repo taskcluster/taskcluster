@@ -124,19 +124,11 @@ properties:
     description: |
       Priority of task. This defaults to `lowest` and the scope
       `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-      to define a task with `<priority>`. The `normal` priority is treated as
-      `lowest`.
+      to define a task with `<priority>`.
     type:           string
     default: 'lowest'
-    enum:
-      - highest
-      - very-high
-      - high
-      - medium
-      - low
-      - very-low
-      - lowest
-      - normal
+    enum:    {$const: task-priorities}
+
   retries:
     title:          "Retries"
     description: |

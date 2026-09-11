@@ -198,6 +198,7 @@ queue_artifacts:
   details: jsonb not null
   expires: timestamp with time zone not null
   present: boolean not null
+  content_length: bigint
 task_groups:
   expires: timestamp with time zone not null
   scheduler_id: text not null

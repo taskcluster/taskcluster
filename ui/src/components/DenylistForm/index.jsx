@@ -90,7 +90,6 @@ export default class DenylistForm extends Component {
   state = {
     notificationType: '',
     notificationAddress: '',
-    // eslint-disable-next-line react/no-unused-state
     prevAddress: null,
     validation: {
       address: {
@@ -215,7 +214,11 @@ export default class DenylistForm extends Component {
                 required
                 label="Address"
                 name="notificationAddress"
-                type={notificationType === 'EMAIL' ? 'email' : 'text'}
+                type={
+                  notificationType === DENYLIST_NOTIFICATION_TYPES.EMAIL
+                    ? 'email'
+                    : 'text'
+                }
                 helperText={validation.address.message}
                 onChange={this.handleAddressChange}
                 fullWidth
@@ -247,7 +250,7 @@ export default class DenylistForm extends Component {
             tooltipProps={{ title: 'Add Address' }}
             requiresAuth
             disabled={loading || !this.isFormValid()}
-            variant="round"
+            variant="circular"
             onClick={this.handleAddressAdd}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
@@ -258,7 +261,7 @@ export default class DenylistForm extends Component {
             tooltipProps={{ title: 'Delete Address' }}
             requiresAuth
             disabled={loading}
-            variant="round"
+            variant="circular"
             onClick={onDialogActionOpen}
             classes={{ root: classes.deleteIcon }}>
             <DeleteIcon />

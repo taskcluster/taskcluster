@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import path from 'path';
-import glob from 'glob';
+import path from 'node:path';
+import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import jsone from 'json-e';
 import mkdirp from 'mkdirp';
@@ -33,10 +33,7 @@ const DEFAULT_OVERRIDES = {
 };
 
 // Things like port that we always set ourselves
-const NON_CONFIGURABLE = [
-  'port',
-  'node_env',
-];
+const NON_CONFIGURABLE = ['port', 'node_env'];
 
 // Shared across an entire deployment
 const SHARED_CONFIG = {
@@ -60,6 +57,7 @@ const SHARED_CONFIG = {
 const DEFAULT_RESOURCES = {
   'auth.web': ['100m', '200Mi'],
   'auth.purgeExpiredClients': ['800m', '500Mi'],
+  'auth.purgeAuditHistory': ['50m', '100Mi'],
   'built_in_workers.server': ['10m', '50Mi'],
   'github.web': ['10m', '50Mi'],
   'github.worker': ['200m', '200Mi'],
@@ -73,6 +71,8 @@ const DEFAULT_RESOURCES = {
   'index.expire': ['50m', '50Mi'],
   'notify.web': ['100m', '100Mi'],
   'notify.handler': ['50m', '100Mi'],
+  'object.web': ['50m', '100Mi'],
+  'object.expire': ['50m', '100Mi'],
   'purge_cache.web': ['100m', '50Mi'],
   'purge_cache.expireCachePurges': ['800m', '500Mi'],
   'queue.web': ['400m', '200Mi'],
@@ -82,18 +82,18 @@ const DEFAULT_RESOURCES = {
   'queue.expireArtifacts': ['200m', '100Mi'],
   'queue.expireTask': ['50m', '100Mi'],
   'queue.expireTaskGroups': ['50m', '50Mi'],
-  'queue.expireTaskGroupMembers': ['100m', '50Mi'],
-  'queue.expireTaskGroupSizes': ['800m', '500Mi'],
   'queue.expireTaskDependency': ['50m', '50Mi'],
-  'queue.expireTaskRequirement': ['50m', '50Mi'],
-  'queue.expireQueues': ['50m', '200Mi'],
+  'queue.expireQueueMessages': ['50m', '100Mi'],
   'queue.expireWorkerInfo': ['200m', '100Mi'],
+  'queue.workerMetrics': ['50m', '100Mi'],
+  'queue.workerRemovedResolver': ['50m', '100Mi'],
   'secrets.web': ['100m', '50Mi'],
   'secrets.expire': ['800m', '500Mi'],
   'web_server.web': ['500m', '300Mi'],
   'web_server.scanner': ['800m', '500Mi'],
   'web_server.cleanup_expire_auth_codes': ['800m', '500Mi'],
   'web_server.cleanup_expire_access_tokens': ['800m', '500Mi'],
+  'web_server.cleanup_session_storage': ['50m', '100Mi'],
   'worker_manager.web': ['100m', '100Mi'],
   'worker_manager.provisioner': ['50m', '200Mi'],
   'worker_manager.workerscanner': ['200m', '200Mi'],
@@ -114,7 +114,7 @@ const labels = (projectName, component) => ({
   'app.kubernetes.io/component': `${projectName}-${component.toLowerCase()}`,
   'app.kubernetes.io/part-of': 'taskcluster',
 });
-const metricsSelectorLabels = (projectName) => ({
+const metricsSelectorLabels = _projectName => ({
   'app.kubernetes.io/part-of': 'taskcluster',
   'app.kubernetes.io/instance': '{{ .Release.Name }}',
   'prometheus.io/scrape': 'true',
@@ -123,8 +123,9 @@ const metricsSelectorLabels = (projectName) => ({
 // json-e can't create a "naked" string for go templates to use to render an integer.
 // we have to do some post-processing to use "advanced" go template features
 const postJsoneProcessing = (rendered, replacements, context) => {
-  let result = yaml.dump(rendered, { lineWidth: -1 })
-    .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
+  let result = yaml
+    .dump(rendered, { lineWidth: -1 })
+    .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, _p1) => replacements[match]);
 
   // Add conditional replicas configuration
   if (context.wrapReplicas) {
@@ -132,7 +133,7 @@ const postJsoneProcessing = (rendered, replacements, context) => {
       /replicas:.*$/m,
       `{{- if not .Values.${context.configName}.autoscaling.enabled }}
   replicas: ${replacements.REPLICA_CONFIG_STRING}
-  {{- end }}`,
+  {{- end }}`
     );
   }
   return result;
@@ -145,7 +146,51 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 `;
 };
 
-const wrapConditionalPodmonitoringResource = (rendered) => {
+// Gateway API resources only render when the deployer has opted in via
+// ingressType: gateway, so existing Ingress-only deployments don't need the
+// Gateway API CRDs installed (or skipResourceTypes entries) to upgrade.
+const wrapConditionalGatewayResource = (rendered, resourceName) => {
+  return `{{- if and (eq (.Values.ingressType | default "") "gateway") (not (has "${resourceName}" .Values.skipResourceTypes)) -}}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
+// GKE-specific Gateway API resources (currently the networking.gke.io/v1
+// HealthCheckPolicy) should only render when the deployer has opted into
+// Gateway API *and* is targeting a GKE gatewayClass; otherwise non-GKE
+// controllers like NGINX Gateway Fabric would fail on the missing CRD.
+const wrapConditionalGkeResource = (rendered, resourceName) => {
+  return `{{- if and (eq (.Values.ingressType | default "") "gateway") (hasPrefix "gke-" (.Values.gatewayClassName | default "")) (not (has "${resourceName}" .Values.skipResourceTypes)) -}}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
+// The gateway template uses sentinel string values for the optional addresses
+// and TLS options blocks; replace them with helm conditionals so we don't emit
+// invalid Gateway resources (NamedAddress with empty value, or empty TLS
+// options) when gatewayStaticIpName / gcpManagedCertName are unset.
+const postProcessGateway = rendered => {
+  return rendered
+    .replace(
+      /^(\s*)addresses: GATEWAY_ADDRESSES_BLOCK\s*$/m,
+      `$1{{- if .Values.gatewayStaticIpName }}
+$1addresses:
+$1- type: NamedAddress
+$1  value: '{{ .Values.gatewayStaticIpName }}'
+$1{{- end }}`
+    )
+    .replace(
+      /^(\s*)options: GATEWAY_TLS_OPTIONS_BLOCK\s*$/m,
+      `$1{{- if .Values.gcpManagedCertName }}
+$1options:
+$1  networking.gke.io/cert-manager-certs: '{{ .Values.gcpManagedCertName }}'
+$1{{- end }}`
+    );
+};
+
+const wrapConditionalPodmonitoringResource = rendered => {
   return `{{- if and (default false .Values.prometheus.enabled) (not (has "podmonitoring" .Values.skipResourceTypes)) -}}
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
@@ -157,7 +202,8 @@ const postProcessHorizontalPodAutoscaler = (rendered, context) => {
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
-  result = result.replace("- MEMORY_UTILIZATION",
+  result = result.replace(
+    '- MEMORY_UTILIZATION',
     `{{- if .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
@@ -165,12 +211,13 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
         target:
           type: Utilization
           averageUtilization: {{ .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
-    {{- end }}`,
+    {{- end }}`
   );
 
   // some values need to stay integers after json'e string substitutions
   // we unwrap minReplicas, maxReplicas, averageUtilization
-  result = result.replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+  result = result
+    .replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
     .replace(/^(\s*maxReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
     .replace(/^(\s*averageUtilization:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3');
 
@@ -178,7 +225,7 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 };
 
 const renderTemplates = async (name, vars, procs, templates) => {
-  const processVar = (v) => {
+  const processVar = v => {
     const val = v.var.toLowerCase();
     if (NON_CONFIGURABLE.includes(val)) {
       return null;
@@ -193,8 +240,14 @@ const renderTemplates = async (name, vars, procs, templates) => {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
       labels: labels(`taskcluster-${name}`, 'secrets'),
-      secrets: vars.filter(v => v.secret).map(processVar).filter(x => x !== null),
-      configValues: vars.filter(v => !v.secret).map(processVar).filter(x => x !== null),
+      secrets: vars
+        .filter(v => v.secret)
+        .map(processVar)
+        .filter(x => x !== null),
+      configValues: vars
+        .filter(v => !v.secret)
+        .map(processVar)
+        .filter(x => x !== null),
     });
 
     const file = `taskcluster-${name}-${resource}.yaml`;
@@ -202,9 +255,11 @@ const renderTemplates = async (name, vars, procs, templates) => {
   }
 
   const ingresses = [];
+  const healthChecks = [];
   for (const [proc, conf] of Object.entries(procs)) {
     let tmpl;
     const exposesMetrics = !!procs[proc].metrics;
+    const readinessPath = conf.readinessPath || `/api/${name}/v1/ping`;
     const context = {
       projectName: `taskcluster-${name}`,
       serviceName: name,
@@ -214,24 +269,34 @@ const renderTemplates = async (name, vars, procs, templates) => {
       needsService: false,
       exposesMetrics,
       wrapReplicas: false,
-      readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
+      readinessPath,
       labels: labels(`taskcluster-${name}`, proc),
     };
+    // Helm's merge keeps values from earlier maps, so process annotations override global annotations.
+    const podAnnotationsConfig = `(.Values.${context.configName}.procs.${context.configProcName}.podAnnotations | default dict) (.Values.podAnnotations | default dict)`;
     const replacements = {
       REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
-      IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
+      IMAGE_PULL_SECRETS_STRING:
+        '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
+      POD_ANNOTATIONS_BLOCK: `{{ merge (dict) ${podAnnotationsConfig} | toJson }}`,
+      POD_ANNOTATIONS_WITH_CHECKSUM_BLOCK: `{{ merge (dict "checksum/secret" (include (print $.Template.BasePath "/${context.projectName}-secret.yaml") . | sha256sum)) ${podAnnotationsConfig} | toJson }}`,
     };
 
-    switch (conf['type']) {
+    switch (conf.type) {
       case 'web': {
         tmpl = 'deployment';
-        context['needsService'] = true;
-        context['wrapReplicas'] = true;
-        const rendered = jsone(templates['service'], context);
+        context.needsService = true;
+        context.wrapReplicas = true;
+        const rendered = jsone(templates.service, context);
         const file = `taskcluster-${name}-service-${proc}.yaml`;
         ingresses.push({
           projectName: `taskcluster-${name}`,
-          paths: conf['paths'] || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
+          paths: conf.paths || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
+        });
+        healthChecks.push({
+          projectName: `taskcluster-${name}`,
+          procName: proc,
+          readinessPath,
         });
         await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
         const hpaContext = {
@@ -241,7 +306,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
           maxReplicas: `{{ .Values.${context.configName}.autoscaling.maxReplicas }}`,
           targetCPUUtilizationPercentage: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilizationPercentage }}`,
         };
-        const hpaRendered = jsone(templates['hpa'], hpaContext);
+        const hpaRendered = jsone(templates.hpa, hpaContext);
         const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
         await writeRepoFile(path.join(TMPL_DIR, hpaFilename), postProcessHorizontalPodAutoscaler(hpaRendered, context));
         break;
@@ -255,11 +320,12 @@ const renderTemplates = async (name, vars, procs, templates) => {
       }
       case 'cron': {
         tmpl = 'cron';
-        context['schedule'] = conf.schedule;
-        context['deadlineSeconds'] = conf.deadline;
+        context.schedule = conf.schedule;
+        context.deadlineSeconds = conf.deadline;
         break;
       }
-      default: continue; // We don't do anything with build/heroku-only
+      default:
+        continue; // We don't do anything with build/heroku-only
     }
     const rendered = jsone(templates[tmpl], context);
     const processed = postJsoneProcessing(rendered, replacements, context);
@@ -267,7 +333,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
   }
 
-  return ingresses;
+  return { ingresses, healthChecks };
 };
 
 export const tasks = [];
@@ -276,9 +342,8 @@ tasks.push({
   title: `Load k8s templates`,
   requires: [],
   provides: ['k8s-templates'],
-  run: async (requirements, utils) => {
-
-    const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
+  run: async (_requirements, _utils) => {
+    const templateFiles = globSync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
     const templates = {};
     for (const f of templateFiles) {
       templates[path.basename(f, '.yaml')] = await readRepoYAML(f);
@@ -293,7 +358,7 @@ tasks.push({
   title: `Clear k8s/templates directory`,
   requires: [],
   provides: ['k8s-templates-dir'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     await rimraf(TMPL_DIR);
     await mkdirp(TMPL_DIR);
   },
@@ -303,14 +368,16 @@ SERVICES.forEach(name => {
   tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: [`configs-${name}`, `procslist-${name}`, 'k8s-templates', 'k8s-templates-dir'],
-    provides: [`ingresses-${name}`],
-    run: async (requirements, utils) => {
+    provides: [`ingresses-${name}`, `healthchecks-${name}`],
+    run: async (requirements, _utils) => {
       const procs = requirements[`procslist-${name}`];
       const templates = requirements['k8s-templates'];
       const vars = requirements[`configs-${name}`];
       vars.push({ var: 'debug', type: '!env' });
+      const result = await renderTemplates(name, vars, procs, templates);
       return {
-        [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
+        [`ingresses-${name}`]: result.ingresses,
+        [`healthchecks-${name}`]: result.healthChecks,
       };
     },
   });
@@ -331,9 +398,7 @@ const extras = {
       web: {
         type: 'web',
         readinessPath: '/',
-        paths: [
-          '/*',
-        ],
+        paths: ['/*'],
       },
     },
   },
@@ -343,10 +408,7 @@ const extras = {
       web: {
         type: 'web',
         readinessPath: '/references/',
-        paths: [
-          '/references/*',
-          '/schemas/*',
-        ],
+        paths: ['/references/*', '/schemas/*'],
       },
     },
   },
@@ -355,41 +417,111 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
   tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: ['k8s-templates'],
-    provides: [`ingresses-${name}`],
-    run: async (requirements, utils) => {
+    provides: [`ingresses-${name}`, `healthchecks-${name}`],
+    run: async (requirements, _utils) => {
       const templates = requirements['k8s-templates'];
+      const result = await renderTemplates(name, vars, procs, templates);
       return {
-        [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
+        [`ingresses-${name}`]: result.ingresses,
+        [`healthchecks-${name}`]: result.healthChecks,
       };
     },
   });
 });
 
+// Gateway API has a limit of 16 rules per HTTPRoute
+const MAX_HTTPROUTE_RULES = 16;
+
 tasks.push({
   title: `Generate ingress`,
-  requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map(name => `ingresses-${name}`)],
+  requires: [
+    'k8s-templates',
+    ...['ui', 'references', ...SERVICES].map(name => `ingresses-${name}`),
+    ...['ui', 'references', ...SERVICES].map(name => `healthchecks-${name}`),
+  ],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const ingresses = [];
+    const healthChecks = [];
     for (const [name, req] of Object.entries(requirements)) {
       if (name.startsWith('ingresses-')) {
         for (const ingress of req) {
-          for (const path of ingress.paths) {
+          for (const p of ingress.paths) {
             ingresses.push({
-              path,
+              path: p,
+              // Strip trailing /* glob for Gateway API PathPrefix matching
+              pathPrefix: p.replace(/\/?\*$/, '') || '/',
               projectName: ingress.projectName,
             });
           }
         }
       }
+      if (name.startsWith('healthchecks-')) {
+        healthChecks.push(...req);
+      }
     }
     const templates = requirements['k8s-templates'];
-    const rendered = jsone(templates['ingress'], {
+
+    // Generate legacy Ingress resource
+    const rendered = jsone(templates.ingress, {
       ingresses,
       labels: labels(`taskcluster-ingress`, 'ingress'),
     });
     const processed = wrapConditionalResource(rendered, 'ingress');
     await writeRepoFile(path.join(TMPL_DIR, 'ingress.yaml'), processed);
+
+    // Generate Gateway API resources (Gateway + HTTPRoutes + TLS redirect)
+    const gatewayRendered = jsone(templates.gateway, {
+      labels: labels(`taskcluster-gateway`, 'gateway'),
+    });
+    await writeRepoFile(
+      path.join(TMPL_DIR, 'gateway.yaml'),
+      postProcessGateway(wrapConditionalGatewayResource(gatewayRendered, 'gateway'))
+    );
+
+    // Split ingresses into chunks to stay within the 16-rule-per-HTTPRoute limit.
+    // Always use a numeric suffix so route/file names stay stable when the chunk
+    // count crosses the 16-rule threshold (avoids rename-and-recreate on upgrade).
+    const chunks = _.chunk(ingresses, MAX_HTTPROUTE_RULES);
+    for (let i = 0; i < chunks.length; i++) {
+      const suffix = `-${i + 1}`;
+      const routeName = `taskcluster-routes${suffix}`;
+      const httprouteRendered = jsone(templates.httproute, {
+        routeName,
+        ingresses: chunks[i],
+        labels: labels(routeName, 'httproute'),
+      });
+      await writeRepoFile(
+        path.join(TMPL_DIR, `httproute${suffix}.yaml`),
+        wrapConditionalGatewayResource(httprouteRendered, 'httproute')
+      );
+    }
+
+    const redirectRendered = jsone(templates['httproute-redirect'], {
+      labels: labels(`taskcluster-tls-redirect`, 'httproute'),
+    });
+    await writeRepoFile(
+      path.join(TMPL_DIR, 'httproute-redirect.yaml'),
+      wrapConditionalGatewayResource(redirectRendered, 'httproute')
+    );
+
+    // Generate GKE HealthCheckPolicy per web service+proc. Including procName
+    // in both the resource name and filename prevents collisions if a service
+    // grows multiple web procs (and keeps generated filenames unique). The
+    // resource is networking.gke.io/v1 — only render when the configured
+    // gatewayClassName is a GKE one, so non-GKE controllers (e.g. NGINX
+    // Gateway Fabric) don't fail with "no matches for kind".
+    for (const hc of healthChecks) {
+      const hcName = `${hc.projectName}-${hc.procName}-hc`;
+      const hcRendered = jsone(templates.healthcheckpolicy, {
+        projectName: hc.projectName,
+        hcName,
+        readinessPath: hc.readinessPath,
+        labels: labels(hcName, 'healthcheckpolicy'),
+      });
+      const hcFile = `${hc.projectName}-${hc.procName}-healthcheckpolicy.yaml`;
+      await writeRepoFile(path.join(TMPL_DIR, hcFile), wrapConditionalGkeResource(hcRendered, 'healthcheckpolicy'));
+    }
   },
 });
 
@@ -397,18 +529,18 @@ tasks.push({
   title: `Generate pod monitoring`,
   requires: ['k8s-templates'],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const templates = requirements['k8s-templates'];
 
     // podmonitoring for prometheus metrics
-    const podmon = jsone(templates['podmonitoring'], {
+    const podmon = jsone(templates.podmonitoring, {
       projectName: 'taskcluster-monitoring',
       labels: labels('taskcluster-monitoring', 'podmonitoring'),
       selectorLabels: metricsSelectorLabels('taskcluster-monitoring'),
     });
     await writeRepoFile(
       path.join(TMPL_DIR, `podmonitoring.yaml`),
-      wrapConditionalPodmonitoringResource(podmon, 'podmonitoring'),
+      wrapConditionalPodmonitoringResource(podmon, 'podmonitoring')
     );
   },
 });
@@ -420,22 +552,18 @@ tasks.push({
     ...SERVICES.map(name => `procslist-${name}`),
     'static-clients',
   ],
-  provides: [
-    'config-values-schema',
-    'config-values',
-    'target-k8s',
-  ],
-  run: async (requirements, utils) => {
+  provides: ['config-values-schema', 'config-values', 'target-k8s'],
+  run: async (requirements, _utils) => {
     const schema = {
-      '$schema': 'http://json-schema.org/draft-06/schema#',
-      '$id': '/schemas/common/values.schema.json#',
+      $schema: 'http://json-schema.org/draft-06/schema#',
+      $id: '/schemas/common/values.schema.json#',
       type: 'object',
       title: 'Taskcluster Configuration Values',
       properties: {
         rootUrl: {
           type: 'string',
           format: 'uri',
-          description: 'The url pointing to your deployment\'s ingress.',
+          description: "The url pointing to your deployment's ingress.",
         },
         applicationName: {
           type: 'string',
@@ -467,10 +595,20 @@ tasks.push({
         },
         skipResourceTypes: {
           type: 'array',
-          description: 'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
+          description:
+            'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
           items: {
             type: 'string',
-            enum: ['configmap', 'secret', 'ingress', 'serviceaccount', 'podmonitoring'],
+            enum: [
+              'configmap',
+              'secret',
+              'ingress',
+              'gateway',
+              'httproute',
+              'healthcheckpolicy',
+              'serviceaccount',
+              'podmonitoring',
+            ],
           },
         },
 
@@ -486,7 +624,8 @@ tasks.push({
         },
         trustProxy: {
           type: 'boolean',
-          description: 'If true, only the external ingress needs to use ssl. connections to services are allowed however.',
+          description:
+            'If true, only the external ingress needs to use ssl. connections to services are allowed however.',
         },
         nodeEnv: {
           type: 'string',
@@ -527,19 +666,38 @@ tasks.push({
         },
         ingressType: {
           type: 'string',
-          description: 'Allows to use non-GLB ingress types, like "nginx"',
+          description: 'Allows to use non-GLB ingress types: "nginx" for ingress-nginx, or "gateway" for Gateway API',
         },
         ingressTlsSecretName: {
           type: 'string',
-          description: 'Name of the secret where cert is stored, i.e. "dev-cert". This can be provisioned manually or automatically, by using cert-manager',
+          description:
+            'Name of the secret where cert is stored, i.e. "dev-cert". This can be provisioned manually or automatically, by using cert-manager',
         },
         certManagerClusterIssuerName: {
           type: 'string',
           description: 'Name of the cluster issuer, i.e. "letsencrypt-prod"',
         },
+        gatewayClassName: {
+          type: 'string',
+          description:
+            'GatewayClass name for the Gateway API gateway, e.g. "gke-l7-regional-external-managed". Required when using Gateway API (ingressType: "gateway").',
+        },
+        gatewayStaticIpName: {
+          type: 'string',
+          description: 'Name of the reserved static IP address for the Gateway, e.g. "tc-dev-gateway-ip".',
+        },
+        gcpManagedCertName: {
+          type: 'string',
+          description: 'Name of the GCP Certificate Manager certificate for the Gateway, e.g. "tc-dev-gw-cert".',
+        },
         imagePullSecret: {
           type: 'string',
           description: 'Secret name with docker credentials for private registry',
+        },
+        podAnnotations: {
+          type: 'object',
+          description: 'Annotations applied to every Taskcluster workload pod.',
+          additionalProperties: { type: 'string' },
         },
         prometheus: {
           type: 'object',
@@ -593,7 +751,16 @@ tasks.push({
           },
         },
       },
-      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
+      required: [
+        'rootUrl',
+        'dockerImage',
+        'pulseHostname',
+        'pulseVhost',
+        'forceSSL',
+        'trustProxy',
+        'nodeEnv',
+        'useKubernetesDnsServiceDiscovery',
+      ],
       additionalProperties: false,
     };
 
@@ -608,6 +775,9 @@ tasks.push({
       ingressType: '...',
       ingressTlsSecretName: '',
       certManagerClusterIssuerName: '',
+      gatewayClassName: '',
+      gatewayStaticIpName: '',
+      gcpManagedCertName: '',
       pulseHostname: '...',
       pulseAmqps: true,
       pulseVhost: '...',
@@ -615,6 +785,7 @@ tasks.push({
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
+      podAnnotations: {},
       prometheus: {
         enabled: true,
         server: { port: 9100 },
@@ -630,6 +801,7 @@ tasks.push({
       nodeEnv: 'production',
       useKubernetesDnsServiceDiscovery: true,
       skipResourceTypes: [],
+      podAnnotations: {},
       prometheus: {},
     };
 
@@ -638,10 +810,12 @@ tasks.push({
       vars: requirements[`configs-${name}`],
       procs: requirements[`procslist-${name}`],
     }));
-    configs = configs.concat(Object.entries(extras).map(([name, cfg]) => ({
-      name,
-      ...cfg,
-    })));
+    configs = configs.concat(
+      Object.entries(extras).map(([name, cfg]) => ({
+        name,
+        ...cfg,
+      }))
+    );
 
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');
@@ -745,7 +919,7 @@ tasks.push({
             cpu: DEFAULT_RESOURCES[`${serviceName}.${proc}`][0],
             memory: DEFAULT_RESOURCES[`${serviceName}.${proc}`][1],
           };
-        } catch (e) {
+        } catch {
           // default for the defaults
           return { cpu: '50m', memory: '100Mi' };
         }
@@ -772,6 +946,12 @@ tasks.push({
               memory: { type: 'string' },
               cpu: { type: 'string' },
               metrics: { type: 'boolean' },
+              podAnnotations: {
+                type: 'object',
+                description:
+                  'Annotations merged with global podAnnotations for this process; matching keys override global values.',
+                additionalProperties: { type: 'string' },
+              },
             },
             required: ['replicas', 'memory', 'cpu'],
             additionalProperties: false,
@@ -791,6 +971,12 @@ tasks.push({
             properties: {
               memory: { type: 'string' },
               cpu: { type: 'string' },
+              podAnnotations: {
+                type: 'object',
+                description:
+                  'Annotations merged with global podAnnotations for this process; matching keys override global values.',
+                additionalProperties: { type: 'string' },
+              },
             },
             required: ['memory', 'cpu'],
             additionalProperties: false,
@@ -800,8 +986,10 @@ tasks.push({
     });
 
     // omit scopes and add a placeholder accessToken to each client
-    exampleConfig.auth.static_clients = requirements['static-clients']
-      .map(({ scopes, ...c }) => ({ ...c, accessToken: '...' }));
+    exampleConfig.auth.static_clients = requirements['static-clients'].map(({ scopes, ...c }) => ({
+      ...c,
+      accessToken: '...',
+    }));
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
     await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), valuesYAML); // helm requires this to be "yaml"

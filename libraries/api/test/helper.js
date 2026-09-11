@@ -1,8 +1,8 @@
 import testing from '@taskcluster/lib-testing';
 import SchemaSet from '@taskcluster/lib-validate';
 import { MonitorManager } from '@taskcluster/lib-monitor';
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
 import { App } from '@taskcluster/lib-app';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -13,7 +13,7 @@ export const rootUrl = 'http://localhost:23525';
 export let monitor = null;
 export let monitorManager = null;
 
-suiteSetup('set up monitorManager', async function() {
+suiteSetup('set up monitorManager', async () => {
   monitor = MonitorManager.setup({
     serviceName: 'lib-api',
     fake: true,
@@ -24,7 +24,7 @@ suiteSetup('set up monitorManager', async function() {
   monitorManager = monitor.manager;
 });
 
-teardown(function() {
+teardown(() => {
   monitorManager.reset();
 });
 
@@ -32,9 +32,12 @@ teardown(function() {
  * Set up a testing server on port 23525 serving the given API.
  */
 export const setupServer = async ({ builder, context }) => {
-  testing.fakeauth.start({
-    'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
-  }, { rootUrl });
+  testing.fakeauth.start(
+    {
+      'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
+    },
+    { rootUrl }
+  );
   assert(runningServer === null);
 
   const schemaset = new SchemaSet({
@@ -60,8 +63,8 @@ export const setupServer = async ({ builder, context }) => {
 
 export const teardownServer = async () => {
   if (runningServer) {
-    await new Promise(function(accept) {
-      runningServer.once('close', function() {
+    await new Promise(accept => {
+      runningServer.once('close', () => {
         runningServer = null;
         accept();
       });

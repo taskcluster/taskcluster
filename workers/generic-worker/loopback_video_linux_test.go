@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -9,6 +10,9 @@ import (
 )
 
 func TestLoopbackVideo(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: loopback video requires kernel modules not available in containers")
+	}
 	setup(t)
 
 	devicePath := fmt.Sprintf("/dev/video%d", config.LoopbackVideoDeviceNumber)
@@ -32,15 +36,8 @@ func TestLoopbackVideo(t *testing.T) {
 	if !strings.Contains(logText, "Device: "+devicePath) {
 		t.Fatalf("Expected log to contain 'Device: %s', but it didn't\n%s", devicePath, logText)
 	}
-	switch engine {
-	case "multiuser":
-		if !strings.Contains(logText, "crw-rw----+ 1 root video") {
-			t.Fatalf("Expected log to contain 'crw-rw----+ 1 root video', but it didn't\n%s", logText)
-		}
-	case "insecure":
-		if !strings.Contains(logText, "crw-rw---- 1 root video") {
-			t.Fatalf("Expected log to contain 'crw-rw---- 1 root video', but it didn't\n%s", logText)
-		}
+	if !strings.Contains(logText, "crw-rw----+ 1 root video") {
+		t.Fatalf("Expected log to contain 'crw-rw----+ 1 root video', but it didn't\n%s", logText)
 	}
 }
 

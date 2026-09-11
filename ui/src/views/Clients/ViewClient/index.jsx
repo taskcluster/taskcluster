@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
 import { parse } from 'qs';
 import { omit } from 'ramda';
 import { alpha, withStyles } from '@material-ui/core/styles';
@@ -11,6 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
 import { addYears } from 'date-fns';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
+import { Auth } from '@taskcluster/client-web';
 import { memoize } from '../../../utils/memoize';
 import Spinner from '../../../components/Spinner';
 import Snackbar from '../../../components/Snackbar';
@@ -18,38 +18,14 @@ import Dashboard from '../../../components/Dashboard';
 import ClientForm from '../../../components/ClientForm';
 import ErrorPanel from '../../../components/ErrorPanel';
 import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
-import updateClientQuery from './updateClient.graphql';
-import createClientQuery from './createClient.graphql';
-import deleteClientQuery from './deleteClient.graphql';
-import disableClientQuery from './disableClient.graphql';
-import enableClientQuery from './enableClient.graphql';
-import resetAccessTokenQuery from './resetAccessToken.graphql';
-import currentScopesQuery from './currentScopes.graphql';
-import clientQuery from './client.graphql';
 import { THEME } from '../../../utils/constants';
 import fromNow from '../../../utils/fromNow';
 import { withAuth } from '../../../utils/Auth';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import SignInDialog from '../../../components/SignInDialog';
 
 @withAuth
-@withApollo
-@graphql(clientQuery, {
-  name: 'clientData',
-  skip: ({ match: { params } }) => !params.clientId,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      clientId: decodeURIComponent(params.clientId),
-    },
-  }),
-})
-@graphql(currentScopesQuery, {
-  name: 'currentScopesData',
-  skip: ({ user }) => !user,
-  options: {
-    fetchPolicy: 'network-only',
-  },
-})
+@withTaskclusterClient
 @withStyles(theme => ({
   listItemButton: {
     padding: 0,
@@ -88,6 +64,12 @@ export default class ViewClient extends Component {
     error: null,
     dialogError: null,
     dialogOpen: false,
+    client: null,
+    clientLoading: false,
+    clientError: null,
+    currentScopes: null,
+    currentScopesLoading: false,
+    currentScopesError: null,
     accessToken: this.props.location.state
       ? this.props.location.state.accessToken
       : null,
@@ -98,6 +80,25 @@ export default class ViewClient extends Component {
     },
   };
 
+  get authClient() {
+    return this.props.createTaskclusterClient({ Class: Auth });
+  }
+
+  componentDidMount() {
+    this.loadClient();
+    this.loadCurrentScopes();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.getClientId() !== this.getClientId(prevProps)) {
+      this.loadClient();
+    }
+
+    if (this.props.user !== prevProps.user) {
+      this.loadCurrentScopes();
+    }
+  }
+
   getClientFormKey = memoize(initialClient => JSON.stringify(initialClient), {
     serializer: initialClient => {
       // expires changes on every render so it's best to keep
@@ -106,13 +107,55 @@ export default class ViewClient extends Component {
     },
   });
 
+  getClientId = ({ match } = this.props) =>
+    match.params.clientId ? decodeURIComponent(match.params.clientId) : null;
+
+  loadClient = async () => {
+    const clientId = this.getClientId();
+
+    if (!clientId) {
+      return;
+    }
+
+    this.setState({ clientLoading: true, clientError: null });
+
+    try {
+      const client = await this.authClient.client(clientId);
+
+      this.setState({ client, clientLoading: false, clientError: null });
+    } catch (clientError) {
+      this.setState({ client: null, clientLoading: false, clientError });
+    }
+  };
+
+  loadCurrentScopes = async () => {
+    if (!this.props.user) {
+      return;
+    }
+
+    this.setState({ currentScopesLoading: true, currentScopesError: null });
+
+    try {
+      const { scopes } = await this.authClient.currentScopes();
+
+      this.setState({
+        currentScopes: scopes,
+        currentScopesLoading: false,
+        currentScopesError: null,
+      });
+    } catch (currentScopesError) {
+      this.setState({
+        currentScopes: null,
+        currentScopesLoading: false,
+        currentScopesError,
+      });
+    }
+  };
+
   handleDeleteClient = async clientId => {
     this.setState({ dialogError: null, loading: true });
 
-    return this.props.client.mutate({
-      mutation: deleteClientQuery,
-      variables: { clientId },
-    });
+    return this.authClient.deleteClient(clientId);
   };
 
   handleDialogActionError = error => {
@@ -127,13 +170,9 @@ export default class ViewClient extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      await this.props.client.mutate({
-        mutation: disableClientQuery,
-        variables: { clientId },
-        refetchQueries: ['Client'],
-      });
+      const client = await this.authClient.disableClient(clientId);
 
-      this.setState({ error: null, loading: false });
+      this.setState({ client, error: null, loading: false });
     } catch (error) {
       this.setState({ error, loading: false });
     }
@@ -143,40 +182,26 @@ export default class ViewClient extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      await this.props.client.mutate({
-        mutation: enableClientQuery,
-        variables: { clientId },
-        refetchQueries: ['Client'],
-      });
+      const client = await this.authClient.enableClient(clientId);
 
-      this.setState({ error: null, loading: false });
+      this.setState({ client, error: null, loading: false });
     } catch (error) {
       this.setState({ error, loading: false });
     }
   };
 
   handleResetAccessToken = async clientId => {
-    const {
-      clientData: { refetch },
-      client,
-    } = this.props;
-
     this.setState({ error: null, loading: true });
 
     try {
-      const result = await client.mutate({
-        mutation: resetAccessTokenQuery,
-        variables: {
-          clientId,
-        },
-      });
+      const { accessToken } = await this.authClient.resetAccessToken(clientId);
 
       this.setState({
         error: null,
         loading: false,
-        accessToken: result.data.resetAccessToken.accessToken,
+        accessToken,
       });
-      refetch();
+      this.loadClient();
     } catch (error) {
       this.setState({ error, loading: false, accessToken: null });
     }
@@ -210,13 +235,9 @@ export default class ViewClient extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      const result = await this.props.client.mutate({
-        mutation: isNewClient ? createClientQuery : updateClientQuery,
-        variables: {
-          clientId,
-          client,
-        },
-      });
+      const result = isNewClient
+        ? await this.authClient.createClient(clientId, client)
+        : await this.authClient.updateClient(clientId, client);
 
       this.setState({
         error: null,
@@ -226,7 +247,7 @@ export default class ViewClient extends Component {
       // CLI login
       if (callbackUrl) {
         window.location.replace(
-          `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`
+          `${callbackUrl}?clientId=${clientId}&accessToken=${result.accessToken}`
         );
 
         return;
@@ -235,12 +256,13 @@ export default class ViewClient extends Component {
       if (isNewClient) {
         this.props.history.replace({
           pathname: `/auth/clients/${encodeURIComponent(clientId)}`,
-          state: { accessToken: result.data.createClient.accessToken },
+          state: { accessToken: result.accessToken },
         });
 
         return;
       }
 
+      this.setState({ client: result });
       this.handleSnackbarOpen({ message: 'Client Saved', open: true });
     } catch (error) {
       this.setState({ error, loading: false });
@@ -263,7 +285,7 @@ export default class ViewClient extends Component {
     this.setState({ snackbar: { message, variant, open } });
   };
 
-  handleSnackbarClose = (event, reason) => {
+  handleSnackbarClose = (_event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -281,15 +303,14 @@ export default class ViewClient extends Component {
       snackbar,
       dialogError,
       dialogOpen,
+      client,
+      clientLoading,
+      clientError,
+      currentScopes,
+      currentScopesLoading,
+      currentScopesError,
     } = this.state;
-    const {
-      isNewClient,
-      clientData,
-      currentScopesData,
-      classes,
-      location,
-      user,
-    } = this.props;
+    const { isNewClient, classes, location, user } = this.props;
     const query = parse(location.search.slice(1));
     const initialClient = {
       description: query.description,
@@ -303,31 +324,66 @@ export default class ViewClient extends Component {
       disabled: false,
     };
     const isCliLogin = Boolean(query.callback_url);
-    const isClientDisabled =
-      clientData && clientData.client && clientData.client.disabled;
+    const isClientDisabled = client?.disabled;
 
     // CLI login
-    if (
-      isCliLogin &&
-      user &&
-      currentScopesData &&
-      currentScopesData.currentScopes
-    ) {
+    if (isCliLogin && user && currentScopes) {
       Object.assign(initialClient, {
         clientId: `${user.credentials.clientId}/${query.name}`,
-        scopes: scopeIntersection(
-          initialClient.scopes,
-          currentScopesData.currentScopes
-        ),
+        scopes: scopeIntersection(initialClient.scopes, currentScopes),
       });
     }
 
-    if (location.state && location.state.accessToken) {
+    if (location.state?.accessToken) {
       const state = { ...location.state };
 
       delete state.accessToken;
       this.props.history.replace({ state });
     }
+
+    const clientContent = isNewClient ? (
+      <Fragment>
+        <ErrorPanel fixed error={error} />
+        <ClientForm
+          key={this.getClientFormKey(initialClient)}
+          loading={loading}
+          client={initialClient}
+          isNewClient
+          onSaveClient={this.handleSaveClient}
+        />
+      </Fragment>
+    ) : (
+      <Fragment>
+        {(clientLoading || currentScopesLoading) && <Spinner loading />}
+        <ErrorPanel
+          fixed
+          warning={isClientDisabled}
+          error={
+            (isClientDisabled && 'Disabled') ||
+            error ||
+            clientError ||
+            currentScopesError
+          }
+        />
+        {client && (
+          <ClientForm
+            dialogError={dialogError}
+            loading={loading}
+            client={client}
+            onResetAccessToken={this.handleResetAccessToken}
+            onSaveClient={this.handleSaveClient}
+            onDeleteClient={this.handleDeleteClient}
+            onDisableClient={this.handleDisableClient}
+            onEnableClient={this.handleEnableClient}
+            dialogOpen={dialogOpen}
+            onDialogActionError={this.handleDialogActionError}
+            onDialogActionComplete={this.handleDialogActionComplete}
+            onDialogActionClose={this.handleDialogActionClose}
+            onDialogActionOpen={this.handleDialogActionOpen}
+          />
+        )}
+      </Fragment>
+    );
 
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
@@ -361,58 +417,7 @@ export default class ViewClient extends Component {
             </CardContent>
           </Card>
         </Collapse>
-        {!isCliLogin || user ? (
-          <Fragment>
-            {isNewClient ? (
-              <Fragment>
-                <ErrorPanel fixed error={error} />
-                <ClientForm
-                  key={this.getClientFormKey(initialClient)}
-                  loading={loading}
-                  client={initialClient}
-                  isNewClient
-                  onSaveClient={this.handleSaveClient}
-                />
-              </Fragment>
-            ) : (
-              <Fragment>
-                {((clientData && clientData.loading) ||
-                  (currentScopesData && currentScopesData.loading)) && (
-                  <Spinner loading />
-                )}
-                <ErrorPanel
-                  fixed
-                  warning={isClientDisabled}
-                  error={
-                    (isClientDisabled && 'Disabled') ||
-                    error ||
-                    (clientData && clientData.error) ||
-                    (currentScopesData && currentScopesData.error)
-                  }
-                />
-                {clientData && clientData.client && (
-                  <ClientForm
-                    dialogError={dialogError}
-                    loading={loading}
-                    client={clientData.client}
-                    onResetAccessToken={this.handleResetAccessToken}
-                    onSaveClient={this.handleSaveClient}
-                    onDeleteClient={this.handleDeleteClient}
-                    onDisableClient={this.handleDisableClient}
-                    onEnableClient={this.handleEnableClient}
-                    dialogOpen={dialogOpen}
-                    onDialogActionError={this.handleDialogActionError}
-                    onDialogActionComplete={this.handleDialogActionComplete}
-                    onDialogActionClose={this.handleDialogActionClose}
-                    onDialogActionOpen={this.handleDialogActionOpen}
-                  />
-                )}
-              </Fragment>
-            )}
-          </Fragment>
-        ) : (
-          <SignInDialog open />
-        )}
+        {!isCliLogin || user ? clientContent : <SignInDialog open />}
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );

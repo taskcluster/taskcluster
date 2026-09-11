@@ -1,13 +1,8 @@
 // https://www.apollographql.com/docs/apollo-server/migration#error-formatting-changes
-export default (formattedError, error) => {
+export default (_formattedError, error) => {
   const data = error?.toJson?.() || error;
 
-  if (
-    error.originalError &&
-    error.originalError.result &&
-    error.originalError.result.errors &&
-    error.originalError.result.errors.length === 1
-  ) {
+  if (error.originalError?.result?.errors && error.originalError.result.errors.length === 1) {
     const [originalError] = error.originalError.result.errors;
 
     if (originalError.message === error.message) {
@@ -19,7 +14,7 @@ export default (formattedError, error) => {
         data.requestId = originalError.requestId;
       }
     }
-  } else if (error.originalError && error.originalError.body) {
+  } else if (error.originalError?.body) {
     if (error.originalError.message) {
       [data.message] = error.message.split('---');
     }

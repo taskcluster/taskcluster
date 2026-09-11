@@ -19,7 +19,7 @@ export default class PulseIterator {
     this.subscriptionId = this.pulseEngine.subscribe(
       subscriptions,
       this.pushValue.bind(this),
-      this.pushError.bind(this),
+      this.pushError.bind(this)
     );
   }
 
@@ -74,7 +74,9 @@ export default class PulseIterator {
 
       // reject any pending pushes and then replace with a single, persistent push
       const err = new Error('iterator cancelled');
-      this.pushQueue.forEach(({ reject }) => reject(err));
+      this.pushQueue.forEach(({ reject }) => {
+        reject(err);
+      });
       this.pushQueue = this.pushQueue.clear().push(push);
     }
     this.match();

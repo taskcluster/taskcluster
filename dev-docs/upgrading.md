@@ -8,12 +8,12 @@ First the new version should be pulled using `git pull`. This can be from the `m
 
 ## Step 2: Identifying what needs to be upgraded
 
-Taskcluster itself should be upgraded. However, you should investigate if workers, such as docker-worker should also be upgraded (in case of breaking changes, this should be listed in the release notes).
+Taskcluster itself should be upgraded. However, you should also investigate whether generic-worker should be upgraded (in case of breaking changes, which should be listed in the release notes).
 For this and other reasons it is important to not fall behind on updates too far unless you are willing to read a bunch of release notes to make sure that there are, or are no breaking changes that require worker upgrades.
 
 ## Step 3: Updating workers
 
-As listed above, it is best to also update the workers. This can be done by downloading (or building) the docker-worker tarball and/or the generic-worker tarball, replacing the existing installation and restarting the service.
+As listed above, it is best to also update the workers. This can be done by downloading (or building) the appropriate generic-worker binary for your platform and engine (e.g. `generic-worker-multiuser-linux-amd64`), replacing the existing installation and restarting the service.
 
 ## Step 4: Upgrading Taskcluster itself
 

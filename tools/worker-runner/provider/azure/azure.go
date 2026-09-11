@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v88/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v108/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v108/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v108/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v108/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v108/tools/workerproto"
 )
 
 type AzureProvider struct {
@@ -125,6 +125,7 @@ func (p *AzureProvider) checkTerminationTime() bool {
 			}
 			log.Printf("Azure Metadata Service says a %s maintenance event is imminent\n", evt.EventType)
 			if p.proto != nil && p.proto.Capable("graceful-termination") {
+				log.Println("Sending graceful-termination request with finish-tasks=false")
 				p.proto.Send(workerproto.Message{
 					Type: "graceful-termination",
 					Properties: map[string]any{

@@ -1,9 +1,10 @@
-dockerImage: taskcluster/taskcluster:v88.0.5
+dockerImage: taskcluster/taskcluster:v108.1.0
 trustProxy: true
 forceSSL: false
 nodeEnv: production
 useKubernetesDnsServiceDiscovery: true
 skipResourceTypes: []
+podAnnotations: {}
 prometheus: {}
 auth:
   procs:
@@ -11,6 +12,7 @@ auth:
       replicas: 1
       cpu: 100m
       memory: 200Mi
+      metrics: true
     purgeExpiredClients:
       cpu: 800m
       memory: 500Mi
@@ -44,6 +46,7 @@ github:
       replicas: 1
       cpu: 10m
       memory: 50Mi
+      metrics: true
     worker:
       replicas: 1
       cpu: 200m
@@ -65,6 +68,7 @@ hooks:
       replicas: 1
       cpu: 50m
       memory: 50Mi
+      metrics: true
     scheduler:
       replicas: 1
       cpu: 10m
@@ -90,6 +94,7 @@ index:
       replicas: 1
       cpu: 50m
       memory: 50Mi
+      metrics: true
     handlers:
       replicas: 1
       cpu: 50m
@@ -111,6 +116,7 @@ notify:
       replicas: 1
       cpu: 100m
       memory: 100Mi
+      metrics: true
     handler:
       replicas: 1
       cpu: 50m
@@ -129,6 +135,7 @@ object:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+      metrics: true
     expire:
       cpu: 50m
       memory: 100Mi
@@ -146,6 +153,7 @@ purge_cache:
       replicas: 1
       cpu: 100m
       memory: 50Mi
+      metrics: true
     expireCachePurges:
       cpu: 800m
       memory: 500Mi
@@ -168,10 +176,17 @@ queue:
       replicas: 1
       cpu: 50m
       memory: 50Mi
+      metrics: true
+    workerRemovedResolver:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+      metrics: true
     deadlineResolver:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+      metrics: true
     dependencyResolver:
       replicas: 1
       cpu: 100m
@@ -213,6 +228,7 @@ secrets:
       replicas: 1
       cpu: 100m
       memory: 50Mi
+      metrics: true
     expire:
       cpu: 800m
       memory: 500Mi
@@ -230,9 +246,13 @@ web_server:
       replicas: 1
       cpu: 500m
       memory: 300Mi
+      metrics: true
     scanner:
       cpu: 800m
       memory: 500Mi
+    cleanup_session_storage:
+      cpu: 50m
+      memory: 100Mi
     cleanup_expire_auth_codes:
       cpu: 800m
       memory: 500Mi
@@ -253,6 +273,7 @@ worker_manager:
       replicas: 1
       cpu: 100m
       memory: 100Mi
+      metrics: true
     provisioner:
       replicas: 1
       cpu: 50m
@@ -267,6 +288,7 @@ worker_manager:
       replicas: 1
       cpu: 200m
       memory: 200Mi
+      metrics: true
     expire_workers:
       cpu: 200m
       memory: 200Mi

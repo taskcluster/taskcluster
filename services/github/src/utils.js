@@ -1,54 +1,86 @@
-import crypto from 'crypto';
-import request from 'superagent';
-import util from 'util';
+import crypto from 'node:crypto';
+import { PassThrough } from 'node:stream';
+import { downloadManagedArtifact } from '@taskcluster/client';
 
 import { ISSUE_COMMENT_ACTIONS } from './constants.js';
 
-const setTimeoutPromise = util.promisify(setTimeout);
-
 /**
- * Retry a request call with the given URL and method.
+ * Download a task artifact with a queue client limited to reading that one artifact.
  *
- * Responses with status 5xx are retried, and if 5 retries are exceeded then the last
- * response is returned.
- *
- * All other HTTP responses, including 4xx-series responses, are returned (not thrown).
- *
- * All other errors from superagent are thrown.
+ * This uses downloadManagedArtifact, so a `reference` artifact is refused rather than fetched:
+ * its URL is supplied by the task, and this service can reach hosts no task can.
  */
-export const throttleRequest = async ({ url, method, response = { status: 0 }, attempt = 1, delay = 100 }) => {
-  if (attempt > 5) {
-    return response;
-  }
+const downloadArtifact = async ({ queueClient, taskId, runId, artifactName, streamFactory, retries }) => {
+  const limitedQueueClient = queueClient.use({
+    authorizedScopes: [`queue:get-artifact:${artifactName}`],
+  });
 
-  let res;
-  try {
-    res = await throttleRequest.request(method, url);
-  } catch (e) {
-    if (e.status >= 400 && e.status < 500) {
-      return e;
-    }
-
-    if (e.status >= 500) {
-      const newDelay = 2 ** attempt * delay;
-      return await setTimeoutPromise(newDelay, throttleRequest({
-        url,
-        method,
-        response: e,
-        attempt: attempt + 1,
-        delay,
-      }));
-    }
-
-    throw e;
-  }
-  return res;
+  return await downloadManagedArtifact({
+    taskId,
+    runId,
+    name: artifactName,
+    queue: limitedQueueClient,
+    streamFactory,
+    retries,
+  });
 };
 
-// for overriding in testing..
-throttleRequest.request = request;
+export const downloadArtifactAsText = async ({ queueClient, taskId, runId, artifactName }) => {
+  let chunks;
 
-export const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
+  await downloadArtifact({
+    queueClient,
+    taskId,
+    runId,
+    artifactName,
+    streamFactory: async () => {
+      chunks = [];
+      const stream = new PassThrough();
+      stream.on('data', chunk => chunks.push(chunk));
+      return stream;
+    },
+  });
+
+  return Buffer.concat(chunks).toString();
+};
+
+export const downloadArtifactAsStream = async ({ queueClient, taskId, runId, artifactName, consume }) => {
+  const stream = new PassThrough();
+  let consumerError = null;
+
+  stream.on('error', () => {});
+
+  // start consuming before downloading, as the download does not complete until the stream drains
+  const consumed = consume(stream).catch(err => {
+    consumerError = err;
+    stream.destroy();
+    throw err;
+  });
+  consumed.catch(() => {});
+
+  try {
+    await downloadArtifact({
+      queueClient,
+      taskId,
+      runId,
+      artifactName,
+      retries: 0,
+      streamFactory: async () => stream,
+    });
+  } catch (err) {
+    if (consumerError) {
+      throw consumerError;
+    }
+
+    stream.destroy();
+    await consumed.catch(() => {});
+    throw err;
+  }
+
+  return await consumed;
+};
+
+export const ciSkipRegexp = /\[(skip ci|ci skip)\]/i;
 
 /**
  * Check if push event should be skipped.
@@ -64,7 +96,7 @@ export const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
  * @returns boolean
  */
 export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
-  let last_commit = head_commit && head_commit.message ? head_commit : false;
+  let last_commit = head_commit?.message ? head_commit : false;
 
   if (!last_commit && Array.isArray(commits) && commits.length > 0) {
     last_commit = commits[commits.length - 1];
@@ -88,7 +120,7 @@ export const shouldSkipPullRequest = ({ pull_request }) => {
   return pull_request !== undefined && ciSkipRegexp.test(pull_request.title);
 };
 
-export const taskclusterCommandRegExp = new RegExp('^\\s*/taskcluster\\s+(.+)$', 'm');
+export const taskclusterCommandRegExp = /^\s*\/taskcluster\s+(.+)$/m;
 
 /**
  * Check if comment event should be skipped.
@@ -109,11 +141,11 @@ export const shouldSkipComment = ({ action, comment, issue }) => {
     return true;
   }
 
-  if (!issue || !issue.pull_request || issue.state !== 'open') {
+  if (!issue?.pull_request || issue.state !== 'open') {
     return true;
   }
 
-  if (!comment || !comment.body || !taskclusterCommandRegExp.test(comment.body)) {
+  if (!comment?.body || !taskclusterCommandRegExp.test(comment.body)) {
     return true;
   }
 
@@ -130,7 +162,7 @@ export const shouldSkipComment = ({ action, comment, issue }) => {
  * @returns string
  * @throws {Error} if no command is found
  */
-export const getTaskclusterCommand = (comment) => {
+export const getTaskclusterCommand = comment => {
   const match = taskclusterCommandRegExp.exec(comment.body);
   if (!match) {
     throw new Error('No taskcluster command found');
@@ -149,8 +181,7 @@ export const getTaskclusterCommand = (comment) => {
  * @param {string} src
  * @returns string
  */
-export const ansi2txt = (src) => {
-  // eslint-disable-next-line no-control-regex
+export const ansi2txt = src => {
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
     '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
@@ -160,98 +191,105 @@ export const ansi2txt = (src) => {
 };
 
 /**
- * Github checks API call is limited to 64kb
- * @param {string} log
- * @param {number} maxLines
- * @param {number} maxPayloadLength
- * @returns string
- */
-export const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
-  return ansi2txt(log).substring(log.length - maxPayloadLength)
-    .split('\n')
-    .slice(-maxLines)
-    .join('\n');
-};
-
-/**
+ * Github checks API call is limited to 64kb.
  *
- * @param {string} logString
- * @param {number} maxPayloadLength
- * @param {number} tailLines
- * @returns string or null
- */
-export const extractTailLinesFromLog = (logString, maxPayloadLength, tailLines) => {
-
-  if (tailLines === 0) {
-    return null;
-  }
-
-  const tailLog = logString.split("\n").slice(-tailLines).join("\n");
-
-  if (logString.length <= maxPayloadLength) {
-    return tailLog;
-  }
-
-  let tailLogMaxPayload = logString.slice(-maxPayloadLength);
-  const newLinePosition = tailLogMaxPayload.indexOf('\n');
-  tailLogMaxPayload = tailLogMaxPayload.slice(newLinePosition + 1);
-
-  return tailLog.length <= tailLogMaxPayload.length ? tailLog : tailLogMaxPayload;
-};
-
-/**
+ * Streams a log from an async iterable (e.g. a fetch response body),
+ * extracting the first headLines and last tailLines with bounded memory.
+ * Uses a head buffer and a tail buffer that evicts old entries, so memory
+ * usage is O(headLines + tailLines) regardless of log size.
  *
- * @param {string} logString
- * @param {number} maxPayloadLength
- * @returns string
+ * @param {AsyncIterable} stream - async iterable yielding byte chunks
+ * @param {number} headLines - number of lines to keep from the start
+ * @param {number} tailLines - number of lines to keep from the end
+ * @param {number} maxPayloadLength - maximum output length in bytes
+ * @returns {Promise<string>} formatted log extract
  */
-export const extractHeadLinesFromLog = (logString, maxPayloadLength) => {
-
-  if (logString.length <= maxPayloadLength) {
-    return logString;
-  }
-
-  const headLog = logString.slice(0, maxPayloadLength);
-  const lastNewLinePosition = headLog.lastIndexOf('\n');
-  return headLog.substring(0, lastNewLinePosition);
-};
-
-/**
- * Github checks API call is limited to 64kb
- * @param {string} log
- * @param {number} headLines
- * @param {number} tailLines
- * @param {number} maxPayloadLength
- * @returns string
- */
-export const extractLog = (log, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
-  const logString = ansi2txt(log);
-  const lines = logString.split('\n');
+export const extractLog = async (stream, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
   const LOG_BUFFER = 42;
+  const decoder = new TextDecoder('utf-8', { stream: true });
+  const head = [];
+  const tail = [];
+  let totalLines = 0;
+  let headFull = false;
+  let leftover = '';
 
-  if (lines.length <= headLines + tailLines && logString.length <= maxPayloadLength) {
-    return logString;
+  for await (const chunk of stream) {
+    const text = leftover + decoder.decode(chunk, { stream: true });
+    const lines = text.split('\n');
+    leftover = lines.pop();
+
+    for (const line of lines) {
+      const clean = ansi2txt(line);
+      totalLines++;
+      if (!headFull) {
+        head.push(clean);
+        if (head.length >= headLines) {
+          headFull = true;
+        }
+      } else {
+        tail.push(clean);
+        if (tail.length > tailLines) {
+          tail.shift();
+        }
+      }
+    }
   }
 
-  const headLogArray = lines.slice(0, headLines);
-  const headLog = headLogArray.join('\n');
+  // Flush any remaining bytes from the decoder
+  const finalText = leftover + decoder.decode();
+  if (finalText) {
+    const clean = ansi2txt(finalText);
+    totalLines++;
+    if (!headFull) {
+      head.push(clean);
+    } else {
+      tail.push(clean);
+      if (tail.length > tailLines) {
+        tail.shift();
+      }
+    }
+  }
 
+  const headLog = head.join('\n');
+  const tailLog = tail.join('\n');
+  const fullLog = tailLog ? `${headLog}\n${tailLog}` : headLog;
+
+  // Small log: return full content if it fits
+  if (totalLines <= headLines + tailLines && fullLog.length <= maxPayloadLength) {
+    return fullLog;
+  }
+
+  // If head alone exceeds the payload budget, truncate at a line boundary
   if (maxPayloadLength <= headLog.length) {
-    return extractHeadLinesFromLog(logString, maxPayloadLength);
+    const truncated = headLog.slice(0, maxPayloadLength);
+    const lastNewLine = truncated.lastIndexOf('\n');
+    return lastNewLine > 0 ? truncated.substring(0, lastNewLine) : truncated;
   }
 
-  const tailLog = extractTailLinesFromLog(logString, maxPayloadLength - headLog.length - LOG_BUFFER, tailLines);
+  // Budget remaining for the tail after head + separator
+  const tailBudget = maxPayloadLength - headLog.length - LOG_BUFFER;
 
-  if (!tailLog) {
-    return `${headLog}\n\n...(${lines.length - headLogArray.length} lines hidden)...\n\n`;
+  if (tailBudget <= 0 || !tailLog) {
+    return `${headLog}\n\n...(${totalLines - head.length} lines hidden)...\n\n`;
   }
 
-  const availableTailLines = tailLog.split('\n').length;
+  // Trim tail to fit the byte budget
+  let finalTail = tailLog;
+  if (finalTail.length > tailBudget) {
+    finalTail = finalTail.slice(-tailBudget);
+    const newLinePos = finalTail.indexOf('\n');
+    if (newLinePos >= 0) {
+      finalTail = finalTail.slice(newLinePos + 1);
+    }
+  }
 
-  return `${headLog}\n\n...(${lines.length - headLines - availableTailLines} lines hidden)...\n\n${tailLog}`;
+  const availableTailLines = finalTail.split('\n').length;
+  const finalHiddenLines = totalLines - head.length - availableTailLines;
+
+  return `${headLog}\n\n...(${finalHiddenLines} lines hidden)...\n\n${finalTail}`;
 };
 
-export const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
+export const markdownLog = log => ['\n---\n\n```bash\n', log, '\n```'].join('');
 export const markdownAnchor = (name, url) => `[${name}](${url})`;
 
 /**
@@ -263,10 +301,7 @@ export function generateXHubSignature(secret, payload, algorithm = 'sha1') {
   if (!['sha1', 'sha256'].includes(algorithm)) {
     throw new Error('Invalid algorithm');
   }
-  return [
-    algorithm,
-    crypto.createHmac(algorithm, secret).update(payload).digest('hex'),
-  ].join('=');
+  return [algorithm, crypto.createHmac(algorithm, secret).update(payload).digest('hex')].join('=');
 }
 
 /**
@@ -291,11 +326,11 @@ export const checkGithubSignature = (secret, payload, signature) => {
 };
 
 export default {
-  throttleRequest,
+  downloadArtifactAsText,
+  downloadArtifactAsStream,
   shouldSkipCommit,
   shouldSkipPullRequest,
   ansi2txt,
-  tailLog,
   extractLog,
   markdownLog,
   markdownAnchor,

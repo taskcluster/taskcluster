@@ -7,12 +7,17 @@ transforms:
 
 task-defaults:
   worker-type: ubuntu-24-04
+  attributes:
+    code-review: true
   run:
     using: bare
   worker:
     docker-image: {in-tree: ci}
     chain-of-trust: true
     max-run-time: 600
+    caches:
+      - name: taskcluster
+        mount-point: /builds/worker/checkouts
 
 tasks:
   library:

@@ -1,4 +1,4 @@
-import process from 'process';
+import process from 'node:process';
 import Iterate from '@taskcluster/lib-iterate';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { WorkerPool, Worker, WorkerPoolStats } from './data.js';
@@ -96,17 +96,22 @@ export class Provisioner {
    * @param {string} workerPoolId
    */
   async #scanWorkersInPool(workerPoolId) {
-    /**
-     * @param {number} size
-     * @param {number|Map<string, unknown>|null} offset
-     */
-    const fetch = async (size, offset) =>
-      await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
-        workerPoolId, null, null, null, null, size, offset,
-      );
+    const fetch = async (page_size_in, after) =>
+      await this.db.fns.get_non_stopped_workers_with_launch_config_scanner_after({
+        worker_pool_id_in: workerPoolId,
+        worker_group_in: null,
+        worker_id_in: null,
+        providers_filter_cond_in: null,
+        providers_filter_value_in: null,
+        page_size_in,
+        ...after,
+      });
 
     const stats = new WorkerPoolStats(workerPoolId);
-    for await (let row of paginatedIterator({ fetch })) {
+    for await (const row of paginatedIterator({
+      fetch,
+      indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
+    })) {
       const worker = Worker.fromDb(row);
       // track the providerIds seen for each worker pool, so they can be removed
       // from the list of previous provider IDs
@@ -117,7 +122,7 @@ export class Provisioner {
     // add information about errors in the past 60 minutes
     const lastHour = fromNow('-1 hour');
     const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, lastHour);
-    for (let row of errorsByLc) {
+    for (const row of errorsByLc) {
       stats.totalErrors += row.count;
       stats.errorsByLaunchConfig.set(row.launch_config_id, row.count);
     }
@@ -127,8 +132,9 @@ export class Provisioner {
 
   async #provisionLoop() {
     // For each worker pool we ask the providers to do stuff
-    const workerPools = (await this.db.fns.get_worker_pools_with_launch_configs(null, null))
-      .map(row => WorkerPool.fromDb(row));
+    const workerPools = (await this.db.fns.get_worker_pools_with_launch_configs(null, null)).map(row =>
+      WorkerPool.fromDb(row)
+    );
 
     for (const workerPool of workerPools) {
       const elapsedTime = measureTime(1e9);
@@ -136,8 +142,7 @@ export class Provisioner {
 
       const provider = this.providers.get(providerId);
       if (!provider) {
-        this.monitor.warning(
-          `Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
+        this.monitor.warning(`Worker pool ${workerPool.workerPoolId} has unknown providerId ${workerPool.providerId}`);
         continue;
       } else if (provider.setupFailed) {
         // ignore provisioning for providers that have not been setup correctly
@@ -149,38 +154,39 @@ export class Provisioner {
       try {
         await provider.provision({ workerPool, workerPoolStats: wpStats });
       } catch (err) {
-        this.monitor.reportError(err,
-          {
-            providerId: workerPool.providerId,
-            type: 'provisioning-failed',
-          },
-        ); // Just report this and move on
+        this.monitor.reportError(err, {
+          providerId: workerPool.providerId,
+          type: 'provisioning-failed',
+        }); // Just report this and move on
       }
 
-      await Promise.all(previousProviderIds.map(async pId => {
-        const provider = this.providers.get(pId);
-        if (!provider) {
-          this.monitor.info(
-            `Worker pool ${workerPool.workerPoolId} has unknown previousProviderIds entry ${pId} (ignoring)`);
-          return;
-        } else if (provider.setupFailed) {
-          // if setup failed for this previous provider, then it will remain in the list of previous
-          // providers for this pool until it is up and running again, so we can skip this iteration.
-          return;
-        }
+      await Promise.all(
+        previousProviderIds.map(async pId => {
+          const provider = this.providers.get(pId);
+          if (!provider) {
+            this.monitor.info(
+              `Worker pool ${workerPool.workerPoolId} has unknown previousProviderIds entry ${pId} (ignoring)`
+            );
+            return;
+          } else if (provider.setupFailed) {
+            // if setup failed for this previous provider, then it will remain in the list of previous
+            // providers for this pool until it is up and running again, so we can skip this iteration.
+            return;
+          }
 
-        try {
-          await provider.deprovision({ workerPool });
-        } catch (err) {
-          this.monitor.reportError(err, { providerId: pId }); // Just report this and move on
-        }
+          try {
+            await provider.deprovision({ workerPool });
+          } catch (err) {
+            this.monitor.reportError(err, { providerId: pId }); // Just report this and move on
+          }
 
-        // Now if this provider is no longer a provider for any workers that exist
-        // in this pool, remove it from the previous providers list
-        if (!wpStats.providers.has(pId)) {
-          await this.db.fns.remove_worker_pool_previous_provider_id(workerPoolId, pId);
-        }
-      }));
+          // Now if this provider is no longer a provider for any workers that exist
+          // in this pool, remove it from the previous providers list
+          if (!wpStats.providers.has(pId)) {
+            await this.db.fns.remove_worker_pool_previous_provider_id(workerPoolId, pId);
+          }
+        })
+      );
 
       const duration = elapsedTime();
       this.monitor.log.workerPoolProvisioned({

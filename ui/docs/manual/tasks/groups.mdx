@@ -30,7 +30,7 @@ Tasks also have a `schedulerId`. All tasks in a task group must have the same
    with `projectId`.
 
 
-## Sealing Task Gropus
+## Sealing Task Groups
 
 Sometimes, it may be necessary to block the entire task group from accepting new tasks.
 For example, if multiple push events occur on the same branch in Github
@@ -41,6 +41,10 @@ This can help to save resources.
 To seal a task group, you can use the `queue.sealTaskGroup` method.
 Once a task group is sealed, it will no longer accept new tasks and will throw
 an error if new task is being added to it.
+
+Sealing is not a security feature. The check happens in `createTask` outside the
+task-insert transaction, so a call racing `sealTaskGroup` can still slip a task
+in.
 
 
 ## Cancelling Task Groups

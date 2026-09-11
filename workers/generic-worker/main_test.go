@@ -13,6 +13,7 @@ import (
 	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc"
 )
 
 // Test failure should resolve as "failed"
@@ -43,6 +44,49 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 }
 
+// TestIdleTimeoutChecksWorkerManager verifies that when running with
+// worker-runner, the worker checks with Worker Manager before shutting down
+// due to idle timeout. On the first idle timeout, WM says don't terminate,
+// so the idle timer resets. On the second idle timeout, WM says terminate,
+// so the worker exits with IDLE_TIMEOUT. This proves the timer was reset.
+func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
+	}
+
+	setup(t)
+
+	// The main loop calls checkWhetherToTerminate() at the top of each
+	// iteration (loop-top check) and again when idle timeout fires. With a
+	// 5-second wait between iterations and IdleTimeoutSecs=3, the call
+	// sequence is:
+	//   call 1: loop-top (t≈0s)
+	//   call 2: loop-top (t≈5s)
+	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets
+	//   call 4: loop-top (t≈10s)
+	//   call 5: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
+	mocktc.ShouldTerminateAfterNCalls = 5
+	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
+
+	withWorkerRunner = true
+	t.Cleanup(func() { withWorkerRunner = false })
+
+	config.IdleTimeoutSecs = 3
+	start := time.Now()
+	exitCode := RunWorker()
+	elapsed := time.Since(start)
+
+	if exitCode != IDLE_TIMEOUT {
+		t.Fatalf("Was expecting exit code %v (IDLE_TIMEOUT), but got exit code %v", IDLE_TIMEOUT, exitCode)
+	}
+	// Worker should have been alive for at least 8 seconds, proving the idle
+	// timer was reset at least once (3s timeout + reset + 3s timeout ≈ 10s
+	// with the 5s inter-loop wait).
+	if elapsed.Seconds() < 8 {
+		t.Fatalf("Worker should have been alive for at least 8s (idle timer reset), but was alive for %v", elapsed)
+	}
+}
+
 // TestRevisionNumberStored is useful for ensuring that the test binary
 // includes the git revision number, so that it emulates the release binary.
 // There is a separate test that the release binary includes the revision
@@ -53,7 +97,7 @@ func TestRevisionNumberStored(t *testing.T) {
 		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
 
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v88/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v108/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
 			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)
@@ -141,6 +185,22 @@ func TestExecutionErrorsText(t *testing.T) {
 		t.Log("but got:")
 		t.Log(actualError)
 		t.FailNow()
+	}
+}
+
+func TestExecutionErrorsAdd(t *testing.T) {
+	errors := &ExecutionErrors{}
+	errors.add(nil)
+	if errors.Occurred() {
+		t.Fatal("adding nil should be a no-op")
+	}
+	errors.add(&CommandExecutionError{Cause: fmt.Errorf("first")})
+	errors.add(&CommandExecutionError{Cause: fmt.Errorf("second")})
+	if got := len(*errors); got != 2 {
+		t.Fatalf("expected 2 errors, got %d", got)
+	}
+	if errors.Error() != "first" {
+		t.Fatalf("Error() should report first error, got %q", errors.Error())
 	}
 }
 
@@ -275,12 +335,12 @@ func TestProtocolNull(t *testing.T) {
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	setup(t)
 
-	// Include a writable directory cache, to test that caches can be unmounted
-	// when a task aborts prematurely.
+	// Include a writable directory cache, to test that caches are purged
+	// rather than preserved when a task aborts prematurely.
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("bananas"),
 		},
 	}
@@ -296,7 +356,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	taskID := scheduleTask(t, td, payload)
 	startTime := time.Now()
@@ -313,6 +373,10 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	if strings.Contains(logtext, "hello") {
 		t.Log("Task should have been aborted before 'hello' was logged, but log contains 'hello':")
+		t.Fatal(logtext)
+	}
+	if !strings.Contains(logtext, "Purging caches since the task was aborted") {
+		t.Log("Was expecting caches of an aborted task to be purged, but log doesn't mention it:")
 		t.Fatal(logtext)
 	}
 	duration := endTime.Sub(startTime).Seconds()

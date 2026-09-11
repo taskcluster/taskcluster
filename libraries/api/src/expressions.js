@@ -1,16 +1,12 @@
+// biome-ignore-all lint/suspicious/noThenProperty: `then` is part of { if, then, else } template expressions, not a thenable
 import _ from 'lodash';
 
-const validRootTemplate = (template) =>
-  validateTemplate(template) && (
-    typeof template === 'string' ||
-    'AllOf' in template ||
-    'AnyOf' in template ||
-    'if' in template
-  )
-;
+const validRootTemplate = template =>
+  validateTemplate(template) &&
+  (typeof template === 'string' || 'AllOf' in template || 'AnyOf' in template || 'if' in template);
 
 /** Validate a scope expression template */
-const validateTemplate = (template) => {
+const validateTemplate = template => {
   if (typeof template === 'string') {
     return true;
   }
@@ -34,11 +30,7 @@ const validateTemplate = (template) => {
     return paramPattern.test(template.if) && validRootTemplate(template.then);
   }
   if (_.xor(keys, ['if', 'then', 'else']).length === 0) {
-    return (
-      paramPattern.test(template.if) &&
-      validRootTemplate(template.then) &&
-      validRootTemplate(template.else)
-    );
+    return paramPattern.test(template.if) && validRootTemplate(template.then) && validRootTemplate(template.else);
   }
   return false;
 };
@@ -47,7 +39,7 @@ const validateTemplate = (template) => {
  * Transform scope expression template to an intermediate-form where strings
  * are replaced with arrays, where-in all the even entries are paramters.
  */
-const compileTemplate = (template) => {
+const compileTemplate = template => {
   if (typeof template === 'string') {
     // All the even entries are parameters
     return template.split(/<([a-zA-Z][a-zA-Z0-9_]*)>/g);
@@ -100,11 +92,11 @@ const mergeParams = (paramsA, paramsB = {}) => {
  *  - `boolean`, or
  *  - `array` meaning array of strings.
  */
-const extractParams = (compiledTemplate) => {
+const extractParams = compiledTemplate => {
   const ctmpl = compiledTemplate;
-  if (ctmpl instanceof Array) {
+  if (Array.isArray(ctmpl)) {
     return ctmpl
-      .filter((value, i) => i % 2 === 1)
+      .filter((_value, i) => i % 2 === 1)
       .map(p => ({ [p]: 'string' }))
       .reduce(mergeParams, {});
   }
@@ -115,18 +107,24 @@ const extractParams = (compiledTemplate) => {
     return ctmpl.AnyOf.map(extractParams).reduce(mergeParams, {});
   }
   if ('for' in ctmpl) {
-    return _.omit(mergeParams({
-      [ctmpl.in]: 'array',
-      [ctmpl.for]: 'string', // require that result from 'each' can be merged with 'for' being a string
-    }, extractParams(ctmpl.each)), ctmpl.for); // omit 'for' as it's declared here
+    return _.omit(
+      mergeParams(
+        {
+          [ctmpl.in]: 'array',
+          [ctmpl.for]: 'string', // require that result from 'each' can be merged with 'for' being a string
+        },
+        extractParams(ctmpl.each)
+      ),
+      ctmpl.for
+    ); // omit 'for' as it's declared here
   }
   if ('if' in ctmpl) {
-    return mergeParams({
-      [ctmpl.if]: 'boolean',
-    }, mergeParams(
-      extractParams(ctmpl.then),
-      'else' in ctmpl ? extractParams(ctmpl.else) : {},
-    ));
+    return mergeParams(
+      {
+        [ctmpl.if]: 'boolean',
+      },
+      mergeParams(extractParams(ctmpl.then), 'else' in ctmpl ? extractParams(ctmpl.else) : {})
+    );
   }
   throw new Error('extractParams expects a compiled scope expression templates');
 };
@@ -134,23 +132,25 @@ const extractParams = (compiledTemplate) => {
 /** Render a scope expression from a compiled scope expression template and parameters */
 const render = (compiledTemplate, params) => {
   const ctmpl = compiledTemplate;
-  if (ctmpl instanceof Array) {
-    return ctmpl.map((value, i) => {
-      if (i % 2 === 1) {
-        if (typeof params[value] !== 'string' && typeof params[value] !== 'number') {
-          throw new Error(`Scope expression template expected parameter '${value}' to be a string or number`);
+  if (Array.isArray(ctmpl)) {
+    return ctmpl
+      .map((value, i) => {
+        if (i % 2 === 1) {
+          if (typeof params[value] !== 'string' && typeof params[value] !== 'number') {
+            throw new Error(`Scope expression template expected parameter '${value}' to be a string or number`);
+          }
+          return params[value];
         }
-        return params[value];
-      }
-      return value;
-    }).join('');
+        return value;
+      })
+      .join('');
   }
   if ('AllOf' in ctmpl) {
     const AllOf = [];
     ctmpl.AllOf.forEach(t => {
       const result = render(t, params);
       if (result !== null) {
-        if (result instanceof Array) {
+        if (Array.isArray(result)) {
           AllOf.push(...result);
         } else {
           AllOf.push(result);
@@ -164,7 +164,7 @@ const render = (compiledTemplate, params) => {
     ctmpl.AnyOf.forEach(t => {
       const result = render(t, params);
       if (result !== null) {
-        if (result instanceof Array) {
+        if (Array.isArray(result)) {
           AnyOf.push(...result);
         } else {
           AnyOf.push(result);
@@ -175,12 +175,14 @@ const render = (compiledTemplate, params) => {
   }
   if ('for' in ctmpl) {
     const value = params[ctmpl.in];
-    if (value instanceof Array) {
+    if (Array.isArray(value)) {
       const nestedParams = _.assign({}, params);
-      return value.map(val => {
-        nestedParams[ctmpl.for] = val;
-        return render(ctmpl.each, nestedParams);
-      }).filter(v => v !== null);
+      return value
+        .map(val => {
+          nestedParams[ctmpl.for] = val;
+          return render(ctmpl.each, nestedParams);
+        })
+        .filter(v => v !== null);
     }
     throw new Error(`Scope expression template expected parameter '${ctmpl.in}' to be a array`);
   }
@@ -205,7 +207,7 @@ export default class ScopeExpressionTemplate {
     this.template = template;
     this._compiledTemplate = compileTemplate(template);
     this._paramTypes = Object.entries(extractParams(this._compiledTemplate));
-    this.params = this._paramTypes.map(([p, T]) => p);
+    this.params = this._paramTypes.map(([p, _T]) => p);
   }
 
   /** Render this scope expression template into a scope expression given params */
@@ -227,7 +229,7 @@ export default class ScopeExpressionTemplate {
         return typeof val === 'string' || typeof val === 'number';
       }
       if (T === 'array') {
-        return val instanceof Array && val.every(v => typeof v === 'string');
+        return Array.isArray(val) && val.every(v => typeof v === 'string');
       }
       if (T === 'boolean') {
         return typeof val === 'boolean';

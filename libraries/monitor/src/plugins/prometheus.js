@@ -1,5 +1,5 @@
-import assert from 'assert';
-import http from 'http';
+import assert from 'node:assert';
+import http from 'node:http';
 import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pushgateway } from 'prom-client';
 
 /**
@@ -35,6 +35,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
  * @property {number[]} [buckets] - Buckets for histograms.
  * @property {number[]} [percentiles] - Percentiles for summaries.
  * @property {string} [serviceName] - Service this metric belongs to.
+ * @property {boolean} [global=false] - If true, metric is propagated to any registry exposed via exposeMetrics.
  */
 
 /**
@@ -42,6 +43,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
  * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - Type of the metric
  * @property {Record<string, string>} labels - Object of allowed labels and their descriptions
  * @property {import('prom-client').Metric<string>} metric - The actual metric instance
+ * @property {boolean} global - If true, metric is propagated to any registry exposed via exposeMetrics
  */
 
 export class PrometheusPlugin {
@@ -86,6 +88,13 @@ export class PrometheusPlugin {
    * @param {string} [exposedRegistry='default'] - Registry to expose
    */
   exposeMetrics(exposedRegistry = 'default') {
+    // Propagate global metrics into non-default registries so they
+    // appear on every process's /metrics endpoint regardless of which
+    // registry the process serves.
+    if (exposedRegistry !== 'default') {
+      this.#propagateGlobalMetrics(exposedRegistry);
+    }
+
     // Start server if configured
     if (this.serverOptions) {
       this.startHttpServer(this.serverOptions, exposedRegistry);
@@ -94,11 +103,11 @@ export class PrometheusPlugin {
     // Start push if configured
     if (this.pushOptions) {
       assert(this.pushOptions.gateway, 'Push gateway URL is required');
-      this.pushGateway = new Pushgateway(
-        this.pushOptions.gateway,
-        null,
-        this.#getRegistry(this.pushOptions.registry || exposedRegistry),
-      );
+      const pushRegistry = this.pushOptions.registry || exposedRegistry;
+      if (pushRegistry !== 'default' && pushRegistry !== exposedRegistry) {
+        this.#propagateGlobalMetrics(pushRegistry);
+      }
+      this.pushGateway = new Pushgateway(this.pushOptions.gateway, null, this.#getRegistry(pushRegistry));
     }
   }
 
@@ -114,19 +123,29 @@ export class PrometheusPlugin {
   }
 
   /**
+   * Copy metrics marked as `global` into the given registry.
+   * prom-client's registerMetric no-ops when the same instance is already present.
+   * @param {string} registryName
+   */
+  #propagateGlobalMetrics(registryName) {
+    const registry = this.#getRegistry(registryName);
+    for (const info of Object.values(this.metricsStore)) {
+      if (info.global) {
+        registry.registerMetric(info.metric);
+      }
+    }
+  }
+
+  /**
    * Register a metric with the Prometheus registry.
    * @param {string} name - The name of the metric.
    * @param {MetricDefinition} definition - The metric definition.
    * @returns {import('prom-client').Metric<string>} The registered metric.
    */
-  registerMetric(name, {
-    type,
-    description,
-    labels = {},
-    buckets,
-    percentiles,
-    registers = ['default'],
-  }) {
+  registerMetric(
+    name,
+    { type, description, labels = {}, buckets, percentiles, registers = ['default'], global = false }
+  ) {
     /** @type {import('prom-client').Metric<string>} */
     let metric;
     const metricOptions = {
@@ -145,14 +164,14 @@ export class PrometheusPlugin {
         break;
       case 'histogram':
         if (buckets) {
-          // @ts-ignore
+          // @ts-expect-error
           metricOptions.buckets = buckets;
         }
         metric = new Histogram(metricOptions);
         break;
       case 'summary':
         if (percentiles) {
-          // @ts-ignore
+          // @ts-expect-error
           metricOptions.percentiles = percentiles;
         }
         metric = new Summary(metricOptions);
@@ -165,6 +184,7 @@ export class PrometheusPlugin {
       type,
       metric,
       labels,
+      global,
     };
 
     return metric;
@@ -188,8 +208,10 @@ export class PrometheusPlugin {
    */
   inc(name, value = 1, labels = {}) {
     const metricInfo = this.getMetric(name);
-    assert(metricInfo.type === 'counter' || metricInfo.type === 'gauge',
-      `Cannot increment metric ${name} of type ${metricInfo.type}`);
+    assert(
+      metricInfo.type === 'counter' || metricInfo.type === 'gauge',
+      `Cannot increment metric ${name} of type ${metricInfo.type}`
+    );
 
     const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
@@ -248,7 +270,7 @@ export class PrometheusPlugin {
     const metricInfo = this.getMetric(name);
     assert(
       metricInfo.type === 'histogram' || metricInfo.type === 'summary',
-      `Cannot observe metric ${name} of type ${metricInfo.type}`,
+      `Cannot observe metric ${name} of type ${metricInfo.type}`
     );
 
     const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
@@ -270,18 +292,20 @@ export class PrometheusPlugin {
     const metricInfo = this.getMetric(name);
     assert(
       metricInfo.type === 'histogram' || metricInfo.type === 'summary',
-      `Cannot time metric ${name} of type ${metricInfo.type}`,
+      `Cannot time metric ${name} of type ${metricInfo.type}`
     );
 
     const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
     if (Object.keys(metricInfo.labels).length > 0) {
       const end = metricInfo.metric.startTimer(normalizedLabels);
-      return (finalLabels) => {
-        const finalCombinedLabels = finalLabels ? {
-          ...normalizedLabels,
-          ...this.#normalizeLabels(finalLabels, metricInfo.labels),
-        } : normalizedLabels;
+      return finalLabels => {
+        const finalCombinedLabels = finalLabels
+          ? {
+              ...normalizedLabels,
+              ...this.#normalizeLabels(finalLabels, metricInfo.labels),
+            }
+          : normalizedLabels;
         return end(finalCombinedLabels);
       };
     }
@@ -410,15 +434,17 @@ export class PrometheusPlugin {
     const promises = [];
 
     if (this.server) {
-      promises.push(new Promise((resolve) => {
-        this.server.close((err) => {
-          if (err) {
-            this.monitor?.reportError(`Error closing metrics server: ${err.message}`);
-          }
-          this.server = null;
-          resolve();
-        });
-      }));
+      promises.push(
+        new Promise(resolve => {
+          this.server.close(err => {
+            if (err) {
+              this.monitor?.reportError(`Error closing metrics server: ${err.message}`);
+            }
+            this.server = null;
+            resolve();
+          });
+        })
+      );
     }
 
     if (this.pushGateway) {

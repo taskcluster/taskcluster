@@ -59,7 +59,7 @@ func TestValidateDockerJson(t *testing.T) {
 var allTests = []validateTest{
 	{
 		Description: "docker-worker payload validation tests",
-		Schema:      "https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json",
+		Schema:      "https://firefox-ci-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json",
 		Tests: []validateTestCase{
 			{
 				Valid: true,
@@ -100,7 +100,7 @@ var allTests = []validateTest{
 	},
 	{
 		Description: "create-task-request schema validation",
-		Schema:      "https://community-tc.services.mozilla.com/schemas/queue/v1/create-task-request.json",
+		Schema:      "https://firefox-ci-tc.services.mozilla.com/schemas/queue/v1/create-task-request.json",
 		Tests: []validateTestCase{
 			{
 				Valid: true,
@@ -138,7 +138,7 @@ var allTests = []validateTest{
 	},
 	{
 		Description: "GitHub push message schema validation",
-		Schema:      "https://community-tc.services.mozilla.com/references/schemas/github/v1/github-push-message.json",
+		Schema:      "https://firefox-ci-tc.services.mozilla.com/references/schemas/github/v1/github-push-message.json",
 		Tests: []validateTestCase{
 			{
 				Valid: true,

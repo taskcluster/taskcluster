@@ -60,8 +60,8 @@ supplied with the described input:
 Action names must be unique for a given task, or for a taskgroup, but
 the same name may be used for actions applying to disjoint sets of
 tasks. For example, it may be helpful to define different "retrigger"
-actions for build tasks \[{jobKind: 'build'}\] and test tasks
-\[{jobKind: 'test'}\], and in this case only one such action would apply
+actions for build tasks `[{jobKind: 'build'}]` and test tasks
+`[{jobKind: 'test'}]`, and in this case only one such action would apply
 to any given task. If multiple actions with the same `name` match a task,
 the first action in the array should be used.
 

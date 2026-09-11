@@ -1,8 +1,8 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import QueueService from './queueservice.js';
 import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
-import { sleep } from './utils.js';
+import { sleep, splitTaskQueueId } from './utils.js';
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -35,16 +35,12 @@ class ClaimResolver {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.db, 'options must include db');
-    assert(options.queueService instanceof QueueService,
-      'Expected instance of QueueService');
+    assert(options.queueService instanceof QueueService, 'Expected instance of QueueService');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
     assert(options.publisher, 'Expected a publisher');
-    assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
-    assert(typeof options.parallelism === 'number',
-      'Expected parallelism to be a number');
-    assert(typeof options.count === 'number',
-      'Expected count to be a number');
+    assert(typeof options.pollingDelay === 'number', 'Expected pollingDelay to be a number');
+    assert(typeof options.parallelism === 'number', 'Expected parallelism to be a number');
+    assert(typeof options.count === 'number', 'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -59,11 +55,11 @@ class ClaimResolver {
     this.iterator = new Iterate({
       name: options.ownName,
       maxFailures: 10,
-      waitTime: this.pollingDelay,
+      waitTime: 0,
       monitor: this.monitor,
       maxIterationTime: 600 * 1000,
       handler: async () => {
-        let loops = [];
+        const loops = [];
         for (let i = 0; i < this.parallelism; i++) {
           loops.push(this.poll());
         }
@@ -89,23 +85,25 @@ class ClaimResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let messages = await this.queueService.pollClaimQueue();
+    const messages = await this.queueService.pollClaimQueue(this.count);
     let failed = 0;
 
-    await Promise.all(messages.map(async (message) => {
-      // Don't let a single task error break the loop, it'll be retried later
-      // as we don't remove message unless they are handled
-      try {
-        await this.handleMessage(message);
-      } catch (err) {
-        failed += 1;
-        this.monitor.reportError(err, 'warning');
-      }
-    }));
+    await Promise.all(
+      messages.map(async message => {
+        // Don't let a single task error break the loop, it'll be retried later
+        // as we don't remove message unless they are handled
+        try {
+          await this.handleMessage(message);
+        } catch (err) {
+          failed += 1;
+          this.monitor.reportError(err, 'warning');
+        }
+      })
+    );
 
-    // If there were no messages, back off for a bit.
-    if (messages.length === 0) {
-      await sleep(2000);
+    // If we emptied the queue, back off
+    if (messages.length < this.count) {
+      await sleep(this.pollingDelay);
     }
 
     this.monitor.log.queuePoll({
@@ -132,44 +130,64 @@ class ClaimResolver {
     // before reaching remove() below.  In either case, we will publish
     // messages about it, in keeping with the at-least-once semantics of
     // TC's messages.
-    let run = task.runs[runId];
+    const run = task.runs[runId];
 
     // If run isn't resolved to exception with 'claim-expired', we had
     // concurrency and we're done.
-    if (!run ||
-        task.runs.length - 1 > runId + 1 ||
-        run.state !== 'exception' ||
-        run.reasonResolved !== 'claim-expired') {
+    if (
+      !run ||
+      task.runs.length - 1 > runId + 1 ||
+      run.state !== 'exception' ||
+      run.reasonResolved !== 'claim-expired'
+    ) {
       return remove();
     }
 
-    let status = task.status();
+    const status = task.status();
 
-    // Publish message about task exception
-    await this.publisher.taskException({
-      status: status,
-      runId: runId,
-      task: { tags: task.tags || {} },
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
+    // Publish message about task exception. We deliberately throw on
+    // publish failure to honor the resolver's at-least-once semantics
+    // (see comment above): NACK + redelivery re-runs handleMessage which
+    // re-attempts the publish.
+    await this.publisher.taskException(
+      {
+        status: status,
+        runId: runId,
+        task: { tags: task.tags || {} },
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
+      },
+      task.routes
+    );
     this.monitor.log.taskException({ taskId, runId });
+
+    const metricLabels = splitTaskQueueId(task.taskQueueId);
+    this.monitor.metric.exceptionTasks(1, {
+      ...metricLabels,
+      reasonResolved: run.reasonResolved,
+    });
 
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
-    let newRun = task.runs[runId + 1];
-    if (newRun &&
-        task.runs.length - 1 === runId + 1 &&
-        newRun.state === 'pending' &&
-        newRun.reasonCreated === 'retry') {
-      await Promise.all([
-        this.queueService.putPendingMessage(task, runId + 1),
-        this.publisher.taskPending({
+    const newRun = task.runs[runId + 1];
+    if (
+      newRun &&
+      task.runs.length - 1 === runId + 1 &&
+      newRun.state === 'pending' &&
+      newRun.reasonCreated === 'retry'
+    ) {
+      // queue_pending_tasks insert is now atomic inside check_task_claim
+      // (db v124). The publish is intentionally NOT wrapped in try/catch
+      // here: failing the handler triggers redelivery so we re-attempt
+      // publication, preserving at-least-once semantics for resolvers.
+      await this.publisher.taskPending(
+        {
           status: status,
           runId: runId + 1,
           task: { tags: task.tags || {} },
-        }, task.routes),
-      ]);
+        },
+        task.routes
+      );
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
       // Update dependencyTracker

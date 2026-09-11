@@ -1,5 +1,5 @@
 import request from 'superagent';
-import assert from 'assert';
+import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
 import helper from './helper.js';
 import _ from 'lodash';
@@ -7,7 +7,7 @@ import libUrls from 'taskcluster-lib-urls';
 import { setIsProduction } from '../src/middleware/express-error.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   // Create test api
   const builder = new APIBuilder({
     title: 'Test Api',
@@ -24,151 +24,182 @@ suite(testing.suiteName(), function() {
   teardown(helper.teardownServer);
 
   // we want to test the production behavior..
-  suiteSetup(function() { setIsProduction(true); });
-  suiteTeardown(function() { setIsProduction(false); });
-
-  builder.declare({
-    method: 'get',
-    route: '/inputerror',
-    name: 'InputError',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reportError('InputError', 'Testing Error', { dee: 'tails' });
+  suiteSetup(() => {
+    setIsProduction(true);
+  });
+  suiteTeardown(() => {
+    setIsProduction(false);
   });
 
-  test('InputError response', async function() {
-    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
-      if (!res.status) {
-        throw res;
-      }
-      assert.equal(res.status, 400);
-      const response = JSON.parse(res.response.text);
-      assert(response.code === 'InputError');
-      assert(/Testing Error\n\n---\n\n/.test(response.message));
-      delete response.requestInfo['time'];
-      assert(_.isEqual(response.requestInfo, {
-        method: 'InputError',
-        params: {},
-        payload: {},
-      }));
-    });
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/toomanyfoos',
-    name: 'toomanyfoos',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, function(req, res) {
-    req.body.foos = [4, 5];
-    res.reportError(
-      'TooManyFoos',
-      'You can only have 3 foos.  These foos already exist:\n{{foos}}',
-      { foos: [1, 2, 3] });
-  });
-
-  test('TooManyFoos response', async function() {
-    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
-      assert(res.status === 472);
-      const response = JSON.parse(res.response.text);
-      response.message = response.message.replace(response.requestInfo.time, '<nowish>');
-      response.requestInfo.time = '<nowish>';
-      assert.deepEqual(response, {
-        code: 'TooManyFoos',
-        message: [
-          'You can only have 3 foos.  These foos already exist:',
-          '[',
-          '  1,',
-          '  2,',
-          '  3',
-          ']',
-          '',
-          '---',
-          '',
-          '* method:     toomanyfoos',
-          '* errorCode:  TooManyFoos',
-          '* statusCode: 472',
-          '* time:       <nowish>',
-        ].join('\n'),
-        requestInfo: {
-          method: 'toomanyfoos',
-          params: {},
-          payload: { foos: [4, 5] },
-          time: '<nowish>',
-        },
-      });
-    });
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/ISE',
-    name: 'ISE',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, function(req, res) {
-    throw new Error('uhoh');
-  });
-
-  test('ISE response', async function() {
-    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
-      assert(res.status === 500);
-      const response = JSON.parse(res.response.text);
-      assert(response.code === 'InternalServerError');
-      assert(/^Internal/.test(response.message));
-      assert(!/uhoh/.test(response.message)); // error doesn't go to user
-      delete response.requestInfo['time'];
-      assert(_.isEqual(response.requestInfo, {
-        method: 'ISE',
-        params: {},
-        payload: {},
-      }));
-    });
-  });
-
-  builder.declare({
-    method: 'post',
-    route: '/inputvalidationerror',
-    name: 'InputValidationError',
-    title: 'Test End-Point',
-    input: 'test-schema.yml',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    cleanPayload: payload => {
-      payload.secret = '<HIDDEN>';
-      return payload;
+  builder.declare(
+    {
+      method: 'get',
+      route: '/inputerror',
+      name: 'InputError',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
     },
-    scopes: null,
-  }, function(req, res) {
+    (_req, res) => {
+      res.reportError('InputError', 'Testing Error', { dee: 'tails' });
+    }
+  );
+
+  test('InputError response', async () => {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
+    return request
+      .get(url)
+      .then(() => assert(false, 'should have failed!'))
+      .catch(res => {
+        if (!res.status) {
+          throw res;
+        }
+        assert.equal(res.status, 400);
+        const response = JSON.parse(res.response.text);
+        assert(response.code === 'InputError');
+        assert(/Testing Error\n\n---\n\n/.test(response.message));
+        delete response.requestInfo.time;
+        assert(
+          _.isEqual(response.requestInfo, {
+            method: 'InputError',
+            params: {},
+            payload: {},
+          })
+        );
+      });
   });
 
-  test('InputValidationError response', async function() {
+  builder.declare(
+    {
+      method: 'get',
+      route: '/toomanyfoos',
+      name: 'toomanyfoos',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (req, res) => {
+      req.body.foos = [4, 5];
+      res.reportError('TooManyFoos', 'You can only have 3 foos.  These foos already exist:\n{{foos}}', {
+        foos: [1, 2, 3],
+      });
+    }
+  );
+
+  test('TooManyFoos response', async () => {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
+    return request
+      .get(url)
+      .then(() => assert(false, 'should have failed!'))
+      .catch(res => {
+        assert(res.status === 472);
+        const response = JSON.parse(res.response.text);
+        response.message = response.message.replace(response.requestInfo.time, '<nowish>');
+        response.requestInfo.time = '<nowish>';
+        assert.deepEqual(response, {
+          code: 'TooManyFoos',
+          message: [
+            'You can only have 3 foos.  These foos already exist:',
+            '[',
+            '  1,',
+            '  2,',
+            '  3',
+            ']',
+            '',
+            '---',
+            '',
+            '* method:     toomanyfoos',
+            '* errorCode:  TooManyFoos',
+            '* statusCode: 472',
+            '* time:       <nowish>',
+          ].join('\n'),
+          requestInfo: {
+            method: 'toomanyfoos',
+            params: {},
+            payload: { foos: [4, 5] },
+            time: '<nowish>',
+          },
+        });
+      });
+  });
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/ISE',
+      name: 'ISE',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (_req, _res) => {
+      throw new Error('uhoh');
+    }
+  );
+
+  test('ISE response', async () => {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
+    return request
+      .get(url)
+      .then(() => assert(false, 'should have failed!'))
+      .catch(res => {
+        assert(res.status === 500);
+        const response = JSON.parse(res.response.text);
+        assert(response.code === 'InternalServerError');
+        assert(/^Internal/.test(response.message));
+        assert(!/uhoh/.test(response.message)); // error doesn't go to user
+        delete response.requestInfo.time;
+        assert(
+          _.isEqual(response.requestInfo, {
+            method: 'ISE',
+            params: {},
+            payload: {},
+          })
+        );
+      });
+  });
+
+  builder.declare(
+    {
+      method: 'post',
+      route: '/inputvalidationerror',
+      name: 'InputValidationError',
+      title: 'Test End-Point',
+      input: 'test-schema.yml',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      cleanPayload: payload => {
+        payload.secret = '<HIDDEN>';
+        return payload;
+      },
+      scopes: null,
+    },
+    (_req, _res) => {}
+  );
+
+  test('InputValidationError response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
-    return request.post(url).send({ invalid: 'yep', secret: 's3kr!t' })
-      .then(res => assert(false, 'should have failed!'))
+    return request
+      .post(url)
+      .send({ invalid: 'yep', secret: 's3kr!t' })
+      .then(() => assert(false, 'should have failed!'))
       .catch(res => {
         assert.equal(res.status, 400);
         const response = JSON.parse(res.response.text);
         assert(!/s3kr!t/.test(res.text)); // secret does not appear in response
         assert(response.code === 'InputValidationError');
         assert(response.requestInfo.payload.secret === '<HIDDEN>'); // replaced payload appears in response
-        delete response.requestInfo['time'];
-        assert(_.isEqual(response.requestInfo, {
-          method: 'InputValidationError',
-          params: {},
-          payload: { invalid: 'yep', secret: '<HIDDEN>' },
-        }));
+        delete response.requestInfo.time;
+        assert(
+          _.isEqual(response.requestInfo, {
+            method: 'InputValidationError',
+            params: {},
+            payload: { invalid: 'yep', secret: '<HIDDEN>' },
+          })
+        );
       });
   });
 });

@@ -90,9 +90,12 @@ export class Backends {
       const conditions = Object.entries(when).map(([param, pattern]) => {
         const patternFn = makePatternFn(pattern);
         switch (param) {
-          case 'projectId': return object => patternFn(object.projectId);
-          case 'name': return object => patternFn(object.name);
-          default: throw new Error(`backendMap[${i}] has invalid match parameter ${param}`);
+          case 'projectId':
+            return object => patternFn(object.projectId);
+          case 'name':
+            return object => patternFn(object.name);
+          default:
+            throw new Error(`backendMap[${i}] has invalid match parameter ${param}`);
         }
       });
 
@@ -111,7 +114,7 @@ export class Backends {
    * Get the backend to use for this upload
    */
   forUpload(upload) {
-    for (let matcher of this._matchers) {
+    for (const matcher of this._matchers) {
       const backendId = matcher(upload);
       if (backendId) {
         return this.get(backendId);

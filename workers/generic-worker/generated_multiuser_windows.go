@@ -7,7 +7,7 @@ package main
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type (
@@ -18,23 +18,29 @@ type (
 		// compressed:
 		//
 		// * 7z
+		// * aab
+		// * apk
 		// * bz2
 		// * deb
 		// * dmg
 		// * flv
 		// * gif
 		// * gz
+		// * jar
 		// * jpeg
 		// * jpg
 		// * npz
+		// * pkg
 		// * png
 		// * swf
 		// * tbz
 		// * tgz
+		// * wasm
 		// * webp
 		// * whl
 		// * woff
 		// * woff2
+		// * xpi
 		// * xz
 		// * zip
 		// * zst
@@ -84,9 +90,9 @@ type (
 		// Default:    false
 		Optional bool `json:"optional" default:"false"`
 
-		// Relative path of the file/directory from the task directory. Note this is not an absolute
-		// path as is typically used in docker-worker, since the absolute task directory name is not
-		// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+		// Filesystem path of the file/directory relative to the
+		// task directory, or an absolute path.
+		// Example: `dist\regedit.exe`. It doesn't matter if
 		// forward slashes or backslashes are used.
 		//
 		// Since: generic-worker 1.0.0
@@ -189,8 +195,25 @@ type (
 		// as json to file chain-of-trust-additional-data.json in the task
 		// directory.
 		//
-		// Since: generic-worker v81.0.0
+		// Since: generic-worker 81.0.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+		// If `true`, the command window for each command will be hidden.
+		// This is useful for tasks that run GUI applications to prevent
+		// the command window from obscuring the application window.
+		//
+		// The process creation flags used when this is set to `true`
+		// are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+		// set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+		// More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+		//
+		// If your task needs to allocate new consoles (with
+		// AllocConsole(), for example) then you should not use this.
+		//
+		// Since: generic-worker 96.1.0
+		//
+		// Default:    false
+		HideCmdWindow bool `json:"hideCmdWindow" default:"false"`
 
 		// This allows you to interactively run commands from within the worker
 		// as the task user. This may be useful for debugging purposes.
@@ -202,7 +225,7 @@ type (
 		// A user can then `docker exec` into the a running container, if there
 		// is one.
 		//
-		// Since: generic-worker v83.6.0
+		// Since: generic-worker 83.6.0
 		Interactive bool `json:"interactive,omitempty"`
 
 		// The live log feature streams the combined stderr and stdout to a task artifact
@@ -280,7 +303,10 @@ type (
 		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
-		// The filesystem location to mount the file.
+		// The filesystem location to mount the file. This can be a
+		// path relative to the task directory, or an absolute path.
+		// The file will be created as the task user, so the target
+		// location must be writable by the task user.
 		//
 		// Since: generic-worker 5.4.0
 		File string `json:"file"`
@@ -290,11 +316,16 @@ type (
 		// Since: generic-worker 55.3.0
 		//
 		// Possible values:
+		//   * "br"
 		//   * "bz2"
 		//   * "gz"
+		//   * "lz"
 		//   * "lz4"
+		//   * "mz"
+		//   * "sz"
 		//   * "xz"
 		//   * "zst"
+		//   * "zz"
 		Format string `json:"format,omitempty"`
 	}
 
@@ -504,6 +535,10 @@ type (
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
+		// This can be a path relative to the task directory, or an
+		// absolute path. The directory will be created as the task
+		// user, so the target location must be writable by the task
+		// user.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -513,12 +548,19 @@ type (
 		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
+		//   * "7z"
 		//   * "rar"
+		//   * "tar"
+		//   * "tar.br"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz"
 		//   * "tar.lz4"
+		//   * "tar.mz"
+		//   * "tar.sz"
 		//   * "tar.xz"
 		//   * "tar.zst"
+		//   * "tar.zz"
 		//   * "zip"
 		Format string `json:"format"`
 	}
@@ -560,6 +602,10 @@ type (
 		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
+		// This can be a path relative to the task directory, or an
+		// absolute path. The directory will be created as the task
+		// user, so the target location must be writable by the task
+		// user.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -569,12 +615,19 @@ type (
 		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
+		//   * "7z"
 		//   * "rar"
+		//   * "tar"
+		//   * "tar.br"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz"
 		//   * "tar.lz4"
+		//   * "tar.mz"
+		//   * "tar.sz"
 		//   * "tar.xz"
 		//   * "tar.zst"
+		//   * "tar.zz"
 		//   * "zip"
 		Format string `json:"format,omitempty"`
 	}
@@ -714,18 +767,23 @@ func JSONSchema() string {
           "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
         },
         "file": {
-          "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the file. This can be a\npath relative to the task directory, or an absolute path.\nThe file will be created as the task user, so the target\nlocation must be writable by the task user.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
         },
         "format": {
           "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
           "enum": [
+            "br",
             "bz2",
             "gz",
+            "lz",
             "lz4",
+            "mz",
+            "sz",
             "xz",
-            "zst"
+            "zst",
+            "zz"
           ],
           "title": "Format",
           "type": "string"
@@ -761,19 +819,26 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
           "title": "Directory",
           "type": "string"
         },
         "format": {
           "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
           "enum": [
+            "7z",
             "rar",
+            "tar",
+            "tar.br",
             "tar.bz2",
             "tar.gz",
+            "tar.lz",
             "tar.lz4",
+            "tar.mz",
+            "tar.sz",
             "tar.xz",
             "tar.zst",
+            "tar.zz",
             "zip"
           ],
           "title": "Format",
@@ -810,19 +875,26 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },
         "format": {
           "description": "Archive format of the preloaded content (if ` + "`" + `content` + "`" + ` provided).\n\nSince: generic-worker 5.4.0",
           "enum": [
+            "7z",
             "rar",
+            "tar",
+            "tar.br",
             "tar.bz2",
             "tar.gz",
+            "tar.lz",
             "tar.lz4",
+            "tar.mz",
+            "tar.sz",
             "tar.xz",
             "tar.zst",
+            "tar.zz",
             "zip"
           ],
           "title": "Format",
@@ -845,7 +917,7 @@ func JSONSchema() string {
         "additionalProperties": false,
         "properties": {
           "contentEncoding": {
-            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
             "enum": [
               "identity",
               "gzip"
@@ -876,7 +948,7 @@ func JSONSchema() string {
             "type": "boolean"
           },
           "path": {
-            "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+            "description": "Filesystem path of the file/directory relative to the\ntask directory, or an absolute path.\nExample: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
             "title": "Artifact location",
             "type": "string"
           },
@@ -930,12 +1002,18 @@ func JSONSchema() string {
           "type": "boolean"
         },
         "chainOfTrust": {
-          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker v81.0.0",
+          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker 81.0.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
           "type": "boolean"
         },
+        "hideCmdWindow": {
+          "default": false,
+          "description": "If ` + "`" + `true` + "`" + `, the command window for each command will be hidden.\nThis is useful for tasks that run GUI applications to prevent\nthe command window from obscuring the application window.\n\nThe process creation flags used when this is set to ` + "`" + `true` + "`" + `\nare CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is\nset to ` + "`" + `false` + "`" + `, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.\nMore info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).\n\nIf your task needs to allocate new consoles (with\nAllocConsole(), for example) then you should not use this.\n\nSince: generic-worker 96.1.0",
+          "title": "Hide cmd.exe window",
+          "type": "boolean"
+        },
         "interactive": {
-          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a powershell instance is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker v83.6.0",
+          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a powershell instance is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 83.6.0",
           "title": "Interactive shell",
           "type": "boolean"
         },

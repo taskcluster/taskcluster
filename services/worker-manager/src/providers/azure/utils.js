@@ -1,8 +1,24 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import forge from 'node-forge';
 import slugid from 'slugid';
 import generator from 'generate-password';
+
+// https://learn.microsoft.com/en-us/rest/api/resources/deployments/list-at-subscription-scope?view=rest-resources-2025-04-01#provisioningstate
+export const ArmDeploymentProvisioningState = {
+  NotSpecified: 'NotSpecified',
+  Accepted: 'Accepted',
+  Running: 'Running',
+  Ready: 'Ready',
+  Creating: 'Creating',
+  Created: 'Created',
+  Deleting: 'Deleting',
+  Deleted: 'Deleted',
+  Canceled: 'Canceled',
+  Failed: 'Failed',
+  Succeeded: 'Succeeded',
+  Updating: 'Updating',
+};
 
 // only use alphanumeric characters for convenience
 export function nicerId() {
@@ -28,23 +44,33 @@ export function generateAdminPassword() {
   });
 }
 
-export function workerConfigWithSecrets(cfg) {
-  assert(_.has(cfg, 'osProfile'));
-  let newCfg = _.cloneDeep(cfg);
+export function generateAdmin() {
   // Windows admin user name cannot be more than 20 characters long, be empty,
   // end with a period(.), or contain the following characters: \\ / \" [ ] : | < > + = ; , ? * @.
-  newCfg.osProfile.adminUsername = nicerId().slice(0, 20);
   // we have to set a password, but we never want it to be used, so we throw it away
   // a legitimate user who needs access can reset the password
-  newCfg.osProfile.adminPassword = generateAdminPassword();
+  return {
+    adminUsername: nicerId().slice(0, 20),
+    adminPassword: generateAdminPassword(),
+  };
+}
+
+export function workerConfigWithSecrets(cfg) {
+  assert(_.has(cfg, 'osProfile'));
+  const newCfg = _.cloneDeep(cfg);
+  const { adminUsername, adminPassword } = generateAdmin();
+  newCfg.osProfile.adminUsername = adminUsername;
+  newCfg.osProfile.adminPassword = adminPassword;
   return newCfg;
 }
 
 // Convert a Subject or Issuer Distinguished Name (DN) to a string
 export function dnToString(dn) {
-  return dn.attributes.map(attr => {
-    return `/${attr.shortName}=${attr.value}`;
-  }).join();
+  return dn.attributes
+    .map(attr => {
+      return `/${attr.shortName}=${attr.value}`;
+    })
+    .join();
 }
 
 // Calculate the fingerprint of a certificate
@@ -55,11 +81,7 @@ export function getCertFingerprint(cert) {
   const messageDigest = forge.md.sha1.create();
   messageDigest.start();
   messageDigest.update(der);
-  const fingerprint = messageDigest.digest()
-    .toHex()
-    .match(/.{2}/g)
-    .join(':')
-    .toUpperCase();
+  const fingerprint = messageDigest.digest().toHex().match(/.{2}/g).join(':').toUpperCase();
   return fingerprint;
 }
 
@@ -78,19 +100,22 @@ export function getAuthorityAccessInfo(cert) {
     tagClass: forge.asn1.Class.UNIVERSAL,
     type: forge.asn1.Type.SEQUENCE,
     constructed: true,
-    value: [{
-      name: 'AccessDescription.accessMethod',
-      tagClass: forge.asn1.Class.UNIVERSAL,
-      type: forge.asn1.Type.OID,
-      constructed: false,
-      capture: 'accessMethod',
-    }, {
-      name: 'AccessDescription.accessLocation',
-      tagClass: forge.asn1.Class.CONTEXT_SPECIFIC,
-      type: forge.asn1.Type.OID,
-      constructed: false,
-      capture: 'accessLocation',
-    }],
+    value: [
+      {
+        name: 'AccessDescription.accessMethod',
+        tagClass: forge.asn1.Class.UNIVERSAL,
+        type: forge.asn1.Type.OID,
+        constructed: false,
+        capture: 'accessMethod',
+      },
+      {
+        name: 'AccessDescription.accessLocation',
+        tagClass: forge.asn1.Class.CONTEXT_SPECIFIC,
+        type: forge.asn1.Type.OID,
+        constructed: false,
+        capture: 'accessLocation',
+      },
+    ],
   };
   const knownOIDs = new Map([
     ['1.3.6.1.5.5.7.48.1', 'OSCP'],
@@ -99,7 +124,7 @@ export function getAuthorityAccessInfo(cert) {
 
   const authorityInfoAccessRaw = cert.getExtension('authorityInfoAccess');
   if (!authorityInfoAccessRaw) {
-    throw Error("No AuthorityAccessInfo");
+    throw Error('No AuthorityAccessInfo');
   }
 
   const authorityInfoAccess = forge.asn1.fromDer(authorityInfoAccessRaw.value);
@@ -107,8 +132,7 @@ export function getAuthorityAccessInfo(cert) {
   authorityInfoAccess.value.forEach((accessDescription, idx) => {
     const errors = [];
     const capture = {};
-    const valid = forge.asn1.validate(
-      accessDescription, accessDescriptionValidator, capture, errors);
+    const valid = forge.asn1.validate(accessDescription, accessDescriptionValidator, capture, errors);
     if (!valid) {
       const err = Error(`accessDescription[${idx}] is invalid`);
       err.errors = errors;
@@ -140,7 +164,7 @@ export function getAuthorityAccessInfo(cert) {
  */
 export function cloneCaStore(originalCaStore) {
   if (!originalCaStore || typeof originalCaStore.certs !== 'object') {
-    throw new Error("Invalid input: Not a CA store object.");
+    throw new Error('Invalid input: Not a CA store object.');
   }
 
   const newCaStore = forge.pki.createCaStore();

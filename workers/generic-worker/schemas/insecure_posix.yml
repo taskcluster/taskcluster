@@ -99,9 +99,9 @@ oneOf:
             title: Artifact location
             type: string
             description: |-
-              Relative path of the file/directory from the task directory. Note this is not an absolute
-              path as is typically used in docker-worker, since the absolute task directory name is not
-              known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+              Filesystem path of the file/directory relative to the
+              task directory, or an absolute path.
+              Example: `dist\regedit.exe`. It doesn't matter if
               forward slashes or backslashes are used.
 
               Since: generic-worker 1.0.0
@@ -152,23 +152,29 @@ oneOf:
               compressed:
 
               * 7z
+              * aab
+              * apk
               * bz2
               * deb
               * dmg
               * flv
               * gif
               * gz
+              * jar
               * jpeg
               * jpg
               * npz
+              * pkg
               * png
               * swf
               * tbz
               * tgz
+              * wasm
               * webp
               * whl
               * woff
               * woff2
+              * xpi
               * xz
               * zip
               * zst
@@ -314,9 +320,10 @@ oneOf:
       type: array
       title: OS Groups
       description: |-
-        A list of OS Groups that the task user should be a member of. Not yet implemented on
-        non-Windows platforms, therefore this optional property may only be an empty array if
-        provided.
+        A list of OS Groups that the task user should be a member of. On the
+        insecure engine, the task runs as the current user (no separate task
+        user is created), so only OS Groups that the current user (the user
+        account running generic-worker) already belongs to may be specified.
 
         Since: generic-worker 6.0.0
       uniqueItems: true
@@ -408,7 +415,7 @@ oneOf:
       enum:
       - localhost
       - docker-bridge
-- title: Docker worker payload
+- title: Docker Worker payload
   description: "`.payload` field of the queue."
   type: object
   properties:
@@ -421,7 +428,7 @@ oneOf:
     image:
       title: Docker image.
       description: >-
-        Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+        Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
       oneOf:
       - title: Docker image name
         type: string
@@ -581,7 +588,7 @@ oneOf:
         Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
         Artifacts can be an individual `file`, a `directory` containing
         potentially multiple files with recursively included subdirectories,
-        or a `volume` which will create a volume mount from the
+        or a `volume` (d2g only) which will create a volume mount from the
         host to the running container. Unlike `directory` artifacts, the
         `volume` directory will already exist as the task starts. Since the
         artifacts will be created directly on the host, they do not need to
@@ -624,17 +631,6 @@ oneOf:
           title: Artifact uploads
           description: ""
           default: true
-        dind:
-          type: boolean
-          title: Docker in Docker
-          description: >-
-            Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-          default: false
-        dockerSave:
-          type: boolean
-          title: Docker save
-          description: Uploads docker images as artifacts
-          default: false
         interactive:
           type: boolean
           title: Docker Exec Interactive
@@ -674,7 +670,8 @@ definitions:
         title: File
         type: string
         description: |-
-          The filesystem location to mount the file.
+          The filesystem location to mount the file. This can be a
+          path relative to the task directory, or an absolute path.
 
           Since: generic-worker 5.4.0
       content:
@@ -691,11 +688,16 @@ definitions:
 
           Since: generic-worker 55.3.0
         enum:
+        - br
         - bz2
         - gz
+        - lz
         - lz4
+        - mz
+        - sz
         - xz
         - zst
+        - zz
     additionalProperties: false
     required:
     - file
@@ -709,6 +711,8 @@ definitions:
         type: string
         description: |-
           The filesystem location to mount the directory volume.
+          This can be a path relative to the task directory, or an
+          absolute path.
 
           Since: generic-worker 5.4.0
       cacheName:
@@ -737,12 +741,19 @@ definitions:
 
           Since: generic-worker 5.4.0
         enum:
+        - 7z
         - rar
+        - tar
+        - tar.br
         - tar.bz2
         - tar.gz
+        - tar.lz
         - tar.lz4
+        - tar.mz
+        - tar.sz
         - tar.xz
         - tar.zst
+        - tar.zz
         - zip
     additionalProperties: false
     required:
@@ -762,6 +773,8 @@ definitions:
         type: string
         description: |-
           The filesystem location to mount the directory volume.
+          This can be a path relative to the task directory, or an
+          absolute path.
 
           Since: generic-worker 5.4.0
       content:
@@ -779,12 +792,19 @@ definitions:
 
           Since: generic-worker 5.4.0
         enum:
+        - 7z
         - rar
+        - tar
+        - tar.br
         - tar.bz2
         - tar.gz
+        - tar.lz
         - tar.lz4
+        - tar.mz
+        - tar.sz
         - tar.xz
         - tar.zst
+        - tar.zz
         - zip
     additionalProperties: false
     required:

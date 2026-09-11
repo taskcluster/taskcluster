@@ -89,8 +89,8 @@ impl Hasher {
             );
         }
         json!({
-            "sha256": format!("{:x}", inner.sha256.finalize_reset()),
-            "sha512": format!("{:x}", inner.sha512.finalize_reset()),
+            "sha256": base16ct::lower::encode_string(&inner.sha256.finalize_reset()),
+            "sha512": base16ct::lower::encode_string(&inner.sha512.finalize_reset()),
         })
     }
 }

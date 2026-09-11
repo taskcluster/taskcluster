@@ -1,0 +1,97 @@
+version: 116
+description: Updating workerManager part of Launch Config should work
+methods:
+  upsert_worker_pool_launch_configs:
+    description: |-
+      Creates or updates launch configs and marks the old ones as archived.
+      If a launch config already exist but is archived, it would be unarchived.
+      All launch configs that are not in the updated list will be archived.
+
+      This will return list of launch config ids that were updated, created, archived.
+
+      Raises UNIQUE_VIOLATION if the pool already exists with given launchConfigId and content differs.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, config_in jsonb
+    returns: table(updated_launch_configs text[], created_launch_configs text[], archived_launch_configs text[])
+    body: |-
+      declare
+        config_without_lc jsonb;
+        updated_lcs text[];
+        created_lcs text[];
+        archived_lcs text[];
+        processed_lcs text[];
+        wp_launch_config_id text;
+        config jsonb;
+        tmp text[];
+        existing_config jsonb;
+      begin
+        -- update launch configurations
+        created_lcs := '{}';
+        updated_lcs := '{}';
+        archived_lcs := '{}';
+
+        FOR config IN SELECT jsonb_array_elements(config_in->'launchConfigs') LOOP
+          wp_launch_config_id := get_or_create_launch_config_id(worker_pool_id_in, config);
+          processed_lcs := array_append(processed_lcs, wp_launch_config_id);
+
+          -- Check if config exists and get its content
+          SELECT configuration INTO existing_config
+          FROM worker_pool_launch_configs
+          WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id;
+
+          -- check for  uniqueness
+          IF existing_config IS NOT NULL THEN
+            -- Config exists, check if content matches
+            IF (
+              jsonb_typeof(existing_config) = 'object'
+              AND jsonb_typeof(config) = 'object'
+              AND (existing_config - 'workerManager') != (config - 'workerManager')
+            ) THEN
+              RAISE EXCEPTION 'Launch config with ID `%` already exists with different configuration',
+                wp_launch_config_id
+                USING ERRCODE = 'unique_violation';
+            END IF;
+            -- make sure it is not archived and workerManager specific fields are updated
+            UPDATE worker_pool_launch_configs
+            SET is_archived = false,
+                last_modified = now(),
+                configuration = config
+            WHERE
+              worker_pool_id = worker_pool_id_in
+              AND launch_config_id = wp_launch_config_id;
+
+            updated_lcs := array_append(updated_lcs, wp_launch_config_id);
+          ELSE
+            created_lcs := array_append(created_lcs, wp_launch_config_id);
+            PERFORM create_worker_pool_launch_config(
+              wp_launch_config_id,
+              worker_pool_id_in,
+              false,
+              config,
+              now(),
+              now()
+            );
+          END IF;
+        END LOOP;
+
+        -- mark all launch configs that are not in the updated list as archived
+        WITH updated_rows AS (
+          UPDATE worker_pool_launch_configs
+          SET is_archived = true
+          WHERE
+            worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+            AND (
+              -- if the array is empty, ALL(array[]) will return null and not TRUE
+              array_length(processed_lcs, 1) IS NULL
+              OR worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+            )
+            AND worker_pool_launch_configs.is_archived = false
+          RETURNING launch_config_id
+        )
+        SELECT COALESCE(array_agg(launch_config_id), '{}') FROM updated_rows INTO tmp;
+        archived_lcs := array_cat(archived_lcs, tmp);
+
+        return query
+        select updated_lcs, created_lcs, archived_lcs;
+      end

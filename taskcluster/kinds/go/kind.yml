@@ -32,13 +32,15 @@ task-defaults:
         git checkout -f "${{GITHUB_SHA}}"
         git reset --hard "${{GITHUB_SHA}}"
         git clean -fd
+  attributes:
+    code-review: true
   worker:
     max-run-time: 600
     mounts:
       - cache-name: checkouts
         directory: taskcluster
       - content:
-          url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
         directory: '{go_version}'
         format: tar.gz
       - content:

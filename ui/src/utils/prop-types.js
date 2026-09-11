@@ -1,6 +1,7 @@
 import {
   arrayOf,
   bool,
+  func,
   instanceOf,
   array,
   number,
@@ -34,6 +35,14 @@ export const pageInfo = shape({
   nextCursor: string,
 });
 
+export const pagination = {
+  page: number.isRequired,
+  hasNextPage: bool,
+  hasPreviousPage: bool,
+  onNextPage: func.isRequired,
+  onPreviousPage: func.isRequired,
+};
+
 export const docsPageTransition = shape({
   title: string,
   path: string,
@@ -58,6 +67,7 @@ export const docsPageInfo = shape({
 export const artifact = shape({
   name: string,
   contentType: string,
+  contentLength: number,
 });
 
 export const artifacts = shape({
@@ -94,15 +104,6 @@ export const status = shape({
   runs,
 });
 
-export const provisionerAction = shape({
-  name: string,
-  title: string,
-  context: oneOf(['PROVISIONER', 'WORKER_TYPE', 'WORKER']),
-  url: string,
-  method: oneOf(['POST', 'PUT', 'DELETE', 'PATCH']),
-  description: string,
-});
-
 export const stability = oneOf(['EXPERIMENTAL', 'STABLE', 'DEPRECATED']);
 
 export const taskMetadata = shape({
@@ -120,7 +121,6 @@ export const taskPriority = oneOf([
   'LOW',
   'VERY_LOW',
   'LOWEST',
-  'NORMAL',
 ]);
 
 export const taskActions = shape({
@@ -168,12 +168,6 @@ export const worker = shape({
   expires: date,
   quarantineUntil: date,
   latestTasks: arrayOf(task),
-  actions: arrayOf(provisionerAction),
-});
-
-export const workers = shape({
-  pageInfo,
-  edges: arrayOf(worker),
 });
 
 export const WMError = shape({
@@ -214,7 +208,6 @@ export const workerType = shape({
   description: string,
   expires: date,
   lastDateActive: date,
-  actions: arrayOf(provisionerAction),
 });
 
 export const WorkerManagerWorkerPoolSummary = shape({
@@ -253,7 +246,6 @@ export const provisioner = shape({
   description: string,
   expires: date,
   lastDateActive: date,
-  actions: arrayOf(provisionerAction),
 });
 
 export const client = shape({
@@ -333,11 +325,6 @@ export const secret = shape({
   secret: object,
   expires: date,
 });
-export const secrets = arrayOf(
-  shape({
-    name: string,
-  })
-);
 
 export const notificationType = oneOf(
   Object.values(DENYLIST_NOTIFICATION_TYPES)
@@ -375,43 +362,4 @@ export const pulseMessage = shape({
   routingKey: string,
   redelivered: bool,
   cc: string,
-});
-
-// https://developers.google.com/analytics/devguides/collection/analyticsjs/events
-export const gaEvent = shape({
-  /**
-   * Defaults to 'Click'.
-   * A description of the behaviour.
-   * E.g. 'Clicked Delete', 'Added a component', 'Deleted account', etc.
-   * */
-  action: string,
-  /**
-   * More precise labelling of the related action.
-   * E.g. alongside the 'Added a component' action, we could add the name
-   * of a component as the label. E.g. 'Survey', 'Heading', 'Button', etc.
-   * */
-  label: string,
-  /**
-   * Defaults to 'Uncategorized'.
-   * A top level category for the event.
-   * E.g. 'User', 'Navigation', 'App Editing', etc.
-   * */
-  category: string,
-  /**
-   * A means of recording a numerical value against an event.
-   * E.g. a rating, a score, etc.
-   */
-  value: number,
-  /**
-   * If an event is not triggered by a user interaction, but instead by the
-   * code (e.g. on page load),
-   * it should be flagged as a nonInteraction event to avoid
-   * skewing bounce rate data.
-   */
-  nonInteraction: bool,
-  /**
-   * This specifies the transport mechanism with which hits will be sent.
-   * Valid values include 'beacon', 'xhr', or 'image'.
-   */
-  transport: string,
 });

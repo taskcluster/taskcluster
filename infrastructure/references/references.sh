@@ -6,6 +6,5 @@ set -e
 cd /app
 node infrastructure/references/relativize.js generated/references.json /references
 
-# start nginx
-cp infrastructure/references/nginx.conf /etc/nginx/http.d/default.conf
-exec nginx -g 'daemon off;'
+# start nginx with standalone config
+exec nginx -c /app/infrastructure/references/nginx.conf -g 'daemon off;'

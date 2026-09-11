@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import MDX from '@mdx-js/runtime';
+import MDX from './MDX';
 import Typography from '@material-ui/core/Typography';
 import Entry from './Entry';
 import components from '../components';
@@ -47,8 +47,9 @@ export default class ApiReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const functionEntries =
-      ref.entries && ref.entries.filter(({ type }) => type === 'function');
+    const functionEntries = ref.entries?.filter(
+      ({ type }) => type === 'function'
+    );
     const groupedEntries = Array.from(
       this.groupBy(functionEntries, entry => entry.category)
     );
@@ -77,6 +78,7 @@ export default class ApiReference extends Component {
                     type="function"
                     entry={entry}
                     serviceName={ref.serviceName}
+                    apiVersion={ref.apiVersion}
                   />
                 ))}
               </Fragment>

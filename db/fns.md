@@ -37,6 +37,7 @@
    * [`delete_last_fires`](#delete_last_fires)
    * [`expire_last_fires`](#expire_last_fires)
    * [`get_hook`](#get_hook)
+   * [`get_hook_groups`](#get_hook_groups)
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
@@ -82,8 +83,8 @@
    * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
    * [`claim_task`](#claim_task)
-   * [`create_queue_artifact`](#create_queue_artifact)
-   * [`create_task_projid`](#create_task_projid)
+   * [`create_queue_artifact_2`](#create_queue_artifact_2)
+   * [`create_task_atomic`](#create_task_atomic)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_artifacts`](#delete_queue_artifacts)
    * [`delete_queue_provisioner`](#delete_queue_provisioner)
@@ -95,12 +96,13 @@
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
    * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+   * [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
    * [`get_dependent_tasks`](#get_dependent_tasks)
-   * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+   * [`get_expired_artifacts_for_deletion_2`](#get_expired_artifacts_for_deletion_2)
    * [`get_multiple_tasks`](#get_multiple_tasks)
    * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
-   * [`get_queue_artifact`](#get_queue_artifact)
-   * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+   * [`get_queue_artifact_2`](#get_queue_artifact_2)
+   * [`get_queue_artifacts_paginated_2`](#get_queue_artifacts_paginated_2)
    * [`get_task_group_size`](#get_task_group_size)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
@@ -113,6 +115,8 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+   * [`queue_change_task_priority`](#queue_change_task_priority)
    * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
    * [`queue_claimed_task_get`](#queue_claimed_task_get)
    * [`queue_claimed_task_put`](#queue_claimed_task_put)
@@ -120,6 +124,7 @@
    * [`queue_claimed_tasks_count`](#queue_claimed_tasks_count)
    * [`queue_pending_task_delete`](#queue_pending_task_delete)
    * [`queue_pending_tasks_add`](#queue_pending_tasks_add)
+   * [`queue_pending_tasks_add_for_task`](#queue_pending_tasks_add_for_task)
    * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
    * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
    * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
@@ -131,6 +136,7 @@
    * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
    * [`queue_task_deadline_get`](#queue_task_deadline_get)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
+   * [`queue_task_queue_counts`](#queue_task_queue_counts)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_stats`](#queue_worker_stats)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -155,13 +161,13 @@
    * [`upsert_secret`](#upsert_secret)
  * [web_server functions](#web_server)
    * [`add_github_access_token`](#add_github_access_token)
+   * [`consume_authorization_code`](#consume_authorization_code)
    * [`create_access_token`](#create_access_token)
    * [`create_authorization_code`](#create_authorization_code)
    * [`expire_access_tokens`](#expire_access_tokens)
    * [`expire_authorization_codes`](#expire_authorization_codes)
    * [`expire_sessions`](#expire_sessions)
    * [`get_access_token`](#get_access_token)
-   * [`get_authorization_code`](#get_authorization_code)
    * [`load_github_access_token`](#load_github_access_token)
    * [`session_add`](#session_add)
    * [`session_load`](#session_load)
@@ -180,7 +186,7 @@
    * [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
-   * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
+   * [`get_non_stopped_workers_with_launch_config_scanner_after`](#get_non_stopped_workers_with_launch_config_scanner_after)
    * [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
    * [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
@@ -703,10 +709,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `expire_clients()` (compatibility guaranteed until v89.0.0)
-
 ## github
 
 * [`create_github_build_pr`](#create_github_build_pr)
@@ -1185,6 +1187,7 @@ end
 * [`delete_last_fires`](#delete_last_fires)
 * [`expire_last_fires`](#expire_last_fires)
 * [`get_hook`](#get_hook)
+* [`get_hook_groups`](#get_hook_groups)
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
@@ -1442,6 +1445,29 @@ begin
   where
     hooks.hook_group_id = hook_group_id_in and
     hooks.hook_id = hook_id_in;
+end
+```
+
+</details>
+
+### get_hook_groups
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `hook_group_id text`
+* *Last defined on version*: 115
+
+Get existing hooks groups
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select distinct hooks.hook_group_id
+  from hooks
+  order by hooks.hook_group_id;
 end
 ```
 
@@ -2817,8 +2843,8 @@ end
 * [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
 * [`claim_task`](#claim_task)
-* [`create_queue_artifact`](#create_queue_artifact)
-* [`create_task_projid`](#create_task_projid)
+* [`create_queue_artifact_2`](#create_queue_artifact_2)
+* [`create_task_atomic`](#create_task_atomic)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_artifacts`](#delete_queue_artifacts)
 * [`delete_queue_provisioner`](#delete_queue_provisioner)
@@ -2830,12 +2856,13 @@ end
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
 * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+* [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
 * [`get_dependent_tasks`](#get_dependent_tasks)
-* [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+* [`get_expired_artifacts_for_deletion_2`](#get_expired_artifacts_for_deletion_2)
 * [`get_multiple_tasks`](#get_multiple_tasks)
 * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
-* [`get_queue_artifact`](#get_queue_artifact)
-* [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+* [`get_queue_artifact_2`](#get_queue_artifact_2)
+* [`get_queue_artifacts_paginated_2`](#get_queue_artifacts_paginated_2)
 * [`get_task_group_size`](#get_task_group_size)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
@@ -2848,6 +2875,8 @@ end
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+* [`queue_change_task_priority`](#queue_change_task_priority)
 * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
 * [`queue_claimed_task_get`](#queue_claimed_task_get)
 * [`queue_claimed_task_put`](#queue_claimed_task_put)
@@ -2855,6 +2884,7 @@ end
 * [`queue_claimed_tasks_count`](#queue_claimed_tasks_count)
 * [`queue_pending_task_delete`](#queue_pending_task_delete)
 * [`queue_pending_tasks_add`](#queue_pending_tasks_add)
+* [`queue_pending_tasks_add_for_task`](#queue_pending_tasks_add_for_task)
 * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
 * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
 * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
@@ -2866,6 +2896,7 @@ end
 * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
 * [`queue_task_deadline_get`](#queue_task_deadline_get)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
+* [`queue_task_queue_counts`](#queue_task_queue_counts)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_stats`](#queue_worker_stats)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -3103,11 +3134,15 @@ end
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
-* *Last defined on version*: 28
+* *Last defined on version*: 124
 
 Check the given task for a claim on the given run expiring at the given
 time.  If the run is still running, it is marked as claim-expired and
-a retry scheduled (if retries_left).
+a retry scheduled (if retries_left).  When a retry run is scheduled, it
+is also atomically enqueued into queue_pending_tasks via
+queue_pending_tasks_add_for_task, so a Pulse-publish failure in the JS
+caller (claimresolver) can no longer leave the retry pending in
+tasks.runs but missing from the workers' claimable queue.
 
 This returns the task's updated status, or nothing if the current status
 was not as expected.
@@ -3120,10 +3155,11 @@ declare
   runs jsonb;
   run jsonb;
   new_runs jsonb;
-  new_taken_until timestamptz;
+  added_retry boolean := false;
+  new_run_id int;
 begin
   -- lock the task row to prevent concurrent updates
-  select tasks.retries_left, tasks.runs, tasks.deadline
+  select tasks.retries_left, tasks.runs, tasks.deadline, tasks.task_queue_id, tasks.priority
   into task
   from tasks
   where
@@ -3172,6 +3208,7 @@ begin
         'reasonCreated', 'retry',
         'scheduled', now()));
     task.retries_left = task.retries_left - 1;
+    added_retry := true;
   end if;
 
   update tasks
@@ -3180,6 +3217,14 @@ begin
     runs = new_runs,
     taken_until = null
   where tasks.task_id = check_task_claim.task_id;
+
+  if added_retry then
+    new_run_id := jsonb_array_length(new_runs) - 1;
+    perform queue_pending_tasks_add_for_task(
+      task.task_queue_id, task.priority, task.deadline,
+      check_task_claim.task_id, new_run_id
+    );
+  end if;
 
   return query
   select tasks.retries_left, tasks.runs, tasks.taken_until
@@ -3266,7 +3311,7 @@ end
 
 </details>
 
-### create_queue_artifact
+### create_queue_artifact_2
 
 * *Mode*: write
 * *Arguments*:
@@ -3278,34 +3323,45 @@ end
   * `details_in jsonb`
   * `present_in boolean`
   * `expires_in timestamptz`
+  * `content_length_in bigint`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 24
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
-Returns the newly created artifact.
+Create a new queue artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
+Includes content_length parameter for tracking artifact file size.
 
 <details><summary>Function Body</summary>
 
 ```
 begin
   return query insert
-    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires)
-    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in)
-  returning queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name, queue_artifacts.storage_type, queue_artifacts.content_type, queue_artifacts.details, queue_artifacts.present, queue_artifacts.expires;
+    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires, content_length)
+    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in, content_length_in)
+  returning
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires,
+    queue_artifacts.content_length;
 end
 ```
 
 </details>
 
-### create_task_projid
+### create_task_atomic
 
 * *Mode*: write
 * *Arguments*:
@@ -3327,11 +3383,19 @@ end
   * `metadata jsonb`
   * `tags jsonb`
   * `extra jsonb`
+  * `deadline_delay_seconds_in integer`
 * *Returns*: `void`
-* *Last defined on version*: 63
+* *Last defined on version*: 124
 
-Create a new task, without scheduling it, and with empty values
-for the status information.
+Create a new task, with empty values for the status information, and
+atomically insert its deadline-tracking row into queue_task_deadlines.
+The deadline-tracking row's `visible` time is `deadline +
+deadline_delay_seconds_in`, matching the pre-fix JS behavior in
+QueueService.putDeadlineMessage.
+
+Replaces the prior pattern of separate JS-layer create_task_projid +
+putDeadlineMessage calls, which could leave a task without deadline
+tracking if the second call failed.
 
 <details><summary>Function Body</summary>
 
@@ -3387,6 +3451,43 @@ begin
     null, -- not taken
     false
   );
+
+  -- Atomically track the deadline so a JS-layer failure between the
+  -- task insert and the deadline insert cannot leave a task uncovered
+  -- by the deadline resolver.
+  --
+  -- ON CONFLICT DO UPDATE handles a pre-existing row from before
+  -- this migration (rare orphan from the legacy non-atomic flow), or
+  -- any future inconsistency. The metadata is overwritten with the
+  -- current task's values so that the deadline resolver's match on
+  -- (task_id, deadline) reflects the actual task -- preserving DO
+  -- NOTHING here would let stale orphan metadata cause the resolver
+  -- to silently drop the deadline message and never enforce the
+  -- task's deadline. Idempotent retries on the same task_id are
+  -- caught earlier by the tasks unique violation, so reaching this
+  -- ON CONFLICT branch only happens via the orphan-recovery path.
+  insert into queue_task_deadlines (
+    task_group_id,
+    task_id,
+    scheduler_id,
+    created,
+    deadline,
+    visible
+  )
+  values (
+    task_group_id,
+    task_id,
+    scheduler_id,
+    now(),
+    deadline,
+    deadline + make_interval(secs => deadline_delay_seconds_in)
+  )
+  on conflict on constraint queue_task_deadlines_pkey do update
+    set task_group_id = excluded.task_group_id,
+        scheduler_id = excluded.scheduler_id,
+        created = excluded.created,
+        deadline = excluded.deadline,
+        visible = excluded.visible;
 end
 ```
 
@@ -3751,9 +3852,11 @@ end
   * `  worker_group text`
   * `  worker_id text`
   * `  claimed timestamptz `
-* *Last defined on version*: 94
+* *Last defined on version*: 117
 
 Get all tasks that are currently claimed by workers in a given task queue.
+Returns only the latest claim for each unique task ID to avoid duplicates
+when tasks are being reclaimed.
 
 <details><summary>Function Body</summary>
 
@@ -3788,13 +3891,52 @@ begin
     q.worker_id,
     q.claimed
   from queue_claimed_tasks q
-  left join tasks on tasks.task_id=q.task_id
+  inner join tasks on tasks.task_id = q.task_id
   where q.task_queue_id = task_queue_id_in
-    and tasks.task_id is not null
     and (after_claimed_in is null or q.claimed > after_claimed_in)
     and (after_task_id_in is null or q.task_id != after_task_id_in)
+    and not exists (
+      select 1
+      from queue_claimed_tasks q2
+      where q2.task_id = q.task_id
+        and q2.task_queue_id = q.task_queue_id
+        and q2.claimed > q.claimed
+    )
   order by q.claimed asc
   limit get_page_limit(page_size_in);
+end
+```
+
+</details>
+
+### get_claimed_tasks_by_worker
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  run_id integer `
+* *Last defined on version*: 120
+
+Get all task_id and run_id pairs currently claimed by a specific worker,
+identified by task_queue_id, worker_group, and worker_id.
+Uses the existing queue_claimed_task_queue_idx index.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    q.task_id,
+    q.run_id
+  from queue_claimed_tasks q
+  where q.task_queue_id = task_queue_id_in
+    and q.worker_group = worker_group_in
+    and q.worker_id = worker_id_in;
 end
 ```
 
@@ -3846,29 +3988,25 @@ end
 
 </details>
 
-### get_expired_artifacts_for_deletion
+### get_expired_artifacts_for_deletion_2
 
 * *Mode*: read
 * *Arguments*:
   * `expires_in timestamptz`
   * `page_size_in integer`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 84
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get existing queue artifacts with expiration date below given.
-Note that this method doesn't use ordering to avoid using
-complex and expensive table scans.
-As table is very big doing a sequential scan without ordering is faster.
-Expired entities are expected to be deleted right after as this function
-doesn't support pagination with offsets.
+Get expired artifacts for deletion, including content_length for logging deleted sizes.
 
 <details><summary>Function Body</summary>
 
@@ -3883,7 +4021,8 @@ begin
     queue_artifacts.content_type,
     queue_artifacts.details,
     queue_artifacts.present,
-    queue_artifacts.expires
+    queue_artifacts.expires,
+    queue_artifacts.content_length
   from queue_artifacts
   where
     queue_artifacts.expires < expires_in
@@ -4053,7 +4192,7 @@ end
 
 </details>
 
-### get_queue_artifact
+### get_queue_artifact_2
 
 * *Mode*: read
 * *Arguments*:
@@ -4061,17 +4200,19 @@ end
   * `run_id_in integer`
   * `name_in text`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 24
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get a queue artifact. The returned table will have one or zero row.
+Get a single queue artifact by task_id, run_id, and name.
+Returns content_length in the result.
 
 <details><summary>Function Body</summary>
 
@@ -4085,7 +4226,8 @@ begin
     queue_artifacts.content_type,
     queue_artifacts.details,
     queue_artifacts.present,
-    queue_artifacts.expires
+    queue_artifacts.expires,
+    queue_artifacts.content_length
   from queue_artifacts
   where
     queue_artifacts.task_id = task_id_in and
@@ -4096,7 +4238,7 @@ end
 
 </details>
 
-### get_queue_artifacts_paginated
+### get_queue_artifacts_paginated_2
 
 * *Mode*: read
 * *Arguments*:
@@ -4108,21 +4250,19 @@ end
   * `after_run_id_in integer`
   * `after_name_in text`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 69
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get existing queue artifacts, filtered by the optional arguments, ordered
-by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
-where the page of results should begin, and must all be specified if any
-are specified.  Typically these values would be drawn from the last item
-in the previous page.
+Get queue artifacts with cursor-based pagination.
+Returns content_length in the result.
 
 <details><summary>Function Body</summary>
 
@@ -4137,14 +4277,14 @@ begin
     queue_artifacts.content_type,
     queue_artifacts.details,
     queue_artifacts.present,
-    queue_artifacts.expires
+    queue_artifacts.expires,
+    queue_artifacts.content_length
   from queue_artifacts
   where
     (queue_artifacts.task_id = task_id_in or task_id_in is null) and
     (queue_artifacts.run_id = run_id_in or run_id_in is null) and
     (queue_artifacts.expires < expires_in or expires_in is null) and
     (after_task_id_in is null or
-      -- must use AND on the top level to use multicolumn index
       (queue_artifacts.task_id >= after_task_id_in and
         (queue_artifacts.task_id > after_task_id_in or
           (queue_artifacts.task_id = after_task_id_in and
@@ -4397,7 +4537,7 @@ end
   * `  extra jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
-* *Last defined on version*: 63
+* *Last defined on version*: 122
 
 Get all properties of all tasks in the given task group.
 
@@ -4431,6 +4571,7 @@ begin
     tasks.taken_until
   from tasks
   where tasks.task_group_id = task_group_id_in
+  order by tasks.task_id  -- to avoid pagination overlaps
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end
@@ -4647,6 +4788,218 @@ begin
     queue_artifacts.details,
     queue_artifacts.present,
     queue_artifacts.expires;
+end
+```
+
+</details>
+
+### queue_change_task_group_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `new_priority_in task_priority`
+  * `batch_size_in integer`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of unresolved tasks within a task group.
+Matching pending queue entries are updated in tandem. Returns each updated
+task row alongside its previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  _limit integer;
+  task_upd record;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  _limit := coalesce(batch_size_in, 100);
+  if _limit < 1 then _limit := 100; end if;
+
+  FOR task_upd IN
+    select tasks.task_id, tasks.priority
+    from tasks
+    where tasks.task_group_id = task_group_id_in
+      and not tasks.ever_resolved
+      and tasks.deadline > now()
+      and tasks.priority <> new_priority_in
+    order by tasks.task_id
+    limit _limit
+    for update
+  LOOP
+
+    update tasks
+    set priority = new_priority_in
+    where tasks.task_id = task_upd.task_id
+    returning * into _row;
+
+    update queue_pending_tasks
+    set priority = pending_priority
+    where queue_pending_tasks.task_id = task_upd.task_id;
+
+    return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      task_upd.priority;
+  END LOOP;
+
+  return;
+end
+```
+
+</details>
+
+### queue_change_task_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `new_priority_in task_priority`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of a single unresolved task and keep matching pending queue
+  entries in sync. Returns the updated task row along with the previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  old_priority_val task_priority;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  -- lock row and capture old priority
+  select tasks.priority into old_priority_val
+  from tasks
+  where tasks.task_id = task_id_in
+    and not tasks.ever_resolved
+    and tasks.deadline > now()
+    and tasks.priority <> new_priority_in
+  for update;
+
+  if not found then
+    return;
+  end if;
+
+  update tasks
+  set priority = new_priority_in
+  where tasks.task_id = task_id_in
+  returning * into _row;
+
+  update queue_pending_tasks
+  set priority = pending_priority
+  where queue_pending_tasks.task_id = task_id_in;
+
+  return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      old_priority_val;
 end
 ```
 
@@ -4890,6 +5243,71 @@ begin
       AND queue_pending_tasks.pop_receipt is null;
   -- notify listeners that there is a new task in the queue
   EXECUTE 'NOTIFY task_pending, ' || quote_literal(task_queue_id_in) || ';';
+end
+```
+
+</details>
+
+### queue_pending_tasks_add_for_task
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `priority_in task_priority`
+  * `deadline_in timestamptz`
+  * `task_id_in text`
+  * `run_id_in integer`
+* *Returns*: `void`
+* *Last defined on version*: 127
+
+Enqueue a pending task run into queue_pending_tasks atomically with its
+caller. Intended to be called from DB functions that transition a run to
+`pending` (schedule_task, rerun_task, resolve_task, check_task_claim).
+Skips enqueue if the task's deadline has already passed (the deadline
+resolver will resolve it as `deadline-exceeded`). Otherwise delegates to
+queue_pending_tasks_add (which does the INSERT ... ON CONFLICT DO UPDATE
+and NOTIFY task_pending).
+
+The caller passes task_queue_id, priority, and deadline from its own
+FOR UPDATE-locked SELECT on the tasks row, avoiding a redundant lookup
+here.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  priority_int integer;
+begin
+  -- Skip if the task's deadline has already passed; the deadline
+  -- resolver will resolve it as `deadline-exceeded`. Matches the
+  -- pre-fix JS behavior of `QueueService.putPendingMessage`.
+  if deadline_in < now() then
+    return;
+  end if;
+
+  -- This mapping is duplicated in `PRIORITY_TO_CONSTANT` in
+  -- `services/queue/src/queueservice.js`. If you add or reorder
+  -- priority tiers, update both. `normal` is no longer an accepted
+  -- priority (see issue #8858), so this case is now exhaustive over
+  -- the full set of priorities the API allows.
+  priority_int := case priority_in
+    when 'highest'   then 7
+    when 'very-high' then 6
+    when 'high'      then 5
+    when 'medium'    then 4
+    when 'low'       then 3
+    when 'very-low'  then 2
+    when 'lowest'    then 1
+  end;
+
+  perform queue_pending_tasks_add(
+    task_queue_id_in,
+    priority_int,
+    task_id_in,
+    run_id_in,
+    public.gen_random_uuid()::text,
+    deadline_in::timestamp
+  );
 end
 ```
 
@@ -5260,6 +5678,37 @@ end
 
 </details>
 
+### queue_task_queue_counts
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_ids_in jsonb`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `pending_count integer`
+  * `claimed_count integer`
+* *Last defined on version*: 129
+
+Count pending and claimed tasks for each requested task queue.
+The result contains one row per input task queue, including queues with no
+pending or claimed tasks.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN QUERY
+  SELECT
+    requested.task_queue_id,
+    queue_pending_tasks_count(requested.task_queue_id) AS pending_count,
+    queue_claimed_tasks_count(requested.task_queue_id) AS claimed_count
+  FROM jsonb_array_elements_text(task_queue_ids_in) AS requested(task_queue_id);
+end
+```
+
+</details>
+
 ### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
@@ -5317,7 +5766,7 @@ end
   * `quarantined_count integer`
   * `claimed_count integer`
   * `pending_count integer`
-* *Last defined on version*: 113
+* *Last defined on version*: 128
 
 Retrieve comprehensive statistics for task queues including worker counts,
 quarantined workers, claimed tasks, and pending tasks. This method performs
@@ -5331,8 +5780,6 @@ Returns one row per task_queue_id with the following metrics:
 - pending_count: Number of distinct tasks waiting to be claimed
 
 All counts default to 0 when no data exists for a given metric.
-
-Updated from 112 version to increase distinct performance
 
 
 <details><summary>Function Body</summary>
@@ -5373,7 +5820,7 @@ begin
     COALESCE(ps.pending_count, 0) AS pending_count
   FROM worker_stats ws
   FULL OUTER JOIN claimed_stats cs ON ws.task_queue_id = cs.task_queue_id
-  FULL OUTER JOIN pending_stats ps ON cs.task_queue_id = ps.task_queue_id;
+  FULL OUTER JOIN pending_stats ps ON COALESCE(ws.task_queue_id, cs.task_queue_id) = ps.task_queue_id;
 end
 ```
 
@@ -5569,39 +6016,43 @@ end
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
-* *Last defined on version*: 28
+* *Last defined on version*: 124
 
 Ensure that no run is currently running or pending, and then create a new
 pending run with the given reason.  This also resets the retries_left
 column to `retries` (unless the sanity-check maximum runs has been
-reached).  This returns the task's updated status, or nothing if the
-current status was not as expected.
+reached).  The new pending run is also atomically enqueued into
+queue_pending_tasks via queue_pending_tasks_add_for_task, so a Pulse-publish
+failure in the JS caller can no longer leave the rerun invisible to workers.
+This returns the task's updated status, or nothing if the current status was
+not as expected.
 
 <details><summary>Function Body</summary>
 
 ```
 declare
-  runs jsonb;
+  task record;
   run jsonb;
   last_run_id int;
+  new_run_id int;
   max_runs_allowed constant int = 50;
 begin
   -- lock the task row to prevent concurrent updates
-  select tasks.runs
-  into runs
+  select tasks.runs, tasks.task_queue_id, tasks.priority, tasks.deadline
+  into task
   from tasks
   where tasks.task_id = rerun_task.task_id
   for update;
 
-  if runs is null then
+  if task.runs is null then
     -- the task row was not found
     return;
   end if;
 
-  last_run_id := jsonb_array_length(runs) - 1;
+  last_run_id := jsonb_array_length(task.runs) - 1;
   if last_run_id >= 0 then
     -- verify the most recent run is not pending or running
-    run = runs -> last_run_id;
+    run = task.runs -> last_run_id;
     if run ->> 'state' in ('pending', 'running') then
       return;
     end if;
@@ -5611,6 +6062,8 @@ begin
   if last_run_id + 1 >= max_runs_allowed then
     return;
   end if;
+
+  new_run_id := last_run_id + 1;
 
   update tasks
   set
@@ -5622,6 +6075,11 @@ begin
         'scheduled', now())),
     taken_until = null
   where tasks.task_id = rerun_task.task_id;
+
+  perform queue_pending_tasks_add_for_task(
+    task.task_queue_id, task.priority, task.deadline,
+    rerun_task.task_id, new_run_id
+  );
 
   return query
   select tasks.retries_left, tasks.runs, tasks.taken_until
@@ -5645,13 +6103,18 @@ end
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
-* *Last defined on version*: 28
+* *Last defined on version*: 124
 
 Resolve the given run with the given state and reason, setting
 run.resolved and resetting `taken_until`.  If `retry_reason` is not null
 and there are `retries_left`, a new pending run is added, and
-`retries_left` is decremented.  This returns the task's updated status,
-or nothing if the current status was not as expected.
+`retries_left` is decremented.  When a retry run is added, it is also
+atomically enqueued into queue_pending_tasks via
+queue_pending_tasks_add_for_task, so a Pulse-publish failure in the JS
+caller (e.g. reportException, workerremovedresolver) can no longer leave
+the retry pending in tasks.runs but missing from the workers' claimable
+queue.  This returns the task's updated status, or nothing if the current
+status was not as expected.
 
 <details><summary>Function Body</summary>
 
@@ -5660,10 +6123,11 @@ declare
   task record;
   run jsonb;
   new_runs jsonb;
-  new_taken_until timestamptz;
+  added_retry boolean := false;
+  new_run_id int;
 begin
   -- lock the task row to prevent concurrent updates
-  select tasks.retries_left, tasks.runs
+  select tasks.retries_left, tasks.runs, tasks.task_queue_id, tasks.priority, tasks.deadline
   into task
   from tasks
   where tasks.task_id = resolve_task.task_id
@@ -5700,6 +6164,7 @@ begin
         'reasonCreated', retry_reason,
         'scheduled', now()));
     task.retries_left = task.retries_left - 1;
+    added_retry := true;
   end if;
 
   update tasks
@@ -5708,6 +6173,14 @@ begin
     runs = new_runs,
     taken_until = null
   where tasks.task_id = resolve_task.task_id;
+
+  if added_retry then
+    new_run_id := jsonb_array_length(new_runs) - 1;
+    perform queue_pending_tasks_add_for_task(
+      task.task_queue_id, task.priority, task.deadline,
+      resolve_task.task_id, new_run_id
+    );
+  end if;
 
   return query
   select tasks.retries_left, tasks.runs, tasks.taken_until
@@ -5847,9 +6320,13 @@ end
   * `retries_left integer`
   * `runs jsonb`
   * `taken_until timestamptz`
-* *Last defined on version*: 28
+* *Last defined on version*: 124
 
 Schedule the initial run for a task, moving the task from "unscheduled" to "pending".
+Also atomically enqueues the new pending run into queue_pending_tasks via
+queue_pending_tasks_add_for_task, so a Pulse-publish failure in the JS caller
+can no longer leave a task pending in tasks.runs but missing from the workers'
+claimable queue.
 This returns the task's updated status, or nothing if the current status was not
 as expected.
 
@@ -5857,22 +6334,22 @@ as expected.
 
 ```
 declare
-  runs jsonb;
+  task record;
   run_id int;
 begin
   -- lock the task row to prevent concurrent updates
-  select tasks.runs
-  into runs
+  select tasks.runs, tasks.task_queue_id, tasks.priority, tasks.deadline
+  into task
   from tasks
   where tasks.task_id = schedule_task.task_id
   for update;
 
-  if runs is null then
+  if task.runs is null then
     -- the task row was not found
     return;
   end if;
 
-  run_id := jsonb_array_length(runs);
+  run_id := jsonb_array_length(task.runs);
   if run_id != 0 then
     return;
   end if;
@@ -5886,6 +6363,15 @@ begin
         'scheduled', now())),
     taken_until = null
   where tasks.task_id = schedule_task.task_id;
+
+  -- Reached only after the UPDATE ran (all earlier branches `return`
+  -- without modifying tasks.runs). If you add an early-return below
+  -- the UPDATE above, move this PERFORM into the UPDATE's success
+  -- path to keep the tasks.runs / queue_pending_tasks invariant.
+  perform queue_pending_tasks_add_for_task(
+    task.task_queue_id, task.priority, task.deadline,
+    schedule_task.task_id, 0
+  );
 
   return query
   select tasks.retries_left, tasks.runs, tasks.taken_until
@@ -6232,20 +6718,16 @@ end
 
 </details>
 
-### deprecated methods
-
-* `expire_secrets()` (compatibility guaranteed until v89.0.0)
-
 ## web_server
 
 * [`add_github_access_token`](#add_github_access_token)
+* [`consume_authorization_code`](#consume_authorization_code)
 * [`create_access_token`](#create_access_token)
 * [`create_authorization_code`](#create_authorization_code)
 * [`expire_access_tokens`](#expire_access_tokens)
 * [`expire_authorization_codes`](#expire_authorization_codes)
 * [`expire_sessions`](#expire_sessions)
 * [`get_access_token`](#get_access_token)
-* [`get_authorization_code`](#get_authorization_code)
 * [`load_github_access_token`](#load_github_access_token)
 * [`session_add`](#session_add)
 * [`session_load`](#session_load)
@@ -6280,6 +6762,44 @@ begin
   update
   set encrypted_access_token = encrypted_access_token_in
   where github_access_tokens.user_id = add_github_access_token.user_id_in;
+end
+```
+
+</details>
+
+### consume_authorization_code
+
+* *Mode*: write
+* *Arguments*:
+  * `code_in text`
+* *Returns*: `table`
+  * `code text`
+  * `client_id text`
+  * `redirect_uri text`
+  * `identity text`
+  * `identity_provider_id text`
+  * `expires timestamptz`
+  * `client_details jsonb`
+* *Last defined on version*: 126
+
+Atomically delete the authorization code row matching `code_in` and
+return its contents. If no such row exists, the returned set is empty.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  delete from authorization_codes
+  where authorization_codes.code = code_in
+  returning
+    authorization_codes.code,
+    authorization_codes.client_id,
+    authorization_codes.redirect_uri,
+    authorization_codes.identity,
+    authorization_codes.identity_provider_id,
+    authorization_codes.expires,
+    authorization_codes.client_details;
 end
 ```
 
@@ -6496,43 +7016,6 @@ end
 
 </details>
 
-### get_authorization_code
-
-* *Mode*: read
-* *Arguments*:
-  * `code_in text`
-* *Returns*: `table`
-  * `code text`
-  * `client_id text`
-  * `redirect_uri text`
-  * `identity text`
-  * `identity_provider_id text`
-  * `expires timestamptz`
-  * `client_details jsonb`
-* *Last defined on version*: 39
-
-Get an authorization code entry given a code.
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    authorization_codes.code,
-    authorization_codes.client_id,
-    authorization_codes.redirect_uri,
-    authorization_codes.identity,
-    authorization_codes.identity_provider_id,
-    authorization_codes.expires,
-    authorization_codes.client_details
-  from authorization_codes
-  where authorization_codes.code = code_in;
-end
-```
-
-</details>
-
 ### load_github_access_token
 
 * *Mode*: read
@@ -6688,7 +7171,7 @@ end
 * [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
-* [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
+* [`get_non_stopped_workers_with_launch_config_scanner_after`](#get_non_stopped_workers_with_launch_config_scanner_after)
 * [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
 * [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
@@ -7097,7 +7580,7 @@ end
 
 </details>
 
-### get_non_stopped_workers_with_launch_config_scanner
+### get_non_stopped_workers_with_launch_config_scanner_after
 
 * *Mode*: read
 * *Arguments*:
@@ -7107,7 +7590,9 @@ end
   * `providers_filter_cond_in text`
   * `providers_filter_value_in text`
   * `page_size_in integer`
-  * `page_offset_in integer`
+  * `after_worker_pool_id_in text`
+  * `after_worker_group_in text`
+  * `after_worker_id_in text`
 * *Returns*: `table`
   * `worker_pool_id text`
   * `worker_group text`
@@ -7126,18 +7611,30 @@ end
   * `quarantine_until timestamptz`
   * `first_claim timestamptz`
   * `last_date_active timestamptz`
-* *Last defined on version*: 105
+* *Last defined on version*: 125
 
-Get non-stopped workers filtered by the optional arguments,
-ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset `page_offset`.
-The `quaratine_until` contains NULL or a date in the past if the
-worker is not quarantined, otherwise the date until which it is
-quaratined. `first_claim` and `last_date_active` contains information
-known to the queue service about the worker.
-`providers_filter_cond` and `providers_filter_value` used to
-filter `=` or `<>` provider by value.
+Get non-stopped workers filtered by the optional arguments, ordered by
+`(worker_pool_id, worker_group, worker_id)`. Uses keyset pagination via
+the `after_*_in` parameters: pass nulls to fetch the first page, then
+pass the last row's `(worker_pool_id, worker_group, worker_id)` to fetch
+the next page. Unlike the offset-based variant
+`get_non_stopped_workers_with_launch_config_scanner`, this is robust to
+concurrent inserts and deletes during a long-running scan — the cursor
+moves strictly forward through a unique key, so each row is returned at
+most once.
+
+Trade-off: rows inserted with a sort key *before* the current cursor
+are silently skipped for the remainder of the scan. This is fine for
+periodic scanners (worker-scanner / provisioner) that re-scan from the
+beginning each loop, but callers requiring "every row that existed at
+any point during the scan" should not use this function.
+
+`quarantine_until` contains NULL or a date in the past if the worker is
+not quarantined, otherwise the date until which it is quarantined.
+`first_claim` and `last_date_active` contain information known to the
+queue service about the worker. `providers_filter_cond` and
+`providers_filter_value` are used to filter `=` or `<>` provider by
+value (comma-separated list).
 
 <details><summary>Function Body</summary>
 
@@ -7180,10 +7677,15 @@ begin
         when providers_filter_cond_in = '<>'
           then workers.provider_id <> ALL(string_to_array(providers_filter_value_in, ','))
       end
-      )
-  order by worker_pool_id, worker_group, worker_id
-  limit get_page_limit(page_size_in)
-  offset get_page_offset(page_offset_in);
+      ) and
+    -- Each arg is null-checked individually so the codegen marks all
+    -- three as nullable; short-circuit OR keeps runtime semantics
+    -- identical to a single composite null check.
+    (after_worker_pool_id_in is null or after_worker_group_in is null or after_worker_id_in is null or
+      (workers.worker_pool_id, workers.worker_group, workers.worker_id) >
+      (after_worker_pool_id_in, after_worker_group_in, after_worker_id_in))
+  order by workers.worker_pool_id, workers.worker_group, workers.worker_id
+  limit get_page_limit(page_size_in);
 end
 ```
 
@@ -8474,7 +8976,7 @@ end
   * `updated_launch_configs text[]`
   * `created_launch_configs text[]`
   * `archived_launch_configs text[]`
-* *Last defined on version*: 105
+* *Last defined on version*: 116
 
 Creates or updates launch configs and marks the old ones as archived.
 If a launch config already exist but is archived, it would be unarchived.
@@ -8524,10 +9026,11 @@ begin
           wp_launch_config_id
           USING ERRCODE = 'unique_violation';
       END IF;
-      -- make sure it is not archived
+      -- make sure it is not archived and workerManager specific fields are updated
       UPDATE worker_pool_launch_configs
       SET is_archived = false,
-          last_modified = now()
+          last_modified = now(),
+          configuration = config
       WHERE
         worker_pool_id = worker_pool_id_in
         AND launch_config_id = wp_launch_config_id;

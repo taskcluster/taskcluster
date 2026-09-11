@@ -15,6 +15,7 @@ properties:
   schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
   projectId: {$ref: "task.json#/properties/projectId"}
   taskGroupId: {$ref: "task.json#/properties/taskGroupId"}
+  priority: {$ref: "task.json#/properties/priority"}
   deadline:         {$const: deadline}
   expires:          {$const: expires}
   retriesLeft:

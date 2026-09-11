@@ -13,6 +13,12 @@ import 'codemirror/theme/material.css';
 import './yaml-lint';
 import './json-lint';
 
+// react-codemirror2 compares option values by identity
+// non-primitive values should be kept stable to avoid rebuild CodeMirror's gutters
+// on every React render (which also included renders caused by unrelated form fields)
+const DEFAULT_EXTRA_KEYS = { Tab: false };
+const DEFAULT_GUTTERS = ['CodeMirror-lint-markers'];
+
 @withStyles({
   root: {
     width: '100%',
@@ -43,7 +49,7 @@ export default class CodeEditor extends Component {
     className: null,
   };
 
-  handleTextUpdate = (editor, data, value) => {
+  handleTextUpdate = (_editor, _data, value) => {
     if (this.props.onChange) {
       this.props.onChange(value);
     }
@@ -55,8 +61,8 @@ export default class CodeEditor extends Component {
       mode: 'application/json',
       theme: 'material',
       indentWithTabs: false,
-      extraKeys: { Tab: false },
-      gutters: ['CodeMirror-lint-markers'],
+      extraKeys: DEFAULT_EXTRA_KEYS,
+      gutters: DEFAULT_GUTTERS,
       lineNumbers: true,
       ...options,
     };

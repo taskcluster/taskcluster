@@ -31,7 +31,7 @@ export class StaticProvider extends Provider {
       worker = Worker.fromApi(workerData);
       await worker.create(this.db);
     } catch (err) {
-      if (!err || err.code !== 'EntityAlreadyExists') {
+      if (err?.code !== 'EntityAlreadyExists') {
         throw err;
       }
       const existing = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
@@ -44,7 +44,7 @@ export class StaticProvider extends Provider {
     return worker;
   }
 
-  async updateWorker({ workerPool, worker, input }) {
+  async updateWorker({ worker, input }) {
     await worker.update(this.db, worker => {
       worker.expires = input.expires;
       worker.capacity = input.capacity;
@@ -57,11 +57,17 @@ export class StaticProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
+    const created = worker.created?.getTime?.();
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const now = Date.now();
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
       workerId: worker.workerId,
       reason,
+      workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
     });
 
     await worker.update(this.db, worker => {

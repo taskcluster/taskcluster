@@ -190,16 +190,16 @@
   },
   {
     "element": "h2",
-    "id": "azure-credentials",
+    "id": "gcp-credentials",
     "path": "/manual/deploying/cloud-credentials",
-    "subtitle": "Azure Credentials",
+    "subtitle": "GCP Credentials",
     "title": "Cloud Credentials"
   },
   {
     "element": "h2",
-    "id": "gcp-credentials",
+    "id": "github-credentials",
     "path": "/manual/deploying/cloud-credentials",
-    "subtitle": "GCP Credentials",
+    "subtitle": "Github credentials",
     "title": "Cloud Credentials"
   },
   {
@@ -687,115 +687,122 @@
   },
   {
     "element": "h1",
-    "id": "workers",
-    "path": "/manual/deploying/workers",
+    "id": "worker-manager-configuration",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": null,
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "api-rate-limit-overrides",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "API Rate Limit Overrides",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "aws",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "AWS",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "azure",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Azure",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h2",
     "id": "cautions",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Cautions",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "expected-resources",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Expected resources:",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "gcp-project",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "GCP Project",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "google",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Google",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
+  },
+  {
+    "element": "h3",
+    "id": "launch-configurations",
+    "path": "/manual/deploying/worker-manager-config",
+    "subtitle": "Launch configurations",
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h2",
     "id": "provider-configuration",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Provider Configuration",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "rate-limiting--retries",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Rate Limiting / Retries",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "recommended",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Recommended:",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "resource-dependencies",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Resource Dependencies",
-    "title": "Workers"
-  },
-  {
-    "element": "h3",
-    "id": "resource-groups",
-    "path": "/manual/deploying/workers",
-    "subtitle": "Resource Groups",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "service-accounts",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Service Accounts",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "spot-instances",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Spot Instances",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "static",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Static",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
+  },
+  {
+    "element": "h1",
+    "id": "worker-manager-configuration",
+    "path": "/manual/deploying/workers",
+    "subtitle": null,
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h1",
@@ -1443,9 +1450,9 @@
   },
   {
     "element": "h2",
-    "id": "sealing-task-gropus",
+    "id": "sealing-task-groups",
     "path": "/manual/tasks/groups",
-    "subtitle": "Sealing Task Gropus",
+    "subtitle": "Sealing Task Groups",
     "title": "Task Groups"
   },
   {
@@ -1982,6 +1989,13 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/hooks/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "index-service",
     "path": "/reference/core/index",
     "subtitle": null,
@@ -2031,10 +2045,24 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/index/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "notify-service",
     "path": "/reference/core/notify",
     "subtitle": null,
     "title": "Notify Service"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/notify/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -2094,10 +2122,24 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/purge-cache/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "secrets-service",
     "path": "/reference/core/secrets",
     "subtitle": null,
     "title": "Secrets Service"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/secrets/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -2168,6 +2210,13 @@
     "path": "/reference/core/web-server/github-login-strategy",
     "subtitle": "User Scopes",
     "title": "GitHub Login Strategy"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/web-server/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -2268,10 +2317,38 @@
     "title": "Azure Provider Type"
   },
   {
+    "element": "h3",
+    "id": "per-launch-configuration-resource-groups-armdeploymentresourcegroup",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Per-launch-configuration resource groups (`armDeploymentResourceGroup`)",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "provisioning-modes",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Provisioning Modes",
+    "title": "Azure Provider Type"
+  },
+  {
     "element": "h2",
     "id": "removing-workers",
     "path": "/reference/core/worker-manager/azure",
     "subtitle": "Removing Workers",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "resource-group-strategy",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Resource Group Strategy",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h3",
+    "id": "single-shared-resource-group-default",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Single shared resource group (default)",
     "title": "Azure Provider Type"
   },
   {
@@ -2412,6 +2489,13 @@
     "id": "weight-adjustment",
     "path": "/reference/core/worker-manager/launch-configurations",
     "subtitle": "Weight Adjustment",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h4",
+    "id": "weight-distribution-playground",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Weight Distribution Playground",
     "title": "Worker-Manager - Launch Configurations"
   },
   {
@@ -2626,6 +2710,13 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/integrations/github/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "taskcluster-yml-version-0",
     "path": "/reference/integrations/github/taskcluster-yml-v0",
     "subtitle": null,
@@ -2765,6 +2856,20 @@
     "title": "Taskcluster Yml Version 1"
   },
   {
+    "element": "h3",
+    "id": "hook-failures",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Hook Failures",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "id": "hook-trigger-payload",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Hook Trigger Payload",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
     "element": "h2",
     "id": "json-e-rendering",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
@@ -2829,6 +2934,13 @@
   },
   {
     "element": "h3",
+    "id": "scopes-for-hooks",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Scopes for Hooks",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
     "id": "tag-metadata",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
     "subtitle": "Tag Metadata",
@@ -2860,6 +2972,13 @@
     "id": "trigger-builds-on-comments",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
     "subtitle": "Trigger builds on comments",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "id": "triggering-hooks",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Triggering Hooks",
     "title": "Taskcluster Yml Version 1"
   },
   {
@@ -2945,6 +3064,34 @@
     "path": "/reference/platform/auth/audit",
     "subtitle": "Worker manager",
     "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "example-cloning-a-private-repository",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: cloning a private repository",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "id": "example-getting-a-token-from-python",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: getting a token from python",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "id": "github-repository-tokens",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Github repository tokens",
+    "title": null
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/platform/auth/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -3081,6 +3228,13 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/platform/object/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "simple-downloads",
     "path": "/reference/platform/object/simple-downloads",
     "subtitle": null,
@@ -3169,41 +3323,6 @@
     "path": "/reference/platform/queue",
     "subtitle": "Usage",
     "title": "Queue Service"
-  },
-  {
-    "element": "h1",
-    "id": "actions",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": null,
-    "title": "Actions"
-  },
-  {
-    "element": "h3",
-    "id": "context",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Context",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "defining-actions",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Defining Actions",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "triggering-actions-in-a-user-interface",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Triggering Actions in a User Interface",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "triggering-actions-in-automation",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Triggering Actions in Automation",
-    "title": "Actions"
   },
   {
     "element": "h1",
@@ -3431,195 +3550,6 @@
   },
   {
     "element": "h1",
-    "id": "docker-worker",
-    "path": "/reference/workers/docker-worker",
-    "subtitle": null,
-    "title": "Docker Worker"
-  },
-  {
-    "element": "h2",
-    "id": "deployment",
-    "path": "/reference/workers/docker-worker",
-    "subtitle": "Deployment",
-    "title": "Docker Worker"
-  },
-  {
-    "element": "h2",
-    "id": "using-the-worker",
-    "path": "/reference/workers/docker-worker",
-    "subtitle": "Using the Worker",
-    "title": "Docker Worker"
-  },
-  {
-    "element": "h1",
-    "id": "caches",
-    "path": "/reference/workers/docker-worker/caches",
-    "subtitle": null,
-    "title": "Caches"
-  },
-  {
-    "element": "h1",
-    "id": "capabilities",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": null,
-    "title": "Capabilities"
-  },
-  {
-    "element": "h3",
-    "id": "cpu",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "cpu",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h2",
-    "id": "devices",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "Devices",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h3",
-    "id": "hostsharedmemory",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "hostSharedMemory",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h3",
-    "id": "kvm",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "kvm",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h3",
-    "id": "loopbackaudio",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "loopbackAudio",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h3",
-    "id": "loopbackvideo",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "loopbackVideo",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h2",
-    "id": "privileged",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "Privileged",
-    "title": "Capabilities"
-  },
-  {
-    "element": "h1",
-    "id": "deployment",
-    "path": "/reference/workers/docker-worker/deployment",
-    "subtitle": null,
-    "title": "Deployment"
-  },
-  {
-    "element": "h2",
-    "id": "release-format",
-    "path": "/reference/workers/docker-worker/deployment",
-    "subtitle": "Release Format",
-    "title": "Deployment"
-  },
-  {
-    "element": "h1",
-    "id": "environment-variables",
-    "path": "/reference/workers/docker-worker/environment",
-    "subtitle": null,
-    "title": "Environment Variables"
-  },
-  {
-    "element": "h2",
-    "id": "encrypted-environment-variables",
-    "path": "/reference/workers/docker-worker/environment",
-    "subtitle": "Encrypted Environment Variables",
-    "title": "Environment Variables"
-  },
-  {
-    "element": "h2",
-    "id": "reserved-environment-variables",
-    "path": "/reference/workers/docker-worker/environment",
-    "subtitle": "Reserved Environment Variables",
-    "title": "Environment Variables"
-  },
-  {
-    "element": "h1",
-    "id": "features",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": null,
-    "title": "Features"
-  },
-  {
-    "element": "h2",
-    "id": "feature-allowptrace",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": "Feature: `allowPtrace`",
-    "title": "Features"
-  },
-  {
-    "element": "h2",
-    "id": "feature-dockersave",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": "Feature: `dockerSave`",
-    "title": "Features"
-  },
-  {
-    "element": "h2",
-    "id": "feature-interactive",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": "Feature: `interactive`",
-    "title": "Features"
-  },
-  {
-    "element": "h2",
-    "id": "feature-taskclusterproxy",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": "Feature: `taskclusterProxy`",
-    "title": "Features"
-  },
-  {
-    "element": "h1",
-    "id": "scopes",
-    "path": "/reference/workers/docker-worker/scopes",
-    "subtitle": null,
-    "title": "Scopes"
-  },
-  {
-    "element": "h2",
-    "id": "caches",
-    "path": "/reference/workers/docker-worker/scopes",
-    "subtitle": "Caches",
-    "title": "Scopes"
-  },
-  {
-    "element": "h2",
-    "id": "capabilities",
-    "path": "/reference/workers/docker-worker/scopes",
-    "subtitle": "Capabilities",
-    "title": "Scopes"
-  },
-  {
-    "element": "h2",
-    "id": "features",
-    "path": "/reference/workers/docker-worker/scopes",
-    "subtitle": "Features",
-    "title": "Scopes"
-  },
-  {
-    "element": "h2",
-    "id": "images",
-    "path": "/reference/workers/docker-worker/scopes",
-    "subtitle": "Images",
-    "title": "Scopes"
-  },
-  {
-    "element": "h1",
     "id": "generic-worker",
     "path": "/reference/workers/generic-worker",
     "subtitle": null,
@@ -3725,27 +3655,6 @@
   },
   {
     "element": "h2",
-    "id": "acquire-taskcluster-credentials-for-running-tests",
-    "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Acquire taskcluster credentials for running tests",
-    "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h2",
-    "id": "build-from-source",
-    "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Build from source",
-    "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h2",
-    "id": "create-a-test-job",
-    "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Create a test job",
-    "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h2",
     "id": "installation-on-worker-machines",
     "path": "/reference/workers/generic-worker/installing",
     "subtitle": "Installation on worker machines",
@@ -3753,9 +3662,9 @@
   },
   {
     "element": "h3",
-    "id": "linux-insecuremultiuser-build",
+    "id": "linux---multiuserinsecure-build",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Linux insecure/multiuser build",
+    "subtitle": "Linux - multiuser/insecure build",
     "title": "Installing Generic-Worker"
   },
   {
@@ -3767,37 +3676,16 @@
   },
   {
     "element": "h2",
-    "id": "obtain-prebuilt-release",
+    "id": "option-1-obtain-prebuilt-release",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Obtain prebuilt release",
-    "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h3",
-    "id": "option-1",
-    "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Option 1",
-    "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h3",
-    "id": "option-2",
-    "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Option 2",
+    "subtitle": "Option 1: Obtain prebuilt release",
     "title": "Installing Generic-Worker"
   },
   {
     "element": "h2",
-    "id": "set-up-your-env",
+    "id": "option-2-build-from-source",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Set up your env",
-    "title": "Installing Generic-Worker"
-  },
-  {
-    "element": "h2",
-    "id": "start-the-generic-worker",
-    "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Start the generic worker",
+    "subtitle": "Option 2: Build from source",
     "title": "Installing Generic-Worker"
   },
   {
@@ -4092,13 +3980,6 @@
     "id": "workers",
     "path": "/reference/workers/worker-runner/workers",
     "subtitle": null,
-    "title": "Workers"
-  },
-  {
-    "element": "h2",
-    "id": "docker-worker",
-    "path": "/reference/workers/worker-runner/workers",
-    "subtitle": "docker-worker",
     "title": "Workers"
   },
   {

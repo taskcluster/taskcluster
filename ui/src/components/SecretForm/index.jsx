@@ -20,6 +20,7 @@ import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
 @withStyles(theme => ({
@@ -57,8 +58,7 @@ import { secret } from '../../utils/prop-types';
 /** A form to view/edit/create a secret */
 export default class SecretForm extends Component {
   static propTypes = {
-    /** A GraphQL secret response. Not needed when creating a new secret.  */
-    // eslint-disable-next-line react/no-unused-prop-types
+    /** A secret response. Not needed when creating a new secret.  */
     secret,
     /** Set to `true` when creating a new secret. */
     isNewSecret: bool,
@@ -147,7 +147,7 @@ export default class SecretForm extends Component {
       load(editorValue);
 
       return secretName && expires && editorValue;
-    } catch (err) {
+    } catch (_err) {
       return false;
     }
   };
@@ -242,7 +242,7 @@ export default class SecretForm extends Component {
             tooltipProps={{ title: 'Save Secret' }}
             requiresAuth
             color="secondary"
-            variant="round"
+            variant="circular"
             className={classes.saveIcon}
             disabled={loading || !this.validSecret() || !isSecretDirty}
             onClick={this.handleSaveSecret}>
@@ -256,13 +256,18 @@ export default class SecretForm extends Component {
               }}
               tooltipProps={{ title: 'Save Secret' }}
               classes={{ root: classes.successIcon }}
-              variant="round"
+              variant="circular"
               className={classes.saveIcon}
               disabled={loading || !this.validSecret() || !isSecretDirty}
               onClick={this.handleSaveSecret}>
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="secret"
+                entityId={secretName}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

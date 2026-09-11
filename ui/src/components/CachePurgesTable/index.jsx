@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
-import { string, func, shape, arrayOf } from 'prop-types';
+import { string, bool, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DateDistance from '../DateDistance';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import { VIEW_CACHE_PURGES_PAGE_SIZE } from '../../utils/constants';
 import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
-import { pageInfo, cachePurge } from '../../utils/prop-types';
+import { pagination, cachePurge } from '../../utils/prop-types';
 
 const sorted = pipe(
-  rSort((a, b) => sort(a.node.cacheName, b.node.cacheName)),
-  map(({ node: { cacheName } }) => cacheName)
+  rSort((a, b) => sort(a.cacheName, b.cacheName)),
+  map(({ cacheName }) => cacheName)
 );
 
 /**
@@ -21,19 +21,19 @@ const sorted = pipe(
  */
 export default class CachePurgesTable extends Component {
   static propTypes = {
-    /** Callback function fired when a page is changed. */
-    onPageChange: func.isRequired,
-    /** CachePurges GraphQL PageConnection instance. */
-    cachePurgesConnection: shape({
-      edges: arrayOf(cachePurge),
-      pageInfo,
-    }).isRequired,
+    /** A flat array of cache purge objects. */
+    cachePurges: arrayOf(cachePurge).isRequired,
     /** A search term to refine the list of cache purges. */
     searchTerm: string,
+    loading: bool,
+    ...pagination,
   };
 
   static defaultProps = {
     searchTerm: null,
+    loading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
   state = {
@@ -41,39 +41,25 @@ export default class CachePurgesTable extends Component {
     sortDirection: null,
   };
 
-  createSortedCachePurgesConnection = memoize(
-    (cachePurgesConnection, sortBy, sortDirection, searchTerm) => {
+  createSortedCachePurges = memoize(
+    (cachePurges, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = sortBy ? camelCase(sortBy) : '';
-      const filteredCache = searchTerm
-        ? cachePurgesConnection.edges.filter(({ node }) =>
-            node.cacheName.includes(searchTerm)
-          )
-        : cachePurgesConnection.edges;
+      const filtered = searchTerm
+        ? cachePurges.filter(item => item.cacheName.includes(searchTerm))
+        : cachePurges;
 
-      return {
-        ...cachePurgesConnection,
-        edges: [...filteredCache].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+      return [...filtered].sort((a, b) => {
+        const first =
+          sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+        const second =
+          sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
 
-          return sort(firstElement, secondElement);
-        }),
-      };
+        return sort(first, second);
+      });
     },
     {
-      serializer: ([
-        cachePurgesConnection,
-        sortBy,
-        sortDirection,
-        searchTerm,
-      ]) => {
-        const ids = sorted(cachePurgesConnection.edges);
+      serializer: ([cachePurges, sortBy, sortDirection, searchTerm]) => {
+        const ids = sorted(cachePurges);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
@@ -88,30 +74,46 @@ export default class CachePurgesTable extends Component {
   };
 
   render() {
-    const { onPageChange, cachePurgesConnection, searchTerm } = this.props;
+    const {
+      cachePurges,
+      searchTerm,
+      loading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedCachePurgesConnection = this.createSortedCachePurgesConnection(
-      cachePurgesConnection,
+    const sortedCachePurges = this.createSortedCachePurges(
+      cachePurges,
       sortBy,
       sortDirection,
       searchTerm
     );
 
     return (
-      <ConnectionDataTable
+      <PaginatedDataTable
         searchTerm={searchTerm}
         size="medium"
-        connection={sortedCachePurgesConnection}
+        items={sortedCachePurges}
         pageSize={VIEW_CACHE_PURGES_PAGE_SIZE}
+        page={page}
+        loading={loading}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onNextPage={onNextPage}
+        onPreviousPage={onPreviousPage}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
-        onPageChange={onPageChange}
         headers={['Provisioner ID', 'Worker Type', 'Cache Name', 'Before']}
-        renderRow={({
-          node: { provisionerId, workerType, cacheName, before },
-        }) => (
-          <TableRow key={cacheName}>
+        renderRow={(
+          { provisionerId, workerType, cacheName, before },
+          _style,
+          index
+        ) => (
+          <TableRow key={cacheName || index}>
             <TableCell>{provisionerId}</TableCell>
             <TableCell>{workerType}</TableCell>
             <TableCell>{cacheName}</TableCell>

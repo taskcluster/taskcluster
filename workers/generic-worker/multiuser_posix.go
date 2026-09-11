@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	osuser "os/user"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -15,10 +16,11 @@ import (
 	"maps"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v88/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v108/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -43,7 +45,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars(), task.pd)
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], task.TaskDir(), task.EnvVars(), task.pd)
 	if err != nil {
 		return err
 	}
@@ -82,12 +84,13 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	var processCmd *process.Command
 	var err error
 
-	env = append(env, "TERM=hterm-256color")
+	env = append(env, "TERM=xterm-256color")
+	taskDir := task.TaskDir()
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env, task.pd)
+		processCmd, err = process.NewCommand(cmd, taskDir, env, task.pd)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env, task.pd)
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskDir, env, task.pd)
 	}
 
 	return processCmd.Cmd, err
@@ -113,7 +116,7 @@ func install(arguments map[string]any) (err error) {
 func RenameCrossDevice(oldpath, newpath string) error {
 	// TODO: here we should be able to rename when oldpath and newpath are on
 	// different partitions - for now this will cover 99% of cases.
-	return os.Rename(oldpath, newpath)
+	return safefs.Rename(oldpath, newpath)
 }
 
 // we put this in init() instead of startup() as we want tests to be able to change
@@ -133,17 +136,18 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv := map[string]string{}
 	taskEnvArray := []string{}
 
+	ctx := task.GetContext()
 	// Defaults that can be overwritten by task payload env
-	taskEnv["HOME"] = filepath.Join(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name)
+	taskEnv["HOME"] = filepath.Join(gwruntime.UserHomeDirectoriesParent(), ctx.User.Name)
 	taskEnv["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-	taskEnv["USER"] = taskContext.User.Name
+	taskEnv["USER"] = ctx.User.Name
 
 	maps.Copy(taskEnv, task.Payload.Env)
 
 	// Values that should be overwritten if also set in task definition
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
-	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_WORKDIR"] = ctx.TaskDir
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {
@@ -164,55 +168,21 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
-	if dir == "" || newOwnerUsername == "" || cache == nil {
-		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
-	}
-
-	// Do nothing if the current owner is the same as the new owner
-	if cache.OwnerUsername == newOwnerUsername {
-		return nil
-	}
-
-	switch runtime.GOOS {
-	case "darwin":
-		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":staff", dir)
-	case "linux":
-		return host.Run("/usr/bin/chown", "-R", "--quiet", "--from", cache.OwnerUID, newOwnerUsername+":"+newOwnerUsername, dir)
-	case "freebsd":
-		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":"+newOwnerUsername, dir)
-	}
-	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
-}
-
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
-	// We'll use chown binary rather that os.Chown here since:
-	// 1) we have user/group names not ids, and can avoid extra code to look up
-	//    their values
-	// 2) Perhaps we would need a CGO_ENABLED build to call user.Lookup and
-	//    user.LookupGroup (see https://bugzil.la/1566159)
-	// 3) os.Chown doesn't have a recursive option; maybe a third party library
-	//    does, but that's more bloat to import/maintain, or we'd need to write
-	//    our own
-	// 4) we get logging of commands run for free
-	if recurse {
-		switch runtime.GOOS {
-		case "darwin":
-			return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", fileOrDir)
-		case "linux":
-			return host.Run("/bin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
-		case "freebsd":
-			return host.Run("/usr/sbin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
-		}
-		return fmt.Errorf("unknown platform: %v", runtime.GOOS)
+	usr, err := osuser.Lookup(user.Name)
+	if err != nil {
+		return fmt.Errorf("could not look up user %v: %w", user.Name, err)
 	}
-	switch runtime.GOOS {
-	case "darwin":
-		return host.Run("/usr/sbin/chown", user.Name+":staff", fileOrDir)
-	case "linux":
-		return host.Run("/bin/chown", user.Name+":"+user.Name, fileOrDir)
-	case "freebsd":
-		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
+
+	uid, err := strconv.Atoi(usr.Uid)
+	if err != nil {
+		return fmt.Errorf("could not parse uid %q of user %v: %w", usr.Uid, user.Name, err)
 	}
-	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
+	gid, err := strconv.Atoi(usr.Gid)
+	if err != nil {
+		return fmt.Errorf("could not parse gid %q of user %v: %w", usr.Gid, user.Name, err)
+	}
+
+	log.Printf("Granting %v (%v:%v) ownership of %v", user.Name, uid, gid, fileOrDir)
+	return safefs.Chown(fileOrDir, uid, gid, recurse)
 }

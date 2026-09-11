@@ -1,8 +1,7 @@
 package d2g
 
 import (
-	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/genericworker"
 )
 
 func (din *DockerImageName) FileMounts() ([]genericworker.FileMount, error) {
@@ -10,11 +9,5 @@ func (din *DockerImageName) FileMounts() ([]genericworker.FileMount, error) {
 }
 
 func (din *DockerImageName) String() string {
-	return shell.Escape(string(*din))
-}
-
-func (din *DockerImageName) ImageLoader() ImageLoader {
-	return &RegistryImageLoader{
-		Image: din,
-	}
+	return string(*din)
 }

@@ -11,9 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/host"
-	gwruntime "github.com/taskcluster/taskcluster/v88/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/win32"
+	"golang.org/x/sys/windows"
+
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v108/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
@@ -21,6 +23,7 @@ var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool
 type PlatformData struct {
 	CommandAccessToken syscall.Token
 	LoginInfo          *LoginInfo
+	HideCmdWindow      bool
 }
 
 func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
@@ -81,22 +84,33 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 		combined, err = win32.MergeEnvLists(&parentEnv, &env)
 
 	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	cmd.Env = *combined
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
-	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
-	if !isWindows8OrGreater {
-		creationFlags |= win32.CREATE_BREAKAWAY_FROM_JOB
+	creationFlags := uint32(windows.CREATE_NEW_PROCESS_GROUP)
+
+	if pd.HideCmdWindow {
+		creationFlags |= windows.CREATE_NO_WINDOW
+	} else {
+		creationFlags |= windows.CREATE_NEW_CONSOLE
 	}
+
+	if !isWindows8OrGreater {
+		creationFlags |= windows.CREATE_BREAKAWAY_FROM_JOB
+	}
+
 	if accessToken != 0 {
 		cmd.SysProcAttr = &syscall.SysProcAttr{
 			Token:         accessToken,
 			CreationFlags: creationFlags,
 		}
 	}
+
 	return &Command{
 		Cmd:   cmd,
 		abort: make(chan struct{}),
@@ -122,7 +136,7 @@ func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, en
 
 func (c *Command) Kill() (killOutput string, err error) {
 	// abort even if process hasn't started
-	close(c.abort)
+	c.abortOnce.Do(func() { close(c.abort) })
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {

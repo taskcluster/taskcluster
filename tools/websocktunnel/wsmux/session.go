@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v88/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v108/tools/websocktunnel/util"
 )
 
 const (
@@ -340,14 +340,14 @@ func (s *Session) recvLoop() {
 			break
 		}
 		if t != websocket.BinaryMessage {
-			s.logger.Print("did not receive binary message")
-			continue
+			s.abortProtocol(ErrUnexpectedMessageType)
+			break
 		}
 
 		fr, err := deserializeFrame(msg)
 		if err != nil {
-			s.logger.Print(err)
-			continue
+			s.abortProtocol(err)
+			break
 		}
 
 		if fr.msg == msgSYN {
@@ -401,6 +401,12 @@ func (s *Session) abort(e error) {
 	s.acceptErr = e
 	s.mu.Unlock()
 	s.Close()
+}
+
+func (s *Session) abortProtocol(e error) {
+	closeMsg := websocket.FormatCloseMessage(websocket.ClosePolicyViolation, e.Error())
+	_ = s.conn.WriteControl(websocket.CloseMessage, closeMsg, time.Now().Add(time.Second))
+	s.abort(e)
 }
 
 // loops over streams and removes any streams that are dead

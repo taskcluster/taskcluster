@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import TopoSort from 'topo-sort';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-loader');
@@ -7,23 +7,23 @@ const debug = debugFactory('@taskcluster/lib-loader');
  * Validate component definition
  */
 function validateComponent(def, name) {
-  let e = 'Invalid component definition: ' + name;
+  const e = `Invalid component definition: ${name}`;
   // Check that it's an object
   if (typeof def !== 'object' && def !== null && def !== undefined) {
-    throw new Error(e + ' must be an object, null or undefined');
+    throw new Error(`${e} must be an object, null or undefined`);
   }
   // Check that is object has a setup function
   if (!(def.setup instanceof Function)) {
-    throw new Error(e + ' is missing setup function');
+    throw new Error(`${e} is missing setup function`);
   }
   // If requires is defined, then we check that it's an array of strings
   if (def.requires) {
-    if (!(def.requires instanceof Array)) {
-      throw new Error(e + ' if present, requires must be array');
+    if (!Array.isArray(def.requires)) {
+      throw new Error(`${e} if present, requires must be array`);
     }
     // Check that all entries in def.requires are strings
     if (!def.requires.every(entry => typeof entry === 'string')) {
-      throw new Error(e + ' all items in requires must be strings');
+      throw new Error(`${e} all items in requires must be strings`);
     }
   }
 }
@@ -34,38 +34,40 @@ function validateComponent(def, name) {
  */
 function loader(componentDirectory, virtualComponents = {}) {
   assert(typeof componentDirectory === 'object');
-  if (virtualComponents instanceof Array) {
+  if (Array.isArray(virtualComponents)) {
     virtualComponents = virtualComponents.reduce((acc, k) => {
       acc[k] = null;
       return acc;
     }, {});
   }
   const virtualKeys = Object.keys(virtualComponents);
-  assert(Object.keys(componentDirectory).every(k => !virtualKeys.includes(k)),
-    'virtual keys must not have definitions in the loader');
+  assert(
+    Object.keys(componentDirectory).every(k => !virtualKeys.includes(k)),
+    'virtual keys must not have definitions in the loader'
+  );
   componentDirectory = Object.assign({}, componentDirectory);
 
   // Check for undefined components
   Object.entries(componentDirectory).forEach(([name, def]) => {
     validateComponent(def, name);
-    for (let dep of def.requires || []) {
+    for (const dep of def.requires || []) {
       if (!(dep in componentDirectory) && !(dep in virtualComponents)) {
-        throw new Error('Cannot require undefined component: ' + dep);
+        throw new Error(`Cannot require undefined component: ${dep}`);
       }
     }
   });
 
   // Do topological sort to check for cycles
-  let tsort = new TopoSort();
+  const tsort = new TopoSort();
   Object.entries(componentDirectory).forEach(([name, def]) => {
     tsort.add(name, def.requires || []);
   });
-  for (let name of Object.keys(virtualComponents)) {
+  for (const name of Object.keys(virtualComponents)) {
     tsort.add(name, []);
   }
   tsort.sort();
 
-  let load = function(target, options = {}) {
+  const load = (target, options = {}) => {
     options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
@@ -89,19 +91,19 @@ function loader(componentDirectory, virtualComponents = {}) {
     }
 
     // Keep state of loaded components, make the virtual ones immediately loaded
-    let loaded = {};
+    const loaded = {};
     Object.entries(options).forEach(([key, comp]) => {
       loaded[key] = Promise.resolve(comp);
     });
     // Load a component
     function recursiveLoad(target) {
       if (!loaded[target]) {
-        let def = componentDirectory[target];
+        const def = componentDirectory[target];
         // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
-        let requires = def.requires || [];
-        return loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
-          let ctx = {};
+        const requires = def.requires || [];
+        loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
+          const ctx = {};
           for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
           }
@@ -111,18 +113,19 @@ function loader(componentDirectory, virtualComponents = {}) {
             } catch (err) {
               reject(err);
             }
-          }).catch(function(err) {
+          }).catch(err => {
             debug(`error while loading component '${target}': ${err}`);
             throw err;
           });
         });
+        return loaded[target];
       }
       return loaded[target];
     }
     return recursiveLoad(target);
   };
 
-  load.crashOnError = function(target) {
+  load.crashOnError = target => {
     load(target).catch(err => {
       console.log(err.stack);
       process.exit(1);

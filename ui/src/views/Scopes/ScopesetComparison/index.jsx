@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { equals } from 'ramda';
 import { scopeUnion, scopeIntersection } from 'taskcluster-lib-scopes';
@@ -125,72 +125,68 @@ export default class ScopesetComparison extends Component {
 
     return (
       <Dashboard title="Compare Scopes">
-        <Fragment>
-          <Grid className={classes.editorGrid} container spacing={1}>
-            <Grid item xs={12} md={6}>
-              <Typography gutterBottom variant="subtitle1">
-                Scope A
-              </Typography>
-              <CodeEditor
-                className={classes.editor}
-                onChange={this.handleScopesAChange}
-                placeholder="new-scope:for-something:*"
-                mode="scopemode"
-                value={scopeTextA}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography gutterBottom variant="subtitle1">
-                Scope B
-              </Typography>
-              <CodeEditor
-                className={classes.editor}
-                onChange={this.handleScopesBChange}
-                placeholder="new-scope:for-something:*"
-                mode="scopemode"
-                value={scopeTextB}
-              />
-            </Grid>
+        <Grid className={classes.editorGrid} container spacing={1}>
+          <Grid item xs={12} md={6}>
+            <Typography gutterBottom variant="subtitle1">
+              Scope A
+            </Typography>
+            <CodeEditor
+              className={classes.editor}
+              onChange={this.handleScopesAChange}
+              placeholder="new-scope:for-something:*"
+              mode="scopemode"
+              value={scopeTextA}
+            />
           </Grid>
-          {scopesetDiff && cellColors && (
-            <Fragment>
-              {scopesetDiff.map((scopes, index) => (
-                <Grid key={scopes} container>
-                  <Grid item xs={6} className={classes[cellColors[index][0]]}>
-                    {scopes[0].length > 0 &&
-                      scopes[0].map(scope => (
-                        <Typography
-                          key={scope}
-                          variant="body2"
-                          className={classes.cellGrid}>
-                          {scope}
-                        </Typography>
-                      ))}
-                  </Grid>
-                  <Grid item xs={6} className={classes[cellColors[index][1]]}>
-                    {scopes[1].length > 0 &&
-                      scopes[1].map(scope => (
-                        <Typography
-                          key={scope}
-                          variant="body2"
-                          className={classes.cellGrid}>
-                          {scope}
-                        </Typography>
-                      ))}
-                  </Grid>
-                </Grid>
-              ))}
-            </Fragment>
-          )}
-          <Button
-            spanProps={{ className: classes.actionButton }}
-            tooltipProps={{ title: 'Compare Scopes' }}
-            color="secondary"
-            variant="round"
-            onClick={this.handleCompareScopesClick}>
-            <ScaleBalanceIcon />
-          </Button>
-        </Fragment>
+          <Grid item xs={12} md={6}>
+            <Typography gutterBottom variant="subtitle1">
+              Scope B
+            </Typography>
+            <CodeEditor
+              className={classes.editor}
+              onChange={this.handleScopesBChange}
+              placeholder="new-scope:for-something:*"
+              mode="scopemode"
+              value={scopeTextB}
+            />
+          </Grid>
+        </Grid>
+        {scopesetDiff &&
+          cellColors &&
+          scopesetDiff.map((scopes, index) => (
+            <Grid key={scopes} container>
+              <Grid item xs={6} className={classes[cellColors[index][0]]}>
+                {scopes[0].length > 0 &&
+                  scopes[0].map(scope => (
+                    <Typography
+                      key={scope}
+                      variant="body2"
+                      className={classes.cellGrid}>
+                      {scope}
+                    </Typography>
+                  ))}
+              </Grid>
+              <Grid item xs={6} className={classes[cellColors[index][1]]}>
+                {scopes[1].length > 0 &&
+                  scopes[1].map(scope => (
+                    <Typography
+                      key={scope}
+                      variant="body2"
+                      className={classes.cellGrid}>
+                      {scope}
+                    </Typography>
+                  ))}
+              </Grid>
+            </Grid>
+          ))}
+        <Button
+          spanProps={{ className: classes.actionButton }}
+          tooltipProps={{ title: 'Compare Scopes' }}
+          color="secondary"
+          variant="circular"
+          onClick={this.handleCompareScopesClick}>
+          <ScaleBalanceIcon />
+        </Button>
       </Dashboard>
     );
   }

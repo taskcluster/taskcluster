@@ -1,10 +1,10 @@
 import slugid from 'slugid';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import pg from 'pg';
 import { makePgUrl } from './util.js';
-import URL from 'url';
+import URL from 'node:url';
 
-export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
+export const postgresPrompts = ({ userConfig, prompts }) => {
   prompts.push({
     when: () => !userConfig.meta?.dbPublicIp,
     type: 'input',
@@ -16,15 +16,16 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.meta?.dbPrivateIp,
     type: 'input',
     name: 'meta.dbPrivateIp',
-    default: previous => (previous.meta || {}).dbPublicIp || (userConfig.meta || {}).dbPublicIp,
-    message: 'What is the private IP of your Postgres server? (used for access from services, use the public IP if you have not set up private IP access)',
+    default: previous => previous.meta?.dbPublicIp || userConfig.meta?.dbPublicIp,
+    message:
+      'What is the private IP of your Postgres server? (used for access from services, use the public IP if you have not set up private IP access)',
   });
 
   prompts.push({
     when: () => !userConfig.meta?.dbName,
     type: 'input',
     name: 'meta.dbName',
-    default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
+    default: previous => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
     message: 'What is the name of the Postgres database on the given server?',
     validate: dbName => {
       if (!/^[a-z0-9]+$/.test(dbName)) {
@@ -38,7 +39,7 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.meta?.dbAdminUsername,
     type: 'input',
     name: 'meta.dbAdminUsername',
-    default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
+    default: previous => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
     message: 'What is the username of the admin Postgres user (and also prefix for per-service usernames)?',
     validate: dbAdminUsername => {
       if (!/^[a-z0-9]+$/.test(dbAdminUsername)) {
@@ -57,7 +58,7 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
 };
 
 export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
-  let servicesNeedingUrls = [];
+  const servicesNeedingUrls = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
     // only examine services in configTmpl..
     if (!cfg.read_db_url) {
@@ -72,11 +73,13 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
 
     if (cfg.db_crypto_keys !== undefined) {
       if (!userConfig[name].db_crypto_keys) {
-        userConfig[name].db_crypto_keys = [{
-          id: 'dev-init',
-          algo: 'aes-256',
-          key: crypto.randomBytes(32).toString('base64'),
-        }];
+        userConfig[name].db_crypto_keys = [
+          {
+            id: 'dev-init',
+            algo: 'aes-256',
+            key: crypto.randomBytes(32).toString('base64'),
+          },
+        ];
       }
 
       if (userConfig[name].azure_crypto_key) {
@@ -109,8 +112,11 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
     return userConfig;
   }
 
-  const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } =
-    Object.assign({}, userConfig.meta || {}, answer.meta || {});
+  const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } = Object.assign(
+    {},
+    userConfig.meta || {},
+    answer.meta || {}
+  );
 
   const client = new pg.Client({
     host: dbPublicIp,
@@ -124,12 +130,13 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   await client.connect();
 
   try {
-    for (let serviceName of servicesNeedingUrls) {
+    for (const serviceName of servicesNeedingUrls) {
       const username = `${dbAdminUsername}_${serviceName}`;
       const password = `${slugid.v4()}${slugid.v4()}`;
       const url = makePgUrl({
         hostname: dbPrivateIp,
-        username, password,
+        username,
+        password,
         dbname: dbName,
       });
       console.log(`(Re)creating DB user ${username}`);

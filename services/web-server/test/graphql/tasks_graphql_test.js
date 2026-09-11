@@ -1,19 +1,45 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
+import WebSocket from 'ws';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  helper.withFakeAuthFactory(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
+  // Use mutable scopeOverride to allow tests to dynamically change auth scopes
+  let scopeOverride = null;
+
+  suiteSetup('withMutableAuthFactory', () => {
+    if (skipping()) {
+      return;
+    }
+    helper.load.inject(
+      'authFactory',
+      () =>
+        new taskcluster.Auth({
+          rootUrl: helper.rootUrl,
+          fake: {
+            currentScopes: async () => ({
+              scopes: scopeOverride || ['web:read-pulse'],
+            }),
+          },
+        })
+    );
+  });
+
+  suiteTeardown(() => {
+    helper.load.remove('authFactory');
+  });
+
   helper.withDb(mock, skipping);
-  helper.withClients(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withClients(skipping);
+  helper.withServer(skipping);
   helper.withPulse(helper, skipping);
-  helper.resetTables(mock, skipping);
+  helper.resetTables();
 
-  suite('Task Queries and Mutations', function() {
-    test('query works', async function() {
+  suite('Task Queries and Mutations', () => {
+    test('query works', async () => {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
       const createTaskQuery = await helper.loadFixture('createTask.graphql');
@@ -39,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.task.taskId, taskId);
     });
 
-    test('mutation works', async function() {
+    test('mutation works', async () => {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
       const createTaskQuery = await helper.loadFixture('createTask.graphql');
@@ -56,15 +82,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('Task Subscriptions', function() {
+  suite('Task Subscriptions', () => {
     helper.withMockedEventIterator();
 
-    test('subscribe works', async function() {
-      let subscriptionClient = await helper.createSubscriptionClient();
+    test('subscribe works', async () => {
+      const subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
 
-      let taskId = "subscribe-task-id";
-      let taskGroupId = "subscribe-task-group-id";
+      const taskId = 'subscribe-task-id';
+      const taskGroupId = 'subscribe-task-group-id';
 
       const payload = {
         tasksSubscriptions: {
@@ -76,7 +102,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       const asyncIterator = new Object();
-      asyncIterator[Symbol.asyncIterator] = async function*() {
+      asyncIterator[Symbol.asyncIterator] = async function* () {
         yield payload;
       };
 
@@ -85,25 +111,62 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const subscribeTasks = await helper.loadFixture('tasksSubscriptions.graphql');
 
       let tasksSubscriptionsResult;
-      let taskSubscription = client.subscribe({
-        query: gql`${subscribeTasks}`,
-        variables: {
-          taskGroupId,
-          subscriptions: ['tasksDefined'],
-        },
-      }).subscribe(
-        (value) => tasksSubscriptionsResult = value,
-      );
+      const taskSubscription = client
+        .subscribe({
+          query: gql`${subscribeTasks}`,
+          variables: {
+            taskGroupId,
+            subscriptions: ['tasksDefined'],
+          },
+        })
+        .subscribe(value => (tasksSubscriptionsResult = value));
 
-      await testing.poll(
-        () => assert(tasksSubscriptionsResult),
-        100, 10);
+      await testing.poll(() => assert(tasksSubscriptionsResult), 100, 10);
 
       assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskId, taskId);
       assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskGroupId, taskGroupId);
 
       taskSubscription.unsubscribe();
       subscriptionClient.close();
+    });
+
+    test('connection rejected without web:read-pulse scope', async () => {
+      scopeOverride = [];
+      let subscriptionClient;
+      try {
+        const error = await new Promise((resolve, reject) => {
+          subscriptionClient = new SubscriptionClient(
+            `ws://localhost:${helper.serverPort}/subscription`,
+            {
+              reconnect: false,
+              connectionCallback: err => {
+                if (err) {
+                  resolve(err);
+                } else {
+                  reject(new Error('Expected connection to be rejected'));
+                }
+              },
+              connectionParams: () => ({
+                Authorization: `Bearer ${btoa(
+                  JSON.stringify({
+                    clientId: 'testing',
+                    accessToken: 'testing',
+                  })
+                )}`,
+              }),
+            },
+            WebSocket
+          );
+        });
+
+        const errStr = typeof error === 'object' ? JSON.stringify(error) : String(error);
+        assert(errStr.includes('InsufficientScopes'), `Expected InsufficientScopes error, got: ${errStr}`);
+      } finally {
+        if (subscriptionClient) {
+          subscriptionClient.close();
+        }
+        scopeOverride = null;
+      }
     });
   });
 });

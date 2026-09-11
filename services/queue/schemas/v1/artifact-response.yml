@@ -39,6 +39,13 @@ properties:
       downloading it.
     type:         string
     maxLength:    255
+  contentLength:
+    title:    "Content-Length"
+    description: |
+      Size of the artifact content in bytes, if reported by the worker.
+      This value is null if the worker did not report the size.
+    type:         integer
+    minimum:      0
 additionalProperties: false
 required:
   - storageType

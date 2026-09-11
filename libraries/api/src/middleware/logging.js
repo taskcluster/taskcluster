@@ -1,5 +1,5 @@
 import { MonitorManager } from '@taskcluster/lib-monitor';
-import { hrtime } from 'process';
+import { hrtime } from 'node:process';
 
 MonitorManager.register({
   name: 'apiMethod',
@@ -27,7 +27,7 @@ MonitorManager.register({
     public: 'True if the endpoint requires no scopes.',
     clientId: 'The clientId that made the request, if there was one.',
     expires: 'The expiration date of the credentials, if the header was authenticated.',
-    sourceIp: 'The API method caller\'s IP',
+    sourceIp: "The API method caller's IP",
     satisfyingScopes: `The set of scopes posessed by the caller that were
                        used to authorize this request, or [] if scopes were not required.
 
@@ -77,11 +77,22 @@ export const logRequest = ({ builder, entry }) => {
           query[k] = req.query[k];
         });
       }
-      if (req.query['bewit']) {
-        query['bewit'] = '...';
+      if (req.query.bewit) {
+        query.bewit = '...';
       }
 
       const end = hrtime.bigint();
+      const duration = Number(end - start) / 1e6; // in ms
+
+      const labels = {
+        method: req.method,
+        name: entry.name,
+        status: res.statusCode.toString(),
+        service: builder.serviceName,
+      };
+
+      req.tcContext.monitor.metric.httpRequestsTotal(1, labels);
+      req.tcContext.monitor.metric.httpRequestDurationSeconds(duration / 1000, labels);
 
       req.tcContext.monitor.log.apiMethod({
         name: entry.name,
@@ -101,7 +112,7 @@ export const logRequest = ({ builder, entry }) => {
         sourceIp: req.ip,
         satisfyingScopes: req.satisfyingScopes ? req.satisfyingScopes : [],
         statusCode: res.statusCode,
-        duration: Number(end - start) / 1e6, // in ms
+        duration,
       });
     };
     res.once('finish', send);

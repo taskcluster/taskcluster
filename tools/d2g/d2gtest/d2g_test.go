@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
@@ -15,10 +16,10 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	"github.com/taskcluster/taskcluster/v88/internal/scopes"
-	d2g "github.com/taskcluster/taskcluster/v88/tools/d2g"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	d2g "github.com/taskcluster/taskcluster/v108/tools/d2g"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/genericworker"
 )
 
 func ExampleConvertScopes_mixture() {
@@ -65,6 +66,88 @@ func ExampleConvertScopes_mixture() {
 	//	"generic-worker:os-group:x/y/z/kvm"
 	//	"generic-worker:os-group:x/y/z/libvirt"
 	//	"generic-worker:teapot"
+}
+
+func TestConvertScopesRequiresDisableSeccompScope(t *testing.T) {
+	const disableSeccompScope = "docker-worker:capability:disableSeccomp"
+
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+
+	tests := []struct {
+		name    string
+		scopes  []string
+		wantErr bool
+	}{
+		{
+			name:    "missing scope",
+			scopes:  []string{},
+			wantErr: true,
+		},
+		{
+			name:   "required scope present",
+			scopes: []string{disableSeccompScope},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := d2g.ConvertScopes(test.scopes, &dwPayload, "proj-taskcluster/ci", scopes.DummyExpander())
+			if test.wantErr {
+				if err == nil {
+					t.Fatal("ConvertScopes succeeded without the disableSeccomp scope")
+				}
+				if !strings.Contains(err.Error(), disableSeccompScope) {
+					t.Fatalf("ConvertScopes error does not identify the missing scope: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ConvertScopes failed with the disableSeccomp scope: %v", err)
+			}
+		})
+	}
+}
+
+func TestConvertScopesRequiresEveryCapabilityScope(t *testing.T) {
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+	dwPayload.Capabilities.Devices.LoopbackAudio = true
+
+	_, err := d2g.ConvertScopes(
+		[]string{"docker-worker:capability:device:loopbackAudio"},
+		&dwPayload,
+		"proj-taskcluster/ci",
+		scopes.DummyExpander(),
+	)
+	if err == nil {
+		t.Fatal("ConvertScopes succeeded without the disableSeccomp scope")
+	}
+}
+
+func TestConvertScopesReportsEveryMissingCapabilityScope(t *testing.T) {
+	const disableSeccompScope = "docker-worker:capability:disableSeccomp"
+	const loopbackAudioScope = "docker-worker:capability:device:loopbackAudio"
+
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+	dwPayload.Capabilities.Devices.LoopbackAudio = true
+
+	_, err := d2g.ConvertScopes(nil, &dwPayload, "proj-taskcluster/ci", scopes.DummyExpander())
+	if err == nil {
+		t.Fatal("ConvertScopes succeeded without the required capability scopes")
+	}
+	for _, missingScope := range []string{disableSeccompScope, loopbackAudioScope} {
+		if !strings.Contains(err.Error(), missingScope) {
+			t.Errorf("ConvertScopes error does not identify missing scope %q: %v", missingScope, err)
+		}
+	}
+	if !strings.Contains(err.Error(), "\nAND\n") {
+		t.Errorf("ConvertScopes error does not join capability requirements with AND: %v", err)
+	}
 }
 
 type mockedDirEntry struct {
@@ -172,12 +255,12 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot marshal test suite D2GConfig: %v", err)
 		}
-		var d2gConfigMap map[string]any
-		err = json.Unmarshal(d2gConfigBytes, &d2gConfigMap)
+		var d2gConfig d2g.Config
+		err = json.Unmarshal(d2gConfigBytes, &d2gConfig)
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
 		}
-		actualGWPayload, _, err := d2g.ConvertPayload(&dwPayload, d2gConfigMap, FakeReadDir)
+		actualGWPayload, _, err := d2g.ConvertPayload(&dwPayload, d2gConfig, FakeReadDir)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
 		}
@@ -214,12 +297,12 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot marshal test suite D2GConfig: %v", err)
 		}
-		var d2gConfigMap map[string]any
-		err = json.Unmarshal(d2gConfigBytes, &d2gConfigMap)
+		var d2gConfig d2g.Config
+		err = json.Unmarshal(d2gConfigBytes, &d2gConfig)
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
 		}
-		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, d2gConfigMap, scopes.DummyExpander(), FakeReadDir)
+		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, d2gConfig, scopes.DummyExpander(), FakeReadDir)
 		if err != nil {
 			t.Fatalf("cannot convert task definition: %v", err)
 		}
@@ -355,4 +438,19 @@ func (tc *TaskDefinitionTestCase) Validate(t *testing.T) {
 
 	validateAgainstSchema(t, dwRaw, dockerworker.JSONSchema())
 	validateAgainstSchema(t, gwRaw, genericworker.JSONSchema())
+}
+
+func TestConvertPayloadRejectsInvalidImageName(t *testing.T) {
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Image = json.RawMessage(`"--privileged"`)
+	dwPayload.Command = []string{"busybox", "id"}
+
+	_, _, err := d2g.ConvertPayload(&dwPayload, d2g.Config{}, FakeReadDir)
+	if err == nil {
+		t.Fatal("expected invalid image name to be rejected")
+	}
+	if !strings.Contains(err.Error(), `invalid image name`) {
+		t.Fatalf("expected error to be invalid image name, got: %v", err)
+	}
 }

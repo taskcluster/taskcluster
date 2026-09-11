@@ -3,12 +3,12 @@ import HintPoller from '../src/hintpoller.js';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (_mock, _skipping) => {
   test('calls pollPendingQueue', async () => {
     const monitor = await helper.load('monitor');
 
     let pollCalls = 0;
-    const pollPendingQueue = async (count) => {
+    const pollPendingQueue = async count => {
       pollCalls += count;
       return [count];
     };
@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const monitor = await helper.load('monitor');
 
     let pollCalls = 0;
-    const pollPendingQueue = async (count) => {
+    const pollPendingQueue = async count => {
       pollCalls += count;
       return [count];
     };
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor,
       pollPendingQueue,
       onError: err => console.error(err),
-      onDestroy: () => destroyCalled = true,
+      onDestroy: () => (destroyCalled = true),
     });
 
     const aborted = new Promise(resolve => setTimeout(resolve, 1000));
@@ -62,7 +62,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const monitor = await helper.load('monitor');
 
     let pollCalls = 0;
-    const pollPendingQueue = async (count) => {
+    const pollPendingQueue = async count => {
       pollCalls += 1;
       return [count];
     };
@@ -88,16 +88,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     let pollCalls = 0;
     let released = false;
-    const pollPendingQueue = async (count) => {
+    const pollPendingQueue = async count => {
       pollCalls += 1;
-      return [{
-        count,
-        // first hint will be claimed
-      }, {
-        count,
-        // second hint will be released
-        release: () => released = true,
-      }];
+      return [
+        {
+          count,
+          // first hint will be claimed
+        },
+        {
+          count,
+          // second hint will be released
+          release: () => (released = true),
+        },
+      ];
     };
 
     const hintPoller = new HintPoller('taskQueue/Id', {

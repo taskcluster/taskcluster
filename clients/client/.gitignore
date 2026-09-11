@@ -5,3 +5,4 @@ npm-debug.log
 /taskcluster-client.conf.json
 /taskcluster-client.js
 /user-config.yml
+*.tgz

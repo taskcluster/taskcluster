@@ -1,0 +1,14 @@
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - taskgraph.transforms.code_review:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+  - generic-worker
+
+tasks:
+    complete:
+        description: Generic Worker PR Summary Task
+        run-on-tasks-for: [github-pull-request, github-issue-comment]
+        worker-type: succeed

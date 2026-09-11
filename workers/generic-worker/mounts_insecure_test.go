@@ -15,17 +15,12 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 	return []string{}, []string{}
 }
 
-func updateOwnership(t *testing.T) []string {
-	t.Helper()
-	return []string{}
-}
-
 // Test for upstream issue https://github.com/mholt/archiver/issues/152
 func TestHardLinksInArchive(t *testing.T) {
 	setup(t)
 
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("tools", "git"),
 			Content: json.RawMessage(`{
