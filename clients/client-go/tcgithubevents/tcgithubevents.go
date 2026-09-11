@@ -96,6 +96,36 @@ func (binding Push) NewPayloadObject() any {
 	return new(GitHubPushMessage)
 }
 
+// When a GitHub push event changes a repository's `.taskcluster.yml` it will
+// be broadcast on this exchange with the designated `organization` and
+// `repository` in the routing-key.
+//
+// The payload names the repository and the ref that was pushed to, and
+// nothing more.  The file itself does not travel with the message, so a
+// consumer reading it cannot be steered by the pushed commits.
+//
+// Detection is best effort.  A force push that drops a commit reports no
+// changed files to GitHub, so reverting the file that way sends no message.
+//
+// See #taskclusterYmlUpdate
+type TaskclusterYmlUpdate struct {
+	RoutingKeyKind string `mwords:"*"`
+	Organization   string `mwords:"*"`
+	Repository     string `mwords:"*"`
+}
+
+func (binding TaskclusterYmlUpdate) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskclusterYmlUpdate) ExchangeName() string {
+	return "exchange/taskcluster-github/v1/taskcluster-yml-update"
+}
+
+func (binding TaskclusterYmlUpdate) NewPayloadObject() any {
+	return new(TaskclusterYmlUpdateMessage)
+}
+
 // When a GitHub release event is posted it will be broadcast on this
 // exchange with the designated `organization` and `repository`
 // in the routing-key along with event specific metadata in the payload.

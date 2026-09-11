@@ -84,9 +84,6 @@ defaults:
     vhost:                    !env PULSE_VHOST
     amqps:                    !env:bool:optional PULSE_AMQPS
 
-  # Accounts that auth can delegate access to, as JSON
-  azureAccounts:            !env:json:secret:optional AZURE_ACCOUNTS
-
   awsCredentials:
     # Configuration for the AWS credentials used for the awsS3Credentials.  The
     # method looks up the credentials by bucket name.  Each array element has

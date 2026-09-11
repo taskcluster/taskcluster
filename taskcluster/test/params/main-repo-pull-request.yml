@@ -8,7 +8,7 @@ head_ref: matt-boris/dockerWorkerReleasePublishDepencency
 head_repository: https://github.com/taskcluster/taskcluster
 head_rev: 2829821fed0eed5540866094fe41df79a580381b
 head_tag: ""
-level: "1"
+level: "3"
 moz_build_date: "20220502180319"
 optimize_target_tasks: true
 owner: taskcluster-internal@mozilla.com

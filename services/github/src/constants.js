@@ -81,7 +81,10 @@ export const PUBLISHERS = {
   PUSH: 'push',
   RELEASE: 'release',
   RERUN: 'rerun',
+  TASKCLUSTER_YML_UPDATE: 'taskclusterYmlUpdate',
 };
+
+export const TASKCLUSTER_YML_PATH = '.taskcluster.yml';
 
 export const CHECKLOGS_TEXT = 'View logs in Taskcluster';
 export const CHECKRUN_TEXT = 'View task in Taskcluster';

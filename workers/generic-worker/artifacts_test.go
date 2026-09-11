@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -55,14 +56,16 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	atf.FindArtifacts()
 	got := atf.artifacts
 
-	// remove the ContentPath field from the got artifacts, we can't
-	// compare it as it's non-deterministic
 	for _, a := range got {
+		if err := a.PrepareContent(); err != nil {
+			t.Fatalf("Could not prepare content of artifact %v: %v", a.Base().Name, err)
+		}
+		a.DiscardContent()
 		switch artifact := a.(type) {
 		case *artifacts.S3Artifact:
-			artifact.ContentPath = ""
+			artifact.Content = nil
 		case *artifacts.ObjectArtifact:
-			artifact.ContentPath = ""
+			artifact.Content = nil
 		}
 	}
 
@@ -1579,4 +1582,32 @@ func TestDirectoryArtifactUploadFromAbsolutePath(t *testing.T) {
 		},
 	}
 	expectedArtifacts.Validate(t, taskID, 0)
+}
+
+func TestBinaryFileArtifactUpload(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("mozharness.zip"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "mozharness.zip",
+				Type: "file",
+				Name: "public/mozharness.zip",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	expected, err := os.ReadFile(filepath.Join(testdataDir, "mozharness.zip"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actual := getArtifactContent(t, taskID, "public/mozharness.zip")
+	if !bytes.Equal(expected, actual) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expected), len(actual))
+	}
 }

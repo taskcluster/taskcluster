@@ -6,17 +6,13 @@ import (
 	"log"
 	"net"
 	"net/url"
-	"os"
-	"runtime"
 	"strconv"
-	"strings"
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
 )
 
 var (
@@ -38,42 +34,41 @@ var (
 func createDataArtifact(
 	base *artifacts.BaseArtifact,
 	path string,
-	contentPath string,
+	content artifacts.ContentSource,
 	contentType string,
 	contentEncoding string,
 ) artifacts.TaskArtifact {
-	var contentLength int64
-	if info, err := os.Stat(contentPath); err == nil {
-		contentLength = info.Size()
-	}
 	if config.CreateObjectArtifacts {
 		// note that contentEncoding is currently ignored for object artifacts
 		return &artifacts.ObjectArtifact{
-			BaseArtifact:  base,
-			Path:          path,
-			ContentPath:   contentPath,
-			ContentType:   contentType,
-			ContentLength: contentLength,
+			BaseArtifact: base,
+			Path:         path,
+			Content:      content,
+			ContentType:  contentType,
 		}
 	}
 
 	return &artifacts.S3Artifact{
 		BaseArtifact:    base,
 		Path:            path,
-		ContentPath:     contentPath,
+		Content:         content,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
-		ContentLength:   contentLength,
 	}
 }
 
-func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
-	contentPath, err := safeReservedCopy(path)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not read reserved artifact %v: %w", path, err))
+// uploadReservedArtifact uploads an artifact the worker created, reading it
+// as the worker user.
+func (task *TaskRun) uploadReservedArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
+	defer artifact.DiscardContent()
+	if err := artifact.PrepareContent(); err != nil {
+		return executionError(internalError, errored, fmt.Errorf("could not read reserved artifact %v: %w", artifact.SourcePath(), err))
 	}
-	defer os.Remove(contentPath)
-	return task.uploadArtifact(
+	return task.uploadArtifact(artifact)
+}
+
+func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
+	return task.uploadReservedArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name: name,
@@ -81,7 +76,7 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 				Expires: task.Definition.Expires,
 			},
 			path,
-			contentPath,
+			reservedContentSource(path),
 			"text/plain; charset=utf-8",
 			"gzip",
 		),
@@ -184,26 +179,4 @@ func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact
 	default:
 		panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
 	}
-}
-
-func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData, taskDir string) (tempFilePath string, err error) {
-	tempFilePath, err = gwCopyToTempFile(filePath, pd, taskDir)
-
-	if runtime.GOOS == "windows" {
-		// Windows syscall logs are sent to stdout, even though the code appears
-		// to send to stderr through the log package.
-		// TODO: Figure out why this is the case and remove this hack.
-		// https://github.com/taskcluster/taskcluster/issues/6677
-		//
-		// We need to get the filepath from the final line of output.
-		//
-		// Example output:
-		// 2023/11/07 19:56:06Z Making system call GetProfilesDirectoryW with args: [C0000C15F0 C00027E980]
-		// 2023/11/07 19:56:06Z   Result: 1 0 The operation completed successfully.
-		// C:\Windows\SystemTemp\TestPrivilegedFileUpload664016823956663638
-		outputLines := strings.Split(tempFilePath, "\n")
-		tempFilePath = strings.TrimSpace(outputLines[len(outputLines)-1])
-	}
-
-	return
 }

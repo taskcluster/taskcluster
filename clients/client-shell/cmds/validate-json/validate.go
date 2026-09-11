@@ -27,7 +27,7 @@ func init() {
 }
 
 // Takes json-schema & json as input which should be in the following 2 formats
-// 1. https://community-tc.services.mozilla.com/references/schemas/<some-schema>.json
+// 1. https://firefox-ci-tc.services.mozilla.com/references/schemas/<some-schema>.json
 // 2. file:///home/user/<some-schema>.json
 func validate(cmd *cobra.Command, args []string) error {
 	schema := schemaLoader(args[0])

@@ -59,9 +59,25 @@ func CalculateSHA256(file string) (hash string, err error) {
 	return
 }
 
+func OpenRegularFile(src string) (*os.File, error) {
+	source, err := os.OpenFile(src, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, err
+	}
+	sourceFileStat, err := source.Stat()
+	if err != nil {
+		source.Close()
+		return nil, err
+	}
+	if !sourceFileStat.Mode().IsRegular() {
+		source.Close()
+		return nil, fmt.Errorf("cannot read %s: it is not a regular file", src)
+	}
+	return source, nil
+}
+
 func Copy(dst, src string) (nBytes int64, err error) {
-	var source *os.File
-	source, err = os.OpenFile(src, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	source, err := OpenRegularFile(src)
 	if err != nil {
 		return
 	}
@@ -73,17 +89,7 @@ func Copy(dst, src string) (nBytes int64, err error) {
 	}
 	defer closeFile(source)
 
-	var sourceFileStat os.FileInfo
-	sourceFileStat, err = source.Stat()
-	if err != nil {
-		return
-	}
-	if !sourceFileStat.Mode().IsRegular() {
-		err = fmt.Errorf("cannot copy %s to %s: %s is not a regular file", src, dst, src)
-		return
-	}
-	var destination *os.File
-	destination, err = safefs.Create(dst, 0666)
+	destination, err := safefs.Create(dst, 0666)
 	if err != nil {
 		return
 	}
@@ -92,22 +98,15 @@ func Copy(dst, src string) (nBytes int64, err error) {
 	return
 }
 
-func CopyToTempFile(src string) (tempFilePath string, err error) {
-	baseName := filepath.Base(src)
-	var tempFile *os.File
-	tempFile, err = os.CreateTemp("", baseName)
+func CatFile(src string, dst io.Writer) error {
+	source, err := OpenRegularFile(src)
 	if err != nil {
-		return
+		return err
 	}
-	defer func() {
-		err2 := tempFile.Close()
-		if err == nil {
-			err = err2
-		}
-	}()
-	tempFilePath = tempFile.Name()
-	_, err = Copy(tempFilePath, src)
-	return
+	defer source.Close()
+
+	_, err = io.Copy(dst, source)
+	return err
 }
 
 func CreateFile(file string) (err error) {

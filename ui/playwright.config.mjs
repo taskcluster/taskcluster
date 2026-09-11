@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = process.env.PORT || 5080;
 const TASKCLUSTER_ROOT_URL =
-  process.env.TASKCLUSTER_ROOT_URL || 'https://community-tc.services.mozilla.com';
+  process.env.TASKCLUSTER_ROOT_URL || 'https://firefox-ci-tc.services.mozilla.com';
 
 export default defineConfig({
   testDir: './test/smoke',

@@ -446,114 +446,6 @@ export default {
         },
         {
           "args": [
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-          "method": "get",
-          "name": "azureAccounts",
-          "output": "v1/azure-account-list-response.json#",
-          "query": [
-          ],
-          "route": "/azure/accounts",
-          "scopes": "auth:azure-table:list-accounts",
-          "stability": "deprecated",
-          "title": "List Accounts Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account"
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all tables in an account.",
-          "method": "get",
-          "name": "azureTables",
-          "output": "v1/azure-table-list-response.json#",
-          "query": [
-            "continuationToken"
-          ],
-          "route": "/azure/<account>/tables",
-          "scopes": "auth:azure-table:list-tables:<account>",
-          "stability": "deprecated",
-          "title": "List Tables in an Account Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "table",
-            "level"
-          ],
-          "category": "Azure Credentials",
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
-          "method": "get",
-          "name": "azureTableSAS",
-          "output": "v1/azure-table-access-response.json#",
-          "query": [
-          ],
-          "route": "/azure/<account>/table/<table>/<level>",
-          "scopes": {
-            "else": "auth:azure-table:read-write:<account>/<table>",
-            "if": "levelIsReadOnly",
-            "then": {
-              "AnyOf": [
-                "auth:azure-table:read-only:<account>/<table>",
-                "auth:azure-table:read-write:<account>/<table>"
-              ]
-            }
-          },
-          "stability": "deprecated",
-          "title": "Get Shared-Access-Signature for Azure Table",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account"
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all containers in an account.",
-          "method": "get",
-          "name": "azureContainers",
-          "output": "v1/azure-container-list-response.json#",
-          "query": [
-            "continuationToken"
-          ],
-          "route": "/azure/<account>/containers",
-          "scopes": "auth:azure-container:list-containers:<account>",
-          "stability": "deprecated",
-          "title": "List containers in an Account Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "container",
-            "level"
-          ],
-          "category": "Azure Credentials",
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
-          "method": "get",
-          "name": "azureContainerSAS",
-          "output": "v1/azure-container-response.json#",
-          "query": [
-          ],
-          "route": "/azure/<account>/containers/<container>/<level>",
-          "scopes": {
-            "else": "auth:azure-container:read-write:<account>/<container>",
-            "if": "levelIsReadOnly",
-            "then": {
-              "AnyOf": [
-                "auth:azure-container:read-only:<account>/<container>",
-                "auth:azure-container:read-write:<account>/<container>"
-              ]
-            }
-          },
-          "stability": "deprecated",
-          "title": "Get Shared-Access-Signature for Azure Container",
-          "type": "function"
-        },
-        {
-          "args": [
             "project"
           ],
           "category": "Sentry Credentials",
@@ -1094,6 +986,35 @@ export default {
           ],
           "schema": "v1/github-push-message.json#",
           "title": "GitHub push Event",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "When a GitHub push event changes a repository's `.taskcluster.yml` it will\nbe broadcast on this exchange with the designated `organization` and\n`repository` in the routing-key.\n\nThe payload names the repository and the ref that was pushed to, and\nnothing more.  The file itself does not travel with the message, so a\nconsumer reading it cannot be steered by the pushed commits.\n\nDetection is best effort.  A force push that drops a commit reports no\nchanged files to GitHub, so reverting the file that way sends no message.",
+          "exchange": "taskcluster-yml-update",
+          "name": "taskclusterYmlUpdate",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "v1/taskcluster-yml-update-message.json#",
+          "title": "Taskcluster Yml Update Event",
           "type": "topic-exchange"
         },
         {
@@ -3024,6 +2945,36 @@ export default {
           "scopes": "queue:pending-count:<taskQueueId>",
           "stability": "deprecated",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Worker Metadata",
+          "description": "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+          "input": "v1/task-queue-counts-request.json#",
+          "method": "post",
+          "name": "taskQueueCountsBatch",
+          "output": "v1/task-queue-counts-list-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/counts",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:pending-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              },
+              {
+                "each": "queue:claimed-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get Pending and Claimed Task Counts for Multiple Task Queues",
           "type": "function"
         },
         {

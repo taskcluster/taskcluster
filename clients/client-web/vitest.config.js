@@ -3,7 +3,7 @@ import { playwright } from '@vitest/browser-playwright';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  envPrefix: ['TASKCLUSTER_ROOT_URL', 'NO_TEST_SKIP'],
+  envPrefix: ['TASKCLUSTER_ROOT_URL', 'TASKCLUSTER_UNTRUSTED_PR', 'NO_TEST_SKIP'],
   plugins: [nodePolyfills()],
   test: {
     globals: true,
