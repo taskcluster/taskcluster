@@ -59,8 +59,8 @@ import Link from '../../../utils/Link';
 import { changeTaskPriority, getClient } from '../../../utils/client';
 import { AuthContext } from '../../../utils/Auth';
 import submitTaskAction from '../submitTaskAction';
+import { subscribeToNamedEvents } from '../../../utils/pulseListener';
 import taskQuery from './task.graphql';
-import taskSubscription from './taskSubscription.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
 import rerunTaskQuery from './rerunTask.graphql';
 import cancelTaskQuery from './cancelTask.graphql';
@@ -200,14 +200,13 @@ export default class ViewTask extends Component {
 
   listener = null;
 
-  componentDidUpdate(prevProps) {
-    const taskId = prevProps.match.params.taskId || '';
+  componentDidUpdate() {
     const {
-      data: { task, subscribeToMore, refetch },
+      data: { task, refetch },
     } = this.props;
 
-    if (task && taskId !== task.taskId) {
-      this.subscribe(task.taskId, subscribeToMore, refetch);
+    if (task) {
+      this.subscribe(task.taskId, refetch);
     }
   }
 
@@ -215,7 +214,7 @@ export default class ViewTask extends Component {
     this.unsubscribe();
   }
 
-  subscribe(taskId, subscribeToMore, refetch) {
+  subscribe(taskId, refetch) {
     if (this.listener) {
       if (this.listener.taskId === taskId) {
         return this.listener;
@@ -224,22 +223,28 @@ export default class ViewTask extends Component {
       this.unsubscribe();
     }
 
-    const unsubscribe = subscribeToMore({
-      document: taskSubscription,
-      variables: {
-        taskId,
+    const unsubscribe = subscribeToNamedEvents(
+      {
         subscriptions: [
-          'tasksDefined',
-          'tasksPending',
-          'tasksRunning',
-          'tasksCompleted',
-          'tasksFailed',
-          'tasksException',
+          'taskDefined',
+          'taskPending',
+          'taskRunning',
+          'taskCompleted',
+          'taskFailed',
+          'taskException',
         ],
+        routingKey: { taskId },
       },
-      // refetch everything as subscription event holds incomplete task data
-      updateQuery: refetch,
-    });
+      {
+        // refetch everything as the pulse event holds incomplete task data
+        onMessage: () => {
+          refetch();
+        },
+        // the task query polls on TASK_POLL_INTERVAL, so a dropped socket
+        // degrades to polling rather than losing updates
+        onError: () => {},
+      }
+    );
 
     this.listener = {
       taskId,
