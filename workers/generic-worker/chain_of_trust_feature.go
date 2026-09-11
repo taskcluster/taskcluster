@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -211,20 +212,14 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(executionError(internalError, errored, fmt.Errorf("could not write ed25519 signature: %w", e)))
 		return
 	}
-	ed25519Content, cpErr := safeReservedCopy(ed25519SignedCert)
-	if cpErr != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("could not read ed25519 signature: %w", cpErr)))
-		return
-	}
-	defer os.Remove(ed25519Content)
-	err.add(feature.task.uploadArtifact(
+	err.add(feature.task.uploadReservedArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
 			ed25519SignedCert,
-			ed25519Content,
+			reservedContentSource(ed25519SignedCert),
 			"application/octet-stream",
 			"gzip",
 		),
@@ -252,18 +247,11 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 		return certBytes, nil
 	}
 
-	// Ensure task user can read the data (e.g. in case somebody creates a symbolic link to a json file owned by root)
-	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd, cot.task.TaskDir())
-	if err != nil {
+	var additionalDataBuf bytes.Buffer
+	if _, err = catFileAsTaskUser(additionalDataFile, &additionalDataBuf, cot.task.pd, cot.task.TaskDir()); err != nil {
 		return
 	}
-	defer os.Remove(tempPath)
-
-	var additionalDataBytes []byte
-	additionalDataBytes, err = safefs.ReadFile(tempPath)
-	if err != nil {
-		return
-	}
+	additionalDataBytes := additionalDataBuf.Bytes()
 
 	initialCert := map[string]any{}
 	additionalData := map[string]any{}

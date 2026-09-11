@@ -4,7 +4,7 @@
 change works. Before claiming any UI change done:
 
 - Start the dev server: `cd ui && yarn start` with `TASKCLUSTER_ROOT_URL`
-  set (e.g. `https://community-tc.services.mozilla.com`).
+  set (e.g. `https://firefox-ci-tc.services.mozilla.com`).
 - Open the affected pages with the browser console + Network tab open.
 - Confirm no new uncaught exceptions, `console.error` lines, or 4xx/5xx
   network requests.

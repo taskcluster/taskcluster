@@ -1696,6 +1696,21 @@ type (
 		TaskQueueID string `json:"taskQueueId"`
 	}
 
+	// Pending and claimed task counts for multiple task queues.
+	TaskQueueCountsListResponse struct {
+		TaskQueueCounts []Var `json:"taskQueueCounts"`
+	}
+
+	// Request pending and claimed task counts for multiple task queues.
+	TaskQueueCountsRequest struct {
+
+		// Array items:
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueIds []string `json:"taskQueueIds"`
+	}
+
 	// Response to a task queue request from a provisioner.
 	TaskQueueResponse struct {
 

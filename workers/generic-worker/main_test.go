@@ -338,9 +338,9 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	// Include a writable directory cache, to test that caches are purged
 	// rather than preserved when a task aborts prematurely.
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("bananas"),
 		},
 	}
@@ -356,7 +356,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	taskID := scheduleTask(t, td, payload)
 	startTime := time.Now()

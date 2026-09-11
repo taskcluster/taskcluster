@@ -6,11 +6,13 @@ import yaml from 'js-yaml';
 import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
+import { getRawYml } from './utils.js';
 import { deprecatedStatusHandler } from './deprecatedStatus.js';
 import { taskGroupCreationHandler } from './taskGroupCreation.js';
 import { statusHandler } from './status.js';
 import { jobHandler } from './job.js';
 import { rerunHandler } from './rerun.js';
+import { taskclusterYmlHandler } from './taskclusterYml.js';
 import { POLICIES } from './policies.js';
 import { GITHUB_BUILD_STATES } from '../constants.js';
 
@@ -29,6 +31,7 @@ class Handlers {
       deprecatedInitialStatusQueueName,
       resultStatusQueueName,
       rerunQueueName,
+      taskclusterYmlQueueName,
       intree,
       context,
       pulseClient,
@@ -49,6 +52,7 @@ class Handlers {
     this.resultStatusQueueName = resultStatusQueueName;
     this.jobQueueName = jobQueueName;
     this.rerunQueueName = rerunQueueName;
+    this.taskclusterYmlQueueName = taskclusterYmlQueueName;
     this.deprecatedInitialStatusQueueName = deprecatedInitialStatusQueueName;
     this.context = context;
     this.pulseClient = pulseClient;
@@ -63,6 +67,7 @@ class Handlers {
     this.deprecatedResultStatusPq = null;
     this.deprecatedInitialStatusPq = null;
     this.rerunPq = null;
+    this.taskclusterYmlPq = null;
 
     this.queueClient = queueClient;
 
@@ -80,6 +85,7 @@ class Handlers {
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
     assert(!this.rerunPq, 'Cannot setup twice!');
+    assert(!this.taskclusterYmlPq, 'Cannot setup twice!');
 
     // Listen for new jobs created via the api webhook endpoint
     const GithubEvents = taskcluster.createClient(this.reference);
@@ -88,6 +94,8 @@ class Handlers {
     const jobBindings = [githubEvents.pullRequest(), githubEvents.push(), githubEvents.release()];
 
     const rerunBindings = [githubEvents.rerun()];
+
+    const taskclusterYmlBindings = [githubEvents.push()];
 
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
     const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
@@ -201,6 +209,15 @@ class Handlers {
       callHandler('rerun', rerunHandler)
     );
 
+    this.taskclusterYmlPq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: taskclusterYmlBindings,
+        queueName: this.taskclusterYmlQueueName,
+      },
+      callHandler('taskclusterYml', taskclusterYmlHandler)
+    );
+
     this.reportHandlersCount = setInterval(() => this._reportHandlersCount(), 60 * 1000);
   }
 
@@ -219,6 +236,9 @@ class Handlers {
     }
     if (this.rerunPq) {
       await this.rerunPq.stop();
+    }
+    if (this.taskclusterYmlPq) {
+      await this.taskclusterYmlPq.stop();
     }
     if (this.reportHandlersCount) {
       clearInterval(this.reportHandlersCount);
@@ -552,30 +572,9 @@ class Handlers {
    * or throws an error in other cases
    */
   async getYml({ instGithub, owner, repo, ref }) {
-    let response;
-    try {
-      response = await instGithub.repos.getContent({ owner, repo, path: '.taskcluster.yml', ref });
-    } catch (e) {
-      if (e.status === 404) {
-        return null;
-      }
+    const content = await getRawYml({ instGithub, owner, repo, ref });
 
-      if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
-        // We kept getting full html 500/400 pages from github in the logs.
-        // I consider this to be a hard-to-fix bug in octokat, so let's make
-        // the logs usable for now and try to fix this later. It's a relatively
-        // rare occurence.
-        e.message = e.message.slice(0, 100).concat('...');
-        e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
-      }
-
-      e.owner = owner;
-      e.repo = repo;
-      e.ref = ref;
-      throw e;
-    }
-
-    return yaml.load(Buffer.from(response.data.content, 'base64').toString());
+    return content === null ? null : yaml.load(content);
   }
 
   _handlerStarted(name) {

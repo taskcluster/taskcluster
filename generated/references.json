@@ -4020,6 +4020,53 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-queue-counts-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request pending and claimed task counts for multiple task queues.\n",
+      "properties": {
+        "taskQueueIds": {
+          "items": {
+            "$ref": "task.json#/properties/taskQueueId"
+          },
+          "maxItems": 1000,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskQueueIds"
+      ],
+      "title": "Task Queue Counts Request",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-queue-counts-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/task-queue-counts-list-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Pending and claimed task counts for multiple task queues.\n",
+      "properties": {
+        "taskQueueCounts": {
+          "items": {
+            "$ref": "task-queue-counts-response.json#"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskQueueCounts"
+      ],
+      "title": "Task Queue Counts List Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-queue-counts-list-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-pulse-definition.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -9289,6 +9336,55 @@
   },
   {
     "content": {
+      "$id": "/schemas/github/v1/taskcluster-yml-update-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Message reporting that a push changed a repository's `.taskcluster.yml`.\n\nThe payload is deliberately narrow.  A consumer acts on a repository it\nalready knows about, so nothing that would let an author of the pushed commits\nsteer it travels with the message.  In particular the file's contents do not.\n",
+      "properties": {
+        "eventId": {
+          "description": "The GitHub webhook deliveryId of the push, for tracing this message back\nto the delivery that caused it.\n",
+          "pattern": "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+          "type": "string"
+        },
+        "organization": {
+          "description": "The GitHub `organization` which had an event, as GitHub spells it.  The\nrouting key carries the same name with periods replaced by `%`.\n",
+          "maxLength": 100,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
+          "type": "string"
+        },
+        "ref": {
+          "description": "The full ref that was pushed to, so that a consumer can ignore a branch or\ntag it does not build.\n",
+          "pattern": "^refs/(heads|tags)/.*$",
+          "type": "string"
+        },
+        "repository": {
+          "description": "The GitHub `repository` whose `.taskcluster.yml` changed, as GitHub spells\nit.  The routing key carries the same name with periods replaced by `%`.\n",
+          "maxLength": 100,
+          "pattern": "^[A-Za-z0-9._-]+$",
+          "type": "string"
+        },
+        "version": {
+          "description": "Message version",
+          "enum": [
+            1
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "organization",
+        "repository",
+        "ref",
+        "eventId"
+      ],
+      "title": "Taskcluster Yml Update Message",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/taskcluster-yml-update-message.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/github/v1/taskcluster-github-config.v1.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -11298,7 +11394,7 @@
             "command",
             "maxRunTime"
           ],
-          "title": "Generic worker payload",
+          "title": "Generic Worker payload",
           "type": "object"
         },
         {
@@ -11309,7 +11405,7 @@
               "additionalProperties": {
                 "$ref": "#/definitions/artifact"
               },
-              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
               "title": "Artifacts",
               "type": "object"
             },
@@ -11444,7 +11540,7 @@
               "type": "object"
             },
             "image": {
-              "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+              "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
               "oneOf": [
                 {
                   "title": "Docker image name",
@@ -11572,7 +11668,7 @@
             "image",
             "maxRunTime"
           ],
-          "title": "Docker worker payload",
+          "title": "Docker Worker payload",
           "type": "object"
         }
       ],
@@ -12081,7 +12177,7 @@
               "type": "object"
             },
             "osGroups": {
-              "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+              "description": "A list of OS Groups that the task user should be a member of. On the\ninsecure engine, the task runs as the current user (no separate task\nuser is created), so only OS Groups that the current user (the user\naccount running generic-worker) already belongs to may be specified.\n\nSince: generic-worker 6.0.0",
               "items": {
                 "type": "string"
               },
@@ -12120,7 +12216,7 @@
               "additionalProperties": {
                 "$ref": "#/definitions/artifact"
               },
-              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
               "title": "Artifacts",
               "type": "object"
             },
@@ -12255,7 +12351,7 @@
               "type": "object"
             },
             "image": {
-              "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+              "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
               "oneOf": [
                 {
                   "title": "Docker image name",
@@ -12383,7 +12479,7 @@
             "image",
             "maxRunTime"
           ],
-          "title": "Docker worker payload",
+          "title": "Docker Worker payload",
           "type": "object"
         }
       ],
@@ -12423,6 +12519,7 @@
             "type",
             "path"
           ],
+          "title": "Docker Worker Artifact",
           "type": "object"
         }
       },
@@ -12563,11 +12660,11 @@
           },
           "required": [
           ],
-          "title": "Feature flags",
+          "title": "Docker Worker feature flags",
           "type": "object"
         },
         "image": {
-          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
           "oneOf": [
             {
               "title": "Docker image name",
@@ -12695,7 +12792,7 @@
         "image",
         "maxRunTime"
       ],
-      "title": "Docker worker payload",
+      "title": "Docker Worker payload",
       "type": "object"
     },
     "filename": "schemas/docker-worker/v1/payload.json"
@@ -12761,17 +12858,6 @@
               "type": "object"
             },
             "aws_credentials_allowed_buckets": {
-              "oneOf": [
-                {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                {
-                  "type": "array"
-                }
-              ]
-            },
-            "azure_accounts": {
               "oneOf": [
                 {
                   "additionalProperties": true,
@@ -17970,143 +18056,6 @@
       "type": "object"
     },
     "filename": "schemas/auth/v1/client-message.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-table-list-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A list of Azure tables in an account\n",
-      "properties": {
-        "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of tables.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `azureAccountTables` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
-          "title": "Continuation Token",
-          "type": "string"
-        },
-        "tables": {
-          "description": "A list of tables that are in an account. These are\nthe tables that can have SAS credentials fetched for them.\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "Azure Tables",
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "tables"
-      ],
-      "title": "Azure List Table Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-table-list-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-table-access-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response to a request for an Shared-Access-Signature to access and Azure\nTable Storage table.\n",
-      "properties": {
-        "expiry": {
-          "description": "Date and time of when the Shared-Access-Signature expires.\n",
-          "format": "date-time",
-          "type": "string"
-        },
-        "sas": {
-          "description": "Shared-Access-Signature string. This is the querystring parameters to\nbe appened after `?` or `&` depending on whether or not a querystring is\nalready present in the URL.\n",
-          "type": "string"
-        }
-      },
-      "required": [
-        "sas",
-        "expiry"
-      ],
-      "title": "Azure Table Shared-Access-Signature",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-table-access-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-container-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response to a request for an Shared-Access-Signature to access an Azure\nBlob Storage container.\n",
-      "properties": {
-        "expiry": {
-          "description": "Date and time of when the Shared-Access-Signature expires.\n",
-          "format": "date-time",
-          "type": "string"
-        },
-        "sas": {
-          "description": "Shared-Access-Signature string. This is the querystring parameters to\nbe appened after `?` or `&` depending on whether or not a querystring is\nalready present in the URL.\n",
-          "type": "string"
-        }
-      },
-      "required": [
-        "sas",
-        "expiry"
-      ],
-      "title": "Azure Blob Shared-Access-Signature",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-container-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-container-list-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A list of Azure containers in an account\n",
-      "properties": {
-        "containers": {
-          "description": "A list of containers that are in an account.  Credentials are available for\nthese containers from the `azureBlobSAS` method.\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "Azure Containers",
-          "type": "array",
-          "uniqueItems": true
-        },
-        "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of containers.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called this method with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
-          "title": "Continuation Token",
-          "type": "string"
-        }
-      },
-      "required": [
-        "containers"
-      ],
-      "title": "Azure List Containers Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-container-list-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-account-list-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A list of Azure accounts managed by taskcluster-auth\n",
-      "properties": {
-        "accounts": {
-          "description": "A list of accountIds that are managed by auth. These are\nthe accounts that can have SAS credentials fetched for tables\nwithin them.\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "Azure Accounts",
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "accounts"
-      ],
-      "title": "Azure List Account Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-account-list-response.json"
   },
   {
     "content": {
@@ -23430,6 +23379,36 @@
         },
         {
           "args": [
+          ],
+          "category": "Worker Metadata",
+          "description": "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+          "input": "v1/task-queue-counts-request.json#",
+          "method": "post",
+          "name": "taskQueueCountsBatch",
+          "output": "v1/task-queue-counts-list-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/counts",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:pending-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              },
+              {
+                "each": "queue:claimed-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get Pending and Claimed Task Counts for Multiple Task Queues",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskQueueId"
           ],
           "category": "Worker Metadata",
@@ -26799,6 +26778,35 @@
           "type": "topic-exchange"
         },
         {
+          "description": "When a GitHub push event changes a repository's `.taskcluster.yml` it will\nbe broadcast on this exchange with the designated `organization` and\n`repository` in the routing-key.\n\nThe payload names the repository and the ref that was pushed to, and\nnothing more.  The file itself does not travel with the message, so a\nconsumer reading it cannot be steered by the pushed commits.\n\nDetection is best effort.  A force push that drops a commit reports no\nchanged files to GitHub, so reverting the file that way sends no message.",
+          "exchange": "taskcluster-yml-update",
+          "name": "taskclusterYmlUpdate",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "v1/taskcluster-yml-update-message.json#",
+          "title": "Taskcluster Yml Update Event",
+          "type": "topic-exchange"
+        },
+        {
           "description": "When a GitHub release event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
           "exchange": "release",
           "name": "release",
@@ -28232,114 +28240,6 @@
           },
           "stability": "stable",
           "title": "Get Temporary Read/Write Credentials S3",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-          "method": "get",
-          "name": "azureAccounts",
-          "output": "v1/azure-account-list-response.json#",
-          "query": [
-          ],
-          "route": "/azure/accounts",
-          "scopes": "auth:azure-table:list-accounts",
-          "stability": "deprecated",
-          "title": "List Accounts Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account"
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all tables in an account.",
-          "method": "get",
-          "name": "azureTables",
-          "output": "v1/azure-table-list-response.json#",
-          "query": [
-            "continuationToken"
-          ],
-          "route": "/azure/<account>/tables",
-          "scopes": "auth:azure-table:list-tables:<account>",
-          "stability": "deprecated",
-          "title": "List Tables in an Account Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "table",
-            "level"
-          ],
-          "category": "Azure Credentials",
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
-          "method": "get",
-          "name": "azureTableSAS",
-          "output": "v1/azure-table-access-response.json#",
-          "query": [
-          ],
-          "route": "/azure/<account>/table/<table>/<level>",
-          "scopes": {
-            "else": "auth:azure-table:read-write:<account>/<table>",
-            "if": "levelIsReadOnly",
-            "then": {
-              "AnyOf": [
-                "auth:azure-table:read-only:<account>/<table>",
-                "auth:azure-table:read-write:<account>/<table>"
-              ]
-            }
-          },
-          "stability": "deprecated",
-          "title": "Get Shared-Access-Signature for Azure Table",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account"
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all containers in an account.",
-          "method": "get",
-          "name": "azureContainers",
-          "output": "v1/azure-container-list-response.json#",
-          "query": [
-            "continuationToken"
-          ],
-          "route": "/azure/<account>/containers",
-          "scopes": "auth:azure-container:list-containers:<account>",
-          "stability": "deprecated",
-          "title": "List containers in an Account Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "container",
-            "level"
-          ],
-          "category": "Azure Credentials",
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
-          "method": "get",
-          "name": "azureContainerSAS",
-          "output": "v1/azure-container-response.json#",
-          "query": [
-          ],
-          "route": "/azure/<account>/containers/<container>/<level>",
-          "scopes": {
-            "else": "auth:azure-container:read-write:<account>/<container>",
-            "if": "levelIsReadOnly",
-            "then": {
-              "AnyOf": [
-                "auth:azure-container:read-only:<account>/<container>",
-                "auth:azure-container:read-write:<account>/<container>"
-              ]
-            }
-          },
-          "stability": "deprecated",
-          "title": "Get Shared-Access-Signature for Azure Container",
           "type": "function"
         },
         {

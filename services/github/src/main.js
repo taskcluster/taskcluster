@@ -247,6 +247,7 @@ const load = loader(
           deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
           resultStatusQueueName: cfg.app.resultStatusQueue,
           rerunQueueName: cfg.app.rerunQueue,
+          taskclusterYmlQueueName: cfg.app.taskclusterYmlQueue,
           context: { cfg, github, schemaset, db, publisher, hooksClient, authClient },
           pulseClient,
           queueClient,

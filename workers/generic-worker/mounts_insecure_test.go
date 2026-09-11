@@ -20,7 +20,7 @@ func TestHardLinksInArchive(t *testing.T) {
 	setup(t)
 
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("tools", "git"),
 			Content: json.RawMessage(`{

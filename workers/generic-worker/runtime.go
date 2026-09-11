@@ -7,25 +7,17 @@ import (
 	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
-func safeReservedCopy(path string) (string, error) {
-	src, err := safefs.OpenExistingReadonly(path)
-	if err != nil {
-		return "", err
-	}
-	defer src.Close()
+type reservedContentSource string
 
-	tmp, err := os.CreateTemp("", "reserved-artifact-")
+func (f reservedContentSource) OpenForUpload() (*os.File, error) {
+	return safefs.OpenExistingReadonly(string(f))
+}
+
+func (f reservedContentSource) WriteContent(w io.Writer) (int64, error) {
+	source, err := f.OpenForUpload()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	if _, err := io.Copy(tmp, src); err != nil {
-		tmp.Close()
-		os.Remove(tmp.Name())
-		return "", err
-	}
-	if err := tmp.Close(); err != nil {
-		os.Remove(tmp.Name())
-		return "", err
-	}
-	return tmp.Name(), nil
+	defer source.Close()
+	return io.Copy(w, source)
 }
