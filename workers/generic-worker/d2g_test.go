@@ -1062,6 +1062,89 @@ func TestD2GChainOfTrustIndexedDockerImage(t *testing.T) {
 	D2GChainOfTrustHelper(t, &image, []string{}, expected)
 }
 
+func TestD2GNamedDockerImageAlwaysRepulls(t *testing.T) {
+	skipInDockerIfNoDocker(t)
+	setup(t)
+	image := map[string]any{
+		"name": "taskcluster/taskcluster-proxy:v81.0.2",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		payload1 := dockerworker.DockerWorkerPayload{
+			Command:    []string{"taskcluster-proxy", "--version"},
+			Image:      json.RawMessage(imageBytes),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload1)
+		td1 := testTask(t)
+		resultTaskID1 := submitAndAssert(t, td1, payload1, "completed", "completed")
+		ExpectedArtifacts{
+			"public/logs/live_backing.log": {
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td1.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					"[d2g] Loading docker image",
+					"[d2g] Loaded docker image",
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td1.Expires,
+			},
+		}.Validate(t, resultTaskID1, 0)
+
+		payload2 := dockerworker.DockerWorkerPayload{
+			Command:    []string{"taskcluster-proxy", "--version"},
+			Image:      json.RawMessage(imageBytes),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload2)
+		td2 := testTask(t)
+		resultTaskID2 := submitAndAssert(t, td2, payload2, "completed", "completed")
+		ExpectedArtifacts{
+			"public/logs/live_backing.log": {
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td2.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					"[d2g] Loading docker image",
+					"[d2g] Loaded docker image",
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td2.Expires,
+			},
+		}.Validate(t, resultTaskID2, 0)
+		logtext := LogText(t)
+		if strings.Contains(logtext, "[d2g] Using cached docker image") {
+			t.Fatal("named docker images must re-pull; cache must not skip docker pull")
+		}
+	default:
+		payload := dockerworker.DockerWorkerPayload{
+			Command:    []string{"taskcluster-proxy", "--version"},
+			Image:      json.RawMessage(imageBytes),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload)
+		td := testTask(t)
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
 // TestD2GDockerImageArtifactCaching verifies the full caching lifecycle for
 // d2g docker image artifacts:
 //

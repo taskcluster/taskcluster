@@ -7,7 +7,3 @@ import (
 func (din *DockerImageName) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{}, nil
 }
-
-func (din *DockerImageName) String() string {
-	return string(*din)
-}

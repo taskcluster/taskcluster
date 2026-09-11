@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -66,6 +67,38 @@ func ExampleConvertScopes_mixture() {
 	//	"generic-worker:os-group:x/y/z/kvm"
 	//	"generic-worker:os-group:x/y/z/libvirt"
 	//	"generic-worker:teapot"
+}
+
+// Registry images must be run by digest placeholder so docker run
+// --pull=never cannot follow a poisoned local tag.
+func TestRegistryImagesPinDockerRunByDigestPlaceholder(t *testing.T) {
+	images := []json.RawMessage{
+		json.RawMessage(`"ubuntu:24.04"`),
+		json.RawMessage(`{"name":"ubuntu:24.04","type":"docker-image"}`),
+	}
+	for _, image := range images {
+		dwPayload := dockerworker.DockerWorkerPayload{
+			Command:    []string{"echo", "hello"},
+			Image:      image,
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&dwPayload)
+		gwPayload, _, err := d2g.ConvertPayload(&dwPayload, d2g.Config{}, FakeReadDir)
+		if err != nil {
+			t.Fatalf("ConvertPayload(%s): %v", image, err)
+		}
+		if len(gwPayload.Command) == 0 {
+			t.Fatalf("ConvertPayload(%s): empty command", image)
+		}
+		cmd := gwPayload.Command[0]
+		dashDash := slices.Index(cmd, "--")
+		if dashDash < 0 || dashDash+1 >= len(cmd) {
+			t.Fatalf("ConvertPayload(%s): docker run missing image arg: %v", image, cmd)
+		}
+		if got := cmd[dashDash+1]; got != "__D2G_IMAGE_ID__" {
+			t.Errorf("ConvertPayload(%s): docker run image arg = %q, want __D2G_IMAGE_ID__", image, got)
+		}
+	}
 }
 
 func TestConvertScopesRequiresDisableSeccompScope(t *testing.T) {
