@@ -182,6 +182,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     await handlers.setup();
 
+    // the .taskcluster.yml handler binds to the push exchange as well, and a
+    // fake pulse message reaches every consumer that matches it.  Stopping it
+    // keeps these tests to the handlers they are about.
+    await handlers.taskclusterYmlPq.stop();
+
     // stub out `createTasks` so that we don't actually create tasks
     handlers.realCreateTasks = handlers.createTasks;
     handlers.createTasks = sinon.stub();

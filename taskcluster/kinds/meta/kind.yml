@@ -51,9 +51,13 @@ tasks:
       command: >-
         corepack yarn --immutable &> /dev/null &&
         corepack yarn build --dry-run
+  taskgraph-security:
+    description: generate task graphs and validate untrusted graph security invariants
+    run:
+      command: python3 taskcluster/test/check_taskgraph.py
   changelog-pr:
     description: taskcluster changelog checks
-    run-on-tasks-for: [github-pull-request]
+    run-on-tasks-for: [github-pull-request, github-pull-request-untrusted, github-issue-comment]
     run:
       command: >-
         corepack yarn --immutable &> /dev/null &&

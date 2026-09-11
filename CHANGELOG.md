@@ -3,6 +3,88 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v108.1.0
+
+### GENERAL
+
+▶ [patch]
+Bumps `uv` to v0.12.8 for the in-tree `ci` and `python` docker images, the taskgraph decision image to v24.2.3, the git for windows version to v2.55.0, and the `nvm` version used during releases to v0.40.7.
+
+▶ [patch]
+Upgrades to Node.js v24.20.0.
+
+▶ [patch]
+Upgrades to go1.27.1 and golangci-lint v2.13.2.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.27.1).
+
+▶ [patch]
+Upgrades to rust v1.98.0.
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker no longer deadlocks on shutdown or when interrupted with Ctrl+C / `SIGINT` while a task is running. Shutdown waits on task completions until no tasks remain, instead of blocking on a wait group that only advanced when those completions were processed.
+
+▶ [patch] [bug 2069456](http://bugzil.la/2069456)
+On Windows multiuser workers, command environment read by generic-worker from the task directory will now refuse to follow links.
+
+▶ [patch] [bug 2069456](http://bugzil.la/2069456)
+On Windows multiuser workers, command scripts written by generic-worker into the task directory will now refuse to follow links.
+
+### USERS
+
+▶ [minor] [bug 1917274](http://bugzil.la/1917274)
+The github service publishes a new `exchange/taskcluster-github/v1/taskcluster-yml-update`
+message when a push changes a repository's `.taskcluster.yml`. The ordinary `push`
+message is still published as well, so existing consumers are unaffected.
+
+The payload names the organization, the repository, the ref that was pushed to, and
+the webhook delivery id, and nothing else. It deliberately does not carry the file's
+contents. A consumer can therefore act on a push in one repository from inside
+another, treating the ref as a value to compare against rather than one to pass on.
+
+### DEVELOPERS
+
+▶ [patch] [bug 2066797](http://bugzil.la/2066797)
+Changes the pull-request policy to `public_restricted` and isolates trusted and untrusted task graphs. External pull requests run at level 1 with separate caches, without secrets or generic-worker CI, and rebuild Docker images instead of sharing an image index. Collaborators can trigger the full level-3 graph with `/taskcluster run`.
+
+▶ [patch] [#9093](https://github.com/taskcluster/taskcluster/issues/9093)
+UI Scopes pages (ViewScope and ScopesetExpander) switch from GraphQL to direct REST service calls.
+
+▶ [patch] [#9074](https://github.com/taskcluster/taskcluster/issues/9074)
+UI WMViewWorkers and WMViewWorkerPools pages switches to use direct REST API calls
+
+### OTHER
+
+▶ Additional change not described here: [#9117](https://github.com/taskcluster/taskcluster/issues/9117).
+
+### Automated Package Updates
+
+<details>
+<summary>18 Dependabot updates</summary>
+
+* build(deps): bump immutable from 3.8.3 to 3.8.4 in /ui (9dbdb66aef)
+* build(deps): bump title-case from 3.0.3 to 4.3.2 in /ui (1ac78950a7)
+* build(deps): bump fast-uri from 3.1.5 to 3.1.6 (a1a68c4654)
+* build(deps): bump fast-uri from 3.1.5 to 3.1.6 in /ui (663adc596c)
+* build(deps): bump qs from 6.15.3 to 6.16.0 (e03dee4976)
+* build(deps): bump qs from 6.15.3 to 6.16.0 in /ui (3ef6f64682)
+* build(deps): bump chalk from 5.6.2 to 6.0.0 (461a5091f9)
+* build(deps): bump @azure/arm-network from 34.0.0 to 38.0.0 (a61e720b59)
+* build(deps): bump the node-deps group with 8 updates (63ef0ad7f8)
+* build(deps): bump taskcluster-lib-urls in /ui in the ui-node-deps group (26bd1ca369)
+* build(deps): bump the gh-actions-deps group with 2 updates (1229008b94)
+* build(deps): bump @slack/web-api from 6.13.0 to 8.0.0 (a1caab2e69)
+* build(deps): bump taskcluster-urls (e17bb929f3)
+* build(deps): bump the go-deps group with 3 updates (ee02263f9d)
+* build(deps): bump taskcluster-lib-urls (81e7451c13)
+* build(deps): bump taskcluster-lib-urls (1bc2af0bba)
+* build(deps): bump browserslist from 4.28.2 to 4.28.8 in /ui (a8f50468a9)
+* build(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.1 (f6555fbe52)
+
+</details>
+
 ## v108.0.0
 
 ### DEPLOYERS

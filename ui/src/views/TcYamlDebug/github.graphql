@@ -1,6 +1,0 @@
-query GitHub($payload: JSON!) {
-  renderTaskclusterYml(payload: $payload) {
-    tasks
-    scopes
-  }
-}

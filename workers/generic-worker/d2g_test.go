@@ -35,7 +35,7 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
-		Artifacts: map[string]dockerworker.Artifact{
+		Artifacts: map[string]dockerworker.DockerWorkerArtifact{
 			"testWithoutExpires": {
 				Path: "testWithoutExpiresPath",
 				Type: "file",
@@ -91,7 +91,7 @@ func TestD2GVolumeArtifacts(t *testing.T) {
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
-		Artifacts: map[string]dockerworker.Artifact{
+		Artifacts: map[string]dockerworker.DockerWorkerArtifact{
 			"SampleArtifacts/_": {
 				Path:    "/SampleArtifacts/_",
 				Type:    "volume",
@@ -163,7 +163,7 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
-		Artifacts: map[string]dockerworker.Artifact{
+		Artifacts: map[string]dockerworker.DockerWorkerArtifact{
 			"SampleArtifacts/_/X.txt": {
 				Path:    "SampleArtifacts/_/X.txt",
 				Type:    "file",
@@ -260,7 +260,7 @@ func TestD2GIssue6789(t *testing.T) {
 			"URL=\"${TASKCLUSTER_PROXY_URL}/api/queue/v1/task/${TASK_ID}\"\ncurl -v \"${URL}\"\ncurl -sf \"${URL}\"",
 		},
 		Image: json.RawMessage(`"denolehov/curl"`),
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			TaskclusterProxy: true,
 		},
 		MaxRunTime: 10,
@@ -313,7 +313,7 @@ func TestD2GWithValidScopes(t *testing.T) {
 				KVM:              true,
 			},
 		},
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			AllowPtrace: true,
 		},
 	}
@@ -879,7 +879,7 @@ func TestD2GTaskclusterProxy(t *testing.T) {
 		},
 		Image:      json.RawMessage(`"denolehov/curl"`),
 		MaxRunTime: 60,
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			TaskclusterProxy: true,
 		},
 	}
@@ -1179,7 +1179,7 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 			"taskcluster-proxy",
 			"--version",
 		},
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			ChainOfTrust: true,
 		},
 		Image:      json.RawMessage(imageBytes),

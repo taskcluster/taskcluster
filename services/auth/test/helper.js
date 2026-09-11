@@ -42,12 +42,8 @@ withMonitor({ load });
 
 // set up the testing secrets
 helper.secrets = new Secrets({
-  secretName: ['project/taskcluster/testing/taskcluster-auth', 'project/taskcluster/testing/azure'],
+  secretName: ['project/taskcluster/testing/taskcluster-auth'],
   secrets: {
-    azure: [
-      { env: 'AZURE_ACCOUNT', name: 'accountId' },
-      { env: 'AZURE_ACCOUNT_KEY', name: 'accessKey' },
-    ],
     aws: [
       { env: 'AWS_ACCESS_KEY_ID', name: 'awsAccessKeyId' },
       { env: 'AWS_SECRET_ACCESS_KEY', name: 'awsSecretAccessKey' },
@@ -67,7 +63,7 @@ helper.secrets = new Secrets({
 
 helper.loadJson = async filename => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
 
-helper.withCfg = (mock, skipping) => {
+helper.withCfg = skipping => {
   if (skipping()) {
     return;
   }
@@ -91,14 +87,6 @@ helper.withCfg = (mock, skipping) => {
         description: 'testing',
       }))
     );
-
-    // override cfg.azureAccounts based on the azure secret, or mock it
-    if (mock) {
-      load.cfg('azureAccounts', undefined);
-    } else {
-      const sec = helper.secrets.get('azure');
-      load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
-    }
   });
 
   suiteTeardown(async () => {

@@ -263,11 +263,10 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 
 		chainOfTrustAdditionalDataPath := filepath.Join(taskDir, "chain-of-trust-additional-data.json")
-		// 0644 (not 0600): the worker (root) writes this file, then
-		// the task user reads it via copy-to-temp-file when the
-		// chain-of-trust feature folds it into the signed cert. The
-		// task dir is already 0700 owned by the task user, so this
-		// file is not exposed beyond that boundary.
+		// 0644 (not 0600): the worker (root) writes this file, then the task
+		// user reads it via cat-file when the chain-of-trust feature folds it
+		// into the signed cert. The task dir is already 0700 owned by the task
+		// user, so this file is not exposed beyond that boundary.
 		err = safefs.WriteFile(chainOfTrustAdditionalDataPath, []byte(chainOfTrustAdditionalData), 0644)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))

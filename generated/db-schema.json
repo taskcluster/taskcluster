@@ -8066,6 +8066,21 @@
         }
       },
       "version": 128
+    },
+    {
+      "description": "Add batched pending and claimed task counts for task queues",
+      "methods": {
+        "queue_task_queue_counts": {
+          "args": "task_queue_ids_in jsonb",
+          "body": "begin\n  RETURN QUERY\n  SELECT\n    requested.task_queue_id,\n    queue_pending_tasks_count(requested.task_queue_id) AS pending_count,\n    queue_claimed_tasks_count(requested.task_queue_id) AS claimed_count\n  FROM jsonb_array_elements_text(task_queue_ids_in) AS requested(task_queue_id);\nend",
+          "deprecated": false,
+          "description": "Count pending and claimed tasks for each requested task queue.\nThe result contains one row per input task queue, including queues with no\npending or claimed tasks.\n",
+          "mode": "read",
+          "returns": "table(task_queue_id text, pending_count integer, claimed_count integer)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 129
     }
   ]
 }

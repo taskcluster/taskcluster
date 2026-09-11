@@ -130,7 +130,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 
 		// Otherwise get the env from the previous command
 	} else {
-		envFile, err := os.Open(env)
+		envFile, err := safefs.OpenExistingReadonly(env)
 		if err != nil {
 			panic(fmt.Errorf("could not read from env file %v\n%v", env, err))
 		}
@@ -144,12 +144,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			panic(err)
 		}
 
-		dirBytes, err := os.ReadFile(dir)
-		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
-
+		dirBytes, err := safefs.ReadFile(dir)
 		if err != nil {
 			panic(fmt.Errorf("could not read directory location from file %v\n%v", dir, err))
 		}
+		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
 
 		contents += "cd \"" + dirString + "\"\r\n"
 	}
@@ -182,7 +181,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	contents += "exit /b %tcexitcode%\r\n"
 
 	// now generate the .bat script that runs all of this
-	err := os.WriteFile(
+	err := safefs.WriteFile(
 		wrapper,
 		[]byte(contents),
 		0755, // note this is mostly ignored on windows
@@ -197,7 +196,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		task.Payload.Command[index],
 	}, "\r\n"))
 
-	err = os.WriteFile(
+	err = safefs.WriteFile(
 		script,
 		fileContents,
 		0755, // note this is mostly ignored on windows

@@ -11,7 +11,7 @@ import (
 
 func Example_scopes() {
 
-	myAuth := tcauth.New(nil, "https://community-tc.services.mozilla.com")
+	myAuth := tcauth.New(nil, "https://firefox-ci-tc.services.mozilla.com")
 
 	// Look up client details for client id "project/taskcluster/generic-worker/taskcluster-ci"...
 	resp, err := myAuth.Client("project/taskcluster/generic-worker/taskcluster-ci")

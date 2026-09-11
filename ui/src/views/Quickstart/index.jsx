@@ -1,6 +1,6 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component, Fragment } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
+import { Github } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -26,7 +26,7 @@ import HelpView from '../../components/HelpView';
 import SiteSpecific from '../../components/SiteSpecific';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
-import githubQuery from './github.graphql';
+import { withTaskclusterClient } from '../../utils/TaskclusterClient';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
 
 const baseCmd = [
@@ -157,7 +157,7 @@ const imageForLanguage = {
   go: 'golang:latest',
 };
 
-@withApollo
+@withTaskclusterClient
 @withStyles(theme => ({
   separator: {
     padding: theme.spacing(2),
@@ -236,18 +236,22 @@ export default class QuickStart extends Component {
 
   state = this.initialState;
 
-  getInstalledState = debounce(async (owner, repo) => {
-    const { data } = await this.props.client.query({
-      query: githubQuery,
-      variables: {
-        owner,
-        repo,
-      },
-    });
+  get githubClient() {
+    return this.props.createTaskclusterClient({ Class: Github });
+  }
 
-    this.setState({
-      installedState: data.githubRepository.installed ? 'success' : 'error',
-    });
+  getInstalledState = debounce(async (owner, repo) => {
+    try {
+      const { installed } = await this.githubClient.repository(owner, repo);
+
+      this.setState({
+        installedState: installed ? 'success' : 'error',
+      });
+    } catch (_err) {
+      this.setState({
+        installedState: 'error',
+      });
+    }
   }, 1000);
 
   handleEditorChange = editorValue => {

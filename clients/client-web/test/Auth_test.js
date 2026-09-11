@@ -183,7 +183,7 @@ helper.describe('Auth', () => {
       rootUrl: helper.rootUrl,
     });
 
-    return auth.listClients({ prefix: 'abc' }).then(clients => expect(clients).to.deep.equal({ clients: [] }));
+    return auth.listRoleIds({ limit: 1 }).then(({ roleIds }) => expect(roleIds).to.have.lengthOf(1));
   });
 
   it('should fetch using authorized scopes', () => {

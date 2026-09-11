@@ -419,7 +419,7 @@ Here is a sample usage:
 ```python
 from taskcluster.helper import Taskcluster config
 
-tc = TaskclusterConfig('https://community-tc.services.mozilla.com')
+tc = TaskclusterConfig('https://firefox-ci-tc.services.mozilla.com')
 ```
 
 2. in `project/boot.py`, we authenticate on Taskcuster with provided credentials, or environment variables, or taskcluster proxy (in that order):
