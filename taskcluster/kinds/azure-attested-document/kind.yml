@@ -1,0 +1,60 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
+
+tasks:
+  fetch:
+    description: >-
+      Fetch an Azure IMDS attested document and instance metadata, and publish
+      them as indexed artifacts for refreshing worker-manager's
+      services/worker-manager/test/fixtures/azure_signature_good.json.
+      See https://github.com/taskcluster/taskcluster/issues/8533
+    # Selected only by the azure-attested-document cron job (.cron.yml); never
+    # part of the push or pull-request graphs.
+    run-on-tasks-for: [cron]
+    attributes:
+      cron-job: azure-attested-document
+    worker-type: gw-windows-2022-gui
+    priority: lowest
+    deadline-after: 3 hours
+    # The artifacts and the index entry die with the task; ~6 months keeps a
+    # document fetchable for about one certificate lifetime.
+    expires-after: 180 days
+    routes:
+      - index.project.taskcluster.azure.attested-document.latest
+      # The cron hook's emailOnError only covers failing to create the decision
+      # task; this covers the job itself failing.
+      - notify.email.taskcluster-notifications@mozilla.com.on-failed
+    worker:
+      max-run-time: 300
+      artifacts:
+        - name: public/attested.json
+          path: attested.json
+          type: file
+        - name: public/instance.json
+          path: instance.json
+          type: file
+    run:
+      using: bare
+      command:
+        # Set-Content, not Out-File: Out-File applies console-width
+        # formatting, which would wrap (and thus corrupt) the ~4KB signature.
+        # The doubled braces are str.format() escapes (src/job.py formats
+        # every command); PowerShell sees @{Metadata='true'}.
+        - >-
+          powershell -Command "(Invoke-WebRequest -UseBasicParsing -Headers
+          @{{Metadata='true'}} -Uri
+          'http://169.254.169.254/metadata/attested/document?api-version=2021-05-01').Content
+          | Set-Content -Encoding ascii -NoNewline -Path attested.json"
+        - >-
+          powershell -Command "(Invoke-WebRequest -UseBasicParsing -Headers
+          @{{Metadata='true'}} -Uri
+          'http://169.254.169.254/metadata/instance?api-version=2021-05-01').Content
+          | Set-Content -Encoding ascii -NoNewline -Path instance.json"
+        # Re-print the files rather than re-querying IMDS, so that the log
+        # and the artifacts are guaranteed to be the same document (a second
+        # request returns a different nonce and timestamp).
+        - powershell -Command "Get-Content -Raw attested.json; Get-Content -Raw instance.json"

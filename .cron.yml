@@ -1,0 +1,15 @@
+---
+# Jobs run on a schedule by fxci-config's cron hook for this repository, which
+# fires every 15 minutes and starts a decision task for each job whose `when`
+# matches. Schema: fxci-config/build-decision/src/build_decision/cron/schema.yml
+jobs:
+  # Publishes an Azure IMDS attested document, for refreshing worker-manager's
+  # azure_signature_good.json test fixture. See kinds/azure-attested-document.
+  - name: azure-attested-document
+    job:
+      type: decision-task
+      # Required by the schema; this repository does not report to Treeherder.
+      treeherder-symbol: azure-attested-document
+      target-tasks-method: azure-attested-document
+    when:
+      - {weekday: Monday, hour: 3, minute: 0}
