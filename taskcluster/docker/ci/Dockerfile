@@ -47,7 +47,9 @@ RUN mkdir -p /builds && \
     # allow postgres to connect locally with no auth -- this is for testing!
     echo 'local all all trust' > /etc/postgresql/15/main/pg_hba.conf && \
     echo 'host all all 127.0.0.1/32 trust' >> /etc/postgresql/15/main/pg_hba.conf && \
-    echo 'host all all ::1/128 trust' >> /etc/postgresql/15/main/pg_hba.conf
+    echo 'host all all ::1/128 trust' >> /etc/postgresql/15/main/pg_hba.conf && \
+    printf '%s\n' 'fsync = off' 'full_page_writes = off' 'synchronous_commit = off' \
+      >> /etc/postgresql/15/main/postgresql.conf
 
 # Set a default command useful for debugging
 CMD ["/bin/bash", "--login"]
