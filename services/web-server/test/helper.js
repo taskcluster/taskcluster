@@ -1,7 +1,15 @@
 import assert from 'node:assert';
 import load from '../src/main.js';
 import taskcluster from '@taskcluster/client';
-import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from '@taskcluster/lib-testing';
+import {
+  Secrets,
+  stickyLoader,
+  withMonitor,
+  withPulse,
+  withDb,
+  resetTables,
+  getFreePort,
+} from '@taskcluster/lib-testing';
 import sinon from 'sinon';
 import GithubClient from '../src/login/clients/GithubClient.js';
 import libUrls from 'taskcluster-lib-urls';
@@ -133,17 +141,22 @@ helper.withServer = skipping => {
     if (skipping()) {
       return;
     }
-    const cfg = await helper.load('cfg');
+    await helper.load('cfg');
+
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await getFreePort();
+    helper.load.cfg('server.port', port);
+    helper.serverPort = port;
 
     webServer = await helper.load('httpServer');
     await new Promise((resolve, reject) => {
       webServer.once('error', reject);
-      webServer.listen(cfg.server.port, () => {
+      webServer.listen(port, () => {
         resolve();
       });
     });
 
-    helper.serverPort = cfg.server.port;
     helper.signedInAgent = signedInAgent;
 
     helper.load.cfg('app.publicUrl', `http://127.0.0.1:${helper.serverPort}`);

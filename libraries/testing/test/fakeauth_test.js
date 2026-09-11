@@ -55,11 +55,14 @@ builder.declare(
 );
 
 suite(testing.suiteName(), () => {
-  const rootUrl = 'http://localhost:1208';
   const fakeauth = testing.fakeauth;
+  let rootUrl;
   let server;
 
   suiteSetup(async () => {
+    const port = await testing.getFreePort();
+    rootUrl = `http://localhost:${port}`;
+
     const schemaset = new SchemaSet({
       rootUrl,
       serviceName: 'lib-testing',
@@ -75,7 +78,7 @@ suite(testing.suiteName(), () => {
 
     // Create application
     server = await App({
-      port: 1208,
+      port,
       env: 'development',
       forceSSL: false,
       trustProxy: false,

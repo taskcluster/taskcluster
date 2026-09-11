@@ -27,11 +27,13 @@ const testclients = {
 };
 
 const suiteName = path.basename;
-const rootUrl = 'http://localhost:60401';
 const load = testing.stickyLoader(mainLoad);
 
-const helper = { load, rootUrl, suiteName };
+const helper = { load, suiteName };
 export default helper;
+
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
 
 suiteSetup(async () => {
   load.inject('profile', 'test');
@@ -222,7 +224,7 @@ helper.withSES = (mock, skipping) => {
 const stubbedQueue = () => {
   const tasks = {};
   const queue = new taskcluster.Queue({
-    rootUrl: rootUrl,
+    rootUrl: helper.rootUrl,
     credentials: {
       clientId: 'index-server',
       accessToken: 'none',
@@ -326,13 +328,25 @@ helper.withServer = skipping => {
     }
     await load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
+    // Recreate fakes that were built before the real rootUrl was known.
+    if (helper.queue) {
+      helper.queue = stubbedQueue();
+      load.inject('queue', helper.queue);
+    }
+
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    load.cfg('taskcluster.rootUrl', rootUrl);
     load.cfg('taskcluster.clientId', null);
     load.cfg('taskcluster.accessToken', null);
-    testing.fakeauth.start(testclients, { rootUrl: rootUrl });
+    testing.fakeauth.start(testclients, { rootUrl: helper.rootUrl });
 
     load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
 
@@ -344,7 +358,7 @@ helper.withServer = skipping => {
         accessToken: 'doesnt-matter',
       },
       retries: 0,
-      rootUrl,
+      rootUrl: helper.rootUrl,
     });
 
     webServer = await load('server');
