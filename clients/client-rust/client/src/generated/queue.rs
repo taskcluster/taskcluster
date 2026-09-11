@@ -1395,6 +1395,32 @@ impl Queue {
         (path, query)
     }
 
+    /// Get Pending and Claimed Task Counts for Multiple Task Queues
+    ///
+    /// Get approximate pending and claimed task counts for the given task queues.
+    ///
+    /// The caller must have both `queue:pending-count:<taskQueueId>` and
+    /// `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+    /// If any task queue is unauthorized, the entire request will fail.
+    ///
+    /// As task states may change rapidly, these counts may not represent the exact
+    /// number of pending and claimed tasks, but are very good approximations.
+    pub async fn taskQueueCountsBatch(&self, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::taskQueueCountsBatch_details();
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for taskQueueCountsBatch
+    fn taskQueueCountsBatch_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "task-queues/counts";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get Number of Pending and Claimed Tasks
     ///
     /// Get an approximate number of pending and claimed tasks for the given `taskQueueId`.

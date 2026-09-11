@@ -18,6 +18,7 @@ task-defaults:
     chain-of-trust: true
   attributes:
     code-review: true
+    run-without-secrets: true
   scopes:
     - secrets:get:project/taskcluster/testing/client-libraries
 

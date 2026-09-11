@@ -109,6 +109,35 @@ exchanges.declare({
   CCBuilder: () => [],
 });
 
+/** taskcluster.yml update exchange */
+exchanges.declare({
+  exchange: 'taskcluster-yml-update',
+  name: PUBLISHERS.TASKCLUSTER_YML_UPDATE,
+  title: 'Taskcluster Yml Update Event',
+  description: [
+    "When a GitHub push event changes a repository's `.taskcluster.yml` it will",
+    'be broadcast on this exchange with the designated `organization` and',
+    '`repository` in the routing-key.',
+    '',
+    'The payload names the repository and the ref that was pushed to, and',
+    'nothing more.  The file itself does not travel with the message, so a',
+    'consumer reading it cannot be steered by the pushed commits.',
+    '',
+    'Detection is best effort.  A force push that drops a commit reports no',
+    'changed files to GitHub, so reverting the file that way sends no message.',
+  ].join('\n'),
+  routingKey: commonRoutingKey(),
+  schema: 'taskcluster-yml-update-message.yml',
+  messageBuilder: commonMessageBuilder,
+  // Unlike the other exchanges here, this payload carries the names as GitHub
+  // spells them, so periods have to come out for the routing key.
+  routingKeyBuilder: msg => ({
+    organization: msg.organization.replace(/\./g, '%'),
+    repository: msg.repository.replace(/\./g, '%'),
+  }),
+  CCBuilder: () => [],
+});
+
 /** release exchange */
 exchanges.declare({
   exchange: 'release',
