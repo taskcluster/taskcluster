@@ -33,7 +33,6 @@ const makeHook = (bindings = []) => ({
     owner: 'o@example.com',
     emailOnError: true,
   },
-  status: { nextScheduledDate: null },
   task: { payload: {} },
   triggerSchema: { type: 'object', additionalProperties: false },
 });

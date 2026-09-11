@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"mime"
 	"os"
@@ -8,12 +9,13 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v107/internal/scopes"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -110,25 +112,40 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", taskArtifact.Base().Name, feature)
 				return nil
 			}
-			e := task.uploadArtifact(taskArtifact)
-			if e != nil {
-				// we don't care about optional artifacts failing to upload
-				if taskArtifact.Base().Optional {
+
+			// Read the content *before* telling the queue the artifact
+			// exists, so that a file the task user cannot read is published
+			// as an error artifact rather than as a failed upload.
+			defer taskArtifact.DiscardContent()
+			if e := taskArtifact.PrepareContent(); e != nil {
+				if _, ok := errors.AsType[artifacts.ContentError](e); !ok {
+					uploadErrChan <- executionError(internalError, errored, fmt.Errorf("could not copy artifact %v to temp directory: %w", taskArtifact.Base().Name, e))
 					return nil
 				}
+				taskArtifact = &artifacts.ErrorArtifact{
+					BaseArtifact: taskArtifact.Base(),
+					Message:      fmt.Sprintf("Couldn't read file '%s': %v", taskArtifact.SourcePath(), e),
+					Reason:       "file-not-readable-on-worker",
+					Path:         taskArtifact.SourcePath(),
+				}
+			}
+
+			e := task.uploadArtifact(taskArtifact)
+			errArtifact, isErrArtifact := taskArtifact.(*artifacts.ErrorArtifact)
+			// An artifact we never got readable content for is published as an
+			// error artifact. Optional means we're fine with the file not
+			// existing, not that we're fine with failing to upload content
+			if isErrArtifact && errArtifact.Optional && errArtifact.Reason != "file-not-readable-on-worker" {
+				return nil
+			}
+
+			if e != nil {
 				uploadErrChan <- e
 			}
-			// Note - the above error only covers not being able to upload an
-			// artifact, but doesn't cover case that an artifact could not be
-			// found, and so an error artifact was uploaded. So we do that
-			// here:
-			switch a := taskArtifact.(type) {
-			case *artifacts.ErrorArtifact:
-				// we don't care about optional artifacts failing to upload
-				if a.Optional {
-					return nil
-				}
-				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
+
+			// Non optional error artifacts should fail the task
+			if isErrArtifact {
+				fail := Failure(fmt.Errorf("%v: %v", errArtifact.Reason, errArtifact.Message))
 				failChan <- fail
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
 			}
@@ -257,18 +274,17 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 	atf.artifacts = payloadArtifacts
 }
 
-// File should be resolved as an S3Artifact if file exists as file and is
-// readable, otherwise i) if it does not exist as a "file-missing-on-worker" ErrorArtifact,
-// or ii) if it cannot be read by the task user, as a "file-not-readable-on-worker" ErrorArtifact,
-// otherwise if it exists as a directory, as an "invalid-resource-on-worker" ErrorArtifact.
-// A directory should resolve as `nil` if directory exists as directory and is readable,
-// otherwise i) if it does not exist or ii) cannot be read, as a "file-missing-on-worker"
-// ErrorArtifact, otherwise if it exists as a file, as
-// "invalid-resource-on-worker" ErrorArtifact
+// File should be resolved as an S3Artifact if file exists as a file, otherwise
+// i) if it does not exist as a "file-missing-on-worker" ErrorArtifact,
+// otherwise if it exists as a directory, as an "invalid-resource-on-worker"
+// ErrorArtifact. A directory should resolve as `nil` if directory exists as
+// directory and is readable, otherwise i) if it does not exist or ii) cannot
+// be read, as a "file-missing-on-worker" ErrorArtifact, otherwise if it exists
+// as a file, as "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
 func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData, taskDir string) artifacts.TaskArtifact {
 	fullPath := fileutil.AbsFrom(taskDir, path)
-	fileReader, err := os.Open(fullPath)
+	fileReader, err := os.OpenFile(fullPath, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		// cannot read file/dir, create an error artifact
 		return &artifacts.ErrorArtifact{
@@ -308,13 +324,11 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 	if artifactType == "directory" {
 		return nil
 	}
-
-	tempPath, err := copyToTempFileAsTaskUser(fullPath, pd, taskDir)
-	if err != nil {
+	if !fileinfo.Mode().IsRegular() {
 		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
-			Message:      fmt.Sprintf("Could not copy file '%s' to temporary location as task user: %v", fullPath, err),
-			Reason:       "file-not-readable-on-worker",
+			Message:      fmt.Sprintf("File artifact '%s' exists but is not a regular file (%v)", fullPath, fileinfo.Mode().Type()),
+			Reason:       "invalid-resource-on-worker",
 			Path:         path,
 		}
 	}
@@ -380,7 +394,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 			contentEncoding = "gzip"
 		}
 	}
-	return createDataArtifact(base, fullPath, tempPath, contentType, contentEncoding)
+	return createDataArtifact(base, fullPath, taskUserContentSource(fullPath, pd, taskDir), contentType, contentEncoding)
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a

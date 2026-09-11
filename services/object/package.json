@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/object",
-  "version": "107.0.0",
+  "version": "108.1.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
@@ -11,7 +11,7 @@
     "format": "biome format --write"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.5",
-    "mocha": "^11.7.6"
+    "@biomejs/biome": "^2.5.10",
+    "mocha": "^11.8.0"
   }
 }

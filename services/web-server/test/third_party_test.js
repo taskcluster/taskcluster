@@ -8,6 +8,7 @@ import moment from 'moment';
 import helper from './helper.js';
 import tryCatch from '../src/utils/tryCatch.js';
 import hash from '../src/utils/hash.js';
+import { validateRegisteredClients } from '../src/validateConfig.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -23,8 +24,125 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     }
     return new URLSearchParams(url.slice(qmark + 1));
   };
+  const pkceVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
+  const pkceChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
+  const issueAuthorizationCode = async (
+    agent,
+    { clientId = 'test-code-whitelisted', redirectUri = 'https://test.example.com/cb', usePkce = false } = {}
+  ) => {
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: 'tags:get:*',
+      state: 'abc123',
+    });
+
+    if (usePkce) {
+      params.set('code_challenge', pkceChallenge);
+      params.set('code_challenge_method', 'S256');
+    }
+
+    const res = await agent
+      .get(url(`/login/oauth/authorize?${params.toString()}`))
+      .redirects(0)
+      .ok(res => res.status === 302);
+
+    return getQuery(res.header.location);
+  };
 
   suite('unit', () => {
+    test('registered OAuth clients reject unknown properties', () => {
+      assert.throws(
+        () => validateRegisteredClients([{ clientId: 'test', requirePKCE: true }]),
+        /additional properties \(requirePKCE\)/
+      );
+    });
+    test('registered OAuth clients require a boolean requirePkce value', () => {
+      assert.throws(
+        () => validateRegisteredClients([{ clientId: 'test', requirePkce: 'true' }]),
+        /requirePkce must be boolean/
+      );
+    });
+    test('registered OAuth token clients cannot require PKCE', () => {
+      assert.throws(
+        () =>
+          validateRegisteredClients([
+            {
+              clientId: 'test',
+              responseType: 'token',
+              scope: [],
+              redirectUri: ['https://test.example.com/cb'],
+              requirePkce: true,
+              maxExpires: '1 year',
+            },
+          ]),
+        /responseType must be equal to constant/
+      );
+    });
+    test('registered OAuth clients reject a redirectUri that is not an http(s) URL', () => {
+      const client = {
+        clientId: 'test',
+        responseType: 'code',
+        scope: [],
+        maxExpires: '1 year',
+      };
+
+      // `javascript:` is a well-formed URI, so `format: uri` alone accepts it
+      for (const redirectUri of ['not a url', 'javascript:alert(1)', '//test.example.com/cb']) {
+        assert.throws(
+          () => validateRegisteredClients([{ ...client, redirectUri: [redirectUri] }]),
+          /\/0\/redirectUri\/0 must match pattern|must match format/
+        );
+      }
+    });
+    test('registered OAuth clients reject a maxExpires that is not in the future', () => {
+      const client = {
+        clientId: 'test',
+        responseType: 'code',
+        scope: [],
+        redirectUri: ['https://test.example.com/cb'],
+      };
+
+      // fromNow parses both of these happily, but they would issue credentials
+      // that have already expired
+      for (const maxExpires of ['', '-1 year']) {
+        assert.throws(
+          () => validateRegisteredClients([{ ...client, maxExpires }]),
+          /maxExpires must be a positive duration/
+        );
+      }
+
+      assert.throws(
+        () => validateRegisteredClients([{ ...client, maxExpires: 'forever' }]),
+        /maxExpires is not a valid duration/
+      );
+    });
+    test('registered OAuth clients reject a duplicate clientId', () => {
+      const client = {
+        clientId: 'test',
+        responseType: 'code',
+        scope: [],
+        redirectUri: ['https://test.example.com/cb'],
+        maxExpires: '1 year',
+      };
+
+      assert.throws(
+        () => validateRegisteredClients([client, { ...client, redirectUri: ['https://other.example.com/cb'] }]),
+        /\/1\/clientId duplicates \/0\/clientId \(test\)/
+      );
+    });
+    test('CORS allows every registered redirectUri origin, not just the first', async () => {
+      // `test-code` is registered with redirect URIs on two different origins
+      for (const origin of ['https://test.example.com', 'https://second.example.com']) {
+        const res = await request
+          .options(url('/login/oauth/token'))
+          .set('origin', origin)
+          .set('access-control-request-method', 'POST');
+
+        assert.equal(res.header['access-control-allow-origin'], origin, `expected ${origin} to be an allowed origin`);
+      }
+    });
     test('authorization endpoint redirects to the third party page if user is not logged in', async () => {
       const registeredClientId = 'test-code';
       const query = new URLSearchParams({
@@ -409,6 +527,141 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const query = getQuery(res.header.location);
 
       assert(query.get('code').length > 1);
+    });
+    test('invalid_request - client_id is required when exchanging an authorization code', async () => {
+      const agent = await helper.signedInAgent();
+      const redirectUri = 'https://test.example.com/cb';
+      const code = (await issueAuthorizationCode(agent)).get('code');
+
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+      );
+
+      assert(!response);
+      assert.equal(error.response.body.error, 'invalid_request');
+    });
+    test('invalid_grant - client_id must match the authorization code', async () => {
+      const agent = await helper.signedInAgent();
+      const redirectUri = 'https://test.example.com/cb';
+      const code = (await issueAuthorizationCode(agent)).get('code');
+
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send('client_id=test-code')
+      );
+
+      assert(!response);
+      assert.equal(error.response.body.error, 'invalid_grant');
+    });
+    test('invalid_grant - PKCE code_verifier is required and must match', async () => {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-code-whitelisted';
+      const redirectUri = 'https://test.example.com/cb';
+
+      for (const codeVerifier of [undefined, 'A'.repeat(43)]) {
+        const res = await agent
+          .get(
+            url(
+              '/login/oauth/authorize' +
+                '?response_type=code' +
+                `&client_id=${registeredClientId}` +
+                '&redirect_uri=' +
+                encodeURIComponent(redirectUri) +
+                '&scope=tags:get:*' +
+                '&state=abc123' +
+                `&code_challenge=${pkceChallenge}` +
+                '&code_challenge_method=S256'
+            )
+          )
+          .redirects(0)
+          .ok(res => res.status === 302);
+
+        const code = getQuery(res.header.location).get('code');
+        let exchange = agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send(`client_id=${registeredClientId}`);
+
+        if (codeVerifier) {
+          exchange = exchange.send(`code_verifier=${codeVerifier}`);
+        }
+
+        const [error, response] = await tryCatch(exchange);
+
+        assert(!response);
+        assert.equal(error.response.body.error, 'invalid_grant');
+      }
+    });
+    test('invalid_request - PKCE only supports S256 challenges', async () => {
+      const agent = await helper.signedInAgent();
+      const redirectUri = 'https://test.example.com/cb';
+      const invalidPkceParameters = [
+        { code_challenge: pkceChallenge },
+        { code_challenge: pkceChallenge, code_challenge_method: 'plain' },
+      ];
+
+      for (const invalidPkce of invalidPkceParameters) {
+        const params = new URLSearchParams({
+          response_type: 'code',
+          client_id: 'test-code-whitelisted',
+          redirect_uri: redirectUri,
+          scope: 'tags:get:*',
+          state: 'abc123',
+          ...invalidPkce,
+        });
+        const res = await agent
+          .get(url(`/login/oauth/authorize?${params.toString()}`))
+          .redirects(0)
+          .ok(res => res.status === 302);
+        const query = getQuery(res.header.location);
+
+        assert.equal(query.get('error'), 'invalid_request');
+        assert.equal(query.get('state'), 'abc123');
+      }
+    });
+    test('invalid_request - registered clients can require PKCE', async () => {
+      const agent = await helper.signedInAgent();
+      const clientId = 'test-code-pkce-required';
+
+      let query = await issueAuthorizationCode(agent, { clientId });
+      assert.equal(query.get('error'), 'invalid_request');
+      assert.equal(query.get('state'), 'abc123');
+
+      query = await issueAuthorizationCode(agent, { clientId, usePkce: true });
+      assert(query.get('code').length > 1);
+    });
+    test('invalid_grant - code_verifier is rejected when no challenge was issued', async () => {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-code-whitelisted';
+      const redirectUri = 'https://test.example.com/cb';
+      const code = (await issueAuthorizationCode(agent)).get('code');
+
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send(`client_id=${registeredClientId}`)
+          .send(`code_verifier=${pkceVerifier}`)
+      );
+
+      assert(!response);
+      assert.equal(error.response.body.error, 'invalid_grant');
     });
     test('invalid_grant - invalid code does not return an access token', async () => {
       const agent = await helper.signedInAgent();
@@ -820,6 +1073,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const registeredClientId = 'test-code';
       const redirectUri = 'https://test.example.com/cb';
       const state = 'abc123';
+      const codeVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
+      const codeChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
 
       // user sent to /login/oauth/authorize with query args
 
@@ -833,7 +1088,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
               encodeURIComponent(redirectUri) +
               '&scope=tags:get:*' +
               `&state=${state}` +
-              '&expires=3+days'
+              '&expires=3+days' +
+              `&code_challenge=${codeChallenge}` +
+              '&code_challenge_method=S256'
           )
         )
         .redirects(0)
@@ -886,7 +1143,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         .send('grant_type=authorization_code')
         .send(`code=${query.get('code')}`)
         .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
-        .send(`client_id=${registeredClientId}`);
+        .send(`client_id=${registeredClientId}`)
+        .send(`code_verifier=${codeVerifier}`);
 
       assert.equal(res.body.token_type, 'Bearer');
       assert(res.body.access_token);

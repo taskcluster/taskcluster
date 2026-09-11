@@ -39,7 +39,6 @@ import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
-import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
 import HookBindingDebugger from '../HookBindingDebugger';
@@ -701,41 +700,27 @@ export default class HookForm extends Component {
             </List>
           </ListItem>
           {!isNewHook && (
-            <Fragment>
-              <ListItem>
-                <ListItemText
-                  primary="Next Scheduled Fire"
-                  secondary={
-                    hook.status.nextScheduledDate ? (
-                      <DateDistance from={hook.status.nextScheduledDate} />
-                    ) : (
-                      'n/a'
-                    )
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="subtitle1">
-                      Last Fired Attempts
-                    </Typography>
-                  }
-                  secondary={
-                    hookLastFires ? (
-                      <HookLastFiredTable
-                        items={hookLastFires}
-                        onErrorClick={this.handleDrawerOpen}
-                        paginate
-                      />
-                    ) : (
-                      'n/a'
-                    )
-                  }
-                />
-              </ListItem>
-            </Fragment>
+            <ListItem>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="subtitle1">
+                    Last Fired Attempts
+                  </Typography>
+                }
+                secondary={
+                  hookLastFires ? (
+                    <HookLastFiredTable
+                      items={hookLastFires}
+                      onErrorClick={this.handleDrawerOpen}
+                      paginate
+                    />
+                  ) : (
+                    'n/a'
+                  )
+                }
+              />
+            </ListItem>
           )}
           <ListItem>
             <ListItemText

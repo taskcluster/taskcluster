@@ -60,10 +60,8 @@ export default class ProvisionerDetailsTable extends Component {
     }
 
     return [...provisioners].sort((a, b) => {
-      const firstElement =
-        sortDirection === 'desc' ? b.node[sortBy] : a.node[sortBy];
-      const secondElement =
-        sortDirection === 'desc' ? a.node[sortBy] : b.node[sortBy];
+      const firstElement = sortDirection === 'desc' ? b[sortBy] : a[sortBy];
+      const secondElement = sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
       return sort(firstElement, secondElement);
     });
@@ -94,7 +92,7 @@ export default class ProvisionerDetailsTable extends Component {
     });
   };
 
-  renderTableRow = ({ node: provisioner }) => {
+  renderTableRow = provisioner => {
     const iconSize = 16;
     const { classes } = this.props;
 

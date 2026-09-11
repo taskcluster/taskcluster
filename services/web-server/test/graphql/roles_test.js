@@ -42,35 +42,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(response.data.role.roleId, roleId);
     });
 
-    test('roles query works', async () => {
-      const client = helper.getHttpClient();
-      const roleId = taskcluster.slugid();
-      const role = {
-        scopes: ['scope1'],
-        description: 'Test Scope',
-      };
-
-      const createRoleMutation = await helper.loadFixture('createRole.graphql');
-      const rolesQuery = await helper.loadFixture('roles.graphql');
-
-      // 1. create roles
-      await client.mutate({
-        mutation: gql`${createRoleMutation}`,
-        variables: {
-          roleId: roleId,
-          role: role,
-        },
-      });
-
-      // 2. get roles
-      const response = await client.query({
-        query: gql`${rolesQuery}`,
-      });
-
-      assert.equal(response.data.roles.length, 1);
-      assert.equal(response.data.roles[0].roleId, roleId);
-    });
-
     test('list role ids query works', async () => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();

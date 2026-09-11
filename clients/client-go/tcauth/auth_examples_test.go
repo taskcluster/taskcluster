@@ -5,13 +5,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
-	"github.com/taskcluster/taskcluster/v107/clients/client-go/tcauth"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcauth"
 )
 
 func Example_scopes() {
 
-	myAuth := tcauth.New(nil, "https://community-tc.services.mozilla.com")
+	myAuth := tcauth.New(nil, "https://firefox-ci-tc.services.mozilla.com")
 
 	// Look up client details for client id "project/taskcluster/generic-worker/taskcluster-ci"...
 	resp, err := myAuth.Client("project/taskcluster/generic-worker/taskcluster-ci")

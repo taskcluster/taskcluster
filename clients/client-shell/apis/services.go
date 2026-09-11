@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v107/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v108/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -312,77 +312,6 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"format",
 				},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureAccounts",
-				Title:       "List Accounts Managed by Auth",
-				Description: "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/accounts",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "",
-			},
-			definitions.Entry{
-				Name:        "azureTables",
-				Title:       "List Tables in an Account Managed by Auth",
-				Description: "Retrieve a list of all tables in an account.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/tables",
-				Args: []string{
-					"account",
-				},
-				Query: []string{
-					"continuationToken",
-				},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureTableSAS",
-				Title:       "Get Shared-Access-Signature for Azure Table",
-				Description: "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/table/<table>/<level>",
-				Args: []string{
-					"account",
-					"table",
-					"level",
-				},
-				Query: []string{},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureContainers",
-				Title:       "List containers in an Account Managed by Auth",
-				Description: "Retrieve a list of all containers in an account.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/containers",
-				Args: []string{
-					"account",
-				},
-				Query: []string{
-					"continuationToken",
-				},
-				Input: "",
-			},
-			definitions.Entry{
-				Name:        "azureContainerSAS",
-				Title:       "Get Shared-Access-Signature for Azure Container",
-				Description: "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
-				Stability:   "deprecated",
-				Method:      "get",
-				Route:       "/azure/<account>/containers/<container>/<level>",
-				Args: []string{
-					"account",
-					"container",
-					"level",
-				},
-				Query: []string{},
 				Input: "",
 			},
 			definitions.Entry{
@@ -1886,6 +1815,17 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
+			},
+			definitions.Entry{
+				Name:        "taskQueueCountsBatch",
+				Title:       "Get Pending and Claimed Task Counts for Multiple Task Queues",
+				Description: "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task-queues/counts",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "v1/task-queue-counts-request.json#",
 			},
 			definitions.Entry{
 				Name:        "taskQueueCounts",

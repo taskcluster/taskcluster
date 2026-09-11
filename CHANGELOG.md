@@ -3,6 +3,199 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v108.1.0
+
+### GENERAL
+
+▶ [patch]
+Bumps `uv` to v0.12.8 for the in-tree `ci` and `python` docker images, the taskgraph decision image to v24.2.3, the git for windows version to v2.55.0, and the `nvm` version used during releases to v0.40.7.
+
+▶ [patch]
+Upgrades to Node.js v24.20.0.
+
+▶ [patch]
+Upgrades to go1.27.1 and golangci-lint v2.13.2.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.27.1).
+
+▶ [patch]
+Upgrades to rust v1.98.0.
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker no longer deadlocks on shutdown or when interrupted with Ctrl+C / `SIGINT` while a task is running. Shutdown waits on task completions until no tasks remain, instead of blocking on a wait group that only advanced when those completions were processed.
+
+▶ [patch] [bug 2069456](http://bugzil.la/2069456)
+On Windows multiuser workers, command environment read by generic-worker from the task directory will now refuse to follow links.
+
+▶ [patch] [bug 2069456](http://bugzil.la/2069456)
+On Windows multiuser workers, command scripts written by generic-worker into the task directory will now refuse to follow links.
+
+### USERS
+
+▶ [minor] [bug 1917274](http://bugzil.la/1917274)
+The github service publishes a new `exchange/taskcluster-github/v1/taskcluster-yml-update`
+message when a push changes a repository's `.taskcluster.yml`. The ordinary `push`
+message is still published as well, so existing consumers are unaffected.
+
+The payload names the organization, the repository, the ref that was pushed to, and
+the webhook delivery id, and nothing else. It deliberately does not carry the file's
+contents. A consumer can therefore act on a push in one repository from inside
+another, treating the ref as a value to compare against rather than one to pass on.
+
+### DEVELOPERS
+
+▶ [patch] [bug 2066797](http://bugzil.la/2066797)
+Changes the pull-request policy to `public_restricted` and isolates trusted and untrusted task graphs. External pull requests run at level 1 with separate caches, without secrets or generic-worker CI, and rebuild Docker images instead of sharing an image index. Collaborators can trigger the full level-3 graph with `/taskcluster run`.
+
+▶ [patch] [#9093](https://github.com/taskcluster/taskcluster/issues/9093)
+UI Scopes pages (ViewScope and ScopesetExpander) switch from GraphQL to direct REST service calls.
+
+▶ [patch] [#9074](https://github.com/taskcluster/taskcluster/issues/9074)
+UI WMViewWorkers and WMViewWorkerPools pages switches to use direct REST API calls
+
+### OTHER
+
+▶ Additional change not described here: [#9117](https://github.com/taskcluster/taskcluster/issues/9117).
+
+### Automated Package Updates
+
+<details>
+<summary>18 Dependabot updates</summary>
+
+* build(deps): bump immutable from 3.8.3 to 3.8.4 in /ui (9dbdb66aef)
+* build(deps): bump title-case from 3.0.3 to 4.3.2 in /ui (1ac78950a7)
+* build(deps): bump fast-uri from 3.1.5 to 3.1.6 (a1a68c4654)
+* build(deps): bump fast-uri from 3.1.5 to 3.1.6 in /ui (663adc596c)
+* build(deps): bump qs from 6.15.3 to 6.16.0 (e03dee4976)
+* build(deps): bump qs from 6.15.3 to 6.16.0 in /ui (3ef6f64682)
+* build(deps): bump chalk from 5.6.2 to 6.0.0 (461a5091f9)
+* build(deps): bump @azure/arm-network from 34.0.0 to 38.0.0 (a61e720b59)
+* build(deps): bump the node-deps group with 8 updates (63ef0ad7f8)
+* build(deps): bump taskcluster-lib-urls in /ui in the ui-node-deps group (26bd1ca369)
+* build(deps): bump the gh-actions-deps group with 2 updates (1229008b94)
+* build(deps): bump @slack/web-api from 6.13.0 to 8.0.0 (a1caab2e69)
+* build(deps): bump taskcluster-urls (e17bb929f3)
+* build(deps): bump the go-deps group with 3 updates (ee02263f9d)
+* build(deps): bump taskcluster-lib-urls (81e7451c13)
+* build(deps): bump taskcluster-lib-urls (1bc2af0bba)
+* build(deps): bump browserslist from 4.28.2 to 4.28.8 in /ui (a8f50468a9)
+* build(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.1 (f6555fbe52)
+
+</details>
+
+## v108.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [bug 2060854](http://bugzil.la/2060854)
+The web-server now validates `REGISTERED_CLIENTS` at startup. Client registrations with unknown properties, invalid property types, or `requirePkce: true` when `responseType` is not `code` must be corrected before upgrading.
+
+Startup validation also rejects a `maxExpires` that `fromNow` cannot parse or that does not resolve to a future date (such as `''`, `0 seconds` or `-1 year`, which would have issued already-expired credentials), and non-unique `clientId`.
+
+Each `redirectUri` must now be an absolute `http:` or `https:` URL.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 2065117](http://bugzil.la/2065117)
+Workers will now refuse to hand a task ownership of a hardlinked file that
+belongs to anyone but the previous owner of the tree being chowned.
+
+▶ [MAJOR] [bug 2059762](http://bugzil.la/2059762)
+Workers will now refuse to operate caches / mounts if they have to resolve a
+junction on windows or a symlink on linux/macos (unless the parent of the
+symlink is only writable by root).
+
+▶ [patch] [bug 2058249](http://bugzil.la/2058249)
+Fix a bug where uploading logs and writing CoT artifacts was following symlinks
+
+▶ [patch] [#8943](https://github.com/taskcluster/taskcluster/issues/8943)
+Generic Worker no longer garbage collects a file cache that a running task is still using in `capacity` > 1 cases. Relatedly, when a cached download no longer matches a task's required SHA256, the stale entry is now dropped from the cache table immediately (with its deletion deferred until any tasks still using it finish) instead of being served to the task again.
+
+▶ [patch] [#8944](https://github.com/taskcluster/taskcluster/issues/8944)
+Generic Worker no longer leaks disk space when cache files remain on disk without a cache table entry. Garbage collection and worker startup now delete anything in the caches directory that the worker does not know about, so a failed deletion (or a leftover from a crash) is retried instead of occupying space forever.
+
+▶ [patch]
+Generic-worker will once again report errors if internally ran commands fail
+
+### ADMINS
+
+▶ [patch] [bug 2058254](http://bugzil.la/2058254)
+Generic worker on windows won't follow junctions anymore when changing
+ownership/rights/deleting cached files.
+
+### USERS
+
+▶ [MAJOR] [bug 2060854](http://bugzil.la/2060854)
+The web-server OAuth authorization-code exchange now requires the requesting `client_id` to match the client that received the code.
+Existing authorization-code clients must include their registered `client_id` when exchanging codes.
+Clients can also use PKCE with the S256 challenge method, and deployments can require PKCE for individual registered clients.
+
+▶ [minor] [#9056](https://github.com/taskcluster/taskcluster/issues/9056)
+Generic worker will now resolve a task as exception if it read the content of an
+optional artifact but then failed to upload it
+
+▶ [patch] [bug 2060854](http://bugzil.la/2060854)
+Third-party OAuth2 clients registered with more than one `redirectUri` are now granted CORS access from every registered origin. Previously only the first entry's origin was allowed, so calls to `/login/oauth/token` and `/login/oauth/credentials` from any other registered origin were blocked by the browser.
+
+▶ [patch] [#9066](https://github.com/taskcluster/taskcluster/issues/9066)
+Fixes UI regression in `react-codemirror2` where editing text in any textarea would be very slow.
+
+▶ [patch] [bug 2064002](http://bugzil.la/2064002)
+Notifications through task routes now validate the name of the template used just like the rest API
+
+▶ [patch] [#8751](https://github.com/taskcluster/taskcluster/issues/8751)
+The GitHub service now creates a build record for every unique `taskGroupId` defined in
+`.taskcluster.yml`, so checks and statuses are reported for all task groups, not just
+the first task's group.
+
+### DEVELOPERS
+
+▶ [patch] [#8992](https://github.com/taskcluster/taskcluster/issues/8992)
+UI ClaimedTasks and PendingTasks pages switch from GraphQL to direct service calls
+
+▶ [patch] [#9011](https://github.com/taskcluster/taskcluster/issues/9011)
+UI Denylist page switches from GraphQL to direct service calls
+
+▶ [patch] [#9023](https://github.com/taskcluster/taskcluster/issues/9023)
+UI Hooks page switches to use direct REST API calls
+
+The View Hook page showed a Next Scheduled Date which is now removed from UI.
+
+This was done as GraphQL invoked an outdated REST endpoint getHookStatus for which we do not have any alternate endpoint or way to get this information.
+
+▶ [patch] [#9006](https://github.com/taskcluster/taskcluster/issues/9006)
+UI Task Index page switches to use decorator for api call. Removed the now-unused `indexedTask`, `namespaces`, and `taskNamespace` GraphQL queries and their resolvers/loaders from web-server, since the UI no longer uses them. Other GraphQL queries against `Task` (e.g. `latestArtifacts`, still used by the Interactive Connect page) are untouched.
+
+▶ [patch] [#9060](https://github.com/taskcluster/taskcluster/issues/9060)
+UI ViewProvisioners and ViewWorkerTypes pages switch from GraphQL to direct service calls
+
+▶ [patch] [#9072](https://github.com/taskcluster/taskcluster/issues/9072)
+UI ViewWorker and ViewWorkers pages switch from GraphQL to direct service calls
+
+▶ [patch] [#9045](https://github.com/taskcluster/taskcluster/issues/9045)
+UI WMEditWorkerPool and WMLaunchConfigs pages switch from GraphQL to direct service calls
+
+▶ [patch] [#9063](https://github.com/taskcluster/taskcluster/issues/9063)
+UI WMViewErrorCenter and WMViewErrors pages switch from GraphQL to direct service calls
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps): bump the node-deps group with 20 updates (cc729833e4)
+* build(deps-dev): bump ruff (3dd22102ac)
+* build(deps): bump the ui-node-deps group in /ui with 7 updates (266f2f08a3)
+* build(deps): bump the gh-actions-deps group with 3 updates (7b1d322cd5)
+* build(deps): bump the client-web-node-deps group (50a514ee13)
+* build(deps): bump the go-deps group with 5 updates (7f33e927c6)
+* build(deps): bump the client-rust-deps group (592df42a6c)
+* build(deps-dev): bump mocha (f71a8d19b9)
+
+</details>
+
 ## v107.0.0
 
 ### GENERAL

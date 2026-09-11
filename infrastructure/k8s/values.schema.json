@@ -68,17 +68,6 @@
             }
           ]
         },
-        "azure_accounts": {
-          "oneOf": [
-            {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            {
-              "type": "array"
-            }
-          ]
-        },
         "azure_crypto_key": {
           "type": "string"
         },

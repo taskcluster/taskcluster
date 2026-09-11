@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v107/internal/scopes"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
 type (
@@ -50,7 +51,7 @@ func (bltf *BackingLogTaskFeature) RequiredScopes() scopes.Required {
 
 func (bltf *BackingLogTaskFeature) Start() *CommandExecutionError {
 	absLogFile := fileutil.AbsFrom(bltf.task.TaskDir(), logPath)
-	logFileHandle, err := os.Create(absLogFile)
+	logFileHandle, err := safefs.CreateRW(absLogFile, 0644)
 	if err != nil {
 		return executionError(internalError, errored, err)
 	}

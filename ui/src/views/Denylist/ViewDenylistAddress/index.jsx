@@ -1,45 +1,75 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Notify } from '@taskcluster/client-web';
 import Typography from '@material-ui/core/Typography';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import DenylistForm from '../../../components/DenylistForm';
 import ErrorPanel from '../../../components/ErrorPanel';
 import formatError from '../../../utils/formatError';
-import denylistAddressQuery from './denylistAddress.graphql';
-import addAddressQuery from './addAddress.graphql';
-import deleteAddressQuery from './deleteAddress.graphql';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
-@graphql(denylistAddressQuery, {
-  skip: ({ match: { params } }) => !params.notificationAddress,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      searchTerm: decodeURIComponent(params.notificationAddress),
-    },
-  }),
-})
+@withTaskclusterClient
 export default class ViewDenylistAddress extends Component {
   state = {
     loading: false,
-    // Mutation errors
+    address: null,
+    // Fetch and mutation errors
     error: null,
     dialogError: null,
     dialogOpen: false,
   };
 
+  get notifyClient() {
+    return this.props.createTaskclusterClient({ Class: Notify });
+  }
+
+  get notificationAddress() {
+    return decodeURIComponent(this.props.match.params.notificationAddress);
+  }
+
+  componentDidMount() {
+    if (!this.props.isNewAddress) {
+      this.fetchAddress();
+    }
+  }
+
+  /**
+   * There is no lookup-by-address endpoint, so walk the list until the exact
+   * address turns up or the pages run out.
+   */
+  fetchAddress = async () => {
+    const { notificationAddress } = this;
+
+    this.setState({ loading: true, error: null, address: null });
+
+    try {
+      let continuationToken;
+      let address = null;
+
+      do {
+        const response = await this.notifyClient.listDenylist(
+          continuationToken ? { continuationToken } : {}
+        );
+
+        address =
+          response.addresses.find(
+            candidate => candidate.notificationAddress === notificationAddress
+          ) ?? null;
+        continuationToken = response.continuationToken;
+      } while (!address && continuationToken);
+
+      this.setState({ loading: false, address });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
+  };
+
   handleAddressDelete = (notificationType, notificationAddress) => {
     this.setState({ dialogError: null, loading: true });
 
-    return this.props.client.mutate({
-      mutation: deleteAddressQuery,
-      variables: {
-        address: {
-          notificationAddress,
-          notificationType,
-        },
-      },
+    return this.notifyClient.deleteDenylistAddress({
+      notificationType,
+      notificationAddress,
     });
   };
 
@@ -55,14 +85,9 @@ export default class ViewDenylistAddress extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      await this.props.client.mutate({
-        mutation: addAddressQuery,
-        variables: {
-          address: {
-            notificationAddress,
-            notificationType,
-          },
-        },
+      await this.notifyClient.addDenylistAddress({
+        notificationType,
+        notificationAddress,
       });
 
       this.setState({ error: null, loading: false });
@@ -88,19 +113,8 @@ export default class ViewDenylistAddress extends Component {
   };
 
   render() {
-    const { loading, error, dialogError, dialogOpen } = this.state;
-    const {
-      isNewAddress,
-      data,
-      match: { params },
-    } = this.props;
-    // This detail route looks up one exact address, but the only available server argument is `searchTerm`
-    // result may contain look-alike addresses. Select the exact match rather than trusting the first edge.
-    const targetAddress = decodeURIComponent(params.notificationAddress);
-    const matchedAddress = data?.listDenylistAddresses?.edges.find(
-      edge => edge.node.notificationAddress === targetAddress
-    )?.node;
-    const hasDenylistAddresses = Boolean(matchedAddress);
+    const { loading, address, error, dialogError, dialogOpen } = this.state;
+    const { isNewAddress } = this.props;
 
     return (
       <Dashboard
@@ -114,10 +128,11 @@ export default class ViewDenylistAddress extends Component {
           />
         ) : (
           <Fragment>
-            {data.loading && <Spinner loading />}
-            {data && <ErrorPanel fixed error={data.error} />}
-            {hasDenylistAddresses && (
+            {loading && !address && <Spinner loading />}
+            {address && (
               <DenylistForm
+                key={address.notificationAddress}
+                address={address}
                 loading={loading}
                 dialogError={dialogError}
                 dialogOpen={dialogOpen}
@@ -125,14 +140,12 @@ export default class ViewDenylistAddress extends Component {
                 onDialogActionComplete={this.handleDialogActionComplete}
                 onDialogActionClose={this.handleDialogActionClose}
                 onDialogActionOpen={this.handleDialogActionOpen}
-                address={matchedAddress}
                 onAddressDelete={this.handleAddressDelete}
               />
             )}
-            {!data.loading && !hasDenylistAddresses && (
+            {!loading && !address && !error && (
               <Typography variant="body2">
-                <em>{decodeURIComponent(params.notificationAddress)}</em> cannot
-                be found.
+                <em>{this.notificationAddress}</em> cannot be found.
               </Typography>
             )}
           </Fragment>

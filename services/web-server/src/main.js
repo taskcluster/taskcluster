@@ -30,6 +30,7 @@ import resolvers from './resolvers/index.js';
 import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
 import scanner from './login/scanner.js';
+import { validateRegisteredClients } from './validateConfig.js';
 import './monitor.js';
 import { fileURLToPath } from 'node:url';
 
@@ -47,11 +48,15 @@ const load = loader(
   {
     cfg: {
       requires: ['profile'],
-      setup: ({ profile }) =>
-        config({
+      setup: ({ profile }) => {
+        const cfg = config({
           profile,
           serviceName: 'web-server',
-        }),
+        });
+
+        validateRegisteredClients(cfg.login.registeredClients);
+        return cfg;
+      },
     },
 
     monitor: {

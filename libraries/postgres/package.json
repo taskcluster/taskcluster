@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-postgres",
   "private": true,
-  "version": "107.0.0",
+  "version": "108.1.0",
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "types": "./@types/index.d.ts",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.5",
-    "mocha": "^11.7.6"
+    "@biomejs/biome": "^2.5.10",
+    "mocha": "^11.8.0"
   }
 }

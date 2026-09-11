@@ -1,0 +1,15 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Task Queue Counts Request"
+description: |
+  Request pending and claimed task counts for multiple task queues.
+type: object
+properties:
+  taskQueueIds:
+    type: array
+    uniqueItems: true
+    maxItems: 1000
+    items:
+      $ref: "task.json#/properties/taskQueueId"
+additionalProperties: false
+required:
+  - taskQueueIds

@@ -29,21 +29,21 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
-	"github.com/taskcluster/taskcluster/v107/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v107/internal"
-	"github.com/taskcluster/taskcluster/v107/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v107/internal/scopes"
-	"github.com/taskcluster/taskcluster/v107/tools/workerproto"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v107/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/internal"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v108/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -231,10 +231,9 @@ func main() {
 	case arguments["new-ed25519-keypair"]:
 		err := generateEd25519Keypair(arguments["--file"].(string))
 		exitOnError(CANT_CREATE_ED25519_KEYPAIR, err, "Error generating ed25519 keypair %v for worker", arguments["--file"].(string))
-	case arguments["copy-to-temp-file"]:
-		tempFilePath, err := fileutil.CopyToTempFile(arguments["--copy-file"].(string))
-		exitOnError(CANT_COPY_TO_TEMP_FILE, err, "Error copying file %v to temp file", arguments["--copy-file"].(string))
-		fmt.Println(tempFilePath)
+	case arguments["cat-file"]:
+		err := fileutil.CatFile(arguments["--cat-file"].(string), os.Stdout)
+		exitOnError(CANT_CAT_FILE, err, "Error writing file %v to stdout", arguments["--cat-file"].(string))
 	case arguments["create-file"]:
 		err := fileutil.CreateFile(arguments["--create-file"].(string))
 		exitOnError(CANT_CREATE_FILE, err, "Error creating file %v", arguments["--create-file"].(string))
@@ -494,12 +493,9 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
 	}
 
-	// processCompletion records bookkeeping for a finished task and
-	// reports back what the main loop should do next. Extracted from
-	// inline drain logic so both the top-of-loop drain and the
-	// wait-window completion path can share a single implementation
-	// (avoiding the prior re-put-on-channel pattern, which relied on
-	// a brittle buffer-size / sender-count invariant).
+	// processCompletion applies a completion and reports what the main loop
+	// should do next. Bookkeeping is in recordCompletion so drainUntilIdle
+	// uses the same path.
 	type completionAction int
 	const (
 		completionContinue completionAction = iota
@@ -508,15 +504,23 @@ func RunWorker() (exitCode ExitCode) {
 		completionTasksComplete
 		completionRebootRequired
 	)
-	processCompletion := func(result taskCompletionResult) completionAction {
+	recordCompletion := func(result taskCompletionResult) {
 		taskManager.RemoveTask(result.taskID)
 		tasksResolved++
 		lastActive = time.Now()
+	}
+	drainUntilIdle := func() {
+		for !taskManager.IsIdle() {
+			recordCompletion(<-taskCompleteChan)
+		}
+	}
+	processCompletion := func(result taskCompletionResult) completionAction {
+		recordCompletion(result)
 
 		if result.workerShutdown {
 			log.Printf("Task %s requested worker shutdown, aborting other tasks...", result.taskID)
 			graceful.Terminate(false) // Abort other tasks immediately
-			taskManager.WaitForAll()
+			drainUntilIdle()
 			return completionWorkerShutdown
 		}
 
@@ -529,7 +533,7 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 		if remainingTasks == 0 {
 			log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-			taskManager.WaitForAll()
+			drainUntilIdle()
 			if checkWhetherToTerminate() {
 				return completionWorkerManagerShutdown
 			}
@@ -585,13 +589,13 @@ mainLoop:
 		}
 
 		if checkWhetherToTerminate() {
-			taskManager.WaitForAll()
+			drainUntilIdle()
 			return WORKER_MANAGER_SHUTDOWN
 		}
 
 		if graceful.TerminationRequested() {
 			log.Printf("Graceful termination requested, waiting for %d running tasks...", taskManager.TaskCount())
-			taskManager.WaitForAll()
+			drainUntilIdle()
 			return WORKER_SHUTDOWN
 		}
 
@@ -824,7 +828,7 @@ mainLoop:
 		case <-sigInterrupt:
 			log.Printf("Interrupt received, signaling %d running tasks...", taskManager.TaskCount())
 			graceful.Terminate(true)
-			taskManager.WaitForAll()
+			drainUntilIdle()
 			return WORKER_STOPPED
 		}
 	}
@@ -1114,11 +1118,7 @@ func (e *ExecutionErrors) add(err *CommandExecutionError) {
 	if err == nil {
 		return
 	}
-	if e == nil {
-		*e = ExecutionErrors{err}
-	} else {
-		*e = append(*e, err)
-	}
+	*e = append(*e, err)
 }
 
 func (e *ExecutionErrors) Error() string {

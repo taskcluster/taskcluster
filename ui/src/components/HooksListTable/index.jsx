@@ -112,47 +112,57 @@ export default class HooksListTable extends Component {
         </TableCell>
 
         <TableCell>
-          {schedule?.length ? (
+          {schedule?.length || bindings?.length ? (
             <Link to={hookUrl}>
               <TableCellItem>
-                {<code>{schedule[0]}</code>}
-                {schedule.length > 1 && (
-                  <Tooltip
-                    title={schedule
-                      .slice(1, 10)
-                      .map(b => <pre key={b}>{b}</pre>)}>
-                    <Badge
-                      badgeContent={`+${schedule.length - 1}`}
-                      color="secondary"
-                    />
-                  </Tooltip>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {schedule?.length ? (
+                    <div>
+                      {<code>{schedule[0]}</code>}
+                      {schedule.length > 1 && (
+                        <Tooltip
+                          title={schedule
+                            .slice(1, 10)
+                            .map(b => <pre key={b}>{b}</pre>)}>
+                          <Badge
+                            badgeContent={`+${schedule.length - 1}`}
+                            color="secondary"
+                          />
+                        </Tooltip>
+                      )}
+                    </div>
+                  ) : undefined}
+                  {bindings?.length ? (
+                    <div>
+                      {
+                        <code>
+                          {bindings[0].exchange.replace(
+                            'exchange/taskcluster-',
+                            ''
+                          )}
+                        </code>
+                      }
+                      {bindings.length > 1 && (
+                        <Tooltip
+                          title={bindings
+                            .slice(1, 10)
+                            .map(b => (
+                              <pre key={b.exchange}>{b.exchange}</pre>
+                            ))}>
+                          <Badge
+                            badgeContent={`+${bindings.length - 1}`}
+                            color="secondary"
+                          />
+                        </Tooltip>
+                      )}
+                    </div>
+                  ) : undefined}
+                </div>
               </TableCellItem>
             </Link>
-          ) : undefined}
-          {bindings?.length ? (
-            <Link to={hookUrl}>
-              <TableCellItem>
-                {
-                  <code>
-                    {bindings[0].exchange.replace('exchange/taskcluster-', '')}
-                  </code>
-                }
-                {bindings.length > 1 && (
-                  <Tooltip
-                    title={bindings
-                      .slice(1, 10)
-                      .map(b => <pre key={b.exchange}>{b.exchange}</pre>)}>
-                    <Badge
-                      badgeContent={`+${bindings.length - 1}`}
-                      color="secondary"
-                    />
-                  </Tooltip>
-                )}
-              </TableCellItem>
-            </Link>
-          ) : undefined}
-          {!schedule?.length && !bindings?.length && <em>n/a</em>}
+          ) : (
+            <em>n/a</em>
+          )}
         </TableCell>
 
         <TableCell>

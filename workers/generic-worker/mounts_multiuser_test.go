@@ -13,7 +13,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
@@ -60,7 +60,7 @@ func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 
 	mounts := []MountEntry{
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("../../../", filepath.Base(dir)),
 		},
 	}
@@ -73,7 +73,7 @@ func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	defaults.SetDefaults(&payload)
 
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:cache:banana-cache")
+	td.Scopes = append(td.Scopes, "generic-worker:cache:tc-test-cache-1")
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
@@ -83,7 +83,7 @@ func TestHardLinksInArchive(t *testing.T) {
 	setup(t)
 
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("tools", "git"),
 			Content: json.RawMessage(`{

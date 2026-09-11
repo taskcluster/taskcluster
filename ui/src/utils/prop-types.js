@@ -170,11 +170,6 @@ export const worker = shape({
   latestTasks: arrayOf(task),
 });
 
-export const workers = shape({
-  pageInfo,
-  edges: arrayOf(worker),
-});
-
 export const WMError = shape({
   errorId: string,
   title: string,

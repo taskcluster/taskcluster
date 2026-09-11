@@ -3,27 +3,21 @@ package main
 import (
 	"io"
 	"os"
+
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
+type reservedContentSource string
+
+func (f reservedContentSource) OpenForUpload() (*os.File, error) {
+	return safefs.OpenExistingReadonly(string(f))
+}
+
+func (f reservedContentSource) WriteContent(w io.Writer) (int64, error) {
+	source, err := f.OpenForUpload()
 	if err != nil {
-		return
+		return 0, err
 	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
-	}
-	err = out.Sync()
-	return
+	defer source.Close()
+	return io.Copy(w, source)
 }

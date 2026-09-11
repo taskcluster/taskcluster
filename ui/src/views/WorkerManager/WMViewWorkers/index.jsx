@@ -1,7 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import { withRouter } from 'react-router-dom';
-import dotProp from 'dot-prop-immutable';
+import { WorkerManager } from '@taskcluster/client-web';
 import Tab from '@material-ui/core/Tab/Tab';
 import Tabs from '@material-ui/core/Tabs/Tabs';
 import {
@@ -16,10 +14,11 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import workersQuery from './WMWorkers.graphql';
-import ConnectionDataTable from '../../../components/ConnectionDataTable';
+import PaginatedDataTable from '../../../components/PaginatedDataTable';
 import TableCellItem from '../../../components/TableCellItem';
 import Link from '../../../utils/Link';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
 import Label from '../../../components/Label';
 import DateDistance from '../../../components/DateDistance';
@@ -49,99 +48,56 @@ const getLaunchConfigIdFromQuery = query => {
   return q.get('launchConfigId');
 };
 
-@withRouter
-@graphql(workersQuery, {
-  options: props => ({
-    variables: {
-      workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
-      state: getFilterStateFromQuery(props.location.search),
-      launchConfigId: getLaunchConfigIdFromQuery(props.location.search),
-      workersConnection: {
-        limit: VIEW_WORKERS_PAGE_SIZE,
-      },
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch:
+    props =>
+    ({ workerPoolId, ...options }) => {
+      const client = props.createTaskclusterClient({ Class: WorkerManager });
+
+      return client.listWorkersForWorkerPool(workerPoolId, options);
     },
-  }),
+  // Everything the request depends on lives here, including the worker pool id
+  // -- the hook refetches from the first page whenever this payload changes,
+  // so a new pool or a new filter reloads the table.
+  payload: props => {
+    const state = getFilterStateFromQuery(props.location.search);
+    const launchConfigId = getLaunchConfigIdFromQuery(props.location.search);
+
+    return {
+      workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
+      limit: VIEW_WORKERS_PAGE_SIZE,
+      ...(state ? { state } : null),
+      ...(launchConfigId ? { launchConfigId } : null),
+    };
+  },
+  select: ({ workers }) => workers ?? [],
 })
 export default class WMViewWorkers extends Component {
-  constructor(props) {
-    super(props);
-
-    const workerState = getFilterStateFromQuery(props.location.search);
-
-    this.state = {
-      currentTab: Math.max(this.tabs.indexOf(workerState), 0),
-    };
-  }
-
   tabs = ['all', 'running', 'requested', 'stopping', 'stopped', 'standalone'];
 
+  get currentTab() {
+    const workerState = getFilterStateFromQuery(this.props.location.search);
+
+    return Math.max(this.tabs.indexOf(workerState), 0);
+  }
+
   handleTabChange = (_e, currentTab) => {
-    this.setState({ currentTab });
-    const searchState = this.tabs[currentTab];
-
-    this.props.history.push({
-      search: `?state=${searchState}`,
-    });
-
-    this.props.data.refetch({
-      workerPoolId: decodeURIComponent(this.props.match.params.workerPoolId),
-      state: searchState !== 'all' ? searchState : null,
-    });
+    // As before: switching tabs drops any launch config filter.
+    this.props.history.push({ search: `?state=${this.tabs[currentTab]}` });
   };
 
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { workerPoolId },
-      },
-      data: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      query: workersQuery,
-      variables: {
-        workerPoolId: decodeURIComponent(workerPoolId),
-        state: getFilterStateFromQuery(this.props.location.search),
-        workersConnection: {
-          limit: VIEW_WORKERS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.WorkerManagerWorkers;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(
-          previousResult,
-          'WorkerManagerWorkers',
-          WorkerManagerWorkers =>
-            dotProp.set(
-              dotProp.set(WorkerManagerWorkers, 'edges', edges),
-              'pageInfo',
-              pageInfo
-            )
-        );
-      },
-    });
-  };
-
-  renderRow({
-    node: {
-      workerPoolId,
-      workerGroup,
-      workerId,
-      created,
-      expires,
-      state,
-      lastModified,
-      lastChecked,
-      launchConfigId,
-    },
-  }) {
+  renderRow = ({
+    workerPoolId,
+    workerGroup,
+    workerId,
+    created,
+    expires,
+    state,
+    lastModified,
+    lastChecked,
+    launchConfigId,
+  }) => {
     const dateItem = date => (
       <Tooltip placement="top" title={date}>
         <TableCellItem>
@@ -152,7 +108,7 @@ export default class WMViewWorkers extends Component {
     const [provisionerId, workerType] = workerPoolId.split('/');
 
     return (
-      <TableRow key={workerId}>
+      <TableRow key={`${workerGroup}/${workerId}`}>
         <TableCell>{workerGroup}</TableCell>
         <TableCell>
           <Link
@@ -190,17 +146,24 @@ export default class WMViewWorkers extends Component {
         <TableCell>{dateItem(lastChecked)}</TableCell>
       </TableRow>
     );
-  }
+  };
 
   render() {
-    const { currentTab } = this.state;
     const {
-      data: { loading, error, WorkerManagerWorkers },
+      loading,
+      error,
+      items,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
       match: { params },
       location,
     } = this.props;
     const launchConfigId = getLaunchConfigIdFromQuery(location.search);
     const state = getFilterStateFromQuery(location.search);
+    const initialLoad = loading && !items.length;
     let title = `Workers for "${decodeURIComponent(params.workerPoolId)}"`;
 
     if (launchConfigId) {
@@ -209,7 +172,7 @@ export default class WMViewWorkers extends Component {
 
     return (
       <Dashboard disableTitleFormatting title={title}>
-        <ErrorPanel fixed error={this.state.error || error} />
+        <ErrorPanel fixed error={error} />
 
         <Box
           sx={{
@@ -236,15 +199,15 @@ export default class WMViewWorkers extends Component {
           </div>
         </Box>
 
-        <Tabs value={currentTab} onChange={this.handleTabChange}>
+        <Tabs value={this.currentTab} onChange={this.handleTabChange}>
           {this.tabs.map(tab => (
             <Tab label={tab.toUpperCase()} key={tab} />
           ))}
         </Tabs>
 
-        {loading && <Spinner loading />}
+        {initialLoad && <Spinner loading />}
 
-        {!error && !loading && (
+        {!error && !initialLoad && (
           <Fragment>
             {launchConfigId && (
               <Box
@@ -268,12 +231,17 @@ export default class WMViewWorkers extends Component {
                 </Button>
               </Box>
             )}
-            <ConnectionDataTable
+            <PaginatedDataTable
               noItemsMessage="No workers"
-              connection={WorkerManagerWorkers}
+              items={items}
               pageSize={VIEW_WORKERS_PAGE_SIZE}
               renderRow={this.renderRow}
-              onPageChange={this.handlePageChange}
+              loading={loading}
+              page={page}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
               headers={[
                 'Worker Group',
                 'Worker ID',

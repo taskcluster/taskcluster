@@ -85,7 +85,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -1274,6 +1274,30 @@ func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse
 func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/pending/"+url.PathEscape(taskQueueId), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get approximate pending and claimed task counts for the given task queues.
+//
+// The caller must have both `queue:pending-count:<taskQueueId>` and
+// `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+// If any task queue is unauthorized, the entire request will fail.
+//
+// As task states may change rapidly, these counts may not represent the exact
+// number of pending and claimed tasks, but are very good approximations.
+//
+// Required scopes:
+//
+//	All of:
+//	* For taskQueueId in taskQueueIds each queue:pending-count:<taskQueueId>
+//	* For taskQueueId in taskQueueIds each queue:claimed-count:<taskQueueId>
+//
+// See #taskQueueCountsBatch
+func (queue *Queue) TaskQueueCountsBatch(payload *TaskQueueCountsRequest) (*TaskQueueCountsListResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task-queues/counts", new(TaskQueueCountsListResponse), nil)
+	return responseObject.(*TaskQueueCountsListResponse), err
 }
 
 // Get an approximate number of pending and claimed tasks for the given `taskQueueId`.

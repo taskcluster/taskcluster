@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type (
@@ -79,81 +79,6 @@ type (
 		// Possible values:
 		//   * "auth-success"
 		Status string `json:"status"`
-	}
-
-	// Response to a request for an Shared-Access-Signature to access an Azure
-	// Blob Storage container.
-	AzureBlobSharedAccessSignature struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		Sas string `json:"sas"`
-	}
-
-	// A list of Azure accounts managed by taskcluster-auth
-	AzureListAccountResponse struct {
-
-		// A list of accountIds that are managed by auth. These are
-		// the accounts that can have SAS credentials fetched for tables
-		// within them.
-		//
-		// Array items:
-		Accounts []string `json:"accounts"`
-	}
-
-	// A list of Azure containers in an account
-	AzureListContainersResponse struct {
-
-		// A list of containers that are in an account.  Credentials are available for
-		// these containers from the `azureBlobSAS` method.
-		//
-		// Array items:
-		Containers []string `json:"containers"`
-
-		// Opaque `continuationToken` to be given as query-string option to get the
-		// next set of containers.
-		// This property is only present if another request is necessary to fetch all
-		// results. In practice the next request with a `continuationToken` may not
-		// return additional results, but it can. Thus, you can only be sure to have
-		// all the results if you've called this method with `continuationToken`
-		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
-	}
-
-	// A list of Azure tables in an account
-	AzureListTableResponse struct {
-
-		// Opaque `continuationToken` to be given as query-string option to get the
-		// next set of tables.
-		// This property is only present if another request is necessary to fetch all
-		// results. In practice the next request with a `continuationToken` may not
-		// return additional results, but it can. Thus, you can only be sure to have
-		// all the results if you've called `azureAccountTables` with `continuationToken`
-		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
-
-		// A list of tables that are in an account. These are
-		// the tables that can have SAS credentials fetched for them.
-		//
-		// Array items:
-		Tables []string `json:"tables"`
-	}
-
-	// Response to a request for an Shared-Access-Signature to access and Azure
-	// Table Storage table.
-	AzureTableSharedAccessSignature struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		Sas string `json:"sas"`
 	}
 
 	// Properties to create a client.

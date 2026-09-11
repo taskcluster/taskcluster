@@ -590,13 +590,13 @@ __metadata:
   linkType: hard
 
 "js-yaml@npm:^4.1.0":
-  version: 4.3.1
-  resolution: "js-yaml@npm:4.3.1"
+  version: 4.3.2
+  resolution: "js-yaml@npm:4.3.2"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
     js-yaml: bin/js-yaml.js
-  checksum: 10c0/13c500ca322e0c3f8c81686e6ecda96d2ea37b45247a420c17c7db36932d6965cc27391abc2d1a104501600e7f0d947a5f8b7be6db619c4fefa87901b3512807
+  checksum: 10c0/dedd34c2e8fef1d504687f1bc94ed0ee1311a1f78770fa2800352c6d59c635ccf555009d74e9afe529ae62199da2b1ccef30e53dc84dcd8d2d8187c22574bc97
   languageName: node
   linkType: hard
 
@@ -687,8 +687,8 @@ __metadata:
   linkType: hard
 
 "mocha@npm:^11.7.1":
-  version: 11.7.6
-  resolution: "mocha@npm:11.7.6"
+  version: 11.8.0
+  resolution: "mocha@npm:11.8.0"
   dependencies:
     browser-stdout: "npm:^1.3.1"
     chokidar: "npm:^4.0.1"
@@ -714,7 +714,7 @@ __metadata:
   bin:
     _mocha: bin/_mocha
     mocha: bin/mocha.js
-  checksum: 10c0/95b3eeb52eaf253167d335d1c1a46659f6f282dc112a74fd0ac46380637ae3ee52894319e00a46412a1e5a6e3056128153dc87c1fe36565c748b9fbe8d705ad0
+  checksum: 10c0/ca0e1088485b62db2144e6e021471e9bef7e963a8209c5ce98f196621e8bebc2be7ff00852d4157c9eaf24c6a6c93770019288eebdf7b410067c525dd8af8b48
   languageName: node
   linkType: hard
 
@@ -994,9 +994,9 @@ __metadata:
   linkType: hard
 
 "taskcluster-lib-urls@npm:^13.0.0":
-  version: 13.0.2
-  resolution: "taskcluster-lib-urls@npm:13.0.2"
-  checksum: 10c0/682c9093e37b924fdb58f6ae1e2b2348ecf849456d8337f8f6b1c6b4576ed0b1bf0b538247c8c2280c2ae4d05197487f40f4b060b66fc5be36678f1df0aae50c
+  version: 13.1.0
+  resolution: "taskcluster-lib-urls@npm:13.1.0"
+  checksum: 10c0/c77c4d28bfee0fa4799b238fd2cfe63fadac3a8431a304808646ca95ac96cf77832c6dc624cd9c0195957c157fd20c185c2dfc9b194365a95b6d3c9aaa832d88
   languageName: node
   linkType: hard
 

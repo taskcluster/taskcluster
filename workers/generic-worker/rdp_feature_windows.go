@@ -1,14 +1,17 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"net"
 	"path/filepath"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
-	"github.com/taskcluster/taskcluster/v107/internal/scopes"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
 var (
@@ -68,7 +71,9 @@ func (l *RDPTask) ReservedArtifacts() []string {
 }
 
 func (l *RDPTask) Start() *CommandExecutionError {
-	l.createRDPArtifact()
+	if err := l.createRDPArtifact(); err != nil {
+		return err
+	}
 	return l.uploadRDPArtifact()
 }
 
@@ -76,7 +81,7 @@ func (l *RDPTask) Stop(err *ExecutionErrors) {
 	time.Sleep(time.Hour * 12)
 }
 
-func (l *RDPTask) createRDPArtifact() {
+func (l *RDPTask) createRDPArtifact() *CommandExecutionError {
 	ctx := l.task.GetContext()
 	l.info = &RDPInfo{
 		Host:     config.PublicIP,
@@ -84,19 +89,21 @@ func (l *RDPTask) createRDPArtifact() {
 		Username: ctx.User.Name,
 		Password: ctx.User.Password,
 	}
-	rdpInfoFile := fileutil.AbsFrom(ctx.TaskDir, rdpInfoPath)
-	err := fileutil.WriteToFileAsJSON(l.info, rdpInfoFile)
-	// if we can't write this, something seriously wrong, so cause worker to
-	// report an internal-error to sentry and crash!
+	jsonBytes, err := json.MarshalIndent(l.info, "", "  ")
 	if err != nil {
 		panic(err)
 	}
+	rdpInfoFile := fileutil.AbsFrom(ctx.TaskDir, rdpInfoPath)
+	if err := safefs.WriteFile(rdpInfoFile, append(jsonBytes, '\n'), 0644); err != nil {
+		return executionError(internalError, errored, fmt.Errorf("could not write rdp info to %v: %w", rdpInfoFile, err))
+	}
+	return nil
 }
 
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 	taskDir := l.task.TaskDir()
 	rdpInfoFile := fileutil.AbsFrom(taskDir, rdpInfoPath)
-	return l.task.uploadArtifact(
+	return l.task.uploadReservedArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name: l.task.Payload.RdpInfo,
@@ -104,7 +111,7 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
 			rdpInfoFile,
-			rdpInfoFile,
+			reservedContentSource(rdpInfoFile),
 			"application/json",
 			"gzip",
 		),

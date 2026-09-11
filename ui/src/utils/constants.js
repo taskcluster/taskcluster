@@ -27,10 +27,10 @@ export const VIEW_WORKER_TYPES_PAGE_SIZE = 1000;
 export const VIEW_WORKERS_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOLS_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE = 1000;
+export const VIEW_PROVIDERS_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOL_ERRORS_PAGE_SIZE = 100;
 export const VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE = 100;
 export const VIEW_CLIENTS_PAGE_SIZE = 1000;
-export const VIEW_CLIENT_SCOPES_INSPECT_SIZE = 10;
 export const VIEW_ROLES_PAGE_SIZE = 1000;
 export const VIEW_SECRETS_PAGE_SIZE = 1000;
 export const VIEW_DENYLIST_PAGE_SIZE = 20;
@@ -188,11 +188,12 @@ export const DOCS_MENU_ITEMS = [
   },
 ];
 
+// Values the notify service accepts in notification-address.yml
 export const DENYLIST_NOTIFICATION_TYPES = {
-  EMAIL: 'EMAIL',
-  PULSE: 'PULSE',
-  MATRIX_ROOM: 'MATRIX_ROOM',
-  SLACK_CHANNEL: 'SLACK_CHANNEL',
+  EMAIL: 'email',
+  PULSE: 'pulse',
+  MATRIX_ROOM: 'matrix-room',
+  SLACK_CHANNEL: 'slack-channel',
 };
 
 export const KNOWN_ACRONYMS = ['IRC', 'API'];

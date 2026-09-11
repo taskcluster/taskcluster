@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/client-web",
-  "version": "107.0.0",
+  "version": "108.1.0",
   "type": "module",
   "main": "src/index.js",
   "exports": "./src/index.js",
@@ -17,18 +17,18 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.5",
-    "@vitest/browser": "^4.1.10",
-    "@vitest/browser-playwright": "^4.1.10",
+    "@biomejs/biome": "^2.5.10",
+    "@vitest/browser": "^4.1.11",
+    "@vitest/browser-playwright": "^4.1.11",
     "playwright": "1.62.1",
     "vite-plugin-node-polyfills": "^0.28.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
     "hawk": "^9.0.2",
-    "query-string": "^9.4.1",
-    "taskcluster-lib-urls": "^13.0.2"
+    "query-string": "^9.5.0",
+    "taskcluster-lib-urls": "^13.1.0"
   },
   "publishConfig": {
     "access": "public"

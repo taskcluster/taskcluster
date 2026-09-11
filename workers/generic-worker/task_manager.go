@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
 )
 
 // TaskManager manages concurrent task execution and tracks running tasks.
@@ -15,7 +15,6 @@ type TaskManager struct {
 	sync.RWMutex
 	runningTasks map[string]*TaskRun
 	capacity     uint8
-	wg           sync.WaitGroup
 	lastActive   time.Time
 }
 
@@ -46,19 +45,17 @@ func (tm *TaskManager) AddTask(task *TaskRun) {
 	tm.Lock()
 	defer tm.Unlock()
 	tm.runningTasks[task.TaskID] = task
-	tm.wg.Add(1)
 	tm.lastActive = time.Now()
 	tm.updateWorkerStatusLocked()
 }
 
-// RemoveTask unregisters a task. Must be called when the task goroutine completes.
+// RemoveTask unregisters a task.
 // Updates the worker status file with remaining running task IDs.
 func (tm *TaskManager) RemoveTask(taskID string) {
 	tm.Lock()
 	defer tm.Unlock()
 	if _, exists := tm.runningTasks[taskID]; exists {
 		delete(tm.runningTasks, taskID)
-		tm.wg.Done()
 		tm.lastActive = time.Now()
 		tm.updateWorkerStatusLocked()
 	}
@@ -85,11 +82,6 @@ func (tm *TaskManager) TaskCount() uint {
 // IsIdle returns true if no tasks are running.
 func (tm *TaskManager) IsIdle() bool {
 	return tm.TaskCount() == 0
-}
-
-// WaitForAll blocks until all running tasks have completed.
-func (tm *TaskManager) WaitForAll() {
-	tm.wg.Wait()
 }
 
 // LastActive returns the time when a task was last added or removed.

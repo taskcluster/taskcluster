@@ -39,23 +39,12 @@ const downloadArtifactToBuffer = async ({ queue, taskId, name }) => {
   return Buffer.concat(chunks);
 };
 
-export default ({ queue, index }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
+export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {
         try {
           return new Task(taskId, null, await queue.task(taskId));
-        } catch (err) {
-          return err;
-        }
-      })
-    )
-  );
-  const indexedTask = new DataLoader(indexPaths =>
-    Promise.all(
-      indexPaths.map(async indexPath => {
-        try {
-          return await index.findTask(indexPath);
         } catch (err) {
           return err;
         }
@@ -111,42 +100,10 @@ export default ({ queue, index }, _isAuthed, _rootUrl, _monitor, _strategies, _r
       items: tasks.map(({ task, status }) => new Task(status.taskId, status, task)),
     };
   });
-  const listPendingTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
-    const raw = await queue.listPendingTasks(taskQueueId, options);
-
-    return {
-      ...raw,
-      items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
-        taskId,
-        runId,
-        inserted,
-        task: new Task(taskId, null, task),
-      })),
-    };
-  });
-  const listClaimedTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
-    const raw = await queue.listClaimedTasks(taskQueueId, options);
-
-    return {
-      ...raw,
-      items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
-        taskId,
-        runId,
-        claimed,
-        workerGroup,
-        workerId,
-        task: new Task(taskId, null, task),
-      })),
-    };
-  });
-
   return {
     dependents,
     task,
-    indexedTask,
     taskGroup,
     taskActions,
-    listPendingTasks,
-    listClaimedTasks,
   };
 };

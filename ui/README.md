@@ -25,7 +25,7 @@ Instead of running web-server locally you can use existing Taskcluster installat
 To point proxy endpoints, you need to set `TASKCLUSTER_ROOT_URL` environment variable:
 
 ```bash
-TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com/ yarn start
+TASKCLUSTER_ROOT_URL=https://firefox-ci-tc.services.mozilla.com/ yarn start
 ```
 
 ## Development

@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/notify",
-  "version": "107.0.0",
+  "version": "108.1.0",
   "private": true,
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
@@ -13,9 +13,9 @@
     "format": "biome format --write"
   },
   "devDependencies": {
-    "@aws-sdk/client-sns": "^3.1095.0",
-    "@aws-sdk/client-sqs": "^3.1095.0",
-    "@biomejs/biome": "^2.5.5",
-    "mocha": "^11.7.6"
+    "@aws-sdk/client-sns": "^3.1118.0",
+    "@aws-sdk/client-sqs": "^3.1118.0",
+    "@biomejs/biome": "^2.5.10",
+    "mocha": "^11.8.0"
   }
 }
