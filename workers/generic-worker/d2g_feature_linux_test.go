@@ -7,8 +7,8 @@ import (
 )
 
 // Named/registry images must not honor d2g-image-cache.json as a skip for
-// docker pull. Artifact SHA keys still should, so concurrent tasks can
-// share a docker load.
+// docker pull, and must not write a name:tag entry that can never be hit.
+// Artifact SHA keys still cache, so concurrent tasks can share a docker load.
 func TestLoadImageLockedSkipsCacheOnlyForArtifacts(t *testing.T) {
 	t.Chdir(t.TempDir())
 
@@ -49,6 +49,9 @@ func TestLoadImageLockedSkipsCacheOnlyForArtifacts(t *testing.T) {
 		if image != fresh {
 			t.Fatalf("got image %#v, want the pulled image", image)
 		}
+		if _, persisted := dtf.imageCache[registryKey]; persisted {
+			t.Fatal("registry pull must not persist a cache entry")
+		}
 	})
 
 	t.Run("artifact cache hit skips load", func(t *testing.T) {
@@ -68,6 +71,26 @@ func TestLoadImageLockedSkipsCacheOnlyForArtifacts(t *testing.T) {
 		}
 		if image == nil || image.ID != "cached-artifact-id" {
 			t.Fatalf("got image %#v, want cached artifact", image)
+		}
+	})
+
+	t.Run("artifact miss persists cache entry", func(t *testing.T) {
+		const missKey = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+		dtfMiss := &D2GTaskFeature{imageCache: ImageCache{}}
+		image, loaded, loadErr := dtfMiss.loadImageLocked(missKey, func() (*Image, *CommandExecutionError) {
+			return fresh, nil
+		}, true)
+		if loadErr != nil {
+			t.Fatalf("loadImageLocked: %v", loadErr)
+		}
+		if !loaded {
+			t.Fatal("artifact miss should report loaded=true")
+		}
+		if image != fresh {
+			t.Fatalf("got image %#v, want the loaded image", image)
+		}
+		if dtfMiss.imageCache[missKey] != fresh {
+			t.Fatal("artifact load must persist a cache entry")
 		}
 	})
 }
