@@ -108,8 +108,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		key = dtf.task.D2GInfo.RegistryImage
 	}
 
-	image := dtf.imageCache[key]
-	loadedImage := false
 	loadImage := func() (*Image, *CommandExecutionError) {
 		dtf.task.Info("[d2g] Loading docker image")
 
@@ -150,23 +148,18 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
-		// Default to use the first line of output for image
-		// name as docker load can output multiple tags for the
-		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-		lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-		imageName := lines[0]
+		var imageName string
 		if isImageArtifact {
 			imageNameFound := false
 			// Find the first line with "Loaded image: " prefix
 			// (see https://github.com/taskcluster/taskcluster/issues/7969)
-			for _, line := range lines {
+			for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
 				if name, found := strings.CutPrefix(line, "Loaded image: "); found {
 					imageName = name
 					imageNameFound = true
 					break
 				}
 			}
-
 			if !imageNameFound {
 				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
@@ -175,24 +168,19 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 		cmd, err = process.NewCommandNoOutputStreams([]string{
 			"docker",
-			"images",
-			"--no-trunc",
-			"--quiet",
+			"image",
+			"inspect",
+			"--format={{.Id}}",
 			imageName,
 		}, taskDir, []string{}, dtf.task.pd)
 		if err != nil {
-			return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
+			return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to determine docker image ID: %v", err))
 		}
 		out, err = cmd.Output()
 		if err != nil {
-			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
+			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not determine docker image ID", err, out))
 		}
-
-		// Only use the first line of output for image ID
-		// as docker images can output multiple sha256's for the
-		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-		idLine, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
-		imageID := strings.TrimPrefix(idLine, "sha256:")
+		imageID := strings.TrimPrefix(strings.TrimSpace(string(out)), "sha256:")
 
 		return &Image{
 			ID:   imageID,
@@ -200,30 +188,13 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}, nil
 	}
 
-	// Always want to re-pull the docker image
-	// if it's not an image artifact, as the
-	// tag could be outdated or locally poisoned.
+	// Artifact SHA keys may cache-hit. Registry name:tag keys always
+	// re-pull so a persisted entry cannot skip docker pull (the tag
+	// could be outdated or locally poisoned).
 	// (see https://github.com/taskcluster/taskcluster/issues/8004)
-	if isImageArtifact {
-		if image == nil {
-			var loadErr *CommandExecutionError
-			image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage, true)
-			if loadErr != nil {
-				return loadErr
-			}
-		}
-	} else {
-		// Registry pulls also serialize through the same mutex so that
-		// concurrent tasks running with the same `image: foo:tag`
-		// don't issue parallel `docker pull`s and race on the cache
-		// JSON write below. allowCacheHit is false: a persisted
-		// name:tag cache entry must not skip docker pull (the tag
-		// could be outdated or locally poisoned).
-		var loadErr *CommandExecutionError
-		image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage, false)
-		if loadErr != nil {
-			return loadErr
-		}
+	image, loadedImage, loadErr := dtf.loadImageLocked(key, loadImage, isImageArtifact)
+	if loadErr != nil {
+		return loadErr
 	}
 
 	if loadedImage {
@@ -305,7 +276,8 @@ type imageLoadResult struct {
 //
 // allowCacheHit is true only for artifact-SHA keys. Registry name:tag
 // keys always invoke loadImage (a persisted cache entry must not skip
-// docker pull as the tag could be outdated or locally poisoned).
+// docker pull as the tag could be outdated or locally poisoned) and
+// are not written back to the on-disk cache.
 //
 // The first return is whether *this* call actually performed the load
 // (true) versus picked up a result populated by another task (false) —
@@ -337,7 +309,9 @@ func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image,
 		if loadErr != nil {
 			return nil, loadErr
 		}
-		dtf.imageCache[key] = image
+		if allowCacheHit {
+			dtf.imageCache[key] = image
+		}
 		return imageLoadResult{image: image, loaded: true}, nil
 	})
 	if err != nil {
