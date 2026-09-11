@@ -16,6 +16,8 @@ PARAMETERS_DIR = Path(__file__).with_name("params")
 TRUSTED_PARAMETERS = "main-repo-pull-request.yml"
 UNTRUSTED_PARAMETERS = "main-repo-pull-request-untrusted.yml"
 APPROVED_COMMENT_PARAMETERS = "main-repo-issue-comment.yml"
+CRON_PARAMETERS = "main-repo-cron.yml"
+CRON_LABEL = "azure-attested-document-fetch"
 
 DOCKER_IMAGE_INDEX_MARKER = ".docker-images."
 
@@ -212,6 +214,34 @@ def check_no_test_skip(tasks, graph_name):
         raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
 
 
+def check_cron_graph(tasks):
+    """The cron target graph is the attested-document job and nothing else,
+    apart from always_target docker images (which index-optimize away when the
+    graph is actually submitted)."""
+    errors = []
+    if CRON_LABEL not in tasks:
+        errors.append(f"missing {CRON_LABEL}")
+    else:
+        definition = tasks[CRON_LABEL]["task"]
+        worker_pool = (definition.get("provisionerId"), definition.get("workerType"))
+        if worker_pool != ("proj-taskcluster", "gw-windows-2022-gui"):
+            errors.append(f"{CRON_LABEL} uses the wrong worker pool: {worker_pool}")
+        index_route = "index.project.taskcluster.azure.attested-document.latest"
+        if index_route not in definition.get("routes", []):
+            errors.append(f"{CRON_LABEL} is not indexed at {index_route}")
+
+    ci_tasks = sorted(
+        label
+        for label, task in tasks.items()
+        if label != CRON_LABEL and task.get("kind") != "docker-image"
+    )
+    if ci_tasks:
+        errors.append("cron graph schedules CI tasks: " + ", ".join(ci_tasks))
+
+    if errors:
+        raise RuntimeError("Invalid cron task graph:\n- " + "\n- ".join(errors))
+
+
 def main():
     task_reference_scope = {"task-reference": "secrets:get:<dependency>"}
     if not production_is_secret_scope(task_reference_scope):
@@ -226,6 +256,8 @@ def main():
     for parameter_file, graph_name, trusted in graphs:
         tasks = generate_target_graph(PARAMETERS_DIR / parameter_file, version)
         print(f"Generated task graph with {len(tasks)} tasks")
+        if CRON_LABEL in tasks:
+            raise RuntimeError(f"{graph_name} graph schedules the cron job {CRON_LABEL}")
         check_no_test_skip(tasks, graph_name)
         if trusted:
             check_trusted_graph(tasks, graph_name)
@@ -233,6 +265,11 @@ def main():
         else:
             check_untrusted_graph(tasks)
             print("Untrusted task graph security invariants passed")
+
+    tasks = generate_target_graph(PARAMETERS_DIR / CRON_PARAMETERS, version)
+    print(f"Generated cron task graph with {len(tasks)} tasks")
+    check_cron_graph(tasks)
+    print("Cron task graph selects only the attested-document job")
 
 
 if __name__ == "__main__":

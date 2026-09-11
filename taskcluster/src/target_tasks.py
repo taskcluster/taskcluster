@@ -37,6 +37,17 @@ def target_tasks_taskcluster_branches(full_task_graph, parameters, graph_config)
     return [label for label, t in full_task_graph.tasks.items() if filter(t)]
 
 
+@register_target_task("azure-attested-document")
+def target_tasks_azure_attested_document(full_task_graph, parameters, graph_config):
+    """The weekly cron job from .cron.yml: just the attested-document task."""
+    return [
+        label
+        for label, t in full_task_graph.tasks.items()
+        if standard_filter(t, parameters)
+        and t.attributes.get("cron-job") == "azure-attested-document"
+    ]
+
+
 @verifications.add("target_task_graph")
 def verify_untrusted_tasks_need_no_secrets(task, taskgraph, scratch_pad, graph_config, parameters):
     """The target-task filter drops secret-dependent tasks, but the target

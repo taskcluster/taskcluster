@@ -20,6 +20,18 @@ See [docs/providers.md](docs/providers.md) for details on implementing providers
 
 Azure tests rely on valid `test/fixtures/azure_signature_good.json` file that can be obtained by running a VM inside Azure cloud to fetch [attested metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=linux#attested-data). This JSON file contains both the document (signature) and vmId in a single place, eliminating the need to maintain these values separately.
 
+The easiest way to get a fresh document is the `azure-attested-document` cron job, defined in `.cron.yml` and `taskcluster/kinds/azure-attested-document`. It runs on firefox-ci every Monday at 03:00 UTC and indexes its output:
+
+```sh
+# the attested document (the `signature` field goes in `document`)
+curl https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/project.taskcluster.azure.attested-document.latest/artifacts/public/attested.json
+
+# instance metadata from the same boot (`compute.vmId` goes in `vmId`)
+curl https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/project.taskcluster.azure.attested-document.latest/artifacts/public/instance.json
+```
+
+Members of `team_taskcluster` can force a run rather than wait for Monday, by triggering the `project-releng/cron-task-taskcluster-taskcluster/azure-attested-document` hook. Failing that, fetch the metadata by hand from inside an Azure VM:
+
 ```sh
 # sudo apt update && sudo apt install jq
 
