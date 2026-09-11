@@ -269,8 +269,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       }),
     };
 
-    handlers.realCancelPreviousTaskGroups = handlers.cancelPreviousTaskGroups;
-    handlers.cancelPreviousTaskGroups = sinon.stub();
+    handlers.realCancelSupersededTaskGroups = handlers.cancelSupersededTaskGroups;
+    handlers.cancelSupersededTaskGroups = sinon.stub().resolves(new Set());
 
     // set up the allowPullRequests key
     github.inst(INST_ID).setRepoInfo({
@@ -427,7 +427,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
-  suite('cancelPreviousTaskGroups', () => {
+  suite('cancelSupersededTaskGroups', () => {
     let sealedTaskGroups;
     let cancelledTaskGroups;
 
@@ -455,7 +455,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('does not call queue.sealTaskGroup/cancelTaskGroup if no previous builds', async () => {
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild: { sha: 'none', organization: 'none', repository: 'none' },
@@ -494,7 +494,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const instGithub = github.inst(INST_ID);
 
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub,
         debug: sinon.stub(),
         newBuild,
@@ -552,7 +552,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const instGithub = github.inst(INST_ID);
 
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub,
         debug: sinon.stub(),
         newBuild,
@@ -616,7 +616,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         eventId: OLDER_DELIVERY_ID,
         created: oldCreated,
       });
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild: {
@@ -686,7 +686,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         1
       );
 
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild: {
@@ -715,7 +715,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: 'aa' });
       await addBuild({ state: 'pending', taskGroupId: 'bb' });
       await addBuild({ state: 'pending', taskGroupId: 'cc' });
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild: {
@@ -752,7 +752,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
       await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
 
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild,
@@ -767,7 +767,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
       await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
 
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild: {
@@ -788,7 +788,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
       await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
 
-      await handlers.realCancelPreviousTaskGroups({
+      await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
         newBuild: {
@@ -826,6 +826,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       branch = 'tc-gh-tests',
       eventType = 'push',
       pullNumber = 36,
+      eventId = '26370a80-ed65-11e6-8f4c-80082678482d',
     }) {
       // set up to resolve when the handler has finished (even if it finishes with error)
       const handlerComplete = new Promise((resolve, reject) => {
@@ -901,7 +902,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           organization: 'TaskclusterRobot',
           details,
           repository: 'hooks-testing',
-          eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
+          eventId,
           installationId: INST_ID,
           version: 1,
           body,
@@ -1028,8 +1029,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
 
-      assert(handlers.cancelPreviousTaskGroups.calledTwice);
-      const { newBuild } = handlers.cancelPreviousTaskGroups.secondCall.args[0];
+      assert(handlers.cancelSupersededTaskGroups.calledTwice);
+      const { newBuild } = handlers.cancelSupersededTaskGroups.secondCall.args[0];
       assert.equal(newBuild.pull_number, 1001);
       assert.equal(newBuild.event_id, '26370a80-ed65-11e6-8f4c-80082678482d');
     });
@@ -1075,6 +1076,62 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert.deepEqual(publishedGroupIds, [GROUP_B]);
+    });
+
+    test('superseded multi-group delivery cancels itself without publishing initial status', async () => {
+      const instGithub = github.inst(INST_ID);
+      instGithub.setRepoCollaborator({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
+      });
+      instGithub.setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+      const newerGroupId = taskcluster.slugid();
+      await addBuild({
+        state: 'pending',
+        taskGroupId: newerGroupId,
+        pullNumber: 1001,
+        eventType: 'pull_request.synchronize',
+        eventId: NEWER_DELIVERY_ID,
+      });
+      const sealed = new Set();
+      const cancelled = new Set();
+      handlers.queueClient = new taskcluster.Queue({
+        rootUrl: 'https://tc.example.com',
+        fake: {
+          sealTaskGroup: async taskGroupId => {
+            sealed.add(taskGroupId);
+          },
+          cancelTaskGroup: async taskGroupId => {
+            cancelled.add(taskGroupId);
+          },
+        },
+      });
+      handlers.cancelSupersededTaskGroups.callsFake(args => handlers.realCancelSupersededTaskGroups(args));
+
+      await simulateJobMessage({
+        user: 'goodBuddy',
+        eventType: 'pull_request.opened',
+        pullNumber: 1001,
+        eventId: CURRENT_DELIVERY_ID,
+      });
+
+      assert.deepEqual(sealed, new Set([GROUP_A, GROUP_B]));
+      assert.deepEqual(cancelled, sealed);
+      assert.deepEqual(await handlers.cancelSupersededTaskGroups.firstCall.returnValue, cancelled);
+      helper.assertNoPulseMessage('task-group-creation-requested');
+      for (const taskGroupId of [GROUP_A, GROUP_B]) {
+        const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        assert.equal(build.state, 'cancelled');
+      }
+      const [newerBuild] = await helper.db.fns.get_github_build_pr(newerGroupId);
+      assert.equal(newerBuild.state, 'pending');
+      assert(instGithub.issues.createComment.notCalled);
     });
 
     test("multi-group yml publishes the union of all tasks' routes per group", async () => {
@@ -1130,7 +1187,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.assertNoPulseMessage('task-group-creation-requested', m => m.payload.taskGroupId === GROUP_A);
     });
 
-    test('multi-group yml calls cancelPreviousTaskGroups once for pull_request', async () => {
+    test('multi-group yml calls cancelSupersededTaskGroups once for pull_request', async () => {
       github.inst(INST_ID).setRepoCollaborator({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
@@ -1152,8 +1209,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
 
       assert(handlers.createTasks.calledOnce, 'createTasks should be called once');
-      // cancelPreviousTaskGroups should be called exactly once regardless of how many groups exist
-      assert(handlers.cancelPreviousTaskGroups.calledOnce, 'cancelPreviousTaskGroups should be called once');
+      // cancelSupersededTaskGroups should be called exactly once regardless of how many groups exist
+      assert(handlers.cancelSupersededTaskGroups.calledOnce, 'cancelSupersededTaskGroups should be called once');
     });
 
     test('valid pull_request (user is collaborator) creates a taskGroup', async () => {
@@ -1587,7 +1644,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.equal(build.sha, 'development');
         assert.equal(build.state, 'pending');
 
-        assert(handlers.cancelPreviousTaskGroups.notCalled);
+        assert(handlers.cancelSupersededTaskGroups.notCalled);
       });
       test('should respect .taskcluster.yml autoCancelPreviousChecks config', async () => {
         const tcYaml = validYamlV1Json;
@@ -1600,7 +1657,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         });
         await simulateJobMessage({ user: 'TaskclusterRobot' });
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        assert(handlers.cancelPreviousTaskGroups.notCalled);
+        assert(handlers.cancelSupersededTaskGroups.notCalled);
 
         tcYaml.autoCancelPreviousChecks = true;
         github.inst(INST_ID).setTaskclusterYml({
@@ -1614,8 +1671,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const args = handlers.createTasks.secondCall.args[0];
         const taskGroupId = args.tasks[0].task.taskGroupId;
 
-        assert(handlers.cancelPreviousTaskGroups.calledOnce);
-        const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
+        assert(handlers.cancelSupersededTaskGroups.calledOnce);
+        const cancelCallArgs = handlers.cancelSupersededTaskGroups.firstCall.args[0];
         assert.equal(cancelCallArgs.newBuild.organization, 'TaskclusterRobot');
         assert.equal(cancelCallArgs.newBuild.repository, 'hooks-testing');
         assert.equal(cancelCallArgs.newBuild.task_group_id, taskGroupId);
@@ -1637,7 +1694,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         });
         await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        assert(handlers.cancelPreviousTaskGroups.calledOnce);
+        assert(handlers.cancelSupersededTaskGroups.calledOnce);
       });
       test('should cancel task groups for same pull request number', async () => {
         const tcYaml = validYamlV1Json;
@@ -1659,9 +1716,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const args = handlers.createTasks.firstCall.args[0];
         const taskGroupId = args.tasks[0].task.taskGroupId;
 
-        assert(handlers.cancelPreviousTaskGroups.calledOnce);
+        assert(handlers.cancelSupersededTaskGroups.calledOnce);
 
-        const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
+        const cancelCallArgs = handlers.cancelSupersededTaskGroups.firstCall.args[0];
         assert.equal(cancelCallArgs.newBuild.organization, 'TaskclusterRobot');
         assert.equal(cancelCallArgs.newBuild.repository, 'hooks-testing');
         assert.equal(cancelCallArgs.newBuild.task_group_id, taskGroupId);
@@ -1672,8 +1729,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const args2 = handlers.createTasks.secondCall.args[0];
         const taskGroupId2 = args2.tasks[0].task.taskGroupId;
 
-        assert(handlers.cancelPreviousTaskGroups.calledTwice);
-        const cancelCallArgs2 = handlers.cancelPreviousTaskGroups.secondCall.args[0];
+        assert(handlers.cancelSupersededTaskGroups.calledTwice);
+        const cancelCallArgs2 = handlers.cancelSupersededTaskGroups.secondCall.args[0];
         assert.equal(cancelCallArgs2.newBuild.organization, 'TaskclusterRobot');
         assert.equal(cancelCallArgs2.newBuild.repository, 'hooks-testing');
         assert.equal(cancelCallArgs2.newBuild.task_group_id, taskGroupId2);
@@ -1930,6 +1987,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const taskGroupId = mockTriggerHook.firstCall.args[2].taskId;
         const builds = await helper.db.fns.get_github_build_pr(taskGroupId);
         assert.deepEqual(builds, [], 'build record should be deleted when hook returns no taskId');
+        assert(handlers.cancelSupersededTaskGroups.notCalled);
       });
 
       test('multiple hooks each get their own build record', async () => {
@@ -1955,6 +2013,89 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.ok(build1, 'build record for hook-one should exist');
         assert.ok(build2, 'build record for hook-two should exist');
         assert(handlers.createTasks.notCalled);
+      });
+
+      test('superseded delivery waits for all hooks before cancelling sibling groups', async () => {
+        const instGithub = github.inst(INST_ID);
+        instGithub.setRepoCollaborator({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          username: 'goodBuddy',
+        });
+        instGithub.setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [{ name: 'project-test/fast' }, { name: 'project-test/slow' }],
+          },
+        });
+        const newerGroupId = taskcluster.slugid();
+        await addBuild({
+          state: 'pending',
+          taskGroupId: newerGroupId,
+          pullNumber: 1001,
+          eventType: 'pull_request.synchronize',
+          eventId: NEWER_DELIVERY_ID,
+        });
+        const sealed = new Set();
+        const cancelled = new Set();
+        handlers.queueClient = new taskcluster.Queue({
+          rootUrl: 'https://tc.example.com',
+          fake: {
+            sealTaskGroup: async taskGroupId => {
+              sealed.add(taskGroupId);
+            },
+            cancelTaskGroup: async taskGroupId => {
+              cancelled.add(taskGroupId);
+            },
+          },
+        });
+        handlers.cancelSupersededTaskGroups.callsFake(args => handlers.realCancelSupersededTaskGroups(args));
+        const slowHook = Promise.withResolvers();
+        const bothStarted = Promise.withResolvers();
+        let started = 0;
+        mockTriggerHook.callsFake(async (_group, name, payload) => {
+          if (++started === 2) {
+            bothStarted.resolve();
+          }
+          if (name === 'slow') {
+            await slowHook.promise;
+          }
+          if (sealed.has(payload.taskId)) {
+            throw new Error('Task group is sealed');
+          }
+          return { taskId: payload.taskId };
+        });
+
+        const handling = simulateJobMessage({
+          user: 'goodBuddy',
+          eventType: 'pull_request.opened',
+          pullNumber: 1001,
+          eventId: CURRENT_DELIVERY_ID,
+        });
+        try {
+          await bothStarted.promise;
+          await new Promise(resolve => setImmediate(resolve));
+          assert(handlers.cancelSupersededTaskGroups.notCalled, 'must wait for the slow hook');
+        } finally {
+          slowHook.resolve();
+          await handling;
+        }
+
+        const hookGroupIds = new Set(mockTriggerHook.args.map(args => args[2].taskId));
+        assert(handlers.cancelSupersededTaskGroups.calledOnce);
+        assert.deepEqual(sealed, hookGroupIds);
+        assert.deepEqual(cancelled, hookGroupIds);
+        for (const taskGroupId of hookGroupIds) {
+          const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+          assert.equal(build.state, 'cancelled');
+        }
+        const [newerBuild] = await helper.db.fns.get_github_build_pr(newerGroupId);
+        assert.equal(newerBuild.state, 'pending');
+        assert(instGithub.issues.createComment.notCalled);
+        assert(instGithub.repos.createCommitComment.notCalled);
       });
 
       test('hooks and tasks both run when present in config', async () => {
@@ -2001,6 +2142,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const taskGroupId = mockTriggerHook.firstCall.args[2].taskId;
         const builds = await helper.db.fns.get_github_build_pr(taskGroupId);
         assert.deepEqual(builds, [], 'build record should be deleted when hook trigger fails');
+        assert(handlers.cancelSupersededTaskGroups.notCalled);
       });
 
       test('a missing github:trigger-hook is reported on the commit', async () => {
