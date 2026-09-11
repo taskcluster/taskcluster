@@ -63,6 +63,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   const COMMIT_SHA = '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf';
   const INST_ID = 5828;
+  // NEWER sorts before CURRENT as a raw UUID v1 string, despite having a later timestamp.
   const OLDER_DELIVERY_ID = 'ff1b1e30-a6c5-11f1-bfff-00deadbeef01';
   const CURRENT_DELIVERY_ID = 'ffb3b4b0-a6c5-11f1-bfff-00deadbeef01';
   const NEWER_DELIVERY_ID = '004c4b30-a6c6-11f1-bfff-00deadbeef01';
@@ -482,14 +483,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         taskGroupId: 'aa',
         pullNumber: 1,
         eventType: 'pull_request.opened',
-        created: new Date('2026-08-27T17:28:44.000Z'),
+        eventId: OLDER_DELIVERY_ID,
       });
       const newBuild = await addBuild({
         state: 'pending',
         taskGroupId: 'bb',
         pullNumber: 1,
         eventType: 'pull_request.synchronize',
-        created: new Date('2026-08-27T17:28:45.000Z'),
+        eventId: CURRENT_DELIVERY_ID,
       });
 
       const instGithub = github.inst(INST_ID);
@@ -540,14 +541,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         taskGroupId: 'aa',
         pullNumber: 1,
         eventType: 'pull_request.opened',
-        created: new Date('2026-08-27T17:28:44.000Z'),
+        eventId: OLDER_DELIVERY_ID,
       });
       const newBuild = await addBuild({
         state: 'pending',
         taskGroupId: 'bb',
         pullNumber: 1,
         eventType: 'pull_request.synchronize',
-        created: new Date('2026-08-27T17:28:45.000Z'),
+        eventId: CURRENT_DELIVERY_ID,
       });
 
       const instGithub = github.inst(INST_ID);
@@ -579,136 +580,43 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildB.state, 'pending');
     });
 
-    test('a superseded delivery cancels itself', async () => {
-      // These database timestamps are deliberately opposite to delivery order.
-      const oldCreated = new Date('2026-08-27T17:28:46.000Z');
-      const currentCreated = new Date('2026-08-27T17:28:45.000Z');
-      const newerCreated = new Date('2026-08-27T17:28:44.000Z');
+    test('cancels older deliveries without cancelling sibling task groups', async () => {
       await addBuild({
         state: 'pending',
-        taskGroupId: 'aa',
+        taskGroupId: 'old-group',
         pullNumber: 1,
         eventType: 'pull_request.opened',
         eventId: OLDER_DELIVERY_ID,
-        created: oldCreated,
       });
-      await addBuild({
+      const newBuild = await addBuild({
         state: 'pending',
-        taskGroupId: 'bb',
+        taskGroupId: 'new-group-a',
         pullNumber: 1,
-        eventType: 'pull_request.synchronize',
+        eventType: 'pull_request.opened',
         eventId: CURRENT_DELIVERY_ID,
-        created: currentCreated,
       });
       await addBuild({
         state: 'pending',
-        taskGroupId: 'cc',
+        taskGroupId: 'new-group-b',
         pullNumber: 1,
-        eventType: 'pull_request.synchronize',
-        eventId: NEWER_DELIVERY_ID,
-        created: newerCreated,
+        eventType: 'pull_request.opened',
+        eventId: CURRENT_DELIVERY_ID,
       });
-      await addBuild({
-        state: 'pending',
-        taskGroupId: 'dd',
-        pullNumber: 1,
-        eventType: 'pull_request.closed',
-        eventId: OLDER_DELIVERY_ID,
-        created: oldCreated,
-      });
-      await handlers.realCancelSupersededTaskGroups({
-        instGithub: sinon.stub(),
-        debug: sinon.stub(),
-        newBuild: {
-          sha: 'none',
-          task_group_id: 'bb',
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          pull_number: 1,
-          event_type: 'pull_request.synchronize',
-          event_id: CURRENT_DELIVERY_ID,
-          created: currentCreated,
-        },
-      });
-
-      assert.deepEqual(sealedTaskGroups, ['bb']);
-      assert.deepEqual(cancelledTaskGroups, ['bb']);
-      const [buildA] = await helper.db.fns.get_github_build_pr('aa');
-      assert.equal(buildA.state, 'pending');
-      const [buildB] = await helper.db.fns.get_github_build_pr('bb');
-      assert.equal(buildB.state, 'cancelled');
-      const [buildC] = await helper.db.fns.get_github_build_pr('cc');
-      assert.equal(buildC.state, 'pending');
-    });
-
-    test('does not cancel sibling task groups from the same event', async () => {
-      const oldCreated = new Date('2026-08-27T17:28:44.000Z');
-      const newCreated = new Date('2026-08-27T17:28:45.000Z');
-      // Old build from a previous event
-      await helper.db.fns.create_github_build_pr(
-        'TaskclusterRobot',
-        'hooks-testing',
-        COMMIT_SHA,
-        'old-group',
-        'pending',
-        oldCreated,
-        oldCreated,
-        9988,
-        'pull_request.opened',
-        OLDER_DELIVERY_ID,
-        1
-      );
-      // Two sibling builds from the current event — share the same event_id
-      await helper.db.fns.create_github_build_pr(
-        'TaskclusterRobot',
-        'hooks-testing',
-        COMMIT_SHA,
-        'new-group-a',
-        'pending',
-        newCreated,
-        newCreated,
-        9988,
-        'pull_request.opened',
-        CURRENT_DELIVERY_ID,
-        1
-      );
-      await helper.db.fns.create_github_build_pr(
-        'TaskclusterRobot',
-        'hooks-testing',
-        COMMIT_SHA,
-        'new-group-b',
-        'pending',
-        newCreated,
-        newCreated,
-        9988,
-        'pull_request.opened',
-        CURRENT_DELIVERY_ID,
-        1
-      );
 
       await handlers.realCancelSupersededTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
-        newBuild: {
-          sha: COMMIT_SHA,
-          task_group_id: 'new-group-a',
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          pull_number: 1,
-          event_type: 'pull_request.opened',
-          event_id: CURRENT_DELIVERY_ID,
-        },
+        newBuild,
       });
 
-      // Only the old build (different event_id) should be cancelled
       assert.deepEqual(sealedTaskGroups, ['old-group']);
       assert.deepEqual(cancelledTaskGroups, ['old-group']);
-
-      // Sibling builds (same event_id) must NOT be cancelled — neither of them
-      const [buildA] = await helper.db.fns.get_github_build_pr('new-group-a');
-      const [buildB] = await helper.db.fns.get_github_build_pr('new-group-b');
-      assert.equal(buildA.state, 'pending');
-      assert.equal(buildB.state, 'pending');
+      const [oldBuild] = await helper.db.fns.get_github_build_pr('old-group');
+      assert.equal(oldBuild.state, 'cancelled');
+      for (const taskGroupId of ['new-group-a', 'new-group-b']) {
+        const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        assert.equal(build.state, 'pending');
+      }
     });
 
     test('calls queue.sealTaskGroup/cancelTaskGroup for SHA excluding new task group id', async () => {
@@ -738,17 +646,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         taskGroupId: 'aa',
         pullNumber: 3,
         eventType: 'pull_request.opened',
-        created: new Date('2026-08-27T17:28:44.000Z'),
+        eventId: OLDER_DELIVERY_ID,
       });
       const newBuild = await addBuild({
         state: 'pending',
         taskGroupId: 'bb',
         pullNumber: 3,
         eventType: 'pull_request.synchronize',
-        created: new Date('2026-08-27T17:28:45.000Z'),
+        eventId: CURRENT_DELIVERY_ID,
       });
-      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 3, eventType: 'pull_request.closed' });
-      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 3, eventType: 'pull_request.assigned' });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'cc',
+        pullNumber: 3,
+        eventType: 'pull_request.closed',
+        eventId: OLDER_DELIVERY_ID,
+      });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'dd',
+        pullNumber: 3,
+        eventType: 'pull_request.assigned',
+        eventId: NEWER_DELIVERY_ID,
+      });
       await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
       await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
 
@@ -1007,34 +927,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildB.sha, COMMIT_SHA);
     });
 
-    test('existing multi-group build records retain cancellation metadata', async () => {
-      github.inst(INST_ID).setRepoCollaborator({
-        owner: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        username: 'goodBuddy',
-      });
-      github.inst(INST_ID).setTaskclusterYml({
-        owner: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        ref: COMMIT_SHA,
-        content: multiGroupConfig(),
-      });
-      github.inst(INST_ID).setTaskclusterYml({
-        owner: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        ref: 'development',
-        content: multiGroupConfig(),
-      });
-
-      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
-      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
-
-      assert(handlers.cancelSupersededTaskGroups.calledTwice);
-      const { newBuild } = handlers.cancelSupersededTaskGroups.secondCall.args[0];
-      assert.equal(newBuild.pull_number, 1001);
-      assert.equal(newBuild.event_id, '26370a80-ed65-11e6-8f4c-80082678482d');
-    });
-
     test('multi-group yml publishes taskGroupCreationRequested once per unique group', async () => {
       github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -1091,6 +983,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ref: COMMIT_SHA,
         content: multiGroupConfig(),
       });
+      // Database creation order is deliberately opposite to delivery order.
+      const olderGroupId = taskcluster.slugid();
+      await addBuild({
+        state: 'pending',
+        taskGroupId: olderGroupId,
+        pullNumber: 1001,
+        eventType: 'pull_request.opened',
+        eventId: OLDER_DELIVERY_ID,
+        created: taskcluster.fromNow('1 hour'),
+      });
       const newerGroupId = taskcluster.slugid();
       await addBuild({
         state: 'pending',
@@ -1098,6 +1000,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         pullNumber: 1001,
         eventType: 'pull_request.synchronize',
         eventId: NEWER_DELIVERY_ID,
+        created: taskcluster.fromNow('-1 hour'),
       });
       const sealed = new Set();
       const cancelled = new Set();
@@ -1129,8 +1032,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
         assert.equal(build.state, 'cancelled');
       }
-      const [newerBuild] = await helper.db.fns.get_github_build_pr(newerGroupId);
-      assert.equal(newerBuild.state, 'pending');
+      for (const taskGroupId of [olderGroupId, newerGroupId]) {
+        const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        assert.equal(build.state, 'pending');
+      }
       assert(instGithub.issues.createComment.notCalled);
     });
 
@@ -1187,7 +1092,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.assertNoPulseMessage('task-group-creation-requested', m => m.payload.taskGroupId === GROUP_A);
     });
 
-    test('multi-group yml calls cancelSupersededTaskGroups once for pull_request', async () => {
+    test('multi-group yml cancels once per delivery and retains metadata on retry', async () => {
       github.inst(INST_ID).setRepoCollaborator({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
@@ -1209,8 +1114,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
 
       assert(handlers.createTasks.calledOnce, 'createTasks should be called once');
-      // cancelSupersededTaskGroups should be called exactly once regardless of how many groups exist
-      assert(handlers.cancelSupersededTaskGroups.calledOnce, 'cancelSupersededTaskGroups should be called once');
+      assert(handlers.cancelSupersededTaskGroups.calledOnce);
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+
+      assert(handlers.cancelSupersededTaskGroups.calledTwice);
+      const { newBuild } = handlers.cancelSupersededTaskGroups.secondCall.args[0];
+      assert.equal(newBuild.pull_number, 1001);
+      assert.equal(newBuild.event_id, '26370a80-ed65-11e6-8f4c-80082678482d');
     });
 
     test('valid pull_request (user is collaborator) creates a taskGroup', async () => {
@@ -2015,7 +1926,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(handlers.createTasks.notCalled);
       });
 
-      test('superseded delivery waits for all hooks before cancelling sibling groups', async () => {
+      test('waits for all hook triggers before cancelling task groups', async () => {
         const instGithub = github.inst(INST_ID);
         instGithub.setRepoCollaborator({
           owner: 'TaskclusterRobot',
@@ -2031,28 +1942,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             hooks: [{ name: 'project-test/fast' }, { name: 'project-test/slow' }],
           },
         });
-        const newerGroupId = taskcluster.slugid();
-        await addBuild({
-          state: 'pending',
-          taskGroupId: newerGroupId,
-          pullNumber: 1001,
-          eventType: 'pull_request.synchronize',
-          eventId: NEWER_DELIVERY_ID,
-        });
-        const sealed = new Set();
-        const cancelled = new Set();
-        handlers.queueClient = new taskcluster.Queue({
-          rootUrl: 'https://tc.example.com',
-          fake: {
-            sealTaskGroup: async taskGroupId => {
-              sealed.add(taskGroupId);
-            },
-            cancelTaskGroup: async taskGroupId => {
-              cancelled.add(taskGroupId);
-            },
-          },
-        });
-        handlers.cancelSupersededTaskGroups.callsFake(args => handlers.realCancelSupersededTaskGroups(args));
         const slowHook = Promise.withResolvers();
         const bothStarted = Promise.withResolvers();
         let started = 0;
@@ -2063,9 +1952,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           if (name === 'slow') {
             await slowHook.promise;
           }
-          if (sealed.has(payload.taskId)) {
-            throw new Error('Task group is sealed');
-          }
           return { taskId: payload.taskId };
         });
 
@@ -2073,7 +1959,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           user: 'goodBuddy',
           eventType: 'pull_request.opened',
           pullNumber: 1001,
-          eventId: CURRENT_DELIVERY_ID,
         });
         try {
           await bothStarted.promise;
@@ -2084,16 +1969,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           await handling;
         }
 
-        const hookGroupIds = new Set(mockTriggerHook.args.map(args => args[2].taskId));
         assert(handlers.cancelSupersededTaskGroups.calledOnce);
-        assert.deepEqual(sealed, hookGroupIds);
-        assert.deepEqual(cancelled, hookGroupIds);
-        for (const taskGroupId of hookGroupIds) {
-          const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
-          assert.equal(build.state, 'cancelled');
-        }
-        const [newerBuild] = await helper.db.fns.get_github_build_pr(newerGroupId);
-        assert.equal(newerBuild.state, 'pending');
         assert(instGithub.issues.createComment.notCalled);
         assert(instGithub.repos.createCommitComment.notCalled);
       });
