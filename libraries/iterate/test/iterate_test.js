@@ -1,4 +1,4 @@
-import subject from '../src/index.js';
+import subject from '../src/index.ts';
 import assume from 'assume';
 import debugFactory from 'debug';
 const debug = debugFactory('iterate-test');
@@ -83,7 +83,7 @@ suite(testing.suiteName(), () => {
         monitor,
         maxIterationTime: 3000,
         waitTime: 1000,
-        watchDog: 0,
+        watchdogTime: 0,
         handler: async _watchdog => {
           debug('iterate!');
           iterations++;
@@ -124,7 +124,7 @@ suite(testing.suiteName(), () => {
         maxIterationTime: 3000,
         waitTime: 10,
         maxIterations: 5,
-        watchDog: 0,
+        watchdogTime: 0,
         handler: async _watchdog => {
           await testing.sleep(500);
         },
@@ -149,7 +149,7 @@ suite(testing.suiteName(), () => {
         maxIterationTime: 3000,
         waitTime: 1000,
         maxIterations: 2,
-        watchDog: 0,
+        watchdogTime: 0,
         handler: async _watchdog => {
           await testing.sleep(500);
         },
@@ -174,7 +174,7 @@ suite(testing.suiteName(), () => {
         maxIterationTime: 3000,
         waitTime: 10,
         maxIterations: 5,
-        watchDog: 0,
+        watchdogTime: 0,
         handler: async _watchdog => {
           debug('iterate!');
           iterations++;
@@ -320,7 +320,7 @@ suite(testing.suiteName(), () => {
         maxIterationTime: 12000,
         minIterationTime: 10000,
         waitTime: 1000,
-        watchDog: 0,
+        watchdogTime: 0,
         handler: async _watchdog => {
           await testing.sleep(100);
         },

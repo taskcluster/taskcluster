@@ -9,3 +9,8 @@ declare module 'lodash' {
 declare module 'js-yaml' {
   function load(content: string): any;
 }
+
+declare module 'debug' {
+  function debugFactory(namespace: string): (...args: any[]) => void;
+  export default debugFactory;
+}

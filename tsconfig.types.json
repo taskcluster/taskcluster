@@ -1,0 +1,20 @@
+{
+  // CI / `yarn types`: check TypeScript that Node runs via type stripping.
+  // Root tsconfig.json still enables checkJs for editor/JSDoc work; that
+  // surface is not CI-gated because the JS tree is not fully typed.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "checkJs": false,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./libraries/**/*.ts",
+    "./services/**/*.ts",
+    "./db/**/*.ts",
+    "./clients/client/**/*.ts"
+  ],
+  "files": [
+    "@types/globals.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

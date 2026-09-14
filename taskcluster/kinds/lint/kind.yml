@@ -27,6 +27,17 @@ tasks:
       command: >-
         corepack yarn &> /dev/null &&
         corepack yarn lint
+  typescript:
+    description: TypeScript type check (tsc --noEmit)
+    worker:
+      docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
+    run:
+      command: >-
+        corepack yarn &> /dev/null &&
+        corepack yarn types
   golang:
     description: go lint
     priority: very-high
