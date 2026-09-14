@@ -15,6 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/distribution/reference"
 	"github.com/taskcluster/taskcluster/v110/internal/scopes"
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/process"
@@ -136,7 +137,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"pull",
-				"--quiet",
 				key,
 			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
@@ -164,7 +164,20 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
 		} else {
-			imageName = key
+			var digest string
+			for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
+				if rest, found := strings.CutPrefix(line, "Digest: "); found {
+					digest = strings.TrimSpace(rest)
+					break
+				}
+			}
+			if digest == "" {
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] docker pull output did not include an image digest:\n%s", out))
+			}
+			imageName, err = imageRefWithDigest(key, digest)
+			if err != nil {
+				return nil, executionError(internalError, errored, err)
+			}
 		}
 		cmd, err = process.NewCommandNoOutputStreams([]string{
 			"docker",
@@ -417,6 +430,16 @@ func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir s
 			command.Args[i] = placeholders.Replace(arg)
 		}
 	}
+}
+
+// imageRefWithDigest rewrites name[:tag] to name@digest so inspect
+// is keyed by content digest, not a mutable tag.
+func imageRefWithDigest(name, dgst string) (string, error) {
+	named, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return "", fmt.Errorf("[d2g] invalid docker image name %q: %w", name, err)
+	}
+	return reference.TrimNamed(named).String() + "@" + dgst, nil
 }
 
 // formatCommandError creates a detailed error message from command execution failure

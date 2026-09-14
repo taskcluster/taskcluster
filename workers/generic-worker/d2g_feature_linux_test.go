@@ -94,3 +94,36 @@ func TestLoadImageLockedSkipsCacheOnlyForArtifacts(t *testing.T) {
 		}
 	})
 }
+
+func TestImageRefWithDigest(t *testing.T) {
+	const dgst = "sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d"
+
+	tests := []struct {
+		name  string
+		image string
+		want  string
+	}{
+		{
+			name:  "strips tag",
+			image: "ubuntu:latest",
+			want:  "docker.io/library/ubuntu@" + dgst,
+		},
+		{
+			name:  "replaces existing digest",
+			image: "ubuntu@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+			want:  "docker.io/library/ubuntu@" + dgst,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := imageRefWithDigest(tc.image, dgst)
+			if err != nil {
+				t.Fatalf("imageRefWithDigest() unexpected err: %v", err)
+			}
+			if got != tc.want {
+				t.Fatalf("imageRefWithDigest() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
