@@ -15,6 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/distribution/reference"
 	"github.com/taskcluster/taskcluster/v113/internal/scopes"
 	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/host"
@@ -142,7 +143,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"pull",
-				"--quiet",
 				key,
 			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
@@ -151,6 +151,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 		out, err := cmd.Output()
 		if err != nil {
+			// docker pull reports progress on stdout and failures on
+			// stderr, so leave the progress lines out of the error.
+			if !isImageArtifact {
+				out = nil
+			}
 			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
@@ -170,7 +175,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
 		} else {
-			imageName = key
+			digest, err := pulledDigest(out)
+			if err != nil {
+				return nil, executionError(internalError, errored, err)
+			}
+			imageName, err = imageRefWithDigest(key, digest)
+			if err != nil {
+				return nil, executionError(internalError, errored, err)
+			}
 		}
 		cmd, err = process.NewCommandNoOutputStreams([]string{
 			"docker",
@@ -434,6 +446,31 @@ func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir s
 			command.Args[i] = placeholders.Replace(arg)
 		}
 	}
+}
+
+// imageRefWithDigest rewrites name[:tag] to name@digest so inspect
+// is keyed by content digest, not a mutable tag.
+func imageRefWithDigest(name, digest string) (string, error) {
+	named, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return "", fmt.Errorf("[d2g] invalid docker image name %q: %w", name, err)
+	}
+	pinned, err := reference.ParseNormalizedNamed(reference.TrimNamed(named).String() + "@" + digest)
+	if err != nil {
+		return "", fmt.Errorf("[d2g] invalid docker image digest %q: %w", digest, err)
+	}
+	return pinned.String(), nil
+}
+
+// pulledDigest returns the content digest that docker pull reports
+// for the image it pulled (or found up to date).
+func pulledDigest(out []byte) (string, error) {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
+		if digest, found := strings.CutPrefix(line, "Digest: "); found {
+			return strings.TrimSpace(digest), nil
+		}
+	}
+	return "", fmt.Errorf("[d2g] docker pull output did not include an image digest:\n%s", out)
 }
 
 // formatCommandError creates a detailed error message from command execution failure

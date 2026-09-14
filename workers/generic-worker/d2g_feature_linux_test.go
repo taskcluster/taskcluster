@@ -94,3 +94,99 @@ func TestLoadImageLockedSkipsCacheOnlyForArtifacts(t *testing.T) {
 		}
 	})
 }
+
+func TestImageRefWithDigest(t *testing.T) {
+	const digest = "sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d"
+
+	tests := []struct {
+		name  string
+		image string
+		want  string
+	}{
+		{
+			name:  "strips tag",
+			image: "ubuntu:latest",
+			want:  "docker.io/library/ubuntu@" + digest,
+		},
+		{
+			name:  "replaces existing digest",
+			image: "ubuntu@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+			want:  "docker.io/library/ubuntu@" + digest,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := imageRefWithDigest(tc.image, digest)
+			if err != nil {
+				t.Fatalf("imageRefWithDigest() unexpected err: %v", err)
+			}
+			if got != tc.want {
+				t.Fatalf("imageRefWithDigest() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestImageRefWithDigestRejectsInvalidDigest(t *testing.T) {
+	for _, digest := range []string{"", "latest", "sha256:not-hex", "sha256:513c"} {
+		if got, err := imageRefWithDigest("ubuntu:latest", digest); err == nil {
+			t.Errorf("imageRefWithDigest(%q) = %q, want error", digest, got)
+		}
+	}
+}
+
+func TestPulledDigest(t *testing.T) {
+	tests := []struct {
+		name    string
+		out     string
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "fresh pull",
+			out: `Using default tag: latest
+latest: Pulling from library/ubuntu
+08f5f5b2a2b0: Pulling fs layer
+08f5f5b2a2b0: Pull complete
+Digest: sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d
+Status: Downloaded newer image for ubuntu:latest
+docker.io/library/ubuntu:latest
+`,
+			want: "sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d",
+		},
+		{
+			name: "image already up to date",
+			out: `Using default tag: latest
+latest: Pulling from library/archlinux
+Digest: sha256:b944cc65c5f28665dfd5fdbf5ed2997c88f5bb4a0aefac7ee8a7ef01893e5ed9
+Status: Image is up to date for archlinux:latest
+docker.io/library/archlinux:latest
+`,
+			want: "sha256:b944cc65c5f28665dfd5fdbf5ed2997c88f5bb4a0aefac7ee8a7ef01893e5ed9",
+		},
+		{
+			name:    "no digest line",
+			out:     "docker.io/library/ubuntu:latest\n",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := pulledDigest([]byte(tc.out))
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("pulledDigest() = %q, want error", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("pulledDigest() unexpected err: %v", err)
+			}
+			if got != tc.want {
+				t.Fatalf("pulledDigest() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
