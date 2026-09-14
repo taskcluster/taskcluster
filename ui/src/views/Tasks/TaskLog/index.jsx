@@ -51,23 +51,7 @@ export default class TaskLog extends Component {
         params: { taskId, runId, name: rawName },
       },
     } = this.props;
-    let name;
-
-    // for compatibility, if `name` is an encoded URL-shaped thing, try to
-    // extract the artifact name.
-    if (rawName.startsWith('https%3A')) {
-      const maybeArtifactUrl = decodeArtifactName(rawName);
-      const match =
-        /.*\/api\/queue\/v1\/task\/[^/]{22}\/runs\/\d+\/artifacts\/([^?]+)/.exec(
-          maybeArtifactUrl
-        );
-
-      if (match) {
-        name = decodeArtifactName(match[1]);
-      }
-    } else {
-      name = decodeArtifactName(rawName);
-    }
+    const name = decodeArtifactName(rawName);
 
     return getArtifactUrl({ user, taskId, runId, name });
   }
