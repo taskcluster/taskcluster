@@ -294,8 +294,12 @@ export default class TaskGroup extends Component {
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.load(taskGroupId);
-      this.subscribe(taskGroupId);
     }
+
+    // subscribe() is a no-op unless the task group or the signed-in user
+    // changed; a user change needs a fresh socket so that connection_init
+    // carries the current credentials.
+    this.subscribe(taskGroupId);
   }
 
   componentWillUnmount() {
@@ -526,11 +530,17 @@ export default class TaskGroup extends Component {
   };
 
   subscribe = taskGroupId => {
-    if (this.listener && this.listener.taskGroupId === taskGroupId) {
+    const { user } = this.context;
+
+    if (
+      this.listener &&
+      this.listener.taskGroupId === taskGroupId &&
+      this.listener.user === user
+    ) {
       return this.listener;
     }
 
-    if (this.listener && this.listener.taskGroupId !== taskGroupId) {
+    if (this.listener) {
       this.unsubscribe();
     }
 
@@ -554,11 +564,13 @@ export default class TaskGroup extends Component {
         // There is no polling fallback here: after a dropped socket the page
         // shows the last known state until it is reloaded.
         onError: () => {},
+        user,
       }
     );
 
     this.listener = {
       taskGroupId,
+      user,
       unsubscribe,
     };
   };

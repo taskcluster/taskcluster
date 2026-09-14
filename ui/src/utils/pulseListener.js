@@ -38,6 +38,23 @@ const getEventsWsUrl = endpointPath => {
 const RECONNECT_BASE_MS = 1000;
 const RECONNECT_MAX_MS = 30000;
 
+// The server closes with this code after rejecting connection_init for missing
+// the `web:read-pulse` scope. Retrying with the same credentials cannot
+// succeed, so it is the one close that does not schedule a reconnect.
+const CLOSE_INSUFFICIENT_SCOPES = 4403;
+
+// The server authenticates on the connection_init frame rather than the HTTP
+// upgrade. The token is the same shape the HTTP GraphQL link sends in its
+// Authorization header; an anonymous user sends a bare connection_init and is
+// checked against the anonymous role's scopes.
+const connectionInitFrame = user =>
+  user?.credentials
+    ? {
+        type: 'connection_init',
+        authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+      }
+    : { type: 'connection_init' };
+
 /**
  * Open the events WebSocket at the given endpoint ('raw' or 'named'), and once
  * the connection is acknowledged send the given subscribe frame. Handles the
@@ -45,11 +62,15 @@ const RECONNECT_MAX_MS = 30000;
  * that every subscription shape shares. On an unexpected drop the socket
  * reconnects with backoff and re-sends the subscribe frame. Returns a teardown
  * function that unsubscribes and stops reconnecting.
+ *
+ * `user` is the signed-in user from AuthContext (or null); its credentials are
+ * sent on connection_init. The user is captured for the life of the
+ * subscription, so callers must tear down and resubscribe when it changes.
  */
 const openEventsSubscription = (
   endpointPath,
   subscribeFrame,
-  { onMessage, onError }
+  { onMessage, onError, user }
 ) => {
   // The events server mints the subscriptionId and returns it in subscribe_ack;
   // it stays null until then. This listener uses a single subscription per
@@ -82,7 +103,7 @@ const openEventsSubscription = (
     ws = new WebSocket(getEventsWsUrl(endpointPath));
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'connection_init' }));
+      ws.send(JSON.stringify(connectionInitFrame(user)));
     };
 
     ws.onmessage = ({ data }) => {
@@ -130,8 +151,10 @@ const openEventsSubscription = (
         );
       }
 
-      // Reconnect after any close we didn't initiate, clean or not.
-      if (!torn) {
+      // Reconnect after any close we didn't initiate, clean or not, unless the
+      // server rejected our credentials outright; the error frame that
+      // precedes that close has already reached onError.
+      if (!torn && event.code !== CLOSE_INSUFFICIENT_SCOPES) {
         scheduleReconnect();
       }
     };
@@ -160,7 +183,9 @@ const openEventsSubscription = (
  * Subscribe to Pulse messages arriving on the given raw bindings (each an
  * `{ exchange, pattern }` or `{ exchange, routingKeyPattern }`) via the
  * /subscription/raw endpoint. Used by the Pulse debugger views, which bind arbitrary
- * exchanges directly. Returns a teardown function that unsubscribes.
+ * exchanges directly. `handlers` is `{ onMessage, onError, user }`, where
+ * `user` is the signed-in user whose credentials authenticate the connection.
+ * Returns a teardown function that unsubscribes.
  */
 const subscribeToPulseMessages = (bindings, handlers) =>
   openEventsSubscription(
@@ -177,8 +202,9 @@ const subscribeToPulseMessages = (bindings, handlers) =>
  * 'taskCompleted']`) and a `routingKey` object of fields to match (e.g.
  * `{ taskGroupId }`); omitted routing-key fields are wildcarded. `service`
  * selects whose events the names refer to (e.g. 'queue') and is required — the
- * server rejects a subscribe frame without it. Returns a teardown function that
- * unsubscribes.
+ * server rejects a subscribe frame without it. `handlers` is `{ onMessage,
+ * onError, user }`, where `user` is the signed-in user whose credentials
+ * authenticate the connection. Returns a teardown function that unsubscribes.
  */
 const subscribeToNamedEvents = (
   { service, subscriptions, routingKey },

@@ -21,6 +21,7 @@ import Button from '../Button';
 import JsonDisplay from '../JsonDisplay';
 import ErrorPanel from '../ErrorPanel';
 import subscribeToPulseMessages from '../../utils/pulseListener';
+import { withAuth } from '../../utils/Auth';
 import buildTriggerSchemaValidator from '../../utils/triggerSchemaValidator';
 
 // Cap retained rows so a busy binding cannot grow state/DOM without bound; the
@@ -32,6 +33,7 @@ const MISSING_SCOPE_MESSAGE =
   'web:read-pulse scope. Permission to view or modify this hook does not ' +
   'grant it. Ask an administrator for web:read-pulse, then try again.';
 
+@withAuth
 @withStyles(theme => ({
   drawerPaper: {
     width: '40vw',
@@ -240,6 +242,7 @@ export default class HookBindingDebugger extends Component {
     this.unsubscribeFn = subscribeToPulseMessages(this.props.bindings, {
       onMessage: this.handleMessage,
       onError: this.handleError,
+      user: this.props.user,
     });
   };
 

@@ -26,6 +26,7 @@ import SpeedDialAction from '../../components/SpeedDialAction';
 import DataTable from '../../components/DataTable';
 import PulseBindings from '../../components/PulseBindings';
 import subscribeToPulseMessages from '../../utils/pulseListener';
+import { withAuth } from '../../utils/Auth';
 import removeKeys from '../../utils/removeKeys';
 import exchangesList from '../../utils/exchangesList';
 
@@ -35,6 +36,7 @@ const getBindingsFromProps = props => {
   return query.bindings ? Object.values(query.bindings) : [];
 };
 
+@withAuth
 @withStyles(theme => ({
   iconButton: {
     '& svg': {
@@ -158,6 +160,7 @@ export default class PulseMessages extends Component {
       onError: error => {
         this.setState({ error, listening: false });
       },
+      user: this.props.user,
     });
   };
 
