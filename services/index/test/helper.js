@@ -26,7 +26,8 @@ export const secrets = new testing.Secrets({
 });
 helper.secrets = secrets;
 
-helper.rootUrl = 'http://localhost:60020';
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
 
 export const withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'index');
@@ -99,10 +100,22 @@ export const withServer = skipping => {
     }
     await load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
+    // Recreate fakes that were built before the real rootUrl was known.
+    if (helper.queue) {
+      helper.queue = stubbedQueue();
+      load.inject('queue', helper.queue);
+    }
+
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    load.cfg('taskcluster.rootUrl', helper.rootUrl);
     testing.fakeauth.start(
       {
         'test-client': ['*'],

@@ -55,8 +55,10 @@ suite(testing.suiteName(), () => {
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
+    const port = await testing.getFreePort();
+    const listenRootUrl = `http://127.0.0.1:${port}`;
     const api = await builder.build({
-      rootUrl,
+      rootUrl: listenRootUrl,
       monitor,
       schemaset,
       context: {
@@ -65,7 +67,7 @@ suite(testing.suiteName(), () => {
     });
 
     const server = await App({
-      port: 60872,
+      port,
       env: 'development',
       forceSSL: false,
       trustProxy: false,
@@ -73,7 +75,7 @@ suite(testing.suiteName(), () => {
     });
 
     await request
-      .get('http://localhost:60872/api/test/v1/context')
+      .get(`${listenRootUrl}/api/test/v1/context`)
       .then(res => {
         assert(res.body.myProp === value);
       })
@@ -205,8 +207,10 @@ suite(testing.suiteName(), () => {
     );
 
     let fooFake;
+    const port = await testing.getFreePort();
+    const listenRootUrl = `http://127.0.0.1:${port}`;
     const api = await builder.build({
-      rootUrl,
+      rootUrl: listenRootUrl,
       monitor,
       schemaset,
       context: {
@@ -222,7 +226,7 @@ suite(testing.suiteName(), () => {
     assert.equal(fooFake, undefined);
 
     const server = await App({
-      port: 60872,
+      port,
       env: 'development',
       forceSSL: false,
       trustProxy: false,
@@ -230,7 +234,7 @@ suite(testing.suiteName(), () => {
     });
 
     await request
-      .get('http://localhost:60872/api/test/v1/context')
+      .get(`${listenRootUrl}/api/test/v1/context`)
       .set('x-taskcluster-trace-id', 'foo/bar')
       .then(res => {
         assert.equal(res.body.foo, 'foo/bar');
