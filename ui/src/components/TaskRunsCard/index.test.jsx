@@ -100,10 +100,7 @@ it('should render TaskRunsCard', () => {
 });
 
 it('should link an unsafe log artifact name to the artifact url', () => {
-  const originalEnv = window.env;
   const name = '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/shell/x.log';
-
-  window.env = { TASKCLUSTER_ROOT_URL: 'https://taskcluster.net' };
 
   render(
     <MemoryRouter keyLength={0}>
@@ -155,6 +152,4 @@ it('should link an unsafe log artifact name to the artifact url', () => {
   expect(screen.getByText(name).closest('a').getAttribute('href')).toEqual(
     'https://taskcluster.net/api/queue/v1/task/taskId/runs/0/artifacts/%252e%252e%2F%252e%252e%2F%252e%252e%2F%252e%252e%2F%252e%252e%2Fshell%2Fx.log'
   );
-
-  window.env = originalEnv;
 });
