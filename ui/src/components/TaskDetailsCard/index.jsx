@@ -380,6 +380,7 @@ export default class TaskDetailsCard extends Component {
                   <ConnectionDataTable
                     withoutTopPagination
                     connection={dependents}
+                    maxHeight={400}
                     pageSize={DEPENDENTS_PAGE_SIZE}
                     sortByHeader={null}
                     sortDirection="desc"
