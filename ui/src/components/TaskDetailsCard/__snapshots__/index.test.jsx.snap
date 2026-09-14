@@ -504,7 +504,7 @@ exports[`should render TaskDetailsCard 1`] = `
               <p
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
-                undefined of undefined
+                5 of 5
               </p>
             </div>
           </li>
@@ -602,7 +602,9 @@ exports[`should render TaskDetailsCard 1`] = `
                 >
                   <span
                     class="MuiButton-label"
-                  />
+                  >
+                    very-high
+                  </span>
                 </button>
               </p>
             </div>
@@ -651,26 +653,36 @@ exports[`should render TaskDetailsCard 1`] = `
             class="MuiListItem-root MuiListItem-gutters"
           >
             <div
-              class="MuiListItemText-root"
+              class="MuiListItemText-root MuiListItemText-multiline"
             >
               <span
                 class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
               >
                 Project ID
               </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                none
+              </p>
             </div>
           </li>
           <li
             class="MuiListItem-root MuiListItem-gutters"
           >
             <div
-              class="MuiListItemText-root"
+              class="MuiListItemText-root MuiListItemText-multiline"
             >
               <span
                 class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
               >
                 Scheduler ID
               </span>
+              <p
+                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+              >
+                test-scheduler
+              </p>
             </div>
           </li>
           <li

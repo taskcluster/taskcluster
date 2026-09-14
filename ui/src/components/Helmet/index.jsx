@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
 import { Helmet as ReactHelmet } from 'react-helmet';
-import { taskState } from '../../utils/prop-types';
 import { TASK_STATE } from '../../utils/constants';
 import Logo from '../../images/logo.png';
 import LogoCompleted from '../../images/logoCompleted.png';
@@ -11,10 +10,11 @@ import LogoRunning from '../../images/logoRunning.png';
 export default class Helmet extends Component {
   static propTypes = {
     /**
-     * The state of the task or task group.
+     * The state of the task or task group, in either the queue's lower case
+     * or the UI's upper case spelling.
      * Leave this value undefined outside the Task and Task Group view.
      */
-    state: taskState,
+    state: string,
     /** The document title */
     title: string,
   };
@@ -25,7 +25,7 @@ export default class Helmet extends Component {
   };
 
   getFavicon() {
-    switch (this.props.state) {
+    switch (this.props.state?.toUpperCase()) {
       case TASK_STATE.COMPLETED:
         return LogoCompleted;
       case TASK_STATE.FAILED:

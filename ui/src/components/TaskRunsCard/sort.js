@@ -1,23 +1,24 @@
-export const getPriority = a => {
-  if (a?.node?.name?.includes('live.log')) {
+export const getPriority = artifact => {
+  if (artifact?.name?.includes('live.log')) {
     return 1;
   }
 
-  if (a?.node?.name?.includes('live_backing.log')) {
+  if (artifact?.name?.includes('live_backing.log')) {
     return 2;
   }
 
-  return a?.node?.name?.startsWith('public/') ? 3 : 4;
+  return artifact?.name?.startsWith('public/') ? 3 : 4;
 };
 
 export const sortArtifacts = artifacts => {
   return artifacts
-    .map(a => ({ ...a, priority: getPriority(a) }))
+    .map(artifact => ({ artifact, priority: getPriority(artifact) }))
     .sort((a, b) => {
       if (a.priority === b.priority) {
-        return a.node?.name?.localeCompare(b.node?.name);
+        return a.artifact.name?.localeCompare(b.artifact.name);
       }
 
       return a.priority - b.priority;
-    });
+    })
+    .map(({ artifact }) => artifact);
 };

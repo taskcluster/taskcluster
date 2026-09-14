@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { withApollo, graphql } from '@apollo/client/react/hoc';
+import { withApollo } from '@apollo/client/react/hoc';
 import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import { withStyles } from '@material-ui/core/styles';
@@ -9,10 +9,9 @@ import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Checkbox from '@material-ui/core/Checkbox';
-import dotProp from 'dot-prop-immutable';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
-import { Queue } from '@taskcluster/client-web';
+import { PurgeCache, Queue } from '@taskcluster/client-web';
 import HammerIcon from 'mdi-react/HammerIcon';
 import CreationIcon from 'mdi-react/CreationIcon';
 import PencilIcon from 'mdi-react/PencilIcon';
@@ -38,8 +37,6 @@ import DialogAction from '../../../components/DialogAction';
 import ChangeTaskPriorityDialog from '../../../components/ChangeTaskPriorityDialog';
 import TaskActionForm from '../../../components/TaskActionForm';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import splitTaskQueueId from '../../../utils/splitTaskQueueId';
-import { gqlTaskToApi } from '../../../utils/gqlToApi';
 import {
   ARTIFACTS_PAGE_SIZE,
   DEPENDENTS_PAGE_SIZE,
@@ -52,22 +49,19 @@ import {
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
 import formatError from '../../../utils/formatError';
-import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
 import Link from '../../../utils/Link';
-import { changeTaskPriority, getClient } from '../../../utils/client';
-import { AuthContext } from '../../../utils/Auth';
+import { changeTaskPriority } from '../../../utils/client';
+import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
+import { withAuth } from '../../../utils/Auth';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
+import withResource from '../../../hocs/withResource';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
 import submitTaskAction from '../submitTaskAction';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
-import taskQuery from './task.graphql';
-import scheduleTaskQuery from './scheduleTask.graphql';
-import rerunTaskQuery from './rerunTask.graphql';
-import cancelTaskQuery from './cancelTask.graphql';
-import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
-import pageArtifactsQuery from './pageArtifacts.graphql';
 
-const updateTaskIdHistory = (id, task) => {
+const updateTaskIdHistory = (id, task, status) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
@@ -79,7 +73,7 @@ const updateTaskIdHistory = (id, task) => {
     taskQueueId: task?.taskQueueId,
     created: task?.created,
     deadline: task?.deadline,
-    state: task?.status?.state,
+    state: status?.state,
     viewedAt: Date.now(),
   });
 };
@@ -92,8 +86,31 @@ const taskInContext = (tagSetList, taskTags) =>
   );
 const getCachesFromTask = task =>
   Object.keys(pathOr({}, ['payload', 'cache'], task));
+// actions.json actions that apply to a single task: task- and hook-kind actions
+// with a non-empty context. Group-context actions belong to the task-group page.
+const TASK_ACTION_KINDS = new Set(['task', 'hook']);
+const filterTaskActions = actions =>
+  actions.filter(
+    ({ kind, context }) =>
+      TASK_ACTION_KINDS.has(kind) &&
+      Array.isArray(context) &&
+      context.length > 0
+  );
+// The run shown in the runs card: the one in the URL, else the latest one.
+// null while the status is unknown or the task has no runs yet.
+const selectedRunId = ({ match, statusResource }) => {
+  if (match.params.runId) {
+    return parseInt(match.params.runId, 10);
+  }
+
+  const runs = statusResource.data?.runs;
+
+  return runs?.length ? runs.length - 1 : null;
+};
 
 @withApollo
+@withAuth
+@withTaskclusterClient
 @withStyles(theme => ({
   title: {
     marginBottom: theme.spacing(1),
@@ -112,33 +129,119 @@ const getCachesFromTask = task =>
     ...theme.mixins.link,
   },
 }))
-@graphql(taskQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    pollInterval: TASK_POLL_INTERVAL,
-    errorPolicy: 'all',
-    variables: {
-      taskId: props.match.params.taskId,
-      artifactsConnection: {
-        limit: ARTIFACTS_PAGE_SIZE,
+@withResource({
+  name: 'taskResource',
+  fetch: props => () =>
+    props
+      .createTaskclusterClient({ Class: Queue })
+      .task(props.match.params.taskId),
+  key: props => props.match.params.taskId,
+})
+@withResource({
+  name: 'statusResource',
+  fetch: props => async () => {
+    const { status } = await props
+      .createTaskclusterClient({ Class: Queue })
+      .status(props.match.params.taskId);
+
+    return status;
+  },
+  key: props => props.match.params.taskId,
+})
+// The in-tree actions applicable to this task, from the decision task's
+// public/actions.json, along with the decision task they run with the scopes
+// of: `{ taskActions, decisionTask }`, or null when there are none.
+@withResource({
+  name: 'actionsResource',
+  fetch: props => async () => {
+    const { taskId } = props.match.params;
+    const taskGroupId = props.taskResource.data?.taskGroupId;
+
+    if (!taskGroupId) {
+      return null;
+    }
+
+    // client-web refuses to follow the artifact endpoint's redirect, so
+    // resolve the URL and fetch the (public) artifact directly.
+    const response = await fetch(
+      getLatestArtifactUrl({
+        user: props.user,
+        taskId: taskGroupId,
+        name: 'public/actions.json',
+      })
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const taskActions = await response.json().catch(() => null);
+
+    if (!Array.isArray(taskActions?.actions)) {
+      return null;
+    }
+
+    // a decision task is its own decision task; a task group does not
+    // necessarily have one
+    const decisionTask =
+      taskId === taskGroupId
+        ? null
+        : await props
+            .createTaskclusterClient({ Class: Queue })
+            .task(taskGroupId)
+            .catch(() => null);
+
+    return {
+      taskActions: {
+        ...taskActions,
+        actions: filterTaskActions(taskActions.actions),
       },
-      dependentsConnection: {
-        limit: DEPENDENTS_PAGE_SIZE,
-      },
-    },
+      decisionTask,
+    };
+  },
+  key: props => props.taskResource.data?.taskGroupId ?? null,
+})
+@withPaginatedResource({
+  name: 'dependentsResource',
+  fetch:
+    props =>
+    ({ taskId, ...options }) =>
+      props
+        .createTaskclusterClient({ Class: Queue })
+        .listDependentTasks(taskId, options),
+  // taskId is included so the query re-runs when the route changes;
+  // it is stripped back out in `fetch` before hitting the client.
+  payload: props => ({
+    taskId: props.match.params.taskId,
+    limit: DEPENDENTS_PAGE_SIZE,
   }),
+  select: response => response.tasks,
+})
+@withPaginatedResource({
+  name: 'artifactsResource',
+  fetch:
+    props =>
+    ({ taskId, runId, ...options }) =>
+      runId === null
+        ? Promise.resolve({ artifacts: [], continuationToken: null })
+        : props
+            .createTaskclusterClient({ Class: Queue })
+            .listArtifacts(taskId, runId, options),
+  payload: props => ({
+    taskId: props.match.params.taskId,
+    runId: selectedRunId(props),
+    limit: ARTIFACTS_PAGE_SIZE,
+  }),
+  select: response => response.artifacts,
 })
 export default class ViewTask extends Component {
-  static contextType = AuthContext;
-
   static getDerivedStateFromProps(props, state) {
     const taskId = props.match.params.taskId || '';
-    const {
-      data: { task },
-    } = props;
+    const task = props.taskResource.data;
+    const status = props.statusResource.data;
 
-    if (taskId !== state.previousTaskId && task) {
-      updateTaskIdHistory(taskId, task);
+    if (taskId !== state.previousTaskId && task && status) {
+      updateTaskIdHistory(taskId, task, status);
 
       const caches = getCachesFromTask(task);
 
@@ -157,12 +260,11 @@ export default class ViewTask extends Component {
     const taskActions = [];
     const actionInputs = {};
     const actionData = {};
-    const {
-      data: { task },
-    } = this.props;
+    const task = this.props.taskResource.data;
+    const actions = this.props.actionsResource.data?.taskActions?.actions;
 
-    if (Array.isArray(task?.taskActions?.actions)) {
-      task?.taskActions?.actions.forEach(action => {
+    if (Array.isArray(actions)) {
+      actions.forEach(action => {
         // if an action with this name has already been selected,
         // don't consider this version
         if (
@@ -200,22 +302,47 @@ export default class ViewTask extends Component {
 
   listener = null;
 
-  componentDidUpdate() {
-    const {
-      data: { task, refetch },
-    } = this.props;
+  pollTimer = null;
 
-    if (task) {
-      this.subscribe(task.taskId, refetch);
+  componentDidMount() {
+    this.subscribe(this.props.match.params.taskId);
+    // a dropped socket degrades to polling rather than losing updates
+    this.pollTimer = setInterval(this.refetch, TASK_POLL_INTERVAL);
+  }
+
+  componentDidUpdate(prevProps) {
+    const { taskId } = this.props.match.params;
+
+    // a user change needs a fresh socket so that connection_init carries
+    // the current credentials
+    if (
+      prevProps.match.params.taskId !== taskId ||
+      prevProps.user !== this.props.user
+    ) {
+      this.subscribe(taskId);
     }
   }
 
   componentWillUnmount() {
     this.unsubscribe();
+    clearInterval(this.pollTimer);
   }
 
-  subscribe(taskId, refetch) {
-    const { user } = this.context;
+  queue() {
+    return this.props.createTaskclusterClient({ Class: Queue });
+  }
+
+  // Reload what can change while a task is viewed: its status, the artifacts
+  // of the shown run and its dependents. The definition only changes through
+  // handleChangePriorityComplete, which reloads it explicitly.
+  refetch = () => {
+    this.props.statusResource.reload();
+    this.props.artifactsResource.reload();
+    this.props.dependentsResource.reload();
+  };
+
+  subscribe(taskId) {
+    const { user } = this.props;
 
     if (this.listener) {
       if (this.listener.taskId === taskId && this.listener.user === user) {
@@ -243,9 +370,9 @@ export default class ViewTask extends Component {
       {
         // refetch everything as the pulse event holds incomplete task data
         onMessage: () => {
-          refetch();
+          this.refetch();
         },
-        // the task query polls on TASK_POLL_INTERVAL, so a dropped socket
+        // the task is polled on TASK_POLL_INTERVAL, so a dropped socket
         // degrades to polling rather than losing updates
         onError: () => {},
         user,
@@ -310,95 +437,33 @@ export default class ViewTask extends Component {
     async () => {
       this.preRunningAction();
 
-      const {
-        client,
-        data: { task },
-      } = this.props;
+      const { client, user, match, taskResource, actionsResource } = this.props;
+      const { taskActions, decisionTask } = actionsResource.data;
       const { formInputs } = this.state;
       const { actionData } = this.getTaskActionsData();
       const { action } = actionData[name];
       const taskId = await submitTaskAction({
-        task,
-        taskActions: task.taskActions,
+        // the REST task definition carries no taskId, and actions run with
+        // the scopes of the decision task
+        task: {
+          ...taskResource.data,
+          taskId: match.params.taskId,
+          decisionTask,
+        },
+        taskActions,
         form: formInputs,
         action,
         apolloClient: client,
-        user: this.context.user,
+        user,
       });
 
       return taskId;
     };
 
-  handleArtifactsPageChange = ({ cursor, previousCursor }) => {
-    const {
-      match,
-      data: { task, fetchMore },
-    } = this.props;
-    const runId = match.params.runId || 0;
-
-    return fetchMore({
-      query: pageArtifactsQuery,
-      variables: {
-        runId,
-        taskId: task.taskId,
-        artifactsConnection: {
-          limit: ARTIFACTS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.artifacts;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(
-          previousResult,
-          `task.status.runs.${runId}.artifacts`,
-          artifacts =>
-            dotProp.set(
-              dotProp.set(artifacts, 'edges', edges),
-              'pageInfo',
-              pageInfo
-            )
-        );
-      },
-    });
-  };
-
-  handleDependentsPageChange = ({ cursor, previousCursor }) => {
-    const {
-      data: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      variables: {
-        dependentsConnection: {
-          limit: DEPENDENTS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.dependents;
-
-        return dotProp.set(previousResult, 'dependents', dependents =>
-          dotProp.set(
-            dotProp.set(dependents, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
-
   // copy fields from the parent task, intentionally excluding some
   // fields which might cause confusion if left unchanged
   handleCloneTask = () => {
-    const task = removeKeys(cloneDeep(this.props.data.task), ['__typename']);
+    const task = cloneDeep(this.props.taskResource.data);
 
     return mergeRight(
       omit(
@@ -418,12 +483,12 @@ export default class ViewTask extends Component {
 
   handleRerunComplete = () => {
     this.handleActionDialogClose();
-    this.props.data.refetch();
+    this.refetch();
   };
 
   handleCancelComplete = () => {
     this.handleActionDialogClose();
-    this.props.data.refetch();
+    this.refetch();
   };
 
   handleCreateInteractiveComplete = taskId => {
@@ -497,14 +562,12 @@ export default class ViewTask extends Component {
 
   handleCreateLoaner = async () => {
     const taskId = nice();
-    const task = parameterizeTask(gqlTaskToApi(this.props.data.task));
+    const task = parameterizeTask(cloneDeep(this.props.taskResource.data));
 
     this.preRunningAction();
 
     try {
-      const queue = getClient({ Class: Queue, user: this.context.user });
-
-      await queue.createTask(taskId, task);
+      await this.queue().createTask(taskId, task);
 
       return taskId;
     } catch (error) {
@@ -573,7 +636,8 @@ export default class ViewTask extends Component {
   handleChangePriorityComplete = () => {
     this.setState({ changePriorityDialogOpen: false });
     // refresh the task so the new priority is reflected immediately
-    this.props.data.refetch();
+    this.props.taskResource.reload();
+    this.refetch();
   };
 
   handlePurgeWorkerCacheClick = () => {
@@ -726,26 +790,20 @@ export default class ViewTask extends Component {
   };
 
   purgeWorkerCache = async () => {
-    const { provisionerId, workerType } = splitTaskQueueId(
-      this.props.data.task.taskQueueId
-    );
+    // a task queue id is the worker pool id the purge-cache service expects
+    const { taskQueueId } = this.props.taskResource.data;
     const { selectedCaches } = this.state;
 
     this.preRunningAction();
 
     try {
+      const purgeCache = this.props.createTaskclusterClient({
+        Class: PurgeCache,
+      });
+
       await Promise.all(
         [...selectedCaches].map(cacheName =>
-          this.props.client.mutate({
-            mutation: purgeWorkerCacheQuery,
-            variables: {
-              provisionerId,
-              workerType,
-              payload: {
-                cacheName,
-              },
-            },
-          })
+          purgeCache.purgeCache(taskQueueId, { cacheName })
         )
       );
     } catch (error) {
@@ -761,12 +819,7 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: rerunTaskQuery,
-        variables: {
-          taskId,
-        },
-      });
+      await this.queue().rerunTask(taskId);
       // make sure location doesn't include previous runId,
       // so the UI will show the latest run automatically
       history.push(`/tasks/${taskId}${location.hash}`);
@@ -782,12 +835,7 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: cancelTaskQuery,
-        variables: {
-          taskId,
-        },
-      });
+      await this.queue().cancelTask(taskId);
     } catch (error) {
       this.postRunningFailedAction(error);
       throw error;
@@ -800,12 +848,7 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: scheduleTaskQuery,
-        variables: {
-          taskId,
-        },
-      });
+      await this.queue().scheduleTask(taskId);
     } catch (error) {
       this.postRunningFailedAction(error);
       throw error;
@@ -814,7 +857,7 @@ export default class ViewTask extends Component {
 
   retriggerTask = async () => {
     const taskId = nice();
-    const task = gqlTaskToApi(this.props.data.task);
+    const task = cloneDeep(this.props.taskResource.data);
     const now = Date.now();
     const created = Date.parse(task.created);
 
@@ -828,9 +871,7 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      const queue = getClient({ Class: Queue, user: this.context.user });
-
-      await queue.createTask(taskId, task);
+      await this.queue().createTask(taskId, task);
 
       return taskId;
     } catch (error) {
@@ -900,8 +941,12 @@ export default class ViewTask extends Component {
     const {
       classes,
       description,
-      data: { loading, error, task, dependents },
       match,
+      user,
+      taskResource,
+      statusResource,
+      dependentsResource,
+      artifactsResource,
     } = this.props;
     const {
       dialogActionProps,
@@ -911,6 +956,18 @@ export default class ViewTask extends Component {
       dialogError,
       formInputs,
     } = this.state;
+    const { taskId } = match.params;
+    const task = taskResource.data;
+    const status = statusResource.data;
+    const loading =
+      (taskResource.loading && !task) || (statusResource.loading && !status);
+    // a failed artifacts or dependents listing is a warning next to the task
+    const error =
+      taskResource.error ||
+      statusResource.error ||
+      artifactsResource.error ||
+      dependentsResource.error;
+    const loaded = Boolean(task && status);
     const { actionData, taskActions } = this.getTaskActionsData();
     let tags;
 
@@ -926,18 +983,18 @@ export default class ViewTask extends Component {
         search={
           <Search
             onSubmit={this.handleTaskSearchSubmit}
-            defaultValue={match.params.taskId}
+            defaultValue={taskId}
           />
         }>
-        <Helmet state={task?.status.state} />
+        <Helmet state={status?.state} />
         {loading && (
           <Fragment>
             <Spinner loading />
             <br />
           </Fragment>
         )}
-        <ErrorPanel fixed error={error} warning={Boolean(task)} />
-        {task && (
+        <ErrorPanel fixed error={error} warning={loaded} />
+        {loaded && (
           <Fragment>
             <Breadcrumbs>
               <Link to={`/tasks/groups/${task.taskGroupId}`}>
@@ -983,24 +1040,34 @@ export default class ViewTask extends Component {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <TaskDetailsCard
+                  taskId={taskId}
                   task={task}
-                  user={this.context.user}
-                  dependents={dependents}
-                  onDependentsPageChange={this.handleDependentsPageChange}
+                  status={status}
+                  user={user}
+                  dependents={dependentsResource.items}
+                  dependentsLoading={dependentsResource.loading}
+                  page={dependentsResource.page}
+                  hasNextPage={dependentsResource.hasNextPage}
+                  hasPreviousPage={dependentsResource.hasPreviousPage}
+                  onNextPage={dependentsResource.nextPage}
+                  onPreviousPage={dependentsResource.previousPage}
                   onChangePriority={this.handleChangePriorityClick}
                 />
               </Grid>
 
               <Grid item xs={12} md={6}>
                 <TaskRunsCard
-                  selectedRunId={
-                    match.params.runId
-                      ? parseInt(match.params.runId, 10)
-                      : Math.max(task.status.runs.length - 1, 0)
-                  }
-                  runs={task.status.runs}
+                  taskId={taskId}
+                  selectedRunId={selectedRunId(this.props) ?? 0}
+                  runs={status.runs}
                   taskQueueId={task.taskQueueId}
-                  onArtifactsPageChange={this.handleArtifactsPageChange}
+                  artifacts={artifactsResource.items}
+                  artifactsLoading={artifactsResource.loading}
+                  page={artifactsResource.page}
+                  hasNextPage={artifactsResource.hasNextPage}
+                  hasPreviousPage={artifactsResource.hasPreviousPage}
+                  onNextPage={artifactsResource.nextPage}
+                  onPreviousPage={artifactsResource.previousPage}
                   // docker worker uses `task.payload.log` while
                   // generic worker uses `task.payload.logs.live`
                   liveLogName={task.payload?.logs?.live || task.payload?.log}
@@ -1108,7 +1175,7 @@ export default class ViewTask extends Component {
                     TASK_STATE.PENDING,
                     TASK_STATE.RUNNING,
                     TASK_STATE.UNSCHEDULED,
-                  ].includes(task.status.state),
+                  ].includes(status.state.toUpperCase()),
                 }}
                 tooltipTitle="Profile Task Log"
                 onClick={this.handleOpenLogProfiler}
@@ -1153,14 +1220,12 @@ export default class ViewTask extends Component {
             {this.state.changePriorityDialogOpen && (
               <ChangeTaskPriorityDialog
                 open={this.state.changePriorityDialogOpen}
-                currentPriority={task.priority
-                  ?.toLowerCase()
-                  .replace(/_/g, '-')}
+                currentPriority={task.priority}
                 onSubmit={priority =>
                   changeTaskPriority({
-                    taskId: match.params.taskId,
+                    taskId,
                     priority,
-                    user: this.context.user,
+                    user,
                   })
                 }
                 onClose={this.handleChangePriorityClose}
