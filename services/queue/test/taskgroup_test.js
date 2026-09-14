@@ -426,6 +426,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
           },
           err => {
             assert(err.statusCode === 409, 'Expected a 409 error');
+            assert(
+              err.message.includes('is sealed and does not accept new tasks'),
+              'Expected the sealed task-group error recognized by the GitHub service'
+            );
           }
         );
     });

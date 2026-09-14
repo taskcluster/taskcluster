@@ -15,6 +15,10 @@ import { rerunHandler } from './rerun.js';
 import { taskclusterYmlHandler } from './taskclusterYml.js';
 import { POLICIES } from './policies.js';
 import { GITHUB_BUILD_STATES } from '../constants.js';
+import { v1ToV6 } from 'uuid';
+
+// github uses UUID1 and to compare them as ordered strings we convert it to V6 which is sortable
+const isOlderDelivery = (candidateId, currentId) => v1ToV6(candidateId) < v1ToV6(currentId);
 
 /**
  * Create handlers
@@ -250,10 +254,26 @@ class Handlers {
     const limitedQueueClient = this.queueClient.use({
       authorizedScopes: scopes,
     });
+    const sealedTaskGroupIds = new Set();
+
     for (const t of tasks) {
+      const { taskGroupId } = t.task;
+
+      if (sealedTaskGroupIds.has(taskGroupId)) {
+        continue;
+      }
+
       try {
         await limitedQueueClient.createTask(t.taskId, t.task);
       } catch (err) {
+        // as tasks are being created sequentially and it is likely something seals task group in between
+        // when this happens we don't want to fail the whole process, but just acknowledge and stop processing
+        // affected task group
+        if (err.statusCode === 409 && err.message?.includes('is sealed and does not accept new tasks')) {
+          sealedTaskGroupIds.add(taskGroupId);
+          this.monitor.debug(`Task group ${taskGroupId} was sealed while tasks were being created; superseded`);
+          continue;
+        }
         // translate InsufficientScopes errors nicely for our users, since they are common and
         // since we can provide additional context not available from the queue.
         if (err.code === 'InsufficientScopes') {
@@ -272,6 +292,8 @@ class Handlers {
         throw err;
       }
     }
+
+    return sealedTaskGroupIds;
   }
 
   // Trigger a hook
@@ -312,13 +334,14 @@ class Handlers {
   }
 
   /**
-   * Cancel any running builds that are not the current build for a given pull request.
-   * This will not cancel builds for the same SHA because they can belong to different branches.
+   * Cancel older deliveries for a pull request, or the current delivery if a newer one exists.
+   * Return the task group IDs marked as cancelled so callers can skip publishing their initial status.
    * If this is a pull request event, we only want to cancel builds of the same type:
    *  [pull_request.opened, pull_request.synchronize] are treated as the same type
    *  pull_request.[labeled, edited, closed, review_requested, assigned] are different events
    */
-  async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
+  async cancelSupersededTaskGroups({ instGithub, debug, newBuild }) {
+    const cancelledTaskGroupIds = new Set();
     const {
       organization,
       repository,
@@ -329,18 +352,23 @@ class Handlers {
       event_id: eventId,
     } = newBuild;
     debug(
-      `canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
+      `canceling superseded task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
     );
 
-    // avoid performing cancellation for non-push and non-pull-request events
+    // Only pull request events support automatic cancellation.
     if (!eventType || !['pull_request'].includes(eventType.split('.')[0])) {
-      debug(`event type ${eventType} is not supported. skipping cancelPreviousTaskGroups`);
-      return;
+      debug(`event type ${eventType} is not supported. skipping cancelSupersededTaskGroups`);
+      return cancelledTaskGroupIds;
     }
 
     if (!pullNumber) {
-      debug(`pullNumber is not defined. Skipping cancelPreviousTaskGroups`);
-      return;
+      debug(`pullNumber is not defined. Skipping cancelSupersededTaskGroups`);
+      return cancelledTaskGroupIds;
+    }
+
+    if (!eventId) {
+      debug(`GitHub delivery ID is not defined. Skipping cancelSupersededTaskGroups`);
+      return cancelledTaskGroupIds;
     }
 
     const scopes = [
@@ -363,14 +391,12 @@ class Handlers {
         null, // no cancelling by sha here
         pullNumber
       );
-      const taskGroupIds = builds
-        ?.filter(
-          build =>
-            build.task_group_id !== newTaskGroupId &&
-            build.event_id !== eventId &&
-            includedEventTypes.includes(build.event_type)
-        )
-        .map(build => build.task_group_id);
+      const relevantBuilds = builds?.filter(build => includedEventTypes.includes(build.event_type));
+      const newerDeliveryExists = relevantBuilds.some(build => isOlderDelivery(eventId, build.event_id));
+      const buildsToCancel = newerDeliveryExists
+        ? relevantBuilds.filter(build => build.event_id === eventId)
+        : relevantBuilds.filter(build => isOlderDelivery(build.event_id, eventId));
+      const taskGroupIds = buildsToCancel.map(build => build.task_group_id);
 
       if (taskGroupIds.length > 0) {
         // we want to make sure that github client respects repository scopes when sealing and cancelling tasks
@@ -389,15 +415,16 @@ class Handlers {
         }
 
         await Promise.all(
-          taskGroupIds.map(taskGroupId =>
-            this.context.db.fns.set_github_build_state(taskGroupId, GITHUB_BUILD_STATES.CANCELLED)
-          )
+          taskGroupIds.map(async taskGroupId => {
+            await this.context.db.fns.set_github_build_state(taskGroupId, GITHUB_BUILD_STATES.CANCELLED);
+            cancelledTaskGroupIds.add(taskGroupId);
+          })
         );
       }
     } catch (err) {
-      debug(`Error while canceling previous task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
+      debug(`Error while canceling superseded task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
       err.message = [
-        'Taskcluster-GitHub attempted to cancel previously created task groups with following scopes:',
+        'Taskcluster-GitHub attempted to cancel superseded task groups with following scopes:',
         '',
         '```',
         scopes.join(', '),
@@ -417,6 +444,7 @@ class Handlers {
         error: err,
       });
     }
+    return cancelledTaskGroupIds;
   }
 
   commentKey(idents) {
