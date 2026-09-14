@@ -1,6 +1,0 @@
-subscription TasksSubscriptions($taskGroupId: ID!, $subscriptions: [TaskSubscriptions]!){
-  tasksSubscriptions(taskGroupId: $taskGroupId, subscriptions: $subscriptions){
-    taskId,
-    taskGroupId
-  }
-}

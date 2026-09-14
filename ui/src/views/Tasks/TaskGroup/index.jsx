@@ -365,7 +365,7 @@ export default class TaskGroup extends Component {
       if (this.isCurrent(taskGroupId)) {
         this.setState({ taskGroupInfo });
       }
-    } catch (error) {
+    } catch (_error) {
       // listTaskGroup fails the same way for a missing group; one report of
       // the failure is enough.
     }
@@ -383,7 +383,7 @@ export default class TaskGroup extends Component {
       }
 
       return decisionTask;
-    } catch (error) {
+    } catch (_error) {
       // task groups do not necessarily have a decision task
       return null;
     }
@@ -432,7 +432,7 @@ export default class TaskGroup extends Component {
         });
 
       this.setState({ taskActions, groupActions, actionInputs, actionData });
-    } catch (error) {
+    } catch (_error) {
       // a missing or malformed actions.json just means no in-tree actions
     }
   }
@@ -454,7 +454,7 @@ export default class TaskGroup extends Component {
           return;
         }
 
-        this.appendTasks(taskGroupId, result.tasks);
+        this.appendTasks(result.tasks);
 
         if (firstPage) {
           firstPage = false;
@@ -488,7 +488,7 @@ export default class TaskGroup extends Component {
     }
   }
 
-  appendTasks(taskGroupId, tasks) {
+  appendTasks(tasks) {
     const edges = tasks
       .filter(({ status }) => !this.tasks.has(status.taskId))
       .map(({ task, status }) => {

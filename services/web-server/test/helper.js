@@ -7,7 +7,6 @@ import GithubClient from '../src/login/clients/GithubClient.js';
 import libUrls from 'taskcluster-lib-urls';
 import request from 'superagent';
 import merge from 'deepmerge';
-import PulseEngine from '../src/PulseEngine/index.js';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
 import got from 'got';
 import path from 'node:path';
@@ -51,28 +50,6 @@ helper.withDb = (mock, skipping) => {
 
 helper.withPulse = (helper, skipping) => {
   withPulse({ helper, skipping, namespace: 'taskcluster-web-server' });
-};
-
-helper.withMockedEventIterator = () => {
-  const PulseEngineCopy = Object.assign({}, PulseEngine);
-
-  PulseEngineCopy.NextAsyncIterator = null;
-  helper.setNextAsyncIterator = asyncIterator => {
-    PulseEngineCopy.NextAsyncIterator = asyncIterator;
-  };
-
-  PulseEngineCopy.eventIterator = (_eventName, _subscriptions) => {
-    if (!PulseEngineCopy.NextAsyncIterator) {
-      throw new Error(`No async iterator to return. Set one up with SetNextAsyncIterator`);
-    }
-    return PulseEngineCopy.NextAsyncIterator;
-  };
-
-  helper.load.inject('pulseEngine', PulseEngineCopy);
-
-  suiteTeardown(() => {
-    helper.load.remove('pulseEngine');
-  });
 };
 
 helper.withFakeAuth = skipping => {

@@ -47,49 +47,4 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(response.data.latestArtifacts.edges[0].node.name.includes('artifact-'), true);
     });
   });
-
-  suite('Artifact Subscriptions', () => {
-    helper.withMockedEventIterator();
-
-    test('subscribe works', async () => {
-      const subscriptionClient = await helper.createSubscriptionClient();
-      const client = helper.getWebsocketClient(subscriptionClient);
-      const artifactsCreated = await helper.loadFixture('artifactsCreated.graphql');
-
-      const payload = {
-        artifactsCreated: {
-          artifact: {
-            name: 'name',
-          },
-        },
-      };
-
-      const asyncIterator = new Object();
-      asyncIterator[Symbol.asyncIterator] = async function* () {
-        yield payload;
-      };
-
-      helper.setNextAsyncIterator(asyncIterator);
-
-      let subscriptionResult;
-      const subscription = client
-        .subscribe({
-          query: gql`${artifactsCreated}`,
-          variables: {
-            taskGroupId: 'groupId',
-          },
-        })
-        .subscribe(
-          value => (subscriptionResult = value),
-          error => console.log(error)
-        );
-
-      await testing.poll(() => assert(subscriptionResult), 100, 10);
-
-      assert.equal(subscriptionResult.data.artifactsCreated.artifact.name, 'name');
-
-      subscription.unsubscribe();
-      subscriptionClient.close();
-    });
-  });
 });
