@@ -59,9 +59,15 @@ beforeEach(() => {
     GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost/subscription',
   };
   vi.stubGlobal('WebSocket', FakeWebSocket);
+  // Reconnection is scheduled with setTimeout; fake timers keep those pending
+  // reconnects from leaking real sockets across tests, and let reconnect tests
+  // advance to the retry deterministically.
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -268,6 +274,95 @@ describe('subscribeToPulseMessages', () => {
     ws.simulateClose(1006, false);
 
     expect(onError).not.toHaveBeenCalled();
+  });
+});
+
+describe('events WebSocket url', () => {
+  it('maps an http endpoint to ws', () => {
+    window.env = { GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://host/subscription' };
+
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    expect(FakeWebSocket._lastInstance.url).toBe('ws://host/subscription/raw');
+  });
+
+  it('preserves a wss endpoint rather than downgrading it to ws', () => {
+    window.env = { GRAPHQL_SUBSCRIPTION_ENDPOINT: 'wss://host/subscription' };
+
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    expect(FakeWebSocket._lastInstance.url).toBe('wss://host/subscription/raw');
+  });
+});
+
+describe('error and reconnection handling', () => {
+  it('reports onError only once when a failed connect fires error then close', () => {
+    const onError = vi.fn();
+
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError,
+    });
+
+    const ws = FakeWebSocket._lastInstance;
+
+    // A failed connect fires onerror and then onclose(1006, wasClean:false).
+    ws.simulateError();
+    ws.simulateClose(1006, false);
+
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('reconnects and re-sends the subscribe frame after an unexpected close', () => {
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    const first = FakeWebSocket._lastInstance;
+
+    first.simulateOpen();
+    first.simulateMessage({ type: 'connection_ack' });
+    first.simulateClose(1006, false);
+
+    // The reconnect is scheduled, not immediate.
+    expect(FakeWebSocket._lastInstance).toBe(first);
+
+    vi.runOnlyPendingTimers();
+
+    const second = FakeWebSocket._lastInstance;
+
+    expect(second).not.toBe(first);
+
+    second.simulateOpen();
+    second.simulateMessage({ type: 'connection_ack' });
+
+    expect(second.sent.find(f => f.type === 'subscribe')).toBeDefined();
+  });
+
+  it('stops reconnecting after teardown', () => {
+    const teardown = subscribeToPulseMessages(
+      [{ exchange: 'e', pattern: '#' }],
+      { onMessage: vi.fn(), onError: vi.fn() }
+    );
+
+    const first = FakeWebSocket._lastInstance;
+
+    first.simulateOpen();
+    first.simulateMessage({ type: 'connection_ack' });
+
+    teardown();
+    first.simulateClose(1006, false);
+    vi.runOnlyPendingTimers();
+
+    // No new socket was opened by a reconnect.
+    expect(FakeWebSocket._lastInstance).toBe(first);
   });
 });
 

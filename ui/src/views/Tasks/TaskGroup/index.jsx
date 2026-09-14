@@ -536,6 +536,7 @@ export default class TaskGroup extends Component {
 
     const unsubscribe = subscribeToNamedEvents(
       {
+        service: 'queue',
         subscriptions: [
           'taskDefined',
           'taskPending',

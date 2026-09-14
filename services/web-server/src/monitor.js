@@ -71,6 +71,20 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'websocketOriginRejected',
+  title: 'WebSocket Origin Rejected',
+  type: 'websocket-origin-rejected',
+  version: 1,
+  level: 'warning',
+  description: `
+    A /subscription WebSocket handshake was rejected because its Origin header
+    is not in the configured allowedCORSOrigins.`,
+  fields: {
+    origin: 'The rejected Origin header value',
+  },
+});
+
+MonitorManager.register({
   name: 'requestReceived',
   title: 'Request Received',
   type: 'request-received',

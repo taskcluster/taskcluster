@@ -132,6 +132,7 @@ describe('TaskGroup page', () => {
     });
     expect(subscribeToNamedEvents).toHaveBeenCalledWith(
       expect.objectContaining({
+        service: 'queue',
         subscriptions: expect.arrayContaining(['taskCompleted']),
         routingKey: { taskGroupId },
       }),

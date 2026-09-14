@@ -225,6 +225,7 @@ export default class ViewTask extends Component {
 
     const unsubscribe = subscribeToNamedEvents(
       {
+        service: 'queue',
         subscriptions: [
           'taskDefined',
           'taskPending',

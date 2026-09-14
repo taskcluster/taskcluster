@@ -16,9 +16,17 @@ const protocolError = message => Object.assign(new Error(message), { code: 'Prot
 
 const isPlainObject = value => typeof value === 'object' && value !== null && !Array.isArray(value);
 
+// Upper bound on how many bindings/subscriptions a single subscribe frame may
+// request, so one connection cannot bind an unbounded number of queues.
+const MAX_SUBSCRIPTIONS = 100;
+
 export const resolveRawBindings = ({ bindings }) => {
   if (!Array.isArray(bindings) || bindings.length === 0) {
     throw protocolError('subscribe requires a non-empty array of bindings');
+  }
+
+  if (bindings.length > MAX_SUBSCRIPTIONS) {
+    throw protocolError(`subscribe allows at most ${MAX_SUBSCRIPTIONS} bindings`);
   }
 
   return bindings.map(binding => {
@@ -41,7 +49,13 @@ const EVENTS_SERVICES = new Map([
   ['queue', { client: clients => clients.queueEvents, events: topicExchanges(apis.QueueEvents) }],
 ]);
 
-export const resolveNamedBindings = ({ service = 'queue', subscriptions, routingKey }, clients) => {
+export const resolveNamedBindings = ({ service, subscriptions, routingKey }, clients) => {
+  // `service` is required rather than defaulted: a caller must say whose events
+  // it means, so the set of exchanges bound never shifts if a default changes.
+  if (typeof service !== 'string') {
+    throw protocolError('subscribe requires a `service` string');
+  }
+
   const eventsService = EVENTS_SERVICES.get(service);
 
   if (!eventsService) {
@@ -50,6 +64,10 @@ export const resolveNamedBindings = ({ service = 'queue', subscriptions, routing
 
   if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
     throw protocolError('subscribe requires a non-empty array of subscriptions');
+  }
+
+  if (subscriptions.length > MAX_SUBSCRIPTIONS) {
+    throw protocolError(`subscribe allows at most ${MAX_SUBSCRIPTIONS} subscriptions`);
   }
 
   // an omitted routing key matches everything

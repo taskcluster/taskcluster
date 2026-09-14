@@ -1,3 +1,6 @@
+import scopeUtils from 'taskcluster-lib-scopes';
+import { decryptToken } from './decryptToken.js';
+
 const PING_INTERVAL_MS = 30000;
 
 // Custom WebSocket close codes, in the 4000-4999 (application-defined) range,
@@ -174,38 +177,37 @@ export default class SubscriptionConnection {
     }
   }
 
-  async handleConnectionInit(_frame) {
+  async handleConnectionInit(frame) {
     clearTimeout(this.connectionInitTimeout);
 
     try {
-      // const credentials = frame.authorization ? decryptToken(frame.authorization) : null;
-      // const authClient = this.authFactory({ credentials });
-      // const scopes = await authClient.currentScopes();
-      // const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
+      const credentials = frame.authorization ? decryptToken(frame.authorization) : null;
+      const authClient = this.authFactory({ credentials });
+      const scopes = await authClient.currentScopes();
+      const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
 
-      // if (!satisfyingScopes) {
-      //   const message = [
-      //     `Error: InsufficientScopes`,
-      //     '',
-      //     `Client ID ${credentials?.clientId ?? 'anonymous'} does not have sufficient scopes and is missing the following scopes:`,
-      //     '',
-      //     '```',
-      //     'web:read-pulse',
-      //     '```',
-      //   ].join('\n');
+      if (!satisfyingScopes) {
+        const message = [
+          `Error: InsufficientScopes`,
+          '',
+          `Client ID ${credentials?.clientId ?? 'anonymous'} does not have sufficient scopes and is missing the following scopes:`,
+          '',
+          '```',
+          'web:read-pulse',
+          '```',
+        ].join('\n');
 
-      //   await this.sendError({
-      //     code: 'InsufficientScopes',
-      //     message,
-      //     details: { required: ['web:read-pulse'] },
-      //   });
-      //   this.ws.close(CLOSE_CODES.INSUFFICIENT_SCOPES, 'InsufficientScopes');
-      //   return;
-      // }
+        await this.sendError({
+          code: 'InsufficientScopes',
+          message,
+          details: { required: ['web:read-pulse'] },
+        });
+        this.ws.close(CLOSE_CODES.INSUFFICIENT_SCOPES, 'InsufficientScopes');
+        return;
+      }
 
       this.connectionInitReceived = true;
-      //this.clientId = credentials?.clientId ?? 'anonymous';
-      this.clientId = 'anonymous';
+      this.clientId = credentials?.clientId ?? 'anonymous';
       this.monitor.log.websocketConnected({ clientId: this.clientId });
       await this.send({ type: FRAME_TYPES.CONNECTION_ACK });
     } catch (err) {
@@ -238,10 +240,24 @@ export default class SubscriptionConnection {
     // messages are only delivered on a later tick.
     const subscriptionId = this.pulseEngine.subscribe(
       bindings,
-      message => {
+      message =>
         // the returned promise drives the engine's AMQP ack/nack
-        return this.send({ type: FRAME_TYPES.DATA, subscriptionId, message });
-      },
+        this.send({ type: FRAME_TYPES.DATA, subscriptionId, message }).catch(err => {
+          this.monitor.reportError(err);
+
+          // The socket cannot receive further messages, so drop the
+          // subscription and close, rather than letting the rejected delivery
+          // nack and have RabbitMQ redeliver the same message endlessly.
+          this.pulseEngine.unsubscribe(subscriptionId);
+          this.subscriptions.delete(subscriptionId);
+
+          if (this.ws.readyState === this.ws.OPEN) {
+            this.ws.close(CLOSE_CODES.INTERNAL_ERROR, 'WebSocket delivery failed');
+          }
+
+          // Intentionally don't rethrow: resolving lets PulseEngine ack the
+          // message rather than requeue it.
+        }),
       err => {
         const error = err instanceof Error ? err : new Error(String(err));
 
