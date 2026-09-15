@@ -27,8 +27,8 @@ func (c *Config) ValidatePreloadedDirectoryCaches() error {
 		paths = append(paths, path)
 	}
 	for i, seed := range c.PreloadedDirectoryCaches {
-		if seed.CacheName == "" || !filepath.IsAbs(seed.Location) {
-			return fmt.Errorf("preloadedDirectoryCaches[%d] requires cacheName and an absolute location", i)
+		if seed.CacheName == "" || !filepath.IsAbs(seed.Location) || preloadHasParent(seed.Location) {
+			return fmt.Errorf("preloadedDirectoryCaches[%d] requires cacheName and an absolute location without parent components", i)
 		}
 		if names[seed.CacheName] {
 			return fmt.Errorf("duplicate preloaded directory cache name %q", seed.CacheName)
@@ -36,7 +36,9 @@ func (c *Config) ValidatePreloadedDirectoryCaches() error {
 		names[seed.CacheName] = true
 		path, err := preloadPath(seed.Location)
 		if err != nil {
-			return err
+			// An unusable optional seed is checked again by the importer, which
+			// warns and skips it. Still check its lexical path for overlaps.
+			path = filepath.Clean(seed.Location)
 		}
 		for _, other := range paths {
 			if preloadContains(path, other) || preloadContains(other, path) {
@@ -50,6 +52,9 @@ func (c *Config) ValidatePreloadedDirectoryCaches() error {
 
 // Resolve existing ancestors too: cache storage may not exist at config load.
 func preloadPath(path string) (string, error) {
+	if preloadHasParent(path) {
+		return "", fmt.Errorf("preloaded cache paths must not contain parent components: %q", path)
+	}
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		return "", err
@@ -69,4 +74,13 @@ func preloadContains(parent, child string) bool {
 	}
 	rel, err := filepath.Rel(parent, child)
 	return err == nil && (rel == "." || filepath.IsLocal(rel))
+}
+
+func preloadHasParent(path string) bool {
+	for _, component := range strings.Split(filepath.ToSlash(path), "/") {
+		if component == ".." {
+			return true
+		}
+	}
+	return false
 }

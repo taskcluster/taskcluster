@@ -47,3 +47,37 @@ func TestValidatePreloadedCacheSymlinkOverlap(t *testing.T) {
 		t.Fatal("accepted cache overlap through a symlink")
 	}
 }
+
+func TestValidatePreloadedCacheRejectsParentTraversal(t *testing.T) {
+	root := t.TempDir()
+	real := filepath.Join(root, "real")
+	if err := os.MkdirAll(filepath.Join(real, "anchor"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	caches := filepath.Join(real, "caches")
+	if err := os.Mkdir(caches, 0700); err != nil {
+		t.Fatal(err)
+	}
+	alias := filepath.Join(root, "alias")
+	if err := os.Symlink(filepath.Join(real, "anchor"), alias); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+	// Keep the parent component: filepath.Join would erase the regression.
+	seed := alias + string(os.PathSeparator) + ".." + string(os.PathSeparator) + "caches"
+	c := &Config{CachesDir: caches, PreloadedDirectoryCaches: []PreloadedDirectoryCache{{"one", seed}}}
+	if err := c.ValidatePreloadedDirectoryCaches(); err == nil {
+		t.Fatal("accepted a seed that aliases live cache storage through symlink/..")
+	}
+}
+
+func TestValidatePreloadedCacheUnusableSeedIsOptional(t *testing.T) {
+	root := t.TempDir()
+	blocker := filepath.Join(root, "file")
+	if err := os.WriteFile(blocker, []byte("not a directory"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	c := &Config{CachesDir: filepath.Join(root, "caches"), PreloadedDirectoryCaches: []PreloadedDirectoryCache{{"one", filepath.Join(blocker, "seed")}}}
+	if err := c.ValidatePreloadedDirectoryCaches(); err != nil {
+		t.Fatalf("unusable seed must not prevent worker startup: %v", err)
+	}
+}

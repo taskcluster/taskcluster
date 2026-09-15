@@ -533,17 +533,24 @@ name. Different names need separate source directories.
 The worker loads cache state, removes incomplete imports, and copies each seed
 into a new directory under `cachesDir`. The copy works between filesystems on
 all supported platforms. The worker registers only a complete copy and saves
-cache state before it removes the seed. A restart before registration discards
-the incomplete copy and retries from the seed. A restart after registration
-keeps the cache and completes seed cleanup. If a cache already exists, the
+seed consumption and cache state before it removes the seed. Consumption is
+stored separately from cache entries, so purge and eviction cannot cause a
+partially deleted seed to be imported again. A restart during copying discards
+the incomplete copy and retries from the seed. If the worker stops after saving
+consumption but before saving the cache entry, it uses the normal cold-cache
+path on restart. A restart after registration keeps the cache and completes
+seed cleanup. If a cache already exists, the
 worker keeps it and removes the unused seed. It does not fill the cache pool
 to worker capacity. Concurrent tasks use the normal cache acquisition rules.
 
-Seeds can contain directories, regular files, and relative symbolic links that
-resolve within the seed. Absolute links, external links, broken links, junctions,
-and special files are not supported. The administrator must control the seed and
+Seeds can contain directories and regular files. On POSIX, relative symbolic
+links that resolve within the seed are also supported. Windows seeds must not
+contain links: copying can change directory-link types, and the cache mover
+rejects links when moving between volumes. Absolute links, external links,
+broken links, junctions, and special files are not supported. The administrator must control the seed and
 its parent directories; tasks must not be able to change them. Seed paths must
-not overlap each other, `cachesDir`, `downloadsDir`, or `tasksDir`. Configure disk
+not contain `..` components or overlap each other, `cachesDir`, `downloadsDir`,
+or `tasksDir`. Configure disk
 mounts before worker startup. The worker does not check repository formats or
 revision compatibility; image provisioning must check the seed contents.
 
