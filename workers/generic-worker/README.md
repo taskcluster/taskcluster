@@ -513,9 +513,8 @@ Useful information on win32 APIs:
 
 ## Preloaded caches
 
-Use `preloadedDirectoryCaches` to supply initial contents for writable directory
-caches. This option works on Windows, Linux, macOS, and FreeBSD. It does not change
-task payloads or the scopes required to use a cache.
+Use `preloadedDirectoryCaches` to supply initial contents for existing writable
+cache mounts on all supported platforms. Task payloads and cache scopes stay the same.
 
 ```json
 {
@@ -525,43 +524,14 @@ task payloads or the scopes required to use a cache.
 }
 ```
 
-On Windows, use an absolute Windows path, such as
-`"C:\\worker\\cache-seeds\\source"`, for `location`. The cache name must
-match the task's writable directory cache name exactly. Configure one seed per
-name. Different names need separate source directories.
+Set `cacheName` to the exact name used by the task. Use one seed directory per
+name and an absolute `location` (for example, `"C:\\worker\\cache-seeds\\source"`
+on Windows). Seed paths must not contain `..` or overlap each other,
+`cachesDir`, `downloadsDir`, or `tasksDir`. Tasks must not be able to change seeds
+or their parent directories. Windows seeds must not contain links; POSIX seeds
+can contain relative symbolic links that resolve within the seed.
 
-The worker loads cache state, removes incomplete imports, and copies each seed
-into a new directory under `cachesDir`. The copy works between filesystems on
-all supported platforms. The worker registers only a complete copy and saves
-seed consumption and cache state before it removes the seed. Consumption is
-stored separately from cache entries, so purge and eviction cannot cause a
-partially deleted seed to be imported again. A restart during copying discards
-the incomplete copy and retries from the seed. If the worker stops after saving
-consumption but before saving the cache entry, it uses the normal cold-cache
-path on restart. A restart after registration keeps the cache and completes
-seed cleanup. If a cache already exists, the
-worker keeps it and removes the unused seed. It does not fill the cache pool
-to worker capacity. Concurrent tasks use the normal cache acquisition rules.
-
-Seeds can contain directories and regular files. On POSIX, relative symbolic
-links that resolve within the seed are also supported. Windows seeds must not
-contain links: copying can change directory-link types, and the cache mover
-rejects links when moving between volumes. Absolute links, external links,
-broken links, junctions, and special files are not supported. The administrator must control the seed and
-its parent directories; tasks must not be able to change them. Seed paths must
-not contain `..` components or overlap each other, `cachesDir`, `downloadsDir`,
-or `tasksDir`. Configure disk
-mounts before worker startup. The worker does not check repository formats or
-revision compatibility; image provisioning must check the seed contents.
-
-Import uses a copy even on the same filesystem. Allow space for the seed and
-the complete imported cache during startup. File execute bits are retained;
-source owners, ACLs, and extended attributes are not copied. Normal cache mount
-code grants task access. Include import time in worker startup measurements.
-
-A missing or unusable seed produces a warning. Tasks can then create an empty
-cache as usual. Invalid configuration, such as overlapping paths, is rejected.
-After the seed is consumed, cache purge or eviction uses the normal cold-cache
-path; the worker does not rebuild seeds. Image tests should enforce the presence
-and validity of configured seeds. Use a worker release that supports this option
-before adding it to worker configuration.
+At startup, the worker copies each seed into `cachesDir`, saves state, and removes
+the seed. Allow disk space for both copies. Existing caches remain in use. Missing
+or unusable seeds produce a warning and allow normal empty-cache creation.
+Consumed seeds are not imported again after cache purge or eviction.
