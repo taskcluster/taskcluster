@@ -3,6 +3,45 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v110.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7447](https://github.com/taskcluster/taskcluster/issues/7447)
+Generic-worker no longer chowns read-only content that is mounted as the task
+user.
+
+▶ [patch] [bug 2071940](http://bugzil.la/2071940)
+Use LSA to store the next task user's password instead of storing it as plaintext in the registry
+
+### ADMINS
+
+▶ [patch] [#9156](https://github.com/taskcluster/taskcluster/issues/9156)
+Worker-pool errors from failed Azure ARM deployments now include the nested, actionable ARM error in the error description. This makes errors like "image X was not found in <region>" visible in the UI and API.
+
+### USERS
+
+▶ [MAJOR] [bug 2060945](http://bugzil.la/2060945)
+A writable directory cache will now refuse being mounted at a `directory` that already exists.
+
+▶ [MAJOR] [bug 2060945](http://bugzil.la/2060945)
+Moving a directory into place now refuses a destination that already exists on
+every platform: on Windows it no longer replaces an existing file, and on POSIX
+systems it no longer replaces an existing empty directory.
+
+▶ [patch] [#9007](https://github.com/taskcluster/taskcluster/issues/9007)
+Generic Worker no longer panics when the Queue rejects a `createArtifact` call with a 4xx response. The task is resolved as `exception/malformed-payload`, or as `exception/resource-unavailable` for 408 and 429. `logs.live` and `logs.backing` must now match `^[\x20-\x7e]+$`, and a non-empty artifact `name` must match the same character set. An empty artifact `name` is still allowed and means "derive from `path`"; if that `path` contains other characters, the Queue still rejects the artifact at upload time.
+
+▶ [patch] [#9058](https://github.com/taskcluster/taskcluster/issues/9058)
+GitHub tasks no longer fail when concurrent pull request events race with automatic cancellation.
+
+▶ [patch] [bug 2072198](http://bugzil.la/2072198)
+Mounting a cache on Windows no longer fails when the cache contains a file that is hardlinked more than once inside the cache itself
+
+### OTHER
+
+▶ Additional changes not described here: [#9126](https://github.com/taskcluster/taskcluster/issues/9126), [#9149](https://github.com/taskcluster/taskcluster/issues/9149).
+
 ## v109.0.0
 
 ### GENERAL

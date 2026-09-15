@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v109/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v109/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v110/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/gwconfig"
 )
 
 type RedirectArtifact struct {
