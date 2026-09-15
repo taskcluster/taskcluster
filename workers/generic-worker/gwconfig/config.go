@@ -14,6 +14,11 @@ import (
 )
 
 type (
+	PreloadedDirectoryCache struct {
+		CacheName string `json:"cacheName"`
+		Location  string `json:"location"`
+	}
+
 	// Generic Worker config
 	Config struct {
 		PrivateConfig
@@ -27,56 +32,57 @@ type (
 	PublicConfig struct {
 		PublicEngineConfig
 		PublicPlatformConfig
-		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
-		AvailabilityZone               string         `json:"availabilityZone"`
-		CachesDir                      string         `json:"cachesDir"`
-		Capacity                       uint8          `json:"capacity"`
-		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
-		ClientID                       string         `json:"clientId"`
-		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
-		DisableOOMProtection           bool           `json:"disableOOMProtection"`
-		DisableReboots                 bool           `json:"disableReboots"`
-		DownloadsDir                   string         `json:"downloadsDir"`
-		Ed25519SigningKeyLocation      string         `json:"ed25519SigningKeyLocation"`
-		EnableChainOfTrust             bool           `json:"enableChainOfTrust"`
-		EnableInteractive              bool           `json:"enableInteractive"`
-		EnableLiveLog                  bool           `json:"enableLiveLog"`
-		EnableMetadata                 bool           `json:"enableMetadata"`
-		EnableMounts                   bool           `json:"enableMounts"`
-		EnableOSGroups                 bool           `json:"enableOSGroups"`
-		EnableResourceMonitor          bool           `json:"enableResourceMonitor"`
-		EnableTaskclusterProxy         bool           `json:"enableTaskclusterProxy"`
-		IdleTimeoutSecs                uint           `json:"idleTimeoutSecs"`
-		InstanceID                     string         `json:"instanceId"`
-		InstanceType                   string         `json:"instanceType"`
-		InteractivePort                uint16         `json:"interactivePort"`
-		LiveLogExecutable              string         `json:"livelogExecutable"`
-		LiveLogPortBase                uint16         `json:"livelogPortBase"`
-		LiveLogExposePort              uint16         `json:"livelogExposePort"`
-		MaxMemoryUsagePercent          uint64         `json:"maxMemoryUsagePercent"`
-		MaxTaskRunTime                 uint32         `json:"maxTaskRunTime"`
-		MinAvailableMemoryBytes        uint64         `json:"minAvailableMemoryBytes"`
-		NumberOfTasksToRun             uint           `json:"numberOfTasksToRun"`
-		PrivateIP                      net.IP         `json:"privateIP"`
-		ProvisionerID                  string         `json:"provisionerId"`
-		PublicIP                       net.IP         `json:"publicIP"`
-		Region                         string         `json:"region"`
-		RequiredDiskSpaceMegabytes     uint           `json:"requiredDiskSpaceMegabytes"`
-		RootURL                        string         `json:"rootURL"`
-		RunAfterUserCreation           string         `json:"runAfterUserCreation"`
-		SentryProject                  string         `json:"sentryProject"`
-		ShutdownMachineOnIdle          bool           `json:"shutdownMachineOnIdle"`
-		ShutdownMachineOnInternalError bool           `json:"shutdownMachineOnInternalError"`
-		TaskclusterProxyExecutable     string         `json:"taskclusterProxyExecutable"`
-		TaskclusterProxyPort           uint16         `json:"taskclusterProxyPort"`
-		TasksDir                       string         `json:"tasksDir"`
-		WorkerGroup                    string         `json:"workerGroup"`
-		WorkerID                       string         `json:"workerId"`
-		WorkerLocation                 string         `json:"workerLocation,omitempty"`
-		WorkerType                     string         `json:"workerType"`
-		WorkerTypeMetadata             map[string]any `json:"workerTypeMetadata"`
-		WSTAudience                    string         `json:"wstAudience"`
-		WSTServerURL                   string         `json:"wstServerURL"`
+		AllowedHighMemoryDurationSecs  uint64                    `json:"allowedHighMemoryDurationSecs"`
+		AvailabilityZone               string                    `json:"availabilityZone"`
+		CachesDir                      string                    `json:"cachesDir"`
+		Capacity                       uint8                     `json:"capacity"`
+		CleanUpTaskDirs                bool                      `json:"cleanUpTaskDirs"`
+		ClientID                       string                    `json:"clientId"`
+		CreateObjectArtifacts          bool                      `json:"createObjectArtifacts"`
+		DisableOOMProtection           bool                      `json:"disableOOMProtection"`
+		DisableReboots                 bool                      `json:"disableReboots"`
+		DownloadsDir                   string                    `json:"downloadsDir"`
+		Ed25519SigningKeyLocation      string                    `json:"ed25519SigningKeyLocation"`
+		EnableChainOfTrust             bool                      `json:"enableChainOfTrust"`
+		EnableInteractive              bool                      `json:"enableInteractive"`
+		EnableLiveLog                  bool                      `json:"enableLiveLog"`
+		EnableMetadata                 bool                      `json:"enableMetadata"`
+		EnableMounts                   bool                      `json:"enableMounts"`
+		EnableOSGroups                 bool                      `json:"enableOSGroups"`
+		EnableResourceMonitor          bool                      `json:"enableResourceMonitor"`
+		EnableTaskclusterProxy         bool                      `json:"enableTaskclusterProxy"`
+		IdleTimeoutSecs                uint                      `json:"idleTimeoutSecs"`
+		InstanceID                     string                    `json:"instanceId"`
+		InstanceType                   string                    `json:"instanceType"`
+		InteractivePort                uint16                    `json:"interactivePort"`
+		LiveLogExecutable              string                    `json:"livelogExecutable"`
+		LiveLogPortBase                uint16                    `json:"livelogPortBase"`
+		LiveLogExposePort              uint16                    `json:"livelogExposePort"`
+		MaxMemoryUsagePercent          uint64                    `json:"maxMemoryUsagePercent"`
+		MaxTaskRunTime                 uint32                    `json:"maxTaskRunTime"`
+		MinAvailableMemoryBytes        uint64                    `json:"minAvailableMemoryBytes"`
+		NumberOfTasksToRun             uint                      `json:"numberOfTasksToRun"`
+		PreloadedDirectoryCaches       []PreloadedDirectoryCache `json:"preloadedDirectoryCaches,omitempty"`
+		PrivateIP                      net.IP                    `json:"privateIP"`
+		ProvisionerID                  string                    `json:"provisionerId"`
+		PublicIP                       net.IP                    `json:"publicIP"`
+		Region                         string                    `json:"region"`
+		RequiredDiskSpaceMegabytes     uint                      `json:"requiredDiskSpaceMegabytes"`
+		RootURL                        string                    `json:"rootURL"`
+		RunAfterUserCreation           string                    `json:"runAfterUserCreation"`
+		SentryProject                  string                    `json:"sentryProject"`
+		ShutdownMachineOnIdle          bool                      `json:"shutdownMachineOnIdle"`
+		ShutdownMachineOnInternalError bool                      `json:"shutdownMachineOnInternalError"`
+		TaskclusterProxyExecutable     string                    `json:"taskclusterProxyExecutable"`
+		TaskclusterProxyPort           uint16                    `json:"taskclusterProxyPort"`
+		TasksDir                       string                    `json:"tasksDir"`
+		WorkerGroup                    string                    `json:"workerGroup"`
+		WorkerID                       string                    `json:"workerId"`
+		WorkerLocation                 string                    `json:"workerLocation,omitempty"`
+		WorkerType                     string                    `json:"workerType"`
+		WorkerTypeMetadata             map[string]any            `json:"workerTypeMetadata"`
+		WSTAudience                    string                    `json:"wstAudience"`
+		WSTServerURL                   string                    `json:"wstServerURL"`
 	}
 
 	PrivateConfig struct {
@@ -145,6 +151,9 @@ func (c *Config) Validate() error {
 
 	if c.Capacity == 0 {
 		return fmt.Errorf("capacity must be at least 1 (got 0)")
+	}
+	if err := c.ValidatePreloadedDirectoryCaches(); err != nil {
+		return err
 	}
 
 	// Validate port configuration for concurrent task execution

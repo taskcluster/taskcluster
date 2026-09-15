@@ -433,7 +433,16 @@ func (feature *MountsFeature) Initialise() error {
 	defer cacheMutex.Unlock()
 	fileCaches.LoadFromFile("file-caches.json", config.DownloadsDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.CachesDir)
+	if err := config.ValidatePreloadedDirectoryCaches(); err != nil {
+		return err
+	}
+	// Remove incomplete imports from a previous start before allocating space.
 	sweepUnknownContent(config.CachesDir, directoryCaches)
+	for _, preload := range config.PreloadedDirectoryCaches {
+		if err := importPreloadedDirectoryCache(preload); err != nil {
+			log.Printf("WARNING: Could not import preloaded directory cache %q from %q: %v", preload.CacheName, preload.Location, err)
+		}
+	}
 	return nil
 }
 
