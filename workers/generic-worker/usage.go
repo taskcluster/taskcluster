@@ -263,7 +263,7 @@ and reports back results to the queue.
           preloadedDirectoryCaches          List of objects with cacheName and location. Each
                                             location is an absolute path to a seed directory.
                                             At startup, copy it into cachesDir if no cache
-                                            exists for that name. See README.md for details.
+                                            exists for that name.
                                             [default: []]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care

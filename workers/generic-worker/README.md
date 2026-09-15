@@ -292,7 +292,7 @@ and reports back results to the queue.
           preloadedDirectoryCaches          List of objects with cacheName and location. Each
                                             location is an absolute path to a seed directory.
                                             At startup, copy it into cachesDir if no cache
-                                            exists for that name. See README.md for details.
+                                            exists for that name.
                                             [default: []]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care
@@ -510,28 +510,3 @@ Useful information on win32 APIs:
 * [Getting the Logon SID in C++](https://msdn.microsoft.com/en-us/aa446670?f=255&MSPPError=-2147217396)
 * [Modifying the ACLs of an Object in C++](https://docs.microsoft.com/en-us/windows/desktop/secauthz/modifying-the-acls-of-an-object-in-c--)
 * [Window Station Security and Access Rights](https://docs.microsoft.com/en-us/windows/desktop/winstation/window-station-security-and-access-rights)
-
-## Preloaded caches
-
-Use `preloadedDirectoryCaches` to supply initial contents for existing writable
-cache mounts on all supported platforms. Task payloads and cache scopes stay the same.
-
-```json
-{
-  "preloadedDirectoryCaches": [
-    {"cacheName": "source-checkout", "location": "/opt/worker/cache-seeds/source"}
-  ]
-}
-```
-
-Set `cacheName` to the exact name used by the task. Use one seed directory per
-name and an absolute `location` (for example, `"C:\\worker\\cache-seeds\\source"`
-on Windows). Seed paths must not contain `..` or overlap each other,
-`cachesDir`, `downloadsDir`, or `tasksDir`. Tasks must not be able to change seeds
-or their parent directories. Windows seeds must not contain links; POSIX seeds
-can contain relative symbolic links that resolve within the seed.
-
-At startup, the worker copies each seed into `cachesDir`, saves state, and removes
-the seed. Allow disk space for both copies. Existing caches remain in use. Missing
-or unusable seeds produce a warning and allow normal empty-cache creation.
-Consumed seeds are not imported again after cache purge or eviction.
