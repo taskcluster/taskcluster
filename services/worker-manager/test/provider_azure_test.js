@@ -4,7 +4,14 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import { FakeAzure, FakeHttpHeaders } from './fakes/index.js';
 import { AzureProvider, isAllowedAiaLocation } from '../src/providers/azure/index.js';
-import { dnToString, getAuthorityAccessInfo, getCertFingerprint, cloneCaStore } from '../src/providers/azure/utils.js';
+import {
+  dnToString,
+  getAuthorityAccessInfo,
+  getCertFingerprint,
+  cloneCaStore,
+  formatAzureError,
+  azureErrorDetails,
+} from '../src/providers/azure/utils.js';
 import testing from '@taskcluster/lib-testing';
 import forge from 'node-forge';
 import fs from 'node:fs';
@@ -268,6 +275,52 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       clonedStore.removeCertificate(newCert);
       assert.ok(originalStore.hasCertificate(newCert));
       assert.ok(!clonedStore.hasCertificate(newCert));
+    });
+
+    test('formatAzureError nests all errors', () => {
+      assert.equal(
+        formatAzureError({
+          code: 'x0',
+          message: 'bad error',
+          details: [
+            {
+              code: 'x1',
+              target: 't1',
+              message: 'err1',
+            },
+          ],
+        }),
+        'bad error | x1 (t1): err1'
+      );
+    });
+
+    test('azureErrorDetails finds deep error', () => {
+      assert.deepEqual(
+        azureErrorDetails({
+          code: 'x1',
+          message: 'bad error',
+        }),
+        [{ code: 'x1', message: 'bad error', target: undefined }]
+      );
+
+      assert.deepEqual(
+        azureErrorDetails({
+          body: {
+            error: {
+              code: 'x0',
+              message: 'err0',
+              details: [
+                {
+                  code: 'x1',
+                  target: 't1',
+                  message: 'err1',
+                },
+              ],
+            },
+          },
+        }),
+        [{ code: 'x1', message: 'err1', target: 't1' }]
+      );
     });
   });
 
@@ -708,6 +761,88 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ]);
       } finally {
         provider.monitor._metric.azureArmDeploymentError = originalMetric;
+        fake.deploymentsClient.deployments.beginCreateOrUpdate = originalBeginCreateOrUpdate;
+      }
+    });
+
+    test('reports nested ARM error details when deployment creation fails', async () => {
+      const reportedErrors = [];
+      const originalReportError = provider.reportError;
+      const originalBeginCreateOrUpdate = fake.deploymentsClient.deployments.beginCreateOrUpdate;
+      provider.reportError = async err => {
+        reportedErrors.push(err);
+      };
+      // sanitized shape of a real InvalidTemplateDeployment failure: the
+      // actionable error is two `details` levels down, `err.innererror` is unset
+      fake.deploymentsClient.deployments.beginCreateOrUpdate = async () => {
+        const err = new Error("The template deployment 'deploy-x' is not valid. See inner errors for details.");
+        err.name = 'RestError';
+        err.code = 'InvalidTemplateDeployment';
+        err.statusCode = 400;
+        err.response = {
+          status: 400,
+          parsedBody: {
+            error: {
+              code: 'InvalidTemplateDeployment',
+              message: err.message,
+              details: [
+                {
+                  code: 'DeploymentFailed',
+                  message: 'At least one resource deployment operation failed.',
+                  details: [
+                    {
+                      code: 'InvalidParameter',
+                      target: 'imageReference',
+                      message: 'image win2025_64_24h2/1.0.0 was not found in eastus2.',
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        };
+        throw err;
+      };
+
+      try {
+        const workerPool = await makeWorkerPool({
+          config: {
+            minCapacity: 1,
+            maxCapacity: 1,
+            scalingRatio: 1,
+            launchConfigs: [
+              {
+                workerManager: { capacityPerInstance: 1 },
+                armDeployment: {
+                  mode: 'Incremental',
+                  templateLink: {
+                    id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+                  },
+                  parameters: { location: { value: 'east' } },
+                },
+              },
+            ],
+          },
+        });
+
+        await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') });
+
+        assert.equal(reportedErrors.length, 1);
+        assert.equal(reportedErrors[0].kind, 'creation-error');
+        assert.equal(
+          reportedErrors[0].description,
+          "The template deployment 'deploy-x' is not valid. See inner errors for details. | " +
+            'InvalidParameter (imageReference): image win2025_64_24h2/1.0.0 was not found in eastus2.'
+        );
+        assert.deepEqual(reportedErrors[0].extra.azureErrors, [
+          {
+            code: 'InvalidParameter',
+            target: 'imageReference',
+            message: 'image win2025_64_24h2/1.0.0 was not found in eastus2.',
+          },
+        ]);
+      } finally {
+        provider.reportError = originalReportError;
         fake.deploymentsClient.deployments.beginCreateOrUpdate = originalBeginCreateOrUpdate;
       }
     });
