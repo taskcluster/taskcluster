@@ -83,6 +83,12 @@ export default ({ cfg, server, pulseEngine, clients, authFactory, monitor }) => 
 
   // ws's `path` option supports a single path, so upgrades are routed by hand.
   server.on('upgrade', (req, socket, head) => {
+    if (!URL.canParse(req.url, 'http://localhost')) {
+      socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
     const { pathname } = new URL(req.url, 'http://localhost');
     const resolveBindings = endpoints.get(pathname);
 
