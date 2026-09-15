@@ -1,9 +1,0 @@
-query ListRoleIds($connection: PageConnection){
-  listRoleIds(connection: $connection){
-    edges{
-      node{
-        roleId
-      }
-    }
-  }
-}

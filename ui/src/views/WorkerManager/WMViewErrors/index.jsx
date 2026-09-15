@@ -170,7 +170,8 @@ export default class WMViewErrors extends Component {
 
         {!initialLoad && (
           <WorkerManagerErrorsSummary
-            data={{ loading: statsLoading, WorkerManagerErrorsStats: stats }}
+            stats={stats}
+            loading={statsLoading}
             selectedLaunchConfigId={launchConfigId}
             onStatClick={this.handleStatClick}
             includeLaunchConfig

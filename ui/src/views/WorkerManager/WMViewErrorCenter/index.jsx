@@ -106,9 +106,7 @@ export default class WMViewErrorCenter extends Component {
 
         {!error && !loading && (
           <React.Fragment>
-            <WorkerManagerErrorsSummary
-              data={{ loading, WorkerManagerErrorsStats: stats }}
-            />
+            <WorkerManagerErrorsSummary stats={stats} loading={loading} />
 
             <Typography variant="h6" gutterBottom>
               Errors by Worker Pool (last 7 days)
