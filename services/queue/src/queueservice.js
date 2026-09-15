@@ -350,6 +350,21 @@ export class QueueService {
     const [{ queue_claimed_tasks_count }] = await this.db.fns.queue_claimed_tasks_count(taskQueueId);
     return queue_claimed_tasks_count;
   }
+
+  /**
+   * Count pending and claimed tasks for multiple task queues.
+   *
+   * @param {string[]} taskQueueIds
+   * @returns {Promise<Array<{taskQueueId: string, pendingTasks: number, claimedTasks: number}>>}
+   */
+  async countTasksByTaskQueues(taskQueueIds) {
+    const rows = await this.db.fns.queue_task_queue_counts(JSON.stringify(taskQueueIds));
+    return rows.map(({ task_queue_id, pending_count, claimed_count }) => ({
+      taskQueueId: task_queue_id,
+      pendingTasks: pending_count,
+      claimedTasks: claimed_count,
+    }));
+  }
 }
 
 export default QueueService;

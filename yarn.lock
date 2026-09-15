@@ -4813,15 +4813,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/equality@npm:^0.1.2":
-  version: 0.1.11
-  resolution: "@wry/equality@npm:0.1.11"
-  dependencies:
-    tslib: "npm:^1.9.3"
-  checksum: 10c0/a740b9d449eeb2d3cd251d5a8a1b739af4142a505e66eefc30a648ef2752b411220db40a0f78b97ecf3c2d8f8a2e9450ce0d1ff8e7679c8d89124fb696aea8fe
-  languageName: node
-  linkType: hard
-
 "@wry/equality@npm:^0.5.6":
   version: 0.5.7
   resolution: "@wry/equality@npm:0.5.7"
@@ -5048,46 +5039,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-link-ws@npm:^1.0.20":
-  version: 1.0.20
-  resolution: "apollo-link-ws@npm:1.0.20"
-  dependencies:
-    apollo-link: "npm:^1.2.14"
-    tslib: "npm:^1.9.3"
-  peerDependencies:
-    subscriptions-transport-ws: ^0.9.0
-  checksum: 10c0/15b671f8c308ba5e56e25f54b49f73b9f59941586740e2ae741fdf496c875c2414eafca975eff8f874406056fcf63463734e31f721e437fec69de27f6631ce70
-  languageName: node
-  linkType: hard
-
-"apollo-link@npm:^1.2.14":
-  version: 1.2.14
-  resolution: "apollo-link@npm:1.2.14"
-  dependencies:
-    apollo-utilities: "npm:^1.3.0"
-    ts-invariant: "npm:^0.4.0"
-    tslib: "npm:^1.9.3"
-    zen-observable-ts: "npm:^0.8.21"
-  peerDependencies:
-    graphql: ^0.11.3 || ^0.12.3 || ^0.13.0 || ^14.0.0 || ^15.0.0
-  checksum: 10c0/6a43ed4bb8491c8ff47450a817e59195bff6b8ebc0c415b5caa177dae96e7dd30112323a32176a14a31cc3b3edd8c4be619325cdecb5fad4bccbd255143927c3
-  languageName: node
-  linkType: hard
-
-"apollo-utilities@npm:^1.3.0":
-  version: 1.3.4
-  resolution: "apollo-utilities@npm:1.3.4"
-  dependencies:
-    "@wry/equality": "npm:^0.1.2"
-    fast-json-stable-stringify: "npm:^2.0.0"
-    ts-invariant: "npm:^0.4.0"
-    tslib: "npm:^1.10.0"
-  peerDependencies:
-    graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
-  checksum: 10c0/071f2bfd3b62457c688aec8f7c92e3831e05ace5a65699608cbdda5b03bd287f407654fbd526639efaa4dc2db4d39763cccefb1786f4cd14dfa48f4ab79f3b8b
-  languageName: node
-  linkType: hard
-
 "app-root-dir@npm:^1.0.2":
   version: 1.0.2
   resolution: "app-root-dir@npm:1.0.2"
@@ -5247,13 +5198,6 @@ __metadata:
   dependencies:
     "@babel/types": "npm:^7.9.6"
   checksum: 10c0/17b689874d15c37714cedf6797dd9321dcb998d8e0dda9a8fe8c8bbbf128bbdeb8935cf56e8630d6b67eae76d2a0bc1e470751e082c3b0e30b80d58beafb5e64
-  languageName: node
-  linkType: hard
-
-"backo2@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "backo2@npm:1.0.2"
-  checksum: 10c0/a9e825a6a38a6d1c4a94476eabc13d6127dfaafb0967baf104affbb67806ae26abbb58dab8d572d2cd21ef06634ff57c3ad48dff14b904e18de1474cc2f22bf3
   languageName: node
   linkType: hard
 
@@ -6674,13 +6618,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventemitter3@npm:^3.1.0":
-  version: 3.1.2
-  resolution: "eventemitter3@npm:3.1.2"
-  checksum: 10c0/c67262eccbf85848b7cc6d4abb6c6e34155e15686db2a01c57669fd0d44441a574a19d44d25948b442929e065774cbe5003d8e77eed47674fbf876ac77887793
-  languageName: node
-  linkType: hard
-
 "eventemitter3@npm:^4.0.4":
   version: 4.0.7
   resolution: "eventemitter3@npm:4.0.7"
@@ -6825,16 +6762,6 @@ __metadata:
   version: 3.0.2
   resolution: "extend@npm:3.0.2"
   checksum: 10c0/73bf6e27406e80aa3e85b0d1c4fd987261e628064e170ca781125c0b635a3dabad5e05adbf07595ea0cf1e6c5396cacb214af933da7cbaf24fe75ff14818e8f9
-  languageName: node
-  linkType: hard
-
-"fast-azure-storage@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "fast-azure-storage@npm:4.0.0"
-  dependencies:
-    debug: "npm:^4.1.1"
-    xml2js: "npm:^0.6.0"
-  checksum: 10c0/8caa09d1d06296c2f596ae930204a31cce208dcfd7c9a88cc2d9c1c511de52c03ee03d3af1a893b1fd9b108ed3128a55eba3e068d335f4dced48930dcab01912
   languageName: node
   linkType: hard
 
@@ -8169,7 +8096,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iterall@npm:^1.2.1, iterall@npm:^1.2.2":
+"iterall@npm:^1.2.2":
   version: 1.3.0
   resolution: "iterall@npm:1.3.0"
   checksum: 10c0/40de624e5fe937c4c0e511981b91caea9ff2142bfc0316cccc8506eaa03aa253820cc17c5bc5f0a98706c7268a373e5ebee9af9a0c8a359730cf7c05938b57b5
@@ -9534,10 +9461,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^9.0.5":
-  version: 9.0.5
-  resolution: "nodemailer@npm:9.0.5"
-  checksum: 10c0/60f7a21497c98c0d275cd12c488af581ef6aee65db575026319ac249dcac210bdab20edf77fe3158176ed3910f70d8c46d89abcd74f57a7170302727e6d05ee3
+"nodemailer@npm:^9.1.1":
+  version: 9.1.1
+  resolution: "nodemailer@npm:9.1.1"
+  checksum: 10c0/b213a2a906697a735f6eb21103629b7a77aeac297b6d843efd4588157999bf6d19381853ac1224e472f5a34aec2e2412444151a2c6ec6e8c52150afa3055039c
   languageName: node
   linkType: hard
 
@@ -11501,21 +11428,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"subscriptions-transport-ws@npm:^0.11.0":
-  version: 0.11.0
-  resolution: "subscriptions-transport-ws@npm:0.11.0"
-  dependencies:
-    backo2: "npm:^1.0.2"
-    eventemitter3: "npm:^3.1.0"
-    iterall: "npm:^1.2.1"
-    symbol-observable: "npm:^1.0.4"
-    ws: "npm:^5.2.0 || ^6.0.0 || ^7.0.0"
-  peerDependencies:
-    graphql: ^15.7.2 || ^16.0.0
-  checksum: 10c0/697441333e59b6932bff51212e29f8dcac477badb067971bd94c30c5f3f7a2e2ea72fb1a21f3c1abbf32774da01515aa24739e620be45f6d576784bd96fd10da
-  languageName: node
-  linkType: hard
-
 "superagent@npm:^6.0.0":
   version: 6.1.0
   resolution: "superagent@npm:6.1.0"
@@ -11569,7 +11481,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"symbol-observable@npm:^1.0.4, symbol-observable@npm:^1.1.0":
+"symbol-observable@npm:^1.1.0":
   version: 1.2.0
   resolution: "symbol-observable@npm:1.2.0"
   checksum: 10c0/009fee50798ef80ed4b8195048288f108b03de162db07493f2e1fd993b33fafa72d659e832b584da5a2427daa78e5a738fb2a9ab027ee9454252e0bedbcd1fdc
@@ -11711,7 +11623,6 @@ __metadata:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
     amqplib: "npm:^2.0.1"
-    apollo-link-ws: "npm:^1.0.20"
     app-root-dir: "npm:^1.0.2"
     assume: "npm:^2.1.0"
     aws-sdk-client-mock: "npm:^4.1.0"
@@ -11737,7 +11648,6 @@ __metadata:
     express: "npm:5.2.1"
     express-session: "npm:^1.19.0"
     express-sslify: "npm:1.2.0"
-    fast-azure-storage: "npm:^4.0.0"
     fast-json-stable-stringify: "npm:^2.0.0"
     generate-password: "npm:^1.5.0"
     github-slugger: "npm:^2.0.0"
@@ -11782,7 +11692,7 @@ __metadata:
     nock: "npm:^14.0.17"
     node-fetch: "npm:^3.3.2"
     node-forge: "npm:^1.4.0"
-    nodemailer: "npm:^9.0.5"
+    nodemailer: "npm:^9.1.1"
     oauth2orize: "npm:^1.11.0"
     open-editor: "npm:^5.1.0"
     p-queue: "npm:^9.3.3"
@@ -11805,7 +11715,6 @@ __metadata:
     sinon: "npm:^21.1.2"
     slugid: "npm:^5.0.1"
     snake-case: "npm:^3.0.3"
-    subscriptions-transport-ws: "npm:^0.11.0"
     superagent: "npm:^6.0.0"
     taskcluster-lib-scopes: "npm:^11.0.0"
     taskcluster-lib-urls: "npm:^13.1.0"
@@ -11936,16 +11845,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-invariant@npm:^0.4.0":
-  version: 0.4.4
-  resolution: "ts-invariant@npm:0.4.4"
-  dependencies:
-    tslib: "npm:^1.9.3"
-  checksum: 10c0/73783533764fb453bd71ceeaed238e7b4ccc0e2b12a631bf779d357b2520c71bace2be98a3ef2e96848d44a6d2202e1cad1e6cac74d5a09c3abac58f9225bf8f
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^1.10.0, tslib@npm:^1.9.3":
+"tslib@npm:^1.10.0":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: 10c0/69ae09c49eea644bc5ebe1bca4fa4cc2c82b7b3e02f43b84bd891504edf66dbc6b2ec0eef31a957042de2269139e4acff911e6d186a258fb14069cd7f6febce2
@@ -12453,7 +12353,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0, ws@npm:^7.5.11":
+"ws@npm:^7.5.11":
   version: 7.5.11
   resolution: "ws@npm:7.5.11"
   peerDependencies:
@@ -12490,16 +12390,6 @@ __metadata:
     sax: "npm:>=0.6.0"
     xmlbuilder: "npm:~11.0.0"
   checksum: 10c0/c9cd07cd19c5e41c740913bbbf16999a37a204488e11f86eddc2999707d43967197e257014d7ed72c8fc4348c192fa47eb352d1d9d05637cefd0d2e24e9aa4c8
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:^0.6.0":
-  version: 0.6.2
-  resolution: "xml2js@npm:0.6.2"
-  dependencies:
-    sax: "npm:>=0.6.0"
-    xmlbuilder: "npm:~11.0.0"
-  checksum: 10c0/e98a84e9c172c556ee2c5afa0fc7161b46919e8b53ab20de140eedea19903ed82f7cd5b1576fb345c84f0a18da1982ddf65908129b58fc3d7cbc658ae232108f
   languageName: node
   linkType: hard
 
@@ -12605,16 +12495,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zen-observable-ts@npm:^0.8.21":
-  version: 0.8.21
-  resolution: "zen-observable-ts@npm:0.8.21"
-  dependencies:
-    tslib: "npm:^1.9.3"
-    zen-observable: "npm:^0.8.0"
-  checksum: 10c0/fe4a02f862b5f7e8ae0f86230c37b84c7d5611f5c206981afb4043e732d04cf7067a6cbe1ba82d20f18b735a3387937195a12542158a631d308ae3959a1d93c4
-  languageName: node
-  linkType: hard
-
 "zen-observable-ts@npm:^1.2.5":
   version: 1.2.5
   resolution: "zen-observable-ts@npm:1.2.5"
@@ -12624,7 +12504,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zen-observable@npm:0.8.15, zen-observable@npm:^0.8.0, zen-observable@npm:^0.8.7":
+"zen-observable@npm:0.8.15, zen-observable@npm:^0.8.7":
   version: 0.8.15
   resolution: "zen-observable@npm:0.8.15"
   checksum: 10c0/71cc2f2bbb537300c3f569e25693d37b3bc91f225cefce251a71c30bc6bb3e7f8e9420ca0eb57f2ac9e492b085b8dfa075fd1e8195c40b83c951dd59c6e4fbf8

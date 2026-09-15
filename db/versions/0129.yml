@@ -1,0 +1,21 @@
+version: 129
+description: Add batched pending and claimed task counts for task queues
+methods:
+  queue_task_queue_counts:
+    description: |
+      Count pending and claimed tasks for each requested task queue.
+      The result contains one row per input task queue, including queues with no
+      pending or claimed tasks.
+    mode: read
+    serviceName: queue
+    args: task_queue_ids_in jsonb
+    returns: table(task_queue_id text, pending_count integer, claimed_count integer)
+    body: |-
+      begin
+        RETURN QUERY
+        SELECT
+          requested.task_queue_id,
+          queue_pending_tasks_count(requested.task_queue_id) AS pending_count,
+          queue_claimed_tasks_count(requested.task_queue_id) AS claimed_count
+        FROM jsonb_array_elements_text(task_queue_ids_in) AS requested(task_queue_id);
+      end

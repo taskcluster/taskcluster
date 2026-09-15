@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -27,6 +26,7 @@ import SpeedDialAction from '../../components/SpeedDialAction';
 import DataTable from '../../components/DataTable';
 import PulseBindings from '../../components/PulseBindings';
 import subscribeToPulseMessages from '../../utils/pulseListener';
+import { withAuth } from '../../utils/Auth';
 import removeKeys from '../../utils/removeKeys';
 import exchangesList from '../../utils/exchangesList';
 
@@ -36,7 +36,7 @@ const getBindingsFromProps = props => {
   return query.bindings ? Object.values(query.bindings) : [];
 };
 
-@withApollo
+@withAuth
 @withStyles(theme => ({
   iconButton: {
     '& svg': {
@@ -117,6 +117,15 @@ export default class PulseMessages extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    // The socket was authenticated as the user who clicked Start. If that
+    // user signs out or someone else signs in, stop rather than keep
+    // listening under the old identity; the new user can Start again.
+    if (this.state.listening && prevProps.user !== this.props.user) {
+      this.handleStopListening();
+    }
+  }
+
   componentWillUnmount() {
     this.unsubscribe();
   }
@@ -153,18 +162,15 @@ export default class PulseMessages extends Component {
   handleStartListening = () => {
     this.setState({ listening: true, error: null });
 
-    this.unsubscribeFn = subscribeToPulseMessages(
-      this.props.client,
-      this.state.bindings,
-      {
-        onMessage: message => {
-          this.addMessage(message);
-        },
-        onError: error => {
-          this.setState({ error, listening: false });
-        },
-      }
-    );
+    this.unsubscribeFn = subscribeToPulseMessages(this.state.bindings, {
+      onMessage: message => {
+        this.addMessage(message);
+      },
+      onError: error => {
+        this.setState({ error, listening: false });
+      },
+      user: this.props.user,
+    });
   };
 
   handleStopListening = () => {

@@ -20,6 +20,8 @@ import {
   cloneCaStore,
   generateAdmin,
   ArmDeploymentProvisioningState,
+  azureErrorDetails,
+  formatAzureError,
 } from './utils.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
@@ -756,12 +758,15 @@ export class AzureProvider extends Provider {
         provisioningOperation: 'Create',
       });
 
+      const description = formatAzureError(err) || 'Failed to create ARM deployment';
+
       await this.reportError({
         workerPool,
         kind: 'creation-error',
         title: 'Failed to create ARM deployment',
-        description: err.message,
+        description,
         extra: {
+          azureErrors: azureErrorDetails(err),
           innerError: err?.innererror ?? '',
           workerId: worker.workerId,
           workerGroup: workerGroup,
@@ -774,7 +779,7 @@ export class AzureProvider extends Provider {
         },
         launchConfigId: worker.launchConfigId,
       });
-      await this.removeWorker({ worker, reason: `ARM Deployment failure: ${err.message}` });
+      await this.removeWorker({ worker, reason: `ARM Deployment failure: ${description}` });
     }
   }
 

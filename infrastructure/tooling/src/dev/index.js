@@ -7,7 +7,6 @@ import commonPrompts from './common.js';
 
 import { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } from './rabbit.js';
 
-import { azureResources } from './azure.js';
 import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
 import { k8sResources } from './k8s.js';
 import awsResources from './aws.js';
@@ -44,7 +43,6 @@ export const init = async _options => {
 
   userConfig = await awsResources({ userConfig, answer, configTmpl });
   userConfig = await taskclusterResources({ userConfig, answer, configTmpl });
-  userConfig = await azureResources({ userConfig, answer, configTmpl });
   userConfig = await postgresResources({ userConfig, answer, configTmpl });
   userConfig = await rabbitResources({ userConfig, answer, configTmpl });
   userConfig = await k8sResources({ userConfig, answer, configTmpl });

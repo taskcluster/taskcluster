@@ -4020,6 +4020,53 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-queue-counts-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request pending and claimed task counts for multiple task queues.\n",
+      "properties": {
+        "taskQueueIds": {
+          "items": {
+            "$ref": "task.json#/properties/taskQueueId"
+          },
+          "maxItems": 1000,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskQueueIds"
+      ],
+      "title": "Task Queue Counts Request",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-queue-counts-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/task-queue-counts-list-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Pending and claimed task counts for multiple task queues.\n",
+      "properties": {
+        "taskQueueCounts": {
+          "items": {
+            "$ref": "task-queue-counts-response.json#"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "taskQueueCounts"
+      ],
+      "title": "Task Queue Counts List Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-queue-counts-list-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-pulse-definition.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -10524,7 +10571,7 @@
               "title": "Content"
             },
             "directory": {
-              "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
+              "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory must not already exist. It\nis created as the task user, so its parent must be\nwritable by the task user.\n\nSince: generic-worker 5.4.0",
               "title": "Directory Volume",
               "type": "string"
             },
@@ -10586,7 +10633,8 @@
                 "type": "string"
               },
               "name": {
-                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information. Must consist of\nprintable ASCII characters only.\n\nSince: generic-worker 8.1.0",
+                "pattern": "^[\\x20-\\x7e]*$",
                 "title": "Name of the artifact",
                 "type": "string"
               },
@@ -10706,12 +10754,14 @@
             "backing": {
               "default": "public/logs/live_backing.log",
               "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
+              "pattern": "^[\\x20-\\x7e]+$",
               "title": "Backing log artifact name",
               "type": "string"
             },
             "live": {
               "default": "public/logs/live.log",
               "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
+              "pattern": "^[\\x20-\\x7e]+$",
               "title": "Live log artifact name",
               "type": "string"
             }
@@ -11066,7 +11116,7 @@
               "title": "Content"
             },
             "directory": {
-              "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
+              "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory must not already exist. It\nis created as the task user, so its parent must be\nwritable by the task user.\n\nSince: generic-worker 5.4.0",
               "title": "Directory Volume",
               "type": "string"
             },
@@ -11131,7 +11181,8 @@
                     "type": "string"
                   },
                   "name": {
-                    "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                    "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information. Must consist of\nprintable ASCII characters only.\n\nSince: generic-worker 8.1.0",
+                    "pattern": "^[\\x20-\\x7e]*$",
                     "title": "Name of the artifact",
                     "type": "string"
                   },
@@ -11255,12 +11306,14 @@
                 "backing": {
                   "default": "public/logs/live_backing.log",
                   "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
+                  "pattern": "^[\\x20-\\x7e]+$",
                   "title": "Backing log artifact name",
                   "type": "string"
                 },
                 "live": {
                   "default": "public/logs/live.log",
                   "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
+                  "pattern": "^[\\x20-\\x7e]+$",
                   "title": "Live log artifact name",
                   "type": "string"
                 }
@@ -11359,6 +11412,9 @@
                 "$ref": "#/definitions/artifact"
               },
               "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+              "propertyNames": {
+                "pattern": "^[\\x20-\\x7e]+$"
+              },
               "title": "Artifacts",
               "type": "object"
             },
@@ -11573,6 +11629,7 @@
             "log": {
               "default": "public/logs/live.log",
               "description": "Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.",
+              "pattern": "^[\\x20-\\x7e]+$",
               "title": "Livelog artifact name",
               "type": "string"
             },
@@ -11887,7 +11944,7 @@
               "title": "Content"
             },
             "directory": {
-              "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path.\n\nSince: generic-worker 5.4.0",
+              "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory must not already exist.\n\nSince: generic-worker 5.4.0",
               "title": "Directory Volume",
               "type": "string"
             },
@@ -11952,7 +12009,8 @@
                     "type": "string"
                   },
                   "name": {
-                    "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+                    "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information. Must consist of\nprintable ASCII characters only.\n\nSince: generic-worker 8.1.0",
+                    "pattern": "^[\\x20-\\x7e]*$",
                     "title": "Name of the artifact",
                     "type": "string"
                   },
@@ -12066,12 +12124,14 @@
                 "backing": {
                   "default": "public/logs/live_backing.log",
                   "description": "Specifies a custom name for the backing log artifact.\nThis is only used if `features.backingLog` is `true`.\n\nSince: generic-worker 48.2.0",
+                  "pattern": "^[\\x20-\\x7e]+$",
                   "title": "Backing log artifact name",
                   "type": "string"
                 },
                 "live": {
                   "default": "public/logs/live.log",
                   "description": "Specifies a custom name for the live log artifact.\nThis is only used if `features.liveLog` is `true`.\n\nSince: generic-worker 48.2.0",
+                  "pattern": "^[\\x20-\\x7e]+$",
                   "title": "Live log artifact name",
                   "type": "string"
                 }
@@ -12170,6 +12230,9 @@
                 "$ref": "#/definitions/artifact"
               },
               "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+              "propertyNames": {
+                "pattern": "^[\\x20-\\x7e]+$"
+              },
               "title": "Artifacts",
               "type": "object"
             },
@@ -12384,6 +12447,7 @@
             "log": {
               "default": "public/logs/live.log",
               "description": "Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.",
+              "pattern": "^[\\x20-\\x7e]+$",
               "title": "Livelog artifact name",
               "type": "string"
             },
@@ -12483,6 +12547,9 @@
             "$ref": "#/definitions/artifact"
           },
           "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+          "propertyNames": {
+            "pattern": "^[\\x20-\\x7e]+$"
+          },
           "title": "Artifacts",
           "type": "object"
         },
@@ -12697,6 +12764,7 @@
         "log": {
           "default": "public/logs/live.log",
           "description": "Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.",
+          "pattern": "^[\\x20-\\x7e]+$",
           "title": "Livelog artifact name",
           "type": "string"
         },
@@ -12811,17 +12879,6 @@
               "type": "object"
             },
             "aws_credentials_allowed_buckets": {
-              "oneOf": [
-                {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                {
-                  "type": "array"
-                }
-              ]
-            },
-            "azure_accounts": {
               "oneOf": [
                 {
                   "additionalProperties": true,
@@ -18023,143 +18080,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/auth/v1/azure-table-list-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A list of Azure tables in an account\n",
-      "properties": {
-        "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of tables.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `azureAccountTables` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
-          "title": "Continuation Token",
-          "type": "string"
-        },
-        "tables": {
-          "description": "A list of tables that are in an account. These are\nthe tables that can have SAS credentials fetched for them.\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "Azure Tables",
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "tables"
-      ],
-      "title": "Azure List Table Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-table-list-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-table-access-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response to a request for an Shared-Access-Signature to access and Azure\nTable Storage table.\n",
-      "properties": {
-        "expiry": {
-          "description": "Date and time of when the Shared-Access-Signature expires.\n",
-          "format": "date-time",
-          "type": "string"
-        },
-        "sas": {
-          "description": "Shared-Access-Signature string. This is the querystring parameters to\nbe appened after `?` or `&` depending on whether or not a querystring is\nalready present in the URL.\n",
-          "type": "string"
-        }
-      },
-      "required": [
-        "sas",
-        "expiry"
-      ],
-      "title": "Azure Table Shared-Access-Signature",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-table-access-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-container-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Response to a request for an Shared-Access-Signature to access an Azure\nBlob Storage container.\n",
-      "properties": {
-        "expiry": {
-          "description": "Date and time of when the Shared-Access-Signature expires.\n",
-          "format": "date-time",
-          "type": "string"
-        },
-        "sas": {
-          "description": "Shared-Access-Signature string. This is the querystring parameters to\nbe appened after `?` or `&` depending on whether or not a querystring is\nalready present in the URL.\n",
-          "type": "string"
-        }
-      },
-      "required": [
-        "sas",
-        "expiry"
-      ],
-      "title": "Azure Blob Shared-Access-Signature",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-container-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-container-list-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A list of Azure containers in an account\n",
-      "properties": {
-        "containers": {
-          "description": "A list of containers that are in an account.  Credentials are available for\nthese containers from the `azureBlobSAS` method.\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "Azure Containers",
-          "type": "array",
-          "uniqueItems": true
-        },
-        "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of containers.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called this method with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
-          "title": "Continuation Token",
-          "type": "string"
-        }
-      },
-      "required": [
-        "containers"
-      ],
-      "title": "Azure List Containers Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-container-list-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/auth/v1/azure-account-list-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "A list of Azure accounts managed by taskcluster-auth\n",
-      "properties": {
-        "accounts": {
-          "description": "A list of accountIds that are managed by auth. These are\nthe accounts that can have SAS credentials fetched for tables\nwithin them.\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "Azure Accounts",
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "accounts"
-      ],
-      "title": "Azure List Account Response",
-      "type": "object"
-    },
-    "filename": "schemas/auth/v1/azure-account-list-response.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/auth/v1/aws-s3-credentials-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -20847,6 +20767,40 @@
           "title": "Unbind a Pulse Subscription",
           "type": "unbind-pulse-subscription",
           "version": 1
+        },
+        {
+          "description": "A /subscription WebSocket connection has closed; any subscriptions still open\non it have been unsubscribed.",
+          "fields": {
+            "closeCode": "The WebSocket close code",
+            "openSubscriptions": "The number of subscriptions that were still open at close time"
+          },
+          "level": "debug",
+          "name": "websocketClosed",
+          "title": "WebSocket Closed",
+          "type": "websocket-closed",
+          "version": 1
+        },
+        {
+          "description": "A client has authenticated a /subscription WebSocket connection.",
+          "fields": {
+            "clientId": "The clientId of the connected client, or \"anonymous\""
+          },
+          "level": "debug",
+          "name": "websocketConnected",
+          "title": "WebSocket Connected",
+          "type": "websocket-connected",
+          "version": 1
+        },
+        {
+          "description": "A /subscription WebSocket handshake was rejected because its Origin header\nis not in the configured allowedCORSOrigins.",
+          "fields": {
+            "origin": "The rejected Origin header value"
+          },
+          "level": "warning",
+          "name": "websocketOriginRejected",
+          "title": "WebSocket Origin Rejected",
+          "type": "websocket-origin-rejected",
+          "version": 1
         }
       ]
     },
@@ -23476,6 +23430,36 @@
           "scopes": "queue:pending-count:<taskQueueId>",
           "stability": "deprecated",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Worker Metadata",
+          "description": "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+          "input": "v1/task-queue-counts-request.json#",
+          "method": "post",
+          "name": "taskQueueCountsBatch",
+          "output": "v1/task-queue-counts-list-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/counts",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:pending-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              },
+              {
+                "each": "queue:claimed-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get Pending and Claimed Task Counts for Multiple Task Queues",
           "type": "function"
         },
         {
@@ -28311,114 +28295,6 @@
           },
           "stability": "stable",
           "title": "Get Temporary Read/Write Credentials S3",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-          "method": "get",
-          "name": "azureAccounts",
-          "output": "v1/azure-account-list-response.json#",
-          "query": [
-          ],
-          "route": "/azure/accounts",
-          "scopes": "auth:azure-table:list-accounts",
-          "stability": "deprecated",
-          "title": "List Accounts Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account"
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all tables in an account.",
-          "method": "get",
-          "name": "azureTables",
-          "output": "v1/azure-table-list-response.json#",
-          "query": [
-            "continuationToken"
-          ],
-          "route": "/azure/<account>/tables",
-          "scopes": "auth:azure-table:list-tables:<account>",
-          "stability": "deprecated",
-          "title": "List Tables in an Account Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "table",
-            "level"
-          ],
-          "category": "Azure Credentials",
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
-          "method": "get",
-          "name": "azureTableSAS",
-          "output": "v1/azure-table-access-response.json#",
-          "query": [
-          ],
-          "route": "/azure/<account>/table/<table>/<level>",
-          "scopes": {
-            "else": "auth:azure-table:read-write:<account>/<table>",
-            "if": "levelIsReadOnly",
-            "then": {
-              "AnyOf": [
-                "auth:azure-table:read-only:<account>/<table>",
-                "auth:azure-table:read-write:<account>/<table>"
-              ]
-            }
-          },
-          "stability": "deprecated",
-          "title": "Get Shared-Access-Signature for Azure Table",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account"
-          ],
-          "category": "Azure Credentials",
-          "description": "Retrieve a list of all containers in an account.",
-          "method": "get",
-          "name": "azureContainers",
-          "output": "v1/azure-container-list-response.json#",
-          "query": [
-            "continuationToken"
-          ],
-          "route": "/azure/<account>/containers",
-          "scopes": "auth:azure-container:list-containers:<account>",
-          "stability": "deprecated",
-          "title": "List containers in an Account Managed by Auth",
-          "type": "function"
-        },
-        {
-          "args": [
-            "account",
-            "container",
-            "level"
-          ],
-          "category": "Azure Credentials",
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
-          "method": "get",
-          "name": "azureContainerSAS",
-          "output": "v1/azure-container-response.json#",
-          "query": [
-          ],
-          "route": "/azure/<account>/containers/<container>/<level>",
-          "scopes": {
-            "else": "auth:azure-container:read-write:<account>/<container>",
-            "if": "levelIsReadOnly",
-            "then": {
-              "AnyOf": [
-                "auth:azure-container:read-only:<account>/<container>",
-                "auth:azure-container:read-write:<account>/<container>"
-              ]
-            }
-          },
-          "stability": "deprecated",
-          "title": "Get Shared-Access-Signature for Azure Container",
           "type": "function"
         },
         {

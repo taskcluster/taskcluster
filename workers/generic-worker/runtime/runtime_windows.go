@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os/user"
@@ -8,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
@@ -215,9 +216,15 @@ func SetAutoLogin(user *OSUser) error {
 	if err != nil {
 		return fmt.Errorf(`was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultUserName' to %q due to %s`, user.Name, err)
 	}
-	err = k.SetStringValue("DefaultPassword", user.Password)
+
+	// Windows prefers the non LSA password to the LSA one...
+	err = k.DeleteValue("DefaultPassword")
+	if err != nil && !errors.Is(err, registry.ErrNotExist) {
+		return fmt.Errorf(`was not able to delete registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword': %s`, err)
+	}
+	err = win32.LsaStoreSecret("DefaultPassword", user.Password)
 	if err != nil {
-		return fmt.Errorf(`was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword' to %q due to %s`, user.Password, err)
+		return fmt.Errorf("was not able to store autologon password as LSA secret: %w", err)
 	}
 	return nil
 }

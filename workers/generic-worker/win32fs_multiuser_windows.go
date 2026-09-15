@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/safefs"
 	"golang.org/x/sys/windows"
 )
 
@@ -52,7 +52,14 @@ func (g *granter) mayTake(links uint32, owner *windows.SID) bool {
 	if links <= 1 {
 		return true
 	}
-	return !g.fromPrivileged && owner != nil && owner.Equals(g.from)
+	if owner == nil {
+		return false
+	}
+	if !g.fromPrivileged && owner.Equals(g.from) {
+		return true
+	}
+
+	return !privilegedOwner(g.sid) && owner.Equals(g.sid)
 }
 
 func readSecurity(handle windows.Handle, path string) (*windows.SECURITY_DESCRIPTOR, error) {

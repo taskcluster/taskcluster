@@ -13,7 +13,7 @@ import (
 	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v108/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v110/internal/mocktc"
 )
 
 // Test failure should resolve as "failed"
@@ -97,7 +97,7 @@ func TestRevisionNumberStored(t *testing.T) {
 		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
 
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v108/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v110/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
 			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)
@@ -338,9 +338,9 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	// Include a writable directory cache, to test that caches are purged
 	// rather than preserved when a task aborts prematurely.
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("bananas"),
 		},
 	}
@@ -356,7 +356,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 
 	taskID := scheduleTask(t, td, payload)
 	startTime := time.Now()

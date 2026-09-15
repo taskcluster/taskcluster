@@ -190,13 +190,6 @@
   },
   {
     "element": "h2",
-    "id": "azure-credentials",
-    "path": "/manual/deploying/cloud-credentials",
-    "subtitle": "Azure Credentials",
-    "title": "Cloud Credentials"
-  },
-  {
-    "element": "h2",
     "id": "gcp-credentials",
     "path": "/manual/deploying/cloud-credentials",
     "subtitle": "GCP Credentials",

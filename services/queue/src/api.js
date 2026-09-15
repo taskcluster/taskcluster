@@ -2174,6 +2174,57 @@ builder.declare(
   }
 );
 
+/** Pending and claimed counts for multiple queues */
+builder.declare(
+  {
+    method: 'post',
+    route: '/task-queues/counts',
+    name: 'taskQueueCountsBatch',
+    scopes: {
+      AllOf: [
+        {
+          for: 'taskQueueId',
+          in: 'taskQueueIds',
+          each: 'queue:pending-count:<taskQueueId>',
+        },
+        {
+          for: 'taskQueueId',
+          in: 'taskQueueIds',
+          each: 'queue:claimed-count:<taskQueueId>',
+        },
+      ],
+    },
+    input: 'task-queue-counts-request.yml',
+    stability: APIBuilder.stability.experimental,
+    category: 'Worker Metadata',
+    output: 'task-queue-counts-list-response.yml',
+    title: 'Get Pending and Claimed Task Counts for Multiple Task Queues',
+    description: [
+      'Get approximate pending and claimed task counts for the given task queues.',
+      '',
+      'The caller must have both `queue:pending-count:<taskQueueId>` and',
+      '`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.',
+      'If any task queue is unauthorized, the entire request will fail.',
+      '',
+      'As task states may change rapidly, these counts may not represent the exact',
+      'number of pending and claimed tasks, but are very good approximations.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { taskQueueIds } = req.body;
+
+    await req.authorize({ taskQueueIds });
+
+    const counts = await this.queueService.countTasksByTaskQueues(taskQueueIds);
+    const taskQueueCounts = counts.map(count => ({
+      ...splitTaskQueueId(count.taskQueueId),
+      ...count,
+    }));
+
+    return res.reply({ taskQueueCounts });
+  }
+);
+
 /** Pending and claimed counts for a queue */
 builder.declare(
   {

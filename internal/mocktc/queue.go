@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -16,8 +17,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
-	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
+	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -105,9 +106,22 @@ func (queue *Queue) ensureArtifactMap(taskId, runId string) {
 	}
 }
 
+var artifactNamePattern = regexp.MustCompile(`^[\x20-\x7e]+$`)
+
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
+
+	if !artifactNamePattern.MatchString(name) {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: fmt.Sprintf("Invalid URL patterns:\nURL parameter 'name' given as '%v' must match regular expression: '/^[\\x20-\\x7e]+$/'", name),
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 400,
+			},
+		}
+	}
 
 	queue.ensureArtifactMap(taskId, runId)
 

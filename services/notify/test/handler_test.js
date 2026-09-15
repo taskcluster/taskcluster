@@ -148,7 +148,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('email', async () => {
-    const route = 'test-notify.email.success@simulator.amazonses.com.on-transition';
+    const address = helper.emailAddress();
+    const route = `test-notify.email.${address}.on-transition`;
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
@@ -158,9 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    await helper.checkEmails(email => {
-      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
+    await helper.checkEmails(address);
   });
 
   test('matrix', async () => {

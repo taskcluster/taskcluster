@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, bool, func, object } from 'prop-types';
 import classNames from 'classnames';
-import { withApollo } from '@apollo/client/react/hoc';
 import { equals } from 'ramda';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -22,6 +21,7 @@ import Button from '../Button';
 import JsonDisplay from '../JsonDisplay';
 import ErrorPanel from '../ErrorPanel';
 import subscribeToPulseMessages from '../../utils/pulseListener';
+import { withAuth } from '../../utils/Auth';
 import buildTriggerSchemaValidator from '../../utils/triggerSchemaValidator';
 
 // Cap retained rows so a busy binding cannot grow state/DOM without bound; the
@@ -33,7 +33,7 @@ const MISSING_SCOPE_MESSAGE =
   'web:read-pulse scope. Permission to view or modify this hook does not ' +
   'grant it. Ask an administrator for web:read-pulse, then try again.';
 
-@withApollo
+@withAuth
 @withStyles(theme => ({
   drawerPaper: {
     width: '40vw',
@@ -128,8 +128,6 @@ export default class HookBindingDebugger extends Component {
     bindings: arrayOf(object).isRequired,
     /** The hook's saved triggerSchema. */
     triggerSchema: object.isRequired,
-    /** Apollo client, injected by withApollo. */
-    client: object.isRequired,
   };
 
   // Teardown fn for the active subscription; cleared after it runs.
@@ -207,6 +205,15 @@ export default class HookBindingDebugger extends Component {
       return;
     }
 
+    // The socket was authenticated as the user who clicked Start. If that
+    // user signs out or someone else signs in, stop rather than keep
+    // listening under the old identity; the new user can Start again.
+    if (this.state.listening && prevProps.user !== this.props.user) {
+      this.handleStopListening();
+
+      return;
+    }
+
     // If the saved definition changes while listening, restart against it.
     const bindingsChanged = !equals(prevProps.bindings, this.props.bindings);
     const schemaChanged = !equals(
@@ -241,14 +248,11 @@ export default class HookBindingDebugger extends Component {
     this.teardown();
     this.setState({ listening: true, error: null });
 
-    this.unsubscribeFn = subscribeToPulseMessages(
-      this.props.client,
-      this.props.bindings,
-      {
-        onMessage: this.handleMessage,
-        onError: this.handleError,
-      }
-    );
+    this.unsubscribeFn = subscribeToPulseMessages(this.props.bindings, {
+      onMessage: this.handleMessage,
+      onError: this.handleError,
+      user: this.props.user,
+    });
   };
 
   handleStopListening = () => {

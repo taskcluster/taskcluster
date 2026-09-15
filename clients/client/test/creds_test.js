@@ -13,7 +13,7 @@ suite(testing.suiteName(), () => {
   const client = options => {
     options = _.defaults({}, options || {}, {
       credentials: {},
-      rootUrl: process.env.TASKCLUSTER_ROOT_URL || 'https://community-tc.services.mozilla.com/',
+      rootUrl: process.env.TASKCLUSTER_ROOT_URL || 'https://firefox-ci-tc.services.mozilla.com/',
     });
     options.credentials = _.defaults({}, options.credentials, {
       clientId: 'tester',
@@ -391,7 +391,7 @@ suite(testing.suiteName(), () => {
   suite('Get with credentials from environment variables', async () => {
     setup(() => {
       process.env.TASKCLUSTER_ROOT_URL =
-        process.env.TASKCLUSTER_ROOT_URL || 'https://community-tc.services.mozilla.com/';
+        process.env.TASKCLUSTER_ROOT_URL || 'https://firefox-ci-tc.services.mozilla.com/';
       process.env.TASKCLUSTER_CLIENT_ID = 'tester';
       process.env.TASKCLUSTER_ACCESS_TOKEN = 'no-secret';
     });

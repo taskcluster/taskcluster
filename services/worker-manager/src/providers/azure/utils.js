@@ -178,3 +178,40 @@ export function cloneCaStore(originalCaStore) {
 
   return newCaStore;
 }
+
+/**
+ * ARM nests the actionable error inside `details`:
+ * `err.response.parsedBody.error.details[0].details[0]`, while `err.message`
+ * only carries a generic "see inner errors for details" summary. Return the
+ * leaf errors as plain `{ code, target, message }` objects.
+ *
+ * @param {any} error
+ * @param {number} [depth]
+ * @returns {{ code?: string, target?: string, message?: string }[]}
+ */
+export function azureErrorDetails(error, depth = 0) {
+  const node = error?.response?.parsedBody?.error ?? error?.body?.error ?? error;
+  if (!node || typeof node !== 'object' || depth > 8) {
+    return [];
+  }
+  if (Array.isArray(node.details) && node.details.length > 0) {
+    return node.details.flatMap((/** @type {any} */ d) => azureErrorDetails(d, depth + 1));
+  }
+  const { code, target, message } = node;
+  return code || message ? [{ code, target, message }] : [];
+}
+
+/**
+ * `err.message | Code (target): message | ...`
+ *
+ * @param {any} error
+ * @returns {string}
+ */
+export function formatAzureError(error) {
+  const nested = azureErrorDetails(error)
+    .map(({ code, target, message }) =>
+      [[code, target && `(${target})`].filter(Boolean).join(' '), message].filter(Boolean).join(': ')
+    )
+    .filter(text => text !== error?.message);
+  return [error?.message, ...nested].filter(Boolean).join(' | ');
+}

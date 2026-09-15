@@ -76,20 +76,20 @@ async fn test_empty_post() -> Result<()> {
 
 /// Test a call with a query
 #[tokio::test]
-async fn test_auth_list_clients_paginated() -> Result<()> {
+async fn test_auth_list_role_ids_paginated() -> Result<()> {
     if let Some(root_url) = get_root_url() {
         let auth = Auth::new(ClientBuilder::new(&root_url))?;
         let mut continuation_token: Option<String> = None;
-        let limit = Some("2");
-        let mut saw_root = false;
+        let limit = Some("100");
+        let mut saw_anonymous = false;
 
         loop {
             let res = auth
-                .listClients(None, continuation_token.as_deref(), limit)
+                .listRoleIds(continuation_token.as_deref(), limit)
                 .await?;
-            for client in res.get("clients").unwrap().as_array().unwrap() {
-                if client.get("clientId").unwrap().as_str().unwrap() == "static/taskcluster/root" {
-                    saw_root = true;
+            for role_id in res.get("roleIds").unwrap().as_array().unwrap() {
+                if role_id.as_str().unwrap() == "anonymous" {
+                    saw_anonymous = true;
                 }
             }
             if let Some(v) = res.get("continuationToken") {
@@ -98,8 +98,8 @@ async fn test_auth_list_clients_paginated() -> Result<()> {
                 break;
             }
         }
-        // the root clientId should exist in any deployment.
-        assert!(saw_root);
+        // the anonymous role should exist in any deployment.
+        assert!(saw_anonymous);
     }
 
     Ok(())
@@ -107,16 +107,16 @@ async fn test_auth_list_clients_paginated() -> Result<()> {
 
 /// Test unsigned url generation with a query
 #[tokio::test]
-async fn test_auth_list_clients_unsigned_url() -> Result<()> {
+async fn test_auth_list_role_ids_unsigned_url() -> Result<()> {
     if let Some(root_url) = get_root_url() {
         let auth = Auth::new(ClientBuilder::new(&root_url))?;
 
-        let url = auth.listClients_url(Some("static/"), None, None)?;
+        let url = auth.listRoleIds_url(None, Some("2"))?;
         let body: Value = reqwest::get(&url).await?.json().await?;
 
-        // just check it returns an object with a `clients` property; the
+        // just check it returns an object with a `roleIds` property; the
         // rest is not relevant to url generation
-        assert!(body.get("clients").is_some());
+        assert!(body.get("roleIds").is_some());
     }
 
     Ok(())

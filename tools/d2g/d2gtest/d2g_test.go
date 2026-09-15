@@ -16,10 +16,10 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	"github.com/taskcluster/taskcluster/v108/internal/scopes"
-	d2g "github.com/taskcluster/taskcluster/v108/tools/d2g"
-	"github.com/taskcluster/taskcluster/v108/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v108/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v110/internal/scopes"
+	d2g "github.com/taskcluster/taskcluster/v110/tools/d2g"
+	"github.com/taskcluster/taskcluster/v110/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v110/tools/d2g/genericworker"
 )
 
 func ExampleConvertScopes_mixture() {
@@ -452,5 +452,35 @@ func TestConvertPayloadRejectsInvalidImageName(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), `invalid image name`) {
 		t.Fatalf("expected error to be invalid image name, got: %v", err)
+	}
+}
+
+// TestDockerWorkerSchemaRejectsEmptyArtifactName verifies that a Docker
+// Worker task payload with an empty-string artifact name is rejected by the
+// payload schema. Unlike Generic Worker, Docker Worker never treated an
+// empty artifact name as "derive the name from path", it simply passed
+// the name straight through to Queue.createArtifact, which would have
+// rejected it.
+func TestDockerWorkerSchemaRejectsEmptyArtifactName(t *testing.T) {
+	raw := json.RawMessage(`{
+		"command": ["echo", "hello"],
+		"image": "ubuntu",
+		"maxRunTime": 3600,
+		"artifacts": {
+			"": {
+				"path": "/home/worker/artifacts/output.txt",
+				"type": "file"
+			}
+		}
+	}`)
+
+	documentLoader := gojsonschema.NewBytesLoader(raw)
+	schemaLoader := gojsonschema.NewStringLoader(dockerworker.JSONSchema())
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Valid() {
+		t.Fatal("expected an empty-string artifact name to be rejected by the Docker Worker payload schema, but it was accepted")
 	}
 }

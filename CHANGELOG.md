@@ -3,6 +3,173 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v110.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7447](https://github.com/taskcluster/taskcluster/issues/7447)
+Generic-worker no longer chowns read-only content that is mounted as the task
+user.
+
+▶ [patch] [bug 2071940](http://bugzil.la/2071940)
+Use LSA to store the next task user's password instead of storing it as plaintext in the registry
+
+### ADMINS
+
+▶ [patch] [#9156](https://github.com/taskcluster/taskcluster/issues/9156)
+Worker-pool errors from failed Azure ARM deployments now include the nested, actionable ARM error in the error description. This makes errors like "image X was not found in <region>" visible in the UI and API.
+
+### USERS
+
+▶ [MAJOR] [bug 2060945](http://bugzil.la/2060945)
+A writable directory cache will now refuse being mounted at a `directory` that already exists.
+
+▶ [MAJOR] [bug 2060945](http://bugzil.la/2060945)
+Moving a directory into place now refuses a destination that already exists on
+every platform: on Windows it no longer replaces an existing file, and on POSIX
+systems it no longer replaces an existing empty directory.
+
+▶ [patch] [#9007](https://github.com/taskcluster/taskcluster/issues/9007)
+Generic Worker no longer panics when the Queue rejects a `createArtifact` call with a 4xx response. The task is resolved as `exception/malformed-payload`, or as `exception/resource-unavailable` for 408 and 429. `logs.live` and `logs.backing` must now match `^[\x20-\x7e]+$`, and a non-empty artifact `name` must match the same character set. An empty artifact `name` is still allowed and means "derive from `path`"; if that `path` contains other characters, the Queue still rejects the artifact at upload time.
+
+▶ [patch] [#9058](https://github.com/taskcluster/taskcluster/issues/9058)
+GitHub tasks no longer fail when concurrent pull request events race with automatic cancellation.
+
+▶ [patch] [bug 2072198](http://bugzil.la/2072198)
+Mounting a cache on Windows no longer fails when the cache contains a file that is hardlinked more than once inside the cache itself
+
+### OTHER
+
+▶ Additional changes not described here: [#9126](https://github.com/taskcluster/taskcluster/issues/9126), [#9149](https://github.com/taskcluster/taskcluster/issues/9149).
+
+## v109.0.0
+
+### GENERAL
+
+▶ [MAJOR]
+The deprecated Auth service Azure Credentials API methods have been removed: `azureAccounts`,
+`azureTables`, `azureTableSAS`, `azureContainers`, and `azureContainerSAS`. No known Taskcluster
+component uses these methods.
+
+The `auth.azure_accounts` Helm property is no longer allowed, and the corresponding
+`AZURE_ACCOUNTS` environment variable is no longer used. Deployers must remove
+`auth.azure_accounts` from their Helm values before upgrading.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 2069456](http://bugzil.la/2069456)
+When uploading artifacts, Generic Worker multiuser engine will now create
+temporary files as the worker user (`root`/`LocalSystem`) and stream content
+into them as the task user.
+
+The internal `generic-worker copy-to-temp-file` command has been replaced with
+`generic-worker cat-file`
+
+### USERS
+
+▶ [MAJOR] [bug 2069332](http://bugzil.la/2069332)
+When uploading an optional artifact, if it's not readable (or encounters any
+unreadable file for directory artifacts), the task will now fail instead of
+silently omitting that file.
+
+▶ [minor] [#9065](https://github.com/taskcluster/taskcluster/issues/9065)
+The Queue service now exposes `taskQueueCountsBatch` to fetch pending and
+claimed task counts for multiple task queues in one request.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump nodemailer from 9.0.5 to 9.1.1 (583fcbc493)
+* build(deps): bump js-yaml from 4.3.1 to 4.3.2 in /clients/client (b4391b0a6f)
+* build(deps): bump js-yaml from 4.3.1 to 4.3.2 in /clients/client-test (a19e347b02)
+* build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2 (65c3bd38dc)
+
+</details>
+
+## v108.1.0
+
+### GENERAL
+
+▶ [patch]
+Bumps `uv` to v0.12.8 for the in-tree `ci` and `python` docker images, the taskgraph decision image to v24.2.3, the git for windows version to v2.55.0, and the `nvm` version used during releases to v0.40.7.
+
+▶ [patch]
+Upgrades to Node.js v24.20.0.
+
+▶ [patch]
+Upgrades to go1.27.1 and golangci-lint v2.13.2.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.27.1).
+
+▶ [patch]
+Upgrades to rust v1.98.0.
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker no longer deadlocks on shutdown or when interrupted with Ctrl+C / `SIGINT` while a task is running. Shutdown waits on task completions until no tasks remain, instead of blocking on a wait group that only advanced when those completions were processed.
+
+▶ [patch] [bug 2069456](http://bugzil.la/2069456)
+On Windows multiuser workers, command environment read by generic-worker from the task directory will now refuse to follow links.
+
+▶ [patch] [bug 2069456](http://bugzil.la/2069456)
+On Windows multiuser workers, command scripts written by generic-worker into the task directory will now refuse to follow links.
+
+### USERS
+
+▶ [minor] [bug 1917274](http://bugzil.la/1917274)
+The github service publishes a new `exchange/taskcluster-github/v1/taskcluster-yml-update`
+message when a push changes a repository's `.taskcluster.yml`. The ordinary `push`
+message is still published as well, so existing consumers are unaffected.
+
+The payload names the organization, the repository, the ref that was pushed to, and
+the webhook delivery id, and nothing else. It deliberately does not carry the file's
+contents. A consumer can therefore act on a push in one repository from inside
+another, treating the ref as a value to compare against rather than one to pass on.
+
+### DEVELOPERS
+
+▶ [patch] [bug 2066797](http://bugzil.la/2066797)
+Changes the pull-request policy to `public_restricted` and isolates trusted and untrusted task graphs. External pull requests run at level 1 with separate caches, without secrets or generic-worker CI, and rebuild Docker images instead of sharing an image index. Collaborators can trigger the full level-3 graph with `/taskcluster run`.
+
+▶ [patch] [#9093](https://github.com/taskcluster/taskcluster/issues/9093)
+UI Scopes pages (ViewScope and ScopesetExpander) switch from GraphQL to direct REST service calls.
+
+▶ [patch] [#9074](https://github.com/taskcluster/taskcluster/issues/9074)
+UI WMViewWorkers and WMViewWorkerPools pages switches to use direct REST API calls
+
+### OTHER
+
+▶ Additional change not described here: [#9117](https://github.com/taskcluster/taskcluster/issues/9117).
+
+### Automated Package Updates
+
+<details>
+<summary>18 Dependabot updates</summary>
+
+* build(deps): bump immutable from 3.8.3 to 3.8.4 in /ui (9dbdb66aef)
+* build(deps): bump title-case from 3.0.3 to 4.3.2 in /ui (1ac78950a7)
+* build(deps): bump fast-uri from 3.1.5 to 3.1.6 (a1a68c4654)
+* build(deps): bump fast-uri from 3.1.5 to 3.1.6 in /ui (663adc596c)
+* build(deps): bump qs from 6.15.3 to 6.16.0 (e03dee4976)
+* build(deps): bump qs from 6.15.3 to 6.16.0 in /ui (3ef6f64682)
+* build(deps): bump chalk from 5.6.2 to 6.0.0 (461a5091f9)
+* build(deps): bump @azure/arm-network from 34.0.0 to 38.0.0 (a61e720b59)
+* build(deps): bump the node-deps group with 8 updates (63ef0ad7f8)
+* build(deps): bump taskcluster-lib-urls in /ui in the ui-node-deps group (26bd1ca369)
+* build(deps): bump the gh-actions-deps group with 2 updates (1229008b94)
+* build(deps): bump @slack/web-api from 6.13.0 to 8.0.0 (a1caab2e69)
+* build(deps): bump taskcluster-urls (e17bb929f3)
+* build(deps): bump the go-deps group with 3 updates (ee02263f9d)
+* build(deps): bump taskcluster-lib-urls (81e7451c13)
+* build(deps): bump taskcluster-lib-urls (1bc2af0bba)
+* build(deps): bump browserslist from 4.28.2 to 4.28.8 in /ui (a8f50468a9)
+* build(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.1 (f6555fbe52)
+
+</details>
+
 ## v108.0.0
 
 ### DEPLOYERS

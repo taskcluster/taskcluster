@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -10,10 +11,11 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
-	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
+	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/artifacts"
 )
 
 var (
@@ -54,14 +56,16 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	atf.FindArtifacts()
 	got := atf.artifacts
 
-	// remove the ContentPath field from the got artifacts, we can't
-	// compare it as it's non-deterministic
 	for _, a := range got {
+		if err := a.PrepareContent(); err != nil {
+			t.Fatalf("Could not prepare content of artifact %v: %v", a.Base().Name, err)
+		}
+		a.DiscardContent()
 		switch artifact := a.(type) {
 		case *artifacts.S3Artifact:
-			artifact.ContentPath = ""
+			artifact.Content = nil
 		case *artifacts.ObjectArtifact:
-			artifact.ContentPath = ""
+			artifact.Content = nil
 		}
 	}
 
@@ -789,6 +793,261 @@ func TestOptionalArtifactUploadFailureFailsTask(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "resource-unavailable")
 }
 
+func TestInvalidArtifactNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "SampleArtifacts/_/X.txt",
+				Type: "file",
+				Name: "public/logs/a\nb.log",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+	// Rejected by the payload schema before the task runs, not by the Queue
+	// at upload time.
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]*$'`) {
+		t.Fatalf("Was expecting log to explain that the artifact name violates the pattern, but it doesn't: \n%v", logtext)
+	}
+}
+
+func TestClassifyCreateArtifactError4xxIsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	scheduleTask(t, testTask(t), GenericWorkerPayload{})
+
+	// need to claim task directly to get task.StatusManager wired up
+	tasks := ClaimWork(1)
+	if len(tasks) != 1 {
+		t.Fatalf("Expected to claim 1 task, got %v", len(tasks))
+	}
+	task := tasks[0]
+
+	artifact := &artifacts.S3Artifact{
+		BaseArtifact: &artifacts.BaseArtifact{
+			Name: "public/build/firefox.exe",
+		},
+	}
+
+	cee := task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+		CallSummary: &tcclient.CallSummary{
+			HTTPResponseBody: "some 4xx error the schema didn't anticipate",
+		},
+		RootCause: httpbackoff.BadHttpResponseCode{
+			// an arbitrary, unassigned 4xx code (i.e. not 400/404/409/etc,
+			// which might coincidentally be handled by a more specific
+			// branch) to prove the generic "any 4xx" fallback is exercised
+			HttpResponseCode: 456,
+		},
+	})
+
+	if cee == nil {
+		t.Fatal("Expected classifyCreateArtifactError to return a malformed-payload error, but got nil")
+	}
+	if cee.Reason != malformedPayload {
+		t.Fatalf("Expected reason %q, got %q", malformedPayload, cee.Reason)
+	}
+	if cee.TaskStatus != errored {
+		t.Fatalf("Expected task status %q, got %q", errored, cee.TaskStatus)
+	}
+}
+
+// With no name set, the artifact name is derived from path after schema
+// validation has already passed, so only the Queue can reject it.
+func TestPathDerivedArtifactNameRejectedByQueue(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/_/X.txt", "unzulässiges-Zeichen.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "unzulässiges-Zeichen.txt",
+				Type: "file",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "TASK EXCEPTION due to response code 400 from Queue") {
+		t.Fatalf("Was expecting log to show the Queue's 400 rejection of the path-derived artifact name, but it doesn't: \n%v", logtext)
+	}
+}
+
+// 401/403 mean the worker's credentials are wrong, not the payload.
+func TestClassifyCreateArtifactError401And403Panic(t *testing.T) {
+	setup(t)
+
+	scheduleTask(t, testTask(t), GenericWorkerPayload{})
+	tasks := ClaimWork(1)
+	if len(tasks) != 1 {
+		t.Fatalf("Expected to claim 1 task, got %v", len(tasks))
+	}
+	task := tasks[0]
+
+	artifact := &artifacts.S3Artifact{
+		BaseArtifact: &artifacts.BaseArtifact{
+			Name: "public/build/firefox.exe",
+		},
+	}
+
+	for _, code := range []int{401, 403} {
+		func() {
+			defer func() {
+				if recover() == nil {
+					t.Errorf("Expected classifyCreateArtifactError to panic for response code %v, but it didn't", code)
+				}
+			}()
+			_ = task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+				CallSummary: &tcclient.CallSummary{
+					HTTPResponseBody: "credentials/scopes problem",
+				},
+				RootCause: httpbackoff.BadHttpResponseCode{
+					HttpResponseCode: code,
+				},
+			})
+		}()
+	}
+}
+
+// 408/429 come from timeouts and rate limiting between the worker and the
+// Queue, so the payload is not to blame.
+func TestClassifyCreateArtifactError408And429AreResourceUnavailable(t *testing.T) {
+	setup(t)
+
+	scheduleTask(t, testTask(t), GenericWorkerPayload{})
+	tasks := ClaimWork(1)
+	if len(tasks) != 1 {
+		t.Fatalf("Expected to claim 1 task, got %v", len(tasks))
+	}
+	task := tasks[0]
+
+	artifact := &artifacts.S3Artifact{
+		BaseArtifact: &artifacts.BaseArtifact{
+			Name: "public/build/firefox.exe",
+		},
+	}
+
+	for _, code := range []int{408, 429} {
+		cee := task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: "slow down",
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: code,
+			},
+		})
+		if cee == nil {
+			t.Fatalf("Expected a resource-unavailable error for response code %v, but got nil", code)
+		}
+		if cee.Reason != resourceUnavailable {
+			t.Fatalf("Expected reason %q for response code %v, got %q", resourceUnavailable, code, cee.Reason)
+		}
+		if cee.TaskStatus != errored {
+			t.Fatalf("Expected task status %q for response code %v, got %q", errored, code, cee.TaskStatus)
+		}
+	}
+}
+
+// Artifact.Name is `omitempty`, so an explicit "" cannot be expressed through
+// the Go struct: the payload goes through a map to put the empty name in.
+func TestEmptyArtifactNameDerivesFromPath(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+
+	payloadJSON, err := json.Marshal(&payload)
+	if err != nil {
+		t.Fatalf("Could not marshal payload: %v", err)
+	}
+	var payloadMap map[string]any
+	if err := json.Unmarshal(payloadJSON, &payloadMap); err != nil {
+		t.Fatalf("Could not unmarshal payload into map: %v", err)
+	}
+	payloadMap["artifacts"] = []map[string]any{
+		{
+			"path": "SampleArtifacts/_/X.txt",
+			"type": "file",
+			"name": "",
+		},
+	}
+	finalPayloadJSON, err := json.Marshal(payloadMap)
+	if err != nil {
+		t.Fatalf("Could not marshal final payload: %v", err)
+	}
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(finalPayloadJSON)
+
+	taskID := submitAndAssert(t, td, GenericWorkerPayload{}, "completed", "completed")
+
+	expectedData, err := os.ReadFile(filepath.Join(testdataDir, "SampleArtifacts", "_", "X.txt"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actualData := getArtifactContent(t, taskID, "SampleArtifacts/_/X.txt")
+	if string(expectedData) != string(actualData) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expectedData), len(actualData))
+	}
+}
+
+func TestInvalidLiveLogNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+		"command": [` + rawHelloGoodbye() + `],
+		"maxRunTime": 30,
+		"logs": {
+			"live": "public/logs/a\nb.log"
+		}
+	}`)
+
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]+$'`) {
+		t.Fatalf("Was expecting log to explain that logs.live violates the pattern, but it doesn't: \n%v", logtext)
+	}
+}
+
+func TestInvalidBackingLogNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+		"command": [` + rawHelloGoodbye() + `],
+		"maxRunTime": 30,
+		"logs": {
+			"backing": "public/logs/a\nb.log"
+		}
+	}`)
+
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]+$'`) {
+		t.Fatalf("Was expecting log to explain that logs.backing violates the pattern, but it doesn't: \n%v", logtext)
+	}
+}
+
 func TestMissingOptionalDirectoryArtifactDoesNotFailTest(t *testing.T) {
 
 	setup(t)
@@ -1337,4 +1596,32 @@ func TestDirectoryArtifactUploadFromAbsolutePath(t *testing.T) {
 		},
 	}
 	expectedArtifacts.Validate(t, taskID, 0)
+}
+
+func TestBinaryFileArtifactUpload(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("mozharness.zip"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "mozharness.zip",
+				Type: "file",
+				Name: "public/mozharness.zip",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	expected, err := os.ReadFile(filepath.Join(testdataDir, "mozharness.zip"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actual := getArtifactContent(t, taskID, "public/mozharness.zip")
+	if !bytes.Equal(expected, actual) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expected), len(actual))
+	}
 }

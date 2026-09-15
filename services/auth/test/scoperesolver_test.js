@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], (mock, skipping) => {
+helper.secrets.mockSuite('setup and listening', ['gcp'], (mock, skipping) => {
   let scopeResolver;
 
   helper.withDb(mock, skipping);

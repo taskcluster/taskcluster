@@ -3798,6 +3798,14 @@ type QueueQueueTaskGroupsEntitiesScanDeprecatedFn = {
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
 };
+type QueueQueueTaskQueueCountsFn = {
+ (
+   task_queue_ids_in: JsonB
+ ): Promise<Array<{task_queue_id: string, pending_count: number, claimed_count: number}>>;
+ (params: {
+  task_queue_ids_in: JsonB;
+ }): Promise<Array<{task_queue_id: string, pending_count: number, claimed_count: number}>>;
+};
 /** @deprecated */
 type QueueQueueTaskRequirementEntitiesCreateDeprecatedFn = {
  (
@@ -6448,6 +6456,7 @@ export interface DbFunctions {
   queue_task_deadline_delete: QueueQueueTaskDeadlineDeleteFn;
   queue_task_deadline_get: QueueQueueTaskDeadlineGetFn;
   queue_task_deadline_put: QueueQueueTaskDeadlinePutFn;
+  queue_task_queue_counts: QueueQueueTaskQueueCountsFn;
   queue_worker_seen_with_last_date_active: QueueQueueWorkerSeenWithLastDateActiveFn;
   queue_worker_stats: QueueQueueWorkerStatsFn;
   queue_worker_task_seen: QueueQueueWorkerTaskSeenFn;

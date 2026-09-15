@@ -16,15 +16,15 @@ func TestResolveResolvedTask(t *testing.T) {
 func TestReclaimCancelledTask(t *testing.T) {
 	setup(t)
 	mounts := []MountEntry{
-		// requires scope "generic-worker:cache:banana-cache"
+		// requires scope "generic-worker:cache:tc-test-cache-1"
 		&WritableDirectoryCache{
-			CacheName: "banana-cache",
+			CacheName: "tc-test-cache-1",
 			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
 
 	td, payload := CancelTask(t)
-	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
 	payload.Command = append(payload.Command, sleep(300)...)
 	payload.Mounts = toMountArray(t, &mounts)
 	payload.Features.LiveLog = false

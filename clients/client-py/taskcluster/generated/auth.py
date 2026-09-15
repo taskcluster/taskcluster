@@ -388,71 +388,6 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["awsS3Credentials"], *args, **kwargs)
 
-    def azureAccounts(self, *args, **kwargs):
-        """
-        List Accounts Managed by Auth
-
-        Retrieve a list of all Azure accounts managed by Taskcluster Auth.
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["azureAccounts"], *args, **kwargs)
-
-    def azureTables(self, *args, **kwargs):
-        """
-        List Tables in an Account Managed by Auth
-
-        Retrieve a list of all tables in an account.
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["azureTables"], *args, **kwargs)
-
-    def azureTableSAS(self, *args, **kwargs):
-        """
-        Get Shared-Access-Signature for Azure Table
-
-        Get a shared access signature (SAS) string for use with a specific Azure
-        Table Storage table.
-
-        The `level` parameter can be `read-write` or `read-only` and determines
-        which type of credentials are returned.  If level is read-write, it will create the
-        table if it doesn't already exist.
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["azureTableSAS"], *args, **kwargs)
-
-    def azureContainers(self, *args, **kwargs):
-        """
-        List containers in an Account Managed by Auth
-
-        Retrieve a list of all containers in an account.
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["azureContainers"], *args, **kwargs)
-
-    def azureContainerSAS(self, *args, **kwargs):
-        """
-        Get Shared-Access-Signature for Azure Container
-
-        Get a shared access signature (SAS) string for use with a specific Azure
-        Blob Storage container.
-
-        The `level` parameter can be `read-write` or `read-only` and determines
-        which type of credentials are returned.  If level is read-write, it will create the
-        container if it doesn't already exist.
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["azureContainerSAS"], *args, **kwargs)
-
     def sentryDSN(self, *args, **kwargs):
         """
         Get DSN for Sentry Project
@@ -628,48 +563,6 @@ class Auth(BaseClient):
             "query": ["format"],
             "route": "/aws/s3/<level>/<bucket>/<prefix>",
             "stability": "stable",
-        },
-        "azureAccounts": {
-            "args": [],
-            "method": "get",
-            "name": "azureAccounts",
-            "output": "v1/azure-account-list-response.json#",
-            "route": "/azure/accounts",
-            "stability": "deprecated",
-        },
-        "azureContainerSAS": {
-            "args": ["account", "container", "level"],
-            "method": "get",
-            "name": "azureContainerSAS",
-            "output": "v1/azure-container-response.json#",
-            "route": "/azure/<account>/containers/<container>/<level>",
-            "stability": "deprecated",
-        },
-        "azureContainers": {
-            "args": ["account"],
-            "method": "get",
-            "name": "azureContainers",
-            "output": "v1/azure-container-list-response.json#",
-            "query": ["continuationToken"],
-            "route": "/azure/<account>/containers",
-            "stability": "deprecated",
-        },
-        "azureTableSAS": {
-            "args": ["account", "table", "level"],
-            "method": "get",
-            "name": "azureTableSAS",
-            "output": "v1/azure-table-access-response.json#",
-            "route": "/azure/<account>/table/<table>/<level>",
-            "stability": "deprecated",
-        },
-        "azureTables": {
-            "args": ["account"],
-            "method": "get",
-            "name": "azureTables",
-            "output": "v1/azure-table-list-response.json#",
-            "query": ["continuationToken"],
-            "route": "/azure/<account>/tables",
-            "stability": "deprecated",
         },
         "client": {
             "args": ["clientId"],

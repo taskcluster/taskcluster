@@ -76,15 +76,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('email', async () => {
+    const address = helper.emailAddress();
     await helper.apiClient.email({
-      address: 'success@simulator.amazonses.com',
+      address,
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes. <img src=x onerror=alert(1)//>',
       link: { text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/Z-tDsP4jQ3OUTjN0Q6LNKQ&foo=bar' },
     });
-    await helper.checkEmails(email => {
-      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
+    await helper.checkEmails(address);
   });
 
   test('does not send notifications to denylisted email address', async () => {
@@ -111,26 +110,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('email without link', async () => {
+    const address = helper.emailAddress();
     await helper.apiClient.email({
-      address: 'success@simulator.amazonses.com',
+      address,
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is Complete',
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is finished. It took 124 minutes.',
     });
-    await helper.checkEmails(email => {
-      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
+    await helper.checkEmails(address);
   });
 
   test('email with fullscreen template', async () => {
+    const address = helper.emailAddress();
     await helper.apiClient.email({
-      address: 'success@simulator.amazonses.com',
+      address,
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKp is Complete',
       content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKp is finished. It took 124 minutes.',
       template: 'fullscreen',
     });
-    await helper.checkEmails(email => {
-      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
+    await helper.checkEmails(address);
   });
 
   test('matrix', async () => {

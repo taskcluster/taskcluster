@@ -29,21 +29,21 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
-	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v108/internal"
-	"github.com/taskcluster/taskcluster/v108/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v108/internal/scopes"
-	"github.com/taskcluster/taskcluster/v108/tools/workerproto"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v108/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
+	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v110/internal"
+	"github.com/taskcluster/taskcluster/v110/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v110/internal/scopes"
+	"github.com/taskcluster/taskcluster/v110/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v110/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -231,10 +231,9 @@ func main() {
 	case arguments["new-ed25519-keypair"]:
 		err := generateEd25519Keypair(arguments["--file"].(string))
 		exitOnError(CANT_CREATE_ED25519_KEYPAIR, err, "Error generating ed25519 keypair %v for worker", arguments["--file"].(string))
-	case arguments["copy-to-temp-file"]:
-		tempFilePath, err := fileutil.CopyToTempFile(arguments["--copy-file"].(string))
-		exitOnError(CANT_COPY_TO_TEMP_FILE, err, "Error copying file %v to temp file", arguments["--copy-file"].(string))
-		fmt.Println(tempFilePath)
+	case arguments["cat-file"]:
+		err := fileutil.CatFile(arguments["--cat-file"].(string), os.Stdout)
+		exitOnError(CANT_CAT_FILE, err, "Error writing file %v to stdout", arguments["--cat-file"].(string))
 	case arguments["create-file"]:
 		err := fileutil.CreateFile(arguments["--create-file"].(string))
 		exitOnError(CANT_CREATE_FILE, err, "Error creating file %v", arguments["--create-file"].(string))

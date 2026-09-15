@@ -136,6 +136,7 @@
    * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
    * [`queue_task_deadline_get`](#queue_task_deadline_get)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
+   * [`queue_task_queue_counts`](#queue_task_queue_counts)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_stats`](#queue_worker_stats)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -2895,6 +2896,7 @@ end
 * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
 * [`queue_task_deadline_get`](#queue_task_deadline_get)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
+* [`queue_task_queue_counts`](#queue_task_queue_counts)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_stats`](#queue_worker_stats)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
@@ -5671,6 +5673,37 @@ begin
     deadline_in,
     visible
   );
+end
+```
+
+</details>
+
+### queue_task_queue_counts
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_ids_in jsonb`
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `pending_count integer`
+  * `claimed_count integer`
+* *Last defined on version*: 129
+
+Count pending and claimed tasks for each requested task queue.
+The result contains one row per input task queue, including queues with no
+pending or claimed tasks.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN QUERY
+  SELECT
+    requested.task_queue_id,
+    queue_pending_tasks_count(requested.task_queue_id) AS pending_count,
+    queue_claimed_tasks_count(requested.task_queue_id) AS claimed_count
+  FROM jsonb_array_elements_text(task_queue_ids_in) AS requested(task_queue_id);
 end
 ```
 
