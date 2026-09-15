@@ -420,6 +420,7 @@ tasks.push({
         },
         ui: {
           image: 'taskcluster/ui',
+          pull_policy: 'build',
           build: {
             context: './ui',
             dockerfile: 'Dockerfile',
