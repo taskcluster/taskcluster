@@ -35,6 +35,7 @@ import { ARTIFACTS_PAGE_SIZE, ARTIFACTS_SHOW_MAX } from '../../utils/constants';
 import { runs } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
 import { getArtifactUrl } from '../../utils/getArtifactUrl';
+import { buildLogViewerUrl } from '../../utils/artifactNames';
 import formatBytes from '../../utils/formatBytes';
 import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
@@ -184,17 +185,23 @@ export default class TaskRunsCard extends Component {
   getArtifactInfo = ({ name, contentType }) => {
     const { taskId, runId } = this.getCurrentRun();
     const { user } = this.props;
-    const isLogFile =
-      contentType.startsWith('text/plain') && name.endsWith('.log');
+    const logViewerUrl =
+      contentType.startsWith('text/plain') && name.endsWith('.log')
+        ? buildLogViewerUrl({
+            taskId,
+            runId,
+            name,
+            isLiveLog: this.isLiveLog(),
+          })
+        : null;
+    const isLogFile = Boolean(logViewerUrl);
     const icon = getIconFromMime(contentType);
     let handleArtifactClick;
     let url = getArtifactUrl({ user, taskId, runId, name });
 
     // if this looks like a logfile, send the user to the logfile viewer
     if (isLogFile) {
-      url = this.isLiveLog()
-        ? `/tasks/${taskId}/runs/${runId}/logs/live/${name}`
-        : `/tasks/${taskId}/runs/${runId}/logs/${name}`;
+      url = logViewerUrl;
 
       // don't do anything special on clicking this artifact
       handleArtifactClick = () => {};
