@@ -163,6 +163,42 @@ func TestGrantFullControl(t *testing.T) {
 		}
 	})
 
+	t.Run("takes every link of a file hardlinked inside the tree", func(t *testing.T) {
+		cache := filepath.Join(base, "innerlinks")
+		if err := os.MkdirAll(cache, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		file := filepath.Join(cache, "a")
+		link1 := filepath.Join(cache, "b")
+		link2 := filepath.Join(cache, "c")
+
+		if err := os.WriteFile(file, []byte("Hi"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Link(file, link1); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Link(file, link2); err != nil {
+			t.Fatal(err)
+		}
+
+		// *S-1-5-32-545 is BUILTIN\Users, just use that as the owner for testing
+		setOwner(t, file, "*S-1-5-32-545")
+		setOwner(t, cache, "*S-1-5-32-545")
+
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		for _, p := range []string{file, link1, link2} {
+			if got := ownerOf(t, p); got != taskUser {
+				t.Errorf("%q owner = %q, want %q", p, got, taskUser)
+			}
+			if !grantedTo(t, p, taskUser) {
+				t.Errorf("task user was not granted %q", p)
+			}
+		}
+	})
+
 	t.Run("refuses to grant on a file something else can delete", func(t *testing.T) {
 		cache := filepath.Join(base, "helddeletable")
 		if err := os.MkdirAll(cache, 0o700); err != nil {
