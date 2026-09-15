@@ -84,7 +84,6 @@ export const run = shape({
   workerGroup: string,
   workerId: string,
   takenUntil: date,
-  artifacts,
 });
 
 export const runs = arrayOf(run);
@@ -151,6 +150,36 @@ export const task = shape({
 });
 
 Object.assign(task, { taskGroup: task });
+
+// A task definition as returned by the queue's REST API (`queue.task`).
+export const taskDefinition = shape({
+  taskQueueId: string,
+  schedulerId: string,
+  projectId: string,
+  taskGroupId: string,
+  dependencies: arrayOf(string),
+  requires: string,
+  routes: arrayOf(string),
+  priority: string,
+  retries: number,
+  created: date,
+  deadline: date,
+  expires: date,
+  scopes: arrayOf(string),
+  payload: object,
+  metadata: taskMetadata,
+  tags: object,
+  extra: object,
+});
+
+// A task status as returned by the queue's REST API (`queue.status`).
+export const taskStatus = shape({
+  taskId: string,
+  taskGroupId: string,
+  state: string,
+  retriesLeft: number,
+  runs,
+});
 
 const taskRun = shape({
   taskId: string,
