@@ -9,21 +9,12 @@ import (
 )
 
 var (
-	//	procGetUserObjectSecurity        = user32.NewProc("GetUserObjectSecurity")
-	procSetUserObjectSecurity = user32.NewProc("SetUserObjectSecurity")
-
-	//	procGetSecurityDescriptorDacl    = advapi32.NewProc("GetSecurityDescriptorDacl")
-	procSetSecurityDescriptorDacl = advapi32.NewProc("SetSecurityDescriptorDacl")
-
-	//	procIsValidAcl                   = advapi32.NewProc("IsValidAcl")
-	//	procGetAclInformation            = advapi32.NewProc("GetAclInformation")
+	procSetUserObjectSecurity        = user32.NewProc("SetUserObjectSecurity")
+	procSetSecurityDescriptorDacl    = advapi32.NewProc("SetSecurityDescriptorDacl")
 	procInitializeSecurityDescriptor = advapi32.NewProc("InitializeSecurityDescriptor")
 	procInitializeAcl                = advapi32.NewProc("InitializeAcl")
-
-	//	procAddAce                       = advapi32.NewProc("AddAce")
-	//	procGetAce                       = advapi32.NewProc("GetAce")
-	procAddAccessAllowedAce   = advapi32.NewProc("AddAccessAllowedAce")
-	procAddAccessAllowedAceEx = advapi32.NewProc("AddAccessAllowedAceEx")
+	procAddAccessAllowedAce          = advapi32.NewProc("AddAccessAllowedAce")
+	procAddAccessAllowedAceEx        = advapi32.NewProc("AddAccessAllowedAceEx")
 )
 
 // Win32 ACL constants not exposed by golang.org/x/sys/windows. Constants
@@ -166,14 +157,6 @@ func InitializeAcl(acl *Acl, length, revision uint32) error {
 	}
 	return nil
 }
-
-type AceHeader struct {
-	AceType  byte
-	AceFlags byte
-	AceSize  uint16
-}
-
-type Ace struct{}
 
 func AddAccessAllowedAce(acl *Acl, revision, mask uint32, sid *syscall.SID) error {
 	r1, _, e1 := procAddAccessAllowedAce.Call(

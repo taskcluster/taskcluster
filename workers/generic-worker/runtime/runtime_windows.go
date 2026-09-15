@@ -49,14 +49,6 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	return err
 }
 
-func (user *OSUser) MakeAdmin() error {
-	_, err := host.RunIgnoreError(
-		user.Name+" is already a member of group administrators",
-		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+host.EscapePowerShellSingleQuote(user.Name)+"'",
-	)
-	return err
-}
-
 // WaitForProfileService polls the Windows User Profile Service (ProfSvc)
 // until it is running or the timeout expires. On first boot after sysprep,
 // ProfSvc may not be fully initialized when generic-worker starts, causing

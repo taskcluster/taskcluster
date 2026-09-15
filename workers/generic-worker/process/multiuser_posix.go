@@ -19,10 +19,6 @@ type PlatformData struct {
 	SysProcAttr *syscall.SysProcAttr
 }
 
-func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
-	return TaskUserPlatformData(user, headlessTasks)
-}
-
 func TaskUserPlatformData(u *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
 	usr, err := user.Lookup(u.Name)
 	if err != nil {
