@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/gwconfig"
 )
 
 // Called with cacheMutex held, before tasks can access caches. Seed directories

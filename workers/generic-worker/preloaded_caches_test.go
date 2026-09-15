@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/gwconfig"
 )
 
 func setupPreloadedCache(t *testing.T) string {
