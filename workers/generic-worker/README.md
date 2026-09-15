@@ -290,6 +290,11 @@ and reports back results to the queue.
                                             [default: 524288000] (500MiB)
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          preloadedDirectoryCaches          List of objects with cacheName and location. Each
+                                            location is an absolute path to a seed directory.
+                                            At startup, copy it into cachesDir if no cache
+                                            exists for that name. See README.md for details.
+                                            [default: []]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
@@ -506,3 +511,51 @@ Useful information on win32 APIs:
 * [Getting the Logon SID in C++](https://msdn.microsoft.com/en-us/aa446670?f=255&MSPPError=-2147217396)
 * [Modifying the ACLs of an Object in C++](https://docs.microsoft.com/en-us/windows/desktop/secauthz/modifying-the-acls-of-an-object-in-c--)
 * [Window Station Security and Access Rights](https://docs.microsoft.com/en-us/windows/desktop/winstation/window-station-security-and-access-rights)
+
+## Preloaded caches
+
+Use `preloadedDirectoryCaches` to supply initial contents for writable directory
+caches. This option works on Windows, Linux, macOS, and FreeBSD. It does not change
+task payloads or the scopes required to use a cache.
+
+```json
+{
+  "preloadedDirectoryCaches": [
+    {"cacheName": "source-checkout", "location": "/opt/worker/cache-seeds/source"}
+  ]
+}
+```
+
+On Windows, use an absolute Windows path, such as
+`"C:\\worker\\cache-seeds\\source"`, for `location`. The cache name must
+match the task's writable directory cache name exactly. Configure one seed per
+name. Different names need separate source directories.
+
+The worker loads cache state, removes incomplete imports, and copies each seed
+into a new directory under `cachesDir`. The copy works between filesystems on
+all supported platforms. The worker registers only a complete copy and saves
+cache state before it removes the seed. A restart before registration discards
+the incomplete copy and retries from the seed. A restart after registration
+keeps the cache and completes seed cleanup. If a cache already exists, the
+worker keeps it and removes the unused seed. It does not fill the cache pool
+to worker capacity. Concurrent tasks use the normal cache acquisition rules.
+
+Seeds can contain directories, regular files, and relative symbolic links that
+resolve within the seed. Absolute links, external links, broken links, junctions,
+and special files are not supported. The administrator must control the seed and
+its parent directories; tasks must not be able to change them. Seed paths must
+not overlap each other, `cachesDir`, `downloadsDir`, or `tasksDir`. Configure disk
+mounts before worker startup. The worker does not check repository formats or
+revision compatibility; image provisioning must check the seed contents.
+
+Import uses a copy even on the same filesystem. Allow space for the seed and
+the complete imported cache during startup. File execute bits are retained;
+source owners, ACLs, and extended attributes are not copied. Normal cache mount
+code grants task access. Include import time in worker startup measurements.
+
+A missing or unusable seed produces a warning. Tasks can then create an empty
+cache as usual. Invalid configuration, such as overlapping paths, is rejected.
+After the seed is consumed, cache purge or eviction uses the normal cold-cache
+path; the worker does not rebuild seeds. Image tests should enforce the presence
+and validity of configured seeds. Use a worker release that supports this option
+before adding it to worker configuration.
