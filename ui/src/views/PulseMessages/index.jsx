@@ -117,6 +117,15 @@ export default class PulseMessages extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    // The socket was authenticated as the user who clicked Start. If that
+    // user signs out or someone else signs in, stop rather than keep
+    // listening under the old identity; the new user can Start again.
+    if (this.state.listening && prevProps.user !== this.props.user) {
+      this.handleStopListening();
+    }
+  }
+
   componentWillUnmount() {
     this.unsubscribe();
   }

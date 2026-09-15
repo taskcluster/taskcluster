@@ -205,6 +205,15 @@ export default class HookBindingDebugger extends Component {
       return;
     }
 
+    // The socket was authenticated as the user who clicked Start. If that
+    // user signs out or someone else signs in, stop rather than keep
+    // listening under the old identity; the new user can Start again.
+    if (this.state.listening && prevProps.user !== this.props.user) {
+      this.handleStopListening();
+
+      return;
+    }
+
     // If the saved definition changes while listening, restart against it.
     const bindingsChanged = !equals(prevProps.bindings, this.props.bindings);
     const schemaChanged = !equals(
