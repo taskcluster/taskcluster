@@ -34,10 +34,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 		return fmt.Errorf("user %s already existed - cannot create", user.Name)
 	}
 	log.Print("Created new OS user!")
-	err = host.RunBatch(
-		userExisted,
-		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + host.EscapePowerShellSingleQuote(user.Name) + "'"},
-	)
+	err = win32.AddLocalGroupMember("Remote Desktop Users", user.Name)
 	// if user existed, the above commands can fail
 	// if it didn't, they can't
 	if !userExisted && err != nil {
