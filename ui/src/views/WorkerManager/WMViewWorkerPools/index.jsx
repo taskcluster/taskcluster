@@ -62,29 +62,29 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     errorStatsLoading: false,
     errorStats: null,
     errorStatsError: null,
-    pendingTasks: null,
-    pendingTasksError: null,
+    taskQueueCounts: null,
+    taskQueueCountsError: null,
   };
 
   // Guards against out-of-order responses when the worker-pool page changes.
-  pendingTasksRequestId = 0;
+  taskQueueCountsRequestId = 0;
 
   componentDidMount() {
     this.loadErrorStats();
-    this.loadPendingTasks();
+    this.loadTaskQueueCounts();
   }
 
   componentDidUpdate(prevProps) {
     if (
       this.poolIdsKey(prevProps.items) !== this.poolIdsKey(this.props.items)
     ) {
-      this.loadPendingTasks();
+      this.loadTaskQueueCounts();
     }
   }
 
   componentWillUnmount() {
     // Prevent a completed request from calling setState after unmount.
-    this.pendingTasksRequestId++;
+    this.taskQueueCountsRequestId++;
   }
 
   get searchTerm() {
@@ -119,48 +119,51 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     }
   };
 
-  loadPendingTasks = async () => {
-    const requestId = ++this.pendingTasksRequestId;
+  loadTaskQueueCounts = async () => {
+    const requestId = ++this.taskQueueCountsRequestId;
     const workerPoolIds = [
       ...new Set(this.props.items.map(({ workerPoolId }) => workerPoolId)),
     ];
 
     if (!workerPoolIds.length) {
-      this.setState({ pendingTasks: null, pendingTasksError: null });
+      this.setState({ taskQueueCounts: null, taskQueueCountsError: null });
 
       return;
     }
 
-    this.setState({ pendingTasks: {}, pendingTasksError: null });
+    this.setState({ taskQueueCounts: {}, taskQueueCountsError: null });
 
     const queue = this.props.createTaskclusterClient({ Class: Queue });
 
     try {
       const counts = await fetchTaskQueueCounts(queue, workerPoolIds);
 
-      if (requestId !== this.pendingTasksRequestId) {
+      if (requestId !== this.taskQueueCountsRequestId) {
         return;
       }
 
       this.setState({
-        pendingTasks: Object.fromEntries(
-          counts.map(({ taskQueueId, pendingTasks }) => [
+        taskQueueCounts: Object.fromEntries(
+          counts.map(({ taskQueueId, pendingTasks, claimedTasks }) => [
             taskQueueId,
-            pendingTasks,
+            { pendingTasks, claimedTasks },
           ])
         ),
-        pendingTasksError: null,
+        taskQueueCountsError: null,
       });
     } catch (error) {
-      if (requestId !== this.pendingTasksRequestId) {
+      if (requestId !== this.taskQueueCountsRequestId) {
         return;
       }
 
       this.setState({
-        pendingTasks: Object.fromEntries(
-          workerPoolIds.map(workerPoolId => [workerPoolId, null])
+        taskQueueCounts: Object.fromEntries(
+          workerPoolIds.map(workerPoolId => [
+            workerPoolId,
+            { pendingTasks: null, claimedTasks: null },
+          ])
         ),
-        pendingTasksError: error,
+        taskQueueCountsError: error,
       });
     }
   };
@@ -197,7 +200,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
 
   getWorkerPools() {
     const { items } = this.props;
-    const { errorStats, pendingTasks } = this.state;
+    const { errorStats, taskQueueCounts } = this.state;
     const { searchTerm } = this;
     const needle = searchTerm?.toLowerCase();
     const workerPools = needle
@@ -206,12 +209,17 @@ export default class WorkerManagerWorkerPoolsView extends Component {
         )
       : items;
 
-    return workerPools.map(workerPool => ({
-      ...workerPool,
-      errorsCount:
-        errorStats?.totals?.workerPool?.[workerPool.workerPoolId] || 0,
-      pendingTasks: pendingTasks?.[workerPool.workerPoolId],
-    }));
+    return workerPools.map(workerPool => {
+      const counts = taskQueueCounts?.[workerPool.workerPoolId];
+
+      return {
+        ...workerPool,
+        errorsCount:
+          errorStats?.totals?.workerPool?.[workerPool.workerPoolId] || 0,
+        pendingTasks: counts?.pendingTasks,
+        claimedTasks: counts?.claimedTasks,
+      };
+    });
   }
 
   render() {
@@ -226,7 +234,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       nextPage,
       previousPage,
     } = this.props;
-    const { errorStatsError, errorStatsLoading, pendingTasksError } =
+    const { errorStatsError, errorStatsLoading, taskQueueCountsError } =
       this.state;
     const { searchTerm } = this;
     const initialLoad = loading && !items.length;
@@ -255,10 +263,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
         <ErrorPanel
           warning
           error={
-            pendingTasksError &&
+            taskQueueCountsError &&
             // An InsufficientScopes message lists two scopes per pool.
             `Failed to load task queue counts${
-              pendingTasksError.code ? ` (${pendingTasksError.code})` : ''
+              taskQueueCountsError.code ? ` (${taskQueueCountsError.code})` : ''
             }. Counts require the queue:pending-count and queue:claimed-count ` +
               `scopes for every worker pool listed here.`
           }
