@@ -4,7 +4,6 @@
 package kc
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -50,40 +49,4 @@ func SetAutoLogin(user string, password []byte) (err error) {
 	}
 	encodedPassword := Encode(password)
 	return os.WriteFile("/etc/kcpassword", encodedPassword, 0600)
-}
-
-func AutoLoginUser() (user string, password []byte, err error) {
-	user, err = AutoLoginUsername()
-	if err != nil {
-		return
-	}
-	password, err = AutoLoginPassword()
-	return
-}
-
-func AutoLoginUsername() (user string, err error) {
-	output, err := host.Output("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
-	if err != nil {
-		return "", fmt.Errorf("error reading autoLoginUser: %v", err)
-	}
-	// remove last char (\n) from string
-	return output[:len(output)-1], nil
-}
-
-func AutoLoginPassword() (password []byte, err error) {
-	encodedPassword, err := os.ReadFile("/etc/kcpassword")
-	if err != nil {
-		return nil, err
-	}
-	password = Decode(encodedPassword)
-	return
-}
-
-func LoginWindowPList() (data map[string]any, err error) {
-	loginWindowPListString, err := host.Output("/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
-	if err != nil {
-		return data, err
-	}
-	err = json.Unmarshal([]byte(loginWindowPListString), &data)
-	return data, err
 }

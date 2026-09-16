@@ -44,8 +44,6 @@ var (
 	procUnloadUserProfile            = userenv.NewProc("UnloadUserProfile")
 	procCloseHandle                  = kernel32.NewProc("CloseHandle")
 	procLogonUserW                   = advapi32.NewProc("LogonUserW")
-	procImpersonateLoggedOnUser      = advapi32.NewProc("ImpersonateLoggedOnUser")
-	procRevertToSelf                 = advapi32.NewProc("RevertToSelf")
 	procGetProcessWindowStation      = user32.NewProc("GetProcessWindowStation")
 	procGetCurrentThreadId           = kernel32.NewProc("GetCurrentThreadId")
 	procGetThreadDesktop             = user32.NewProc("GetThreadDesktop")
@@ -600,38 +598,6 @@ type TOKEN_LINKED_TOKEN struct {
 	LinkedToken syscall.Token // HANDLE
 }
 
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa379261(v=vs.85).aspx
-type LUID struct {
-	LowPart  uint32 // DWORD
-	HighPart int32  // LONG
-}
-
-// https://msdn.microsoft.com/en-us/library/Aa378612(v=VS.85).aspx
-// BOOL WINAPI ImpersonateLoggedOnUser(
-//
-//	_In_ HANDLE hToken
-//
-// );
-func ImpersonateLoggedOnUser(hToken syscall.Token) (err error) {
-	r1, _, e1 := procImpersonateLoggedOnUser.Call(
-		uintptr(hToken),
-	)
-	if r1 == 0 {
-		err = os.NewSyscallError("ImpersonateLoggedOnUser", e1)
-	}
-	return
-}
-
-// https://msdn.microsoft.com/en-us/library/aa379317(v=vs.85).aspx
-// BOOL WINAPI RevertToSelf(void);
-func RevertToSelf() (err error) {
-	r1, _, e1 := procRevertToSelf.Call()
-	if r1 == 0 {
-		err = os.NewSyscallError("RevertToSelf", e1)
-	}
-	return
-}
-
 func GetProcessWindowStation() (Hwinsta, error) {
 	r1, _, e1 := procGetProcessWindowStation.Call()
 	if int(r1) == 0 {
@@ -820,34 +786,6 @@ func CreateProfile(
 		}
 	}
 	return
-}
-
-// ArgvToCommandLineW performs the reverse of shell32 CommandLineToArgvW:
-//
-//	https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
-//
-// See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
-func ArgvToCommandLineW(text string) string {
-	if text != "" && !strings.ContainsAny(text, " \t\n\v\"") {
-		return text
-	}
-	escaped := `"`
-	for i := range len(text) {
-		backslashes := 0
-		for ; i < len(text) && text[i] == '\\'; i++ {
-			backslashes++
-		}
-		switch {
-		case i == len(text)-1:
-			escaped += strings.Repeat(`\`, backslashes*2)
-		case text[i] == '"':
-			escaped += strings.Repeat(`\`, backslashes*2) + `\"`
-		default:
-			escaped += strings.Repeat(`\`, backslashes)
-		}
-	}
-	escaped += `"`
-	return escaped
 }
 
 // CMDExeEscape escapes cmd.exe metacharacters

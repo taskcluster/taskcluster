@@ -15,10 +15,6 @@ import (
 type PlatformData struct {
 }
 
-func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
-	return TaskUserPlatformData(user, headlessTasks)
-}
-
 func TaskUserPlatformData(u *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
 	return &PlatformData{}, nil
 }
