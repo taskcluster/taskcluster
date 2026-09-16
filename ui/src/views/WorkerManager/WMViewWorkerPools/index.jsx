@@ -11,12 +11,11 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import withPaginatedResource from '../../../hocs/withPaginatedResource';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
+import fetchTaskQueueCounts from '../../../utils/fetchTaskQueueCounts';
 import {
   NULL_PROVIDER,
   VIEW_WORKER_POOLS_PAGE_SIZE,
 } from '../../../utils/constants';
-
-const PENDING_TASKS_CONCURRENCY = 30;
 
 /**
  * `listWorkerPools` and `listWorkerPoolsStats` are two endpoints over the same
@@ -64,10 +63,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     errorStats: null,
     errorStatsError: null,
     pendingTasks: null,
+    pendingTasksError: null,
   };
 
-  // Guards against out-of-order pendingTasks responses when the worker-pool
-  // page changes while a batch of per-row lookups is still in flight.
+  // Guards against out-of-order responses when the worker-pool page changes.
   pendingTasksRequestId = 0;
 
   componentDidMount() {
@@ -84,8 +83,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
   }
 
   componentWillUnmount() {
-    // Prevent a completed request from calling setState after unmount, and stop
-    // additional batches from starting.
+    // Prevent a completed request from calling setState after unmount.
     this.pendingTasksRequestId++;
   }
 
@@ -128,57 +126,43 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     ];
 
     if (!workerPoolIds.length) {
-      this.setState({ pendingTasks: null });
+      this.setState({ pendingTasks: null, pendingTasksError: null });
 
       return;
     }
 
-    this.setState({ pendingTasks: {} });
+    this.setState({ pendingTasks: {}, pendingTasksError: null });
 
-    // There is no batch endpoint for pending counts, so this is one request
-    // per pool -- the same fan-out the web-server resolver did, moved into the
-    // browser in bounded batches. A pool the user cannot read counts for is
-    // left blank rather than failing the whole column.
     const queue = this.props.createTaskclusterClient({ Class: Queue });
-    const counts = [];
 
-    for (
-      let start = 0;
-      start < workerPoolIds.length;
-      start += PENDING_TASKS_CONCURRENCY
-    ) {
-      if (requestId !== this.pendingTasksRequestId) {
-        return;
-      }
-
-      const batch = workerPoolIds.slice(
-        start,
-        start + PENDING_TASKS_CONCURRENCY
-      );
-      const results = await Promise.all(
-        batch.map(async workerPoolId => {
-          try {
-            // a worker pool id is also a task queue id
-            const { pendingTasks } = await queue.pendingTasks(workerPoolId);
-
-            return [workerPoolId, pendingTasks];
-          } catch {
-            return [workerPoolId, null];
-          }
-        })
-      );
+    try {
+      const counts = await fetchTaskQueueCounts(queue, workerPoolIds);
 
       if (requestId !== this.pendingTasksRequestId) {
         return;
       }
 
-      counts.push(...results);
-      this.setState({ pendingTasks: Object.fromEntries(counts) });
+      this.setState({
+        pendingTasks: Object.fromEntries(
+          counts.map(({ taskQueueId, pendingTasks }) => [
+            taskQueueId,
+            pendingTasks,
+          ])
+        ),
+        pendingTasksError: null,
+      });
+    } catch (error) {
+      if (requestId !== this.pendingTasksRequestId) {
+        return;
+      }
+
+      this.setState({
+        pendingTasks: Object.fromEntries(
+          workerPoolIds.map(workerPoolId => [workerPoolId, null])
+        ),
+        pendingTasksError: error,
+      });
     }
-
-    this.setState({
-      pendingTasks: Object.fromEntries(counts),
-    });
   };
 
   handleWorkerPoolSearchSubmit = workerPoolSearch => {
@@ -242,7 +226,8 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       nextPage,
       previousPage,
     } = this.props;
-    const { errorStatsError, errorStatsLoading } = this.state;
+    const { errorStatsError, errorStatsLoading, pendingTasksError } =
+      this.state;
     const { searchTerm } = this;
     const initialLoad = loading && !items.length;
     const workerPools = this.getWorkerPools();
@@ -265,6 +250,18 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           error={
             errorStatsError &&
             `Failed to load worker pool error stats: ${errorStatsError.message}`
+          }
+        />
+        <ErrorPanel
+          warning
+          error={
+            pendingTasksError &&
+            // The raw message is not shown: an InsufficientScopes error lists
+            // two scopes for every pool on the page, which buries the table.
+            `Failed to load task queue counts${
+              pendingTasksError.code ? ` (${pendingTasksError.code})` : ''
+            }. Counts require the queue:pending-count and queue:claimed-count ` +
+              `scopes for every worker pool listed here.`
           }
         />
         {!initialLoad && (

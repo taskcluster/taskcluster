@@ -68,12 +68,12 @@ describe('summarizeWorkerPools', () => {
             providerId: 'prov1',
             currentCapacity: 1,
             pendingTasks: 9,
+            claimedTasks: 7,
             runningCount: 1,
             requestedCount: 1,
             requestedCapacity: 1,
             runningCapacity: 1,
             stoppedCount: 3,
-            stoppingCapacity: 4,
           },
         ],
       },
@@ -83,9 +83,9 @@ describe('summarizeWorkerPools', () => {
     expect(out.length).toEqual(4);
 
     expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('9');
+    expect(widgetByTitle(out, 'Claimed Tasks').value).toEqual('7');
     expect(widgetByTitle(out, 'Requested Capacity').value).toEqual('1');
     expect(widgetByTitle(out, 'Running Capacity').value).toEqual('1');
-    expect(widgetByTitle(out, 'Stopping Capacity').value).toEqual('4');
   });
 
   it('should aggregate across pools and providers', () => {
@@ -100,7 +100,6 @@ describe('summarizeWorkerPools', () => {
           requestedCapacity: 1,
           runningCapacity: 2,
           stoppedCount: 1,
-          stoppingCapacity: 0,
         },
         {
           workerPoolId: 'prov1/b',
@@ -111,7 +110,6 @@ describe('summarizeWorkerPools', () => {
           requestedCapacity: 0,
           runningCapacity: 0,
           stoppedCount: 4,
-          stoppingCapacity: 1,
         },
         {
           workerPoolId: 'prov2/c',
@@ -122,7 +120,6 @@ describe('summarizeWorkerPools', () => {
           requestedCapacity: 3,
           runningCapacity: 1,
           stoppedCount: 0,
-          stoppingCapacity: 2,
         },
       ],
     });
@@ -135,7 +132,6 @@ describe('summarizeWorkerPools', () => {
     expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('1,505');
     expect(widgetByTitle(out, 'Requested Capacity').value).toEqual('4');
     expect(widgetByTitle(out, 'Running Capacity').value).toEqual('3');
-    expect(widgetByTitle(out, 'Stopping Capacity').value).toEqual('3');
   });
 
   it('should treat a pool without stats as contributing zero', () => {
@@ -151,7 +147,6 @@ describe('summarizeWorkerPools', () => {
           requestedCapacity: 1,
           runningCapacity: 1,
           stoppedCount: 1,
-          stoppingCapacity: 1,
         },
       ],
     });
@@ -160,5 +155,25 @@ describe('summarizeWorkerPools', () => {
     expect(widgetByTitle(out, 'Total Pools with Workers').value).toEqual('1');
     expect(widgetByTitle(out, 'Workers Running').value).toEqual('1');
     expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('2');
+  });
+
+  it('should show n/a when task queue counts are unavailable', () => {
+    const out = summarizeWorkerPools({
+      data: [
+        {
+          workerPoolId: 'prov1/a',
+          providerId: 'prov1',
+          currentCapacity: 1,
+          pendingTasks: null,
+          claimedTasks: null,
+          runningCount: 1,
+          runningCapacity: 1,
+        },
+      ],
+    });
+
+    expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('n/a');
+    expect(widgetByTitle(out, 'Claimed Tasks').value).toEqual('n/a');
+    expect(widgetByTitle(out, 'Running Capacity').value).toEqual('1');
   });
 });
