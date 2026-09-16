@@ -3,17 +3,15 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/win32"
 )
 
 func addUserToGroup(user, group string) error {
-	return host.Run("powershell", "-Command",
-		"Add-LocalGroupMember -Group '"+host.EscapePowerShellSingleQuote(group)+"' -Member '"+host.EscapePowerShellSingleQuote(user)+"'")
+	return win32.AddLocalGroupMember(group, user)
 }
 
 func removeUserFromGroup(user, group string) error {
-	return host.Run("powershell", "-Command",
-		"Remove-LocalGroupMember -Group '"+host.EscapePowerShellSingleQuote(group)+"' -Member '"+host.EscapePowerShellSingleQuote(user)+"'")
+	return win32.RemoveLocalGroupMember(group, user)
 }
 
 func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
