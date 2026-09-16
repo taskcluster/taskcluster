@@ -56,7 +56,9 @@ export const secrets = new testing.Secrets({
   load,
 });
 helper.secrets = secrets;
-helper.rootUrl = 'http://localhost:60401';
+
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
 
 /**
  * Set up to use aws-sdk-client-mock for S3 operations when mocking.
@@ -293,10 +295,16 @@ export const withServer = skipping => {
     }
     await load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    load.cfg('taskcluster.rootUrl', helper.rootUrl);
     testing.fakeauth.start(
       {
         'test-client': ['*'],
