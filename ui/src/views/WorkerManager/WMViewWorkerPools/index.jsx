@@ -256,8 +256,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           warning
           error={
             pendingTasksError &&
-            // The raw message is not shown: an InsufficientScopes error lists
-            // two scopes for every pool on the page, which buries the table.
+            // An InsufficientScopes message lists two scopes per pool.
             `Failed to load task queue counts${
               pendingTasksError.code ? ` (${pendingTasksError.code})` : ''
             }. Counts require the queue:pending-count and queue:claimed-count ` +

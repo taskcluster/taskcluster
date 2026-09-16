@@ -9,15 +9,13 @@ export default (workerPools, metrics) => {
   let runningCount = 0;
   let requestedCapacity = 0;
   let runningCapacity = 0;
-  // `null` counts mean the task-queue counts request failed or was not
-  // authorized, so a total would be misleadingly low; show "n/a" instead.
+  // A missing count would make the total misleadingly low; show "n/a".
   let taskCountsAvailable = true;
   const providers = new Set();
 
   // `data` is a list of worker pools from `workerManager.listWorkerPools`,
-  // each merged with its `listWorkerPoolsStats` entry and `pendingTasks` and
-  // `claimedTasks` counts. A pool with no stats entry yet contributes zero to
-  // every total.
+  // each merged with its `listWorkerPoolsStats` entry and its task counts. A
+  // pool with no stats entry yet contributes zero to every total.
   if (!workerPools.error && !workerPools.loading) {
     (workerPools?.data || []).forEach(pool => {
       if (!pool) {

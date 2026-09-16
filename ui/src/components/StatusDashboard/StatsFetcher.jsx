@@ -24,6 +24,45 @@ const asStats = ({ data, loading, error }) => ({
   loading: loading && data === null,
 });
 
+// Never rejects, so one failing request only blanks its own tiles.
+const settle = promise =>
+  promise.then(
+    value => ({ value }),
+    error => ({ error })
+  );
+
+// Workers worker-manager does not provision only talk to the queue, so their
+// task queues show up in `listTaskQueues` but not in `listWorkerPools`.
+export const fetchNonWmTaskQueueCounts = async (queue, workerPoolIds) => {
+  const taskQueues = await fetchAllPages(
+    options => queue.listTaskQueues(options),
+    response => response.taskQueues,
+    pageOptions
+  );
+  const taskQueueIds = taskQueues
+    .map(({ taskQueueId }) => taskQueueId)
+    .filter(taskQueueId => !workerPoolIds.has(taskQueueId));
+
+  if (taskQueueIds.length === 0) {
+    return [];
+  }
+
+  const taskQueueCounts = await fetchTaskQueueCounts(queue, taskQueueIds);
+  const countsByTaskQueue = new Map(
+    taskQueueCounts.map(count => [count.taskQueueId, count])
+  );
+
+  return taskQueueIds.map(taskQueueId => {
+    const counts = countsByTaskQueue.get(taskQueueId);
+
+    return {
+      taskQueueId,
+      pendingTasks: counts?.pendingTasks ?? null,
+      claimedTasks: counts?.claimedTasks ?? null,
+    };
+  });
+};
+
 export const fetchWorkerPools = async (workerManager, queue) => {
   const [pools, stats] = await Promise.all([
     fetchAllPages(
@@ -37,36 +76,33 @@ export const fetchWorkerPools = async (workerManager, queue) => {
       pageOptions
     ),
   ]);
+  const workerPoolIds = new Set(pools.map(({ workerPoolId }) => workerPoolId));
   const statsByPool = new Map(
     stats.map(poolStats => [poolStats.workerPoolId, poolStats])
   );
-  let taskQueueCounts = [];
-
-  try {
-    taskQueueCounts = await fetchTaskQueueCounts(
-      queue,
-      pools.map(({ workerPoolId }) => workerPoolId)
-    );
-  } catch {
-    // Counts require both pending and claimed scopes for every queue. Keep the
-    // worker-manager stats available if the batch is not authorized or fails;
-    // the null counts below make the task tiles read "n/a" rather than zero.
-  }
-
+  // counts need extra scopes, missing them must not blank the pool stats
+  const [poolCounts, nonWmTaskQueues] = await Promise.all([
+    settle(fetchTaskQueueCounts(queue, workerPoolIds)),
+    settle(fetchNonWmTaskQueueCounts(queue, workerPoolIds)),
+  ]);
   const countsByPool = new Map(
-    taskQueueCounts.map(counts => [counts.taskQueueId, counts])
+    (poolCounts.value ?? []).map(counts => [counts.taskQueueId, counts])
   );
 
-  return pools.map(pool => {
-    const counts = countsByPool.get(pool.workerPoolId);
+  return {
+    workerPools: pools.map(pool => {
+      const counts = countsByPool.get(pool.workerPoolId);
 
-    return {
-      ...pool,
-      ...statsByPool.get(pool.workerPoolId),
-      pendingTasks: counts?.pendingTasks ?? null,
-      claimedTasks: counts?.claimedTasks ?? null,
-    };
-  });
+      return {
+        ...pool,
+        ...statsByPool.get(pool.workerPoolId),
+        pendingTasks: counts?.pendingTasks ?? null,
+        claimedTasks: counts?.claimedTasks ?? null,
+      };
+    }),
+    nonWmTaskQueues: nonWmTaskQueues.value ?? null,
+    nonWmTaskQueuesError: nonWmTaskQueues.error ?? null,
+  };
 };
 
 export default function StatsFetcher() {
@@ -149,7 +185,7 @@ export default function StatsFetcher() {
     },
     { key: 'secrets' }
   );
-  const { reload: reloadWorkerPools } = workerPools;
+  const { data, loading, error, reload: reloadWorkerPools } = workerPools;
 
   useEffect(() => {
     const interval = setInterval(reloadWorkerPools, REFRESH_INTERVAL);
@@ -159,7 +195,16 @@ export default function StatsFetcher() {
 
   return (
     <StatusDashboard
-      workerPools={asStats(workerPools)}
+      workerPools={asStats({
+        data: data?.workerPools ?? null,
+        loading,
+        error,
+      })}
+      nonWmTaskQueues={asStats({
+        data: data?.nonWmTaskQueues ?? null,
+        loading,
+        error: error ?? data?.nonWmTaskQueuesError,
+      })}
       provisioners={asStats(provisioners)}
       hookGroups={asStats(hookGroups)}
       clients={asStats(clients)}

@@ -1,11 +1,6 @@
+// The endpoint accepts at most this many task queue ids per request.
 const TASK_QUEUE_COUNTS_BATCH_SIZE = 1000;
 
-/**
- * Fetch pending and claimed task counts for every requested task queue.
- *
- * The Queue endpoint accepts at most 1,000 task queue IDs per request, so
- * larger collections are split into sequential requests.
- */
 export default async function fetchTaskQueueCounts(queue, taskQueueIds) {
   const counts = [];
   const uniqueTaskQueueIds = [...new Set(taskQueueIds)];
