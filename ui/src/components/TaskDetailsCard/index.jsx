@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
-import { arrayOf, func, shape, object } from 'prop-types';
+import { arrayOf, bool, func, shape, object, string } from 'prop-types';
 import deepSortObject from 'deep-sort-object';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -19,12 +19,12 @@ import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import { LinearProgress } from '@material-ui/core';
 import Label from '../Label';
 import JsonDisplay from '../JsonDisplay';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
-import { pageInfo, task } from '../../utils/prop-types';
+import { pagination, taskDefinition, taskStatus } from '../../utils/prop-types';
 import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
 import { getTaskDefinitions, getTaskStatuses } from '../../utils/queueTask';
@@ -97,21 +97,24 @@ import sort from '../../utils/sort';
  */
 export default class TaskDetailsCard extends Component {
   static defaultProps = {
-    dependentTasks: null,
-    dependents: null,
+    dependents: [],
+    dependentsLoading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
     onChangePriority: null,
   };
 
   static propTypes = {
-    /**
-     * A GraphQL task response.
-     */
-    task: task.isRequired,
-    dependents: shape({
-      edges: arrayOf(task),
-      pageInfo,
-    }),
-    onDependentsPageChange: func.isRequired,
+    taskId: string.isRequired,
+    /** The task definition, as returned by the queue. */
+    task: taskDefinition.isRequired,
+    /** The task status, as returned by the queue. */
+    status: taskStatus.isRequired,
+    /** A page of the tasks depending on this one, as listed by the queue. */
+    dependents: arrayOf(shape({ task: object, status: object })),
+    /** Whether the dependents page is still being fetched. */
+    dependentsLoading: bool,
+    ...pagination,
     user: object,
     /** Called to open the change-priority dialog; makes the priority clickable. */
     onChangePriority: func,
@@ -141,7 +144,7 @@ export default class TaskDetailsCard extends Component {
 
   componentDidUpdate(prevProps) {
     if (
-      prevProps.task.taskId !== this.props.task.taskId ||
+      prevProps.taskId !== this.props.taskId ||
       prevProps.user !== this.props.user
     ) {
       this.fetchDependentTasks();
@@ -183,26 +186,28 @@ export default class TaskDetailsCard extends Component {
   render() {
     const {
       classes,
+      taskId,
       task,
+      status,
       dependents,
-      onDependentsPageChange,
+      dependentsLoading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
       user,
       onChangePriority,
     } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedDependents = Array.isArray(dependents?.edges)
-      ? {
-          ...dependents,
-          edges: [...dependents.edges].sort((a, b) => {
-            const first = a.node?.metadata?.name || '';
-            const second = b.node?.metadata?.name || '';
+    const sortedDependents = [...dependents].sort((a, b) => {
+      const first = a.task?.metadata?.name || '';
+      const second = b.task?.metadata?.name || '';
 
-            return sortDirection === 'desc'
-              ? sort(second, first)
-              : sort(first, second);
-          }),
-        }
-      : dependents;
+      return sortDirection === 'desc'
+        ? sort(second, first)
+        : sort(first, second);
+    });
     const { showPayload, dependentTasks, loading } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
@@ -222,14 +227,14 @@ export default class TaskDetailsCard extends Component {
               <ListItem>
                 <ListItemText
                   primary="State"
-                  secondary={<StatusLabel state={task.status.state} />}
+                  secondary={<StatusLabel state={status.state} />}
                 />
               </ListItem>
               <CopyToClipboardListItem
-                tooltipTitle={task.taskId}
-                textToCopy={task.taskId}
+                tooltipTitle={taskId}
+                textToCopy={taskId}
                 primary="Task ID"
-                secondary={task.taskId}
+                secondary={taskId}
               />
               <CopyToClipboardListItem
                 tooltipTitle={task.created}
@@ -275,7 +280,7 @@ export default class TaskDetailsCard extends Component {
               </Collapse>
               <Link
                 className={classes.listItemButton}
-                to={`/tasks/${task.taskId}/definition`}>
+                to={`/tasks/${taskId}/definition`}>
                 <ListItem button className={classes.listItemButton}>
                   <ListItemText primary="Full Task Definition" />
                 </ListItem>
@@ -300,7 +305,7 @@ export default class TaskDetailsCard extends Component {
               <ListItem>
                 <ListItemText
                   primary="Retries Left"
-                  secondary={`${task.status.retriesLeft} of ${task.retries}`}
+                  secondary={`${status.retriesLeft} of ${task.retries}`}
                 />
               </ListItem>
               <CopyToClipboardListItem
@@ -343,7 +348,7 @@ export default class TaskDetailsCard extends Component {
                             <em> dependencies </em>
                           </strong>
                           are
-                          {task.requires === 'ALL_COMPLETED' ? (
+                          {task.requires === 'all-completed' ? (
                             <Fragment>
                               &nbsp;
                               <code>all-completed</code> successfully.
@@ -392,7 +397,7 @@ export default class TaskDetailsCard extends Component {
                   />
                 </ListItem>
               )}
-              {dependents?.edges?.length ? (
+              {dependents.length || hasPreviousPage ? (
                 <Fragment>
                   <ListItem>
                     <ListItemText
@@ -400,28 +405,32 @@ export default class TaskDetailsCard extends Component {
                       secondary="The following tasks depend on this task resolving successfully."
                     />
                   </ListItem>
-                  <ConnectionDataTable
+                  <PaginatedDataTable
                     withoutTopPagination
-                    connection={sortedDependents}
+                    items={sortedDependents}
                     headers={['Name']}
                     maxHeight={400}
                     pageSize={DEPENDENTS_PAGE_SIZE}
+                    page={page}
+                    loading={dependentsLoading}
+                    hasNextPage={hasNextPage}
+                    hasPreviousPage={hasPreviousPage}
+                    onNextPage={onNextPage}
+                    onPreviousPage={onPreviousPage}
                     sortByHeader={sortBy}
                     sortDirection={sortDirection}
                     onHeaderClick={this.handleHeaderClick}
-                    onPageChange={onDependentsPageChange}
                     allowFilter
-                    filterFunc={({ node }, filterValue) =>
-                      String(node?.metadata?.name)
+                    filterFunc={({ task: dependent }, filterValue) =>
+                      String(dependent?.metadata?.name)
                         .toLowerCase()
                         .includes(filterValue.toLowerCase())
                     }
                     renderRow={({
-                      node: {
-                        taskId,
+                      task: {
                         metadata: { name },
-                        status: { state },
                       },
+                      status: { taskId: dependentTaskId, state },
                     }) => (
                       <TableRow
                         hover
@@ -429,11 +438,13 @@ export default class TaskDetailsCard extends Component {
                           classes.listItemButton,
                           classes.dependentsTableRow
                         )}
-                        key={taskId}>
+                        key={dependentTaskId}>
                         <TableCell title="View Task">
                           <Link
                             className={classes.dependentsLink}
-                            to={`/tasks/${encodeURIComponent(taskId)}`}>
+                            to={`/tasks/${encodeURIComponent(
+                              dependentTaskId
+                            )}`}>
                             <div
                               className={
                                 classes.dependentsStatusAndNameContainer

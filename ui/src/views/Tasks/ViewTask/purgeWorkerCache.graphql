@@ -1,5 +1,0 @@
-mutation PurgeWorkerCache($provisionerId: String!, $workerType: ID!, $payload: PurgeCacheInput) {
-  purgeCache(provisionerId: $provisionerId, workerType: $workerType, payload: $payload) {
-    provisionerId
-  }
-}
