@@ -53,4 +53,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       assert.equal(res.accessToken, 'sekrit');
     }
   });
+
+  test('gcpCredentials successful for a second project', async function () {
+    if (!mock) {
+      this.skip();
+    }
+    const res = await helper.apiClient.gcpCredentials(helper.gcpOtherAccount.project_id, helper.gcpOtherAccount.email);
+    assert.equal(res.accessToken, 'sekrit');
+  });
+
+  test('gcpCredentials rejects an account allowed only in another project', async function () {
+    if (!mock) {
+      this.skip();
+    }
+    try {
+      // gcpAccount.email is allowed in gcpAccount.project_id, but not in the other project
+      await helper.apiClient.gcpCredentials(helper.gcpOtherAccount.project_id, helper.gcpAccount.email);
+    } catch (e) {
+      if (e.statusCode !== 400) {
+        throw e;
+      }
+      return;
+    }
+    assert.fail('The call should fail');
+  });
 });

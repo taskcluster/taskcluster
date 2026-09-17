@@ -343,30 +343,46 @@ helper.withGcp = (mock, skipping) => {
         project_id: 'testproject',
         client_email: 'test_client@example.com',
       };
-      const auth = { testCredentials: credentials };
-      const allowedServiceAccounts = [credentials.client_email, 'invalid@mozilla.com'];
+      // a second configured project, used to verify project isolation
+      const otherCredentials = {
+        project_id: 'otherproject',
+        client_email: 'other_client@example.com',
+      };
 
       load.inject('gcp', {
-        auth,
         googleapis: fakeGoogleApis,
-        credentials,
-        allowedServiceAccounts,
+        projects: {
+          [credentials.project_id]: {
+            auth: { testCredentials: credentials },
+            allowedServiceAccounts: [credentials.client_email, 'invalid@mozilla.com'],
+          },
+          [otherCredentials.project_id]: {
+            auth: { testCredentials: otherCredentials },
+            allowedServiceAccounts: [otherCredentials.client_email],
+          },
+        },
       });
 
       helper.gcpAccount = {
-        email: 'test_client@example.com',
+        email: credentials.client_email,
         project_id: credentials.project_id,
+      };
+      helper.gcpOtherAccount = {
+        email: otherCredentials.client_email,
+        project_id: otherCredentials.project_id,
       };
     } else {
       // For testing, we expect a GCP service account defined with the "Service Account Token Creator"
       // role.  In CI, this is the "auth-granter" service account in the "taskcluster-tests" project.
       // It issues credentials for itself, so the allowedServiceAccounts must be (in order)
       // [<service account email>, invalid@mozilla.com].
-      const { credentials, allowedServiceAccounts } = await load('gcp');
+      const { projects } = await load('gcp');
+      const projectId = Object.keys(projects)[0];
+      const { allowedServiceAccounts } = projects[projectId];
 
       helper.gcpAccount = {
         email: allowedServiceAccounts[0],
-        project_id: credentials.project_id,
+        project_id: projectId,
       };
     }
   });
