@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 )
 
@@ -83,10 +84,5 @@ func preloadInvalidPath(path string) bool {
 			return true
 		}
 	}
-	for _, component := range strings.Split(filepath.ToSlash(path), "/") {
-		if component == ".." {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(strings.Split(filepath.ToSlash(path), "/"), "..")
 }
