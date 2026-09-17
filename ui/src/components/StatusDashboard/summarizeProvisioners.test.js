@@ -20,11 +20,7 @@ describe('summarizeProvisioners', () => {
   });
   it('should return counts', () => {
     const out = summarizeProvisioners({
-      data: {
-        provisioners: {
-          edges: ['one', 'two'],
-        },
-      },
+      data: [{ provisionerId: 'one' }, { provisionerId: 'two' }],
     });
 
     expect(out.length).toEqual(1);

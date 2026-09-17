@@ -1,5 +1,16 @@
 import React, { Fragment, useState } from 'react';
-import { array, arrayOf, bool, func, number, oneOf, string } from 'prop-types';
+import {
+  array,
+  arrayOf,
+  bool,
+  func,
+  node,
+  number,
+  oneOf,
+  oneOfType,
+  shape,
+  string,
+} from 'prop-types';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -75,6 +86,11 @@ export default function PaginatedDataTable({
 }) {
   const classes = useStyles();
   const [filterValue, setFilterValue] = useState('');
+  // A header is either a plain name, or `{ id, label }` when the visible
+  // label differs from the name sorting is keyed on (a responsive label, say).
+  const normalizedHeaders = headers?.map(header =>
+    typeof header === 'string' ? { id: header, label: header } : header
+  );
   const colSpan = columnsSize || headers?.length || 1;
   const rows =
     allowFilter && filterFunc
@@ -187,15 +203,15 @@ export default function PaginatedDataTable({
                     [classes.thWithTopPagination]: !withoutTopPagination,
                   }),
                 }}>
-                {headers.map(header => (
-                  <TableCell key={`table-header-${header}`}>
+                {normalizedHeaders.map(header => (
+                  <TableCell key={`table-header-${header.id}`}>
                     <TableSortLabel
                       className={classes.sortHeader}
-                      id={header}
-                      active={header === sortByHeader}
+                      id={header.id}
+                      active={header.id === sortByHeader}
                       direction={sortDirection || 'desc'}
-                      onClick={() => onHeaderClick?.(header)}>
-                      {header}
+                      onClick={() => onHeaderClick?.(header.id)}>
+                      {header.label}
                     </TableSortLabel>
                   </TableCell>
                 ))}
@@ -252,8 +268,14 @@ PaginatedDataTable.propTypes = {
    * Not required when the `headers` prop is provided.
    */
   columnsSize: number,
-  /** A list of header names to use on the table starting from the left. */
-  headers: arrayOf(string),
+  /**
+   * A list of headers to use on the table starting from the left. Each is
+   * either a name used as both the label and the sort key, or an object
+   * pairing that name (`id`) with a separate rendered `label`.
+   */
+  headers: arrayOf(
+    oneOfType([string, shape({ id: string.isRequired, label: node })])
+  ),
   /** A header name to sort on. */
   sortByHeader: string,
   /** The sorting direction. */

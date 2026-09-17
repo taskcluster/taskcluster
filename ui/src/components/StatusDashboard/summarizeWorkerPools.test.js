@@ -33,24 +33,19 @@ describe('summarizeWorkerPools', () => {
   it('should return counts for stats', () => {
     const out = summarizeWorkerPools(
       {
-        data: {
-          WorkerManagerWorkerPoolSummaries: {
-            edges: [
-              {
-                node: {
-                  providerId: 'prov1',
-                  currentCapacity: 1,
-                  pendingTasks: 9,
-                  runningCount: 1,
-                  requestedCount: 1,
-                  requestedCapacity: 1,
-                  runningCapacity: 1,
-                  stoppedCount: 3,
-                },
-              },
-            ],
+        data: [
+          {
+            workerPoolId: 'prov1/pool1',
+            providerId: 'prov1',
+            currentCapacity: 1,
+            pendingTasks: 9,
+            runningCount: 1,
+            requestedCount: 1,
+            requestedCapacity: 1,
+            runningCapacity: 1,
+            stoppedCount: 3,
           },
-        },
+        ],
       },
       'stats'
     );
@@ -67,25 +62,20 @@ describe('summarizeWorkerPools', () => {
   it('should return counts for provisioning', () => {
     const out = summarizeWorkerPools(
       {
-        data: {
-          WorkerManagerWorkerPoolSummaries: {
-            edges: [
-              {
-                node: {
-                  providerId: 'prov1',
-                  currentCapacity: 1,
-                  pendingTasks: 9,
-                  runningCount: 1,
-                  requestedCount: 1,
-                  requestedCapacity: 1,
-                  runningCapacity: 1,
-                  stoppedCount: 3,
-                  stoppingCapacity: 4,
-                },
-              },
-            ],
+        data: [
+          {
+            workerPoolId: 'prov1/pool1',
+            providerId: 'prov1',
+            currentCapacity: 1,
+            pendingTasks: 9,
+            claimedTasks: 7,
+            runningCount: 1,
+            requestedCount: 1,
+            requestedCapacity: 1,
+            runningCapacity: 1,
+            stoppedCount: 3,
           },
-        },
+        ],
       },
       'provisioning'
     );
@@ -93,8 +83,97 @@ describe('summarizeWorkerPools', () => {
     expect(out.length).toEqual(4);
 
     expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('9');
+    expect(widgetByTitle(out, 'Claimed Tasks').value).toEqual('7');
     expect(widgetByTitle(out, 'Requested Capacity').value).toEqual('1');
     expect(widgetByTitle(out, 'Running Capacity').value).toEqual('1');
-    expect(widgetByTitle(out, 'Stopping Capacity').value).toEqual('4');
+  });
+
+  it('should aggregate across pools and providers', () => {
+    const out = summarizeWorkerPools({
+      data: [
+        {
+          workerPoolId: 'prov1/a',
+          providerId: 'prov1',
+          currentCapacity: 2,
+          pendingTasks: 5,
+          runningCount: 2,
+          requestedCapacity: 1,
+          runningCapacity: 2,
+          stoppedCount: 1,
+        },
+        {
+          workerPoolId: 'prov1/b',
+          providerId: 'prov1',
+          currentCapacity: 0,
+          pendingTasks: 0,
+          runningCount: 0,
+          requestedCapacity: 0,
+          runningCapacity: 0,
+          stoppedCount: 4,
+        },
+        {
+          workerPoolId: 'prov2/c',
+          providerId: 'prov2',
+          currentCapacity: 1,
+          pendingTasks: 1500,
+          runningCount: 1,
+          requestedCapacity: 3,
+          runningCapacity: 1,
+          stoppedCount: 0,
+        },
+      ],
+    });
+
+    expect(widgetByTitle(out, 'Providers').value).toEqual('2');
+    expect(widgetByTitle(out, 'Total Pools').value).toEqual('3');
+    expect(widgetByTitle(out, 'Total Pools with Workers').value).toEqual('2');
+    expect(widgetByTitle(out, 'Workers Running').value).toEqual('3');
+    expect(widgetByTitle(out, 'Stopped Workers').value).toEqual('5');
+    expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('1,505');
+    expect(widgetByTitle(out, 'Requested Capacity').value).toEqual('4');
+    expect(widgetByTitle(out, 'Running Capacity').value).toEqual('3');
+  });
+
+  it('should treat a pool without stats as contributing zero', () => {
+    const out = summarizeWorkerPools({
+      data: [
+        { workerPoolId: 'prov1/new', providerId: 'prov1' },
+        {
+          workerPoolId: 'prov1/a',
+          providerId: 'prov1',
+          currentCapacity: 1,
+          pendingTasks: 2,
+          runningCount: 1,
+          requestedCapacity: 1,
+          runningCapacity: 1,
+          stoppedCount: 1,
+        },
+      ],
+    });
+
+    expect(widgetByTitle(out, 'Total Pools').value).toEqual('2');
+    expect(widgetByTitle(out, 'Total Pools with Workers').value).toEqual('1');
+    expect(widgetByTitle(out, 'Workers Running').value).toEqual('1');
+    expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('2');
+  });
+
+  it('should show n/a when task queue counts are unavailable', () => {
+    const out = summarizeWorkerPools({
+      data: [
+        {
+          workerPoolId: 'prov1/a',
+          providerId: 'prov1',
+          currentCapacity: 1,
+          pendingTasks: null,
+          claimedTasks: null,
+          runningCount: 1,
+          runningCapacity: 1,
+        },
+      ],
+    });
+
+    expect(widgetByTitle(out, 'Pending Tasks').value).toEqual('n/a');
+    expect(widgetByTitle(out, 'Claimed Tasks').value).toEqual('n/a');
+    expect(widgetByTitle(out, 'Running Capacity').value).toEqual('1');
   });
 });

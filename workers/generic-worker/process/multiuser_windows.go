@@ -26,14 +26,6 @@ type PlatformData struct {
 	HideCmdWindow      bool
 }
 
-func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
-	pd, err = TaskUserPlatformData(user, headlessTasks)
-	if err != nil {
-		return
-	}
-	return
-}
-
 func TaskUserPlatformData(user *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
 	pd = &PlatformData{}
 	if headlessTasks {

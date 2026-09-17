@@ -10,23 +10,26 @@ export default (clients, roles, secrets) => {
   let secretsCount = 0;
   const now = new Date();
 
+  // `data` is the full list from each service: role ids from
+  // `auth.listRoleIds`, secret names from `secrets.list`, and client objects
+  // from `auth.listClients`.
   if (!roles.error && !roles.loading) {
-    rolesCount = (roles?.data?.listRoleIds?.edges || []).length;
+    rolesCount = (roles?.data || []).length;
   }
 
   if (!secrets.error && !secrets.loading) {
-    secretsCount = (secrets?.data?.secrets?.edges || []).length;
+    secretsCount = (secrets?.data || []).length;
   }
 
   if (!clients.error && !clients.loading) {
-    (clients?.data?.clients?.edges || []).forEach(({ node }) => {
-      if (!node) {
+    (clients?.data || []).forEach(client => {
+      if (!client) {
         return;
       }
 
       clientsCount += 1;
 
-      if (differenceInDays(now, new Date(node.lastDateUsed)) <= ACTIVE_DAYS) {
+      if (differenceInDays(now, new Date(client.lastDateUsed)) <= ACTIVE_DAYS) {
         clientsRecent += 1;
       }
     });

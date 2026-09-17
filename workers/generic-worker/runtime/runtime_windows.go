@@ -34,10 +34,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 		return fmt.Errorf("user %s already existed - cannot create", user.Name)
 	}
 	log.Print("Created new OS user!")
-	err = host.RunBatch(
-		userExisted,
-		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + host.EscapePowerShellSingleQuote(user.Name) + "'"},
-	)
+	err = win32.AddLocalGroupMember("Remote Desktop Users", user.Name)
 	// if user existed, the above commands can fail
 	// if it didn't, they can't
 	if !userExisted && err != nil {
@@ -46,14 +43,6 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	if okIfExists {
 		return nil
 	}
-	return err
-}
-
-func (user *OSUser) MakeAdmin() error {
-	_, err := host.RunIgnoreError(
-		user.Name+" is already a member of group administrators",
-		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+host.EscapePowerShellSingleQuote(user.Name)+"'",
-	)
 	return err
 }
 

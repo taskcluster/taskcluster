@@ -4,8 +4,10 @@ export default hookGroups => {
   let totalGroups = 0;
   let totalHooks = 0;
 
+  // `data` is a list of `{ hookGroupId, hooks }` built from
+  // `hooks.listHookGroups` and one `hooks.listHooks` call per group.
   if (!hookGroups.error && !hookGroups.loading) {
-    (hookGroups?.data?.hookGroups || []).forEach(({ hooks }) => {
+    (hookGroups?.data || []).forEach(({ hooks }) => {
       totalGroups += 1;
       totalHooks += (hooks || []).length;
     });

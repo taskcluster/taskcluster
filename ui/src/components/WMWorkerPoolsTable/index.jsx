@@ -29,6 +29,26 @@ import {
 } from '../../utils/constants';
 import { splitWorkerPoolId } from '../../utils/workerPool';
 
+/**
+ * The full column names push this table into horizontal scrolling on anything
+ * narrower than xl, so below that only the first word is shown. `id` stays the
+ * full name: it is what sorting is keyed on, and what the stacked-card layout
+ * repeats inside each cell.
+ */
+const abbreviatedHeader = (id, short) => ({
+  id,
+  label: (
+    <Fragment>
+      <Hidden xlUp implementation="css">
+        {short}
+      </Hidden>
+      <Hidden lgDown implementation="css">
+        {id}
+      </Hidden>
+    </Fragment>
+  ),
+});
+
 @withRouter
 @withStyles(theme => ({
   button: {
@@ -239,6 +259,15 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
+          <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
+            Claimed Tasks:
+          </Hidden>
+          {workerPool.claimedTasks === undefined
+            ? '...'
+            : (workerPool.claimedTasks ?? 'n/a')}
+        </TableCell>
+
+        <TableCell>
           <Link
             title={`View ${workerPool.workerPoolId} workers`}
             to={`${path}/${encodeURIComponent(
@@ -317,10 +346,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     const headers = [
       'Worker Pool ID',
       'Provider ID',
-      'Current Capacity',
-      'Running Capacity',
-      'Pending Tasks',
-      'Errors Count',
+      abbreviatedHeader('Current Capacity', 'Current'),
+      abbreviatedHeader('Running Capacity', 'Running'),
+      abbreviatedHeader('Pending Tasks', 'Pending'),
+      abbreviatedHeader('Claimed Tasks', 'Claimed'),
+      abbreviatedHeader('Errors Count', 'Errors'),
       '',
     ];
 

@@ -3,6 +3,7 @@ import { object } from 'prop-types';
 import summarizeWorkerPools from './summarizeWorkerPools';
 import summarizeWorkerPoolsStats from './summarizeWorkerPoolsStats';
 import summarizeProvisioners from './summarizeProvisioners';
+import summarizeNonWmTaskQueues from './summarizeNonWmTaskQueues';
 import summarizeHooks from './summarizeHooks';
 import summarizeAuthorization from './summarizeAuthorization';
 import StatusGroup from './StatusGroup';
@@ -10,6 +11,7 @@ import StatusGroup from './StatusGroup';
 export default class StatusDashboard extends Component {
   static propTypes = {
     workerPools: object,
+    nonWmTaskQueues: object,
     provisioners: object,
     hookGroups: object,
     clients: object,
@@ -20,6 +22,7 @@ export default class StatusDashboard extends Component {
 
   static defaultProps = {
     workerPools: {},
+    nonWmTaskQueues: {},
     provisioners: {},
     hookGroups: {},
     clients: {},
@@ -32,6 +35,7 @@ export default class StatusDashboard extends Component {
     const {
       workerPools,
       wmStats,
+      nonWmTaskQueues,
       provisioners,
       hookGroups,
       clients,
@@ -51,6 +55,8 @@ export default class StatusDashboard extends Component {
       'Worker Provisioners': filterAvailable(
         summarizeProvisioners(provisioners)
       ),
+      'Non-Worker-Manager Task Queues':
+        summarizeNonWmTaskQueues(nonWmTaskQueues),
       Hooks: filterAvailable(summarizeHooks(hookGroups)),
       Authorization: filterAvailable(
         summarizeAuthorization(clients, roles, secrets)

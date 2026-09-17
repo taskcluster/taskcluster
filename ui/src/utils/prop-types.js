@@ -220,6 +220,7 @@ export const WorkerManagerWorkerPoolSummary = shape({
   owner: string,
   emailOnError: bool,
   pendingTasks: number,
+  claimedTasks: number,
 });
 
 export const WorkerManagerWorkerPoolErrorStats = shape({

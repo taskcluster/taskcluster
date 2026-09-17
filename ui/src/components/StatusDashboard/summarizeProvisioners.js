@@ -3,8 +3,9 @@ import format from './format';
 export default provisioners => {
   let total = 0;
 
+  // `data` is the full provisioner list from `queue.listProvisioners`.
   if (!provisioners.error && !provisioners.loading) {
-    total = (provisioners?.data?.provisioners?.edges || []).length;
+    total = (provisioners?.data || []).length;
   }
 
   return [
