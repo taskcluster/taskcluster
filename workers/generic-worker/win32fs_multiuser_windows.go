@@ -15,9 +15,6 @@ import (
 const maxGrantDepth = 1024
 const maxGrantErrors = 100
 
-// This is winnt.h's FILE_ALL_ACCESS, which is missing from x/sys/windows...
-const fileAllAccess = windows.STANDARD_RIGHTS_REQUIRED | windows.SYNCHRONIZE | 0x1FF
-
 type granter struct {
 	// The new owner
 	sid            *windows.SID
@@ -138,7 +135,7 @@ func (g *granter) grantNode(name string, handle windows.Handle, sd *windows.SECU
 	}
 
 	access := []windows.EXPLICIT_ACCESS{{
-		AccessPermissions: fileAllAccess,
+		AccessPermissions: safefs.FileAllAccess,
 		AccessMode:        windows.GRANT_ACCESS,
 		Inheritance:       inheritance,
 		Trustee: windows.TRUSTEE{

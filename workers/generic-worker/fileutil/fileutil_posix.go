@@ -4,7 +4,6 @@ package fileutil
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"strconv"
 	"strings"
@@ -55,25 +54,4 @@ func SecureFiles(filepaths ...string) (err error) {
 		}
 	}
 	return nil
-}
-
-func GetPermissions(path string) (string, func() error, error) {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return "", nil, err
-	}
-
-	permissions := fileInfo.Mode().Perm()
-	reset := func() error {
-		return setPermissions(path, permissions)
-	}
-
-	return permissions.String(), reset, nil
-}
-
-func setPermissions(path string, permissions fs.FileMode) error {
-	return os.Chmod(
-		path,
-		permissions,
-	)
 }

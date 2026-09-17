@@ -10,8 +10,38 @@ import (
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/safefs"
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/win32"
+	"golang.org/x/sys/windows"
 )
+
+func makeFileUnreachable(t *testing.T, path string) {
+	t.Helper()
+
+	// Empty DACL, no inheritance
+	sd, err := windows.SecurityDescriptorFromString("D:P")
+	if err != nil {
+		t.Fatalf("Failed to build an empty DACL: %v", err)
+	}
+
+	handle, err := safefs.OpenPathPinned(path, safefs.SecAccess)
+	if err != nil {
+		t.Fatalf("Failed to open %s: %v", path, err)
+	}
+	defer func() { _ = windows.CloseHandle(handle) }()
+
+	if err := windows.SetKernelObjectSecurity(handle, windows.DACL_SECURITY_INFORMATION, sd); err != nil {
+		t.Fatalf("Failed to empty the DACL of %s: %v", path, err)
+	}
+}
+
+func makeDirTaskUserProof(t *testing.T, dir string) {
+	t.Helper()
+	err := host.Run("icacls", dir, "/grant:r", "Administrators:(GA)", "/inheritance:r")
+	if err != nil {
+		t.Fatalf("Failed to restrict %s to the Administrators group: %v", dir, err)
+	}
+}
 
 // makeDirWorldWritable makes a directory writable by any user, so that
 // the multiuser engine task user can write to it. On Windows this

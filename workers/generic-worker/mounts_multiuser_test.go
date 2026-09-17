@@ -13,7 +13,6 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
@@ -53,10 +52,7 @@ func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	err = fileutil.SecureFiles(dir)
-	if err != nil {
-		t.Fatalf("Failed to secure temporary directory: %v", err)
-	}
+	makeDirTaskUserProof(t, dir)
 
 	mounts := []MountEntry{
 		&WritableDirectoryCache{

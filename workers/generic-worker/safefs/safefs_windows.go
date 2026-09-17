@@ -21,6 +21,9 @@ const (
 	traverseAccess uint32 = windows.FILE_READ_ATTRIBUTES | windows.FILE_LIST_DIRECTORY | windows.SYNCHRONIZE
 )
 
+// This is winnt.h's FILE_ALL_ACCESS, which is missing from x/sys/windows...
+const FileAllAccess = windows.STANDARD_RIGHTS_REQUIRED | windows.SYNCHRONIZE | 0x1FF
+
 var ensurePrivileges = sync.OnceValue(enablePrivileges)
 
 func EnsurePrivileges() error { return ensurePrivileges() }
@@ -83,7 +86,9 @@ func Kind(handle windows.Handle) (dir, surrogate bool, err error) {
 	return dir, surrogate, nil
 }
 
-func refuseIfIrregular(handle windows.Handle, path string) error {
+// RefuseIfIrregular rejects anything that isn't a regular file reached by a
+// name of its own: a directory, a junction or link, or a hardlink.
+func RefuseIfIrregular(handle windows.Handle, path string) error {
 	dir, surrogate, err := Kind(handle)
 	if err != nil {
 		return fmt.Errorf("could not stat %q: %w", path, err)
@@ -179,7 +184,7 @@ func openLeaf(file string, access uint32) (windows.Handle, error) {
 	if err != nil {
 		return windows.InvalidHandle, err
 	}
-	if err := refuseIfIrregular(handle, file); err != nil {
+	if err := RefuseIfIrregular(handle, file); err != nil {
 		_ = windows.CloseHandle(handle)
 		return windows.InvalidHandle, err
 	}
@@ -198,7 +203,7 @@ func CreateOrTruncateChild(parent windows.Handle, name, parentPath string, acces
 	}
 
 	path := filepath.Join(parentPath, name)
-	if err := refuseIfIrregular(handle, path); err != nil {
+	if err := RefuseIfIrregular(handle, path); err != nil {
 		_ = windows.CloseHandle(handle)
 		return windows.InvalidHandle, err
 	}
