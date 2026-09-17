@@ -4470,7 +4470,7 @@ export default {
             "workerId"
           ],
           "category": "Workers",
-          "description": "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
+          "description": "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nWorker IDs cannot be reused after removal.\nIf the ID belongs to a stopped worker or conflicts with the existing worker,\nthis method returns a 409 worker.\nUse `updateWorker` to modify an existing worker instead.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
           "input": "v1/create-worker-request.json#",
           "method": "put",
           "name": "createWorker",

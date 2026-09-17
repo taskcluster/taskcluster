@@ -1,6 +1,7 @@
 import taskcluster from '@taskcluster/client';
 import { ApiError, Provider } from './provider.js';
 import { Worker } from '../data.js';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 export class StaticProvider extends Provider {
   constructor(conf) {
@@ -31,12 +32,16 @@ export class StaticProvider extends Provider {
       worker = Worker.fromApi(workerData);
       await worker.create(this.db);
     } catch (err) {
-      if (err?.code !== 'EntityAlreadyExists') {
+      if (err?.code !== UNIQUE_VIOLATION) {
         throw err;
       }
       const existing = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
-      if (existing.providerId !== providerId || existing.providerData.staticSecret !== staticSecret) {
-        throw new ApiError('worker already exists');
+      if (
+        existing.state !== Worker.states.RUNNING ||
+        existing.providerId !== providerId ||
+        existing.providerData.staticSecret !== staticSecret
+      ) {
+        throw err; // let unique violation be converted to RequestConflict in api
       }
       worker = existing;
     }

@@ -97,6 +97,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     );
   });
 
+  test('createWorker checks if worker exists', async () => {
+    await provider.createWorker({
+      workerPool: defaultWorkerPool,
+      workerGroup,
+      workerId,
+      input: {
+        expires: taskcluster.fromNow('1 hour'),
+        capacity: 1,
+        providerInfo: {
+          staticSecret: 'yeah',
+        },
+      },
+    });
+
+    await assert.rejects(
+      () =>
+        provider.createWorker({
+          workerPool: defaultWorkerPool,
+          workerGroup,
+          workerId,
+          input: {
+            expires: taskcluster.fromNow('1 minute'),
+            capacity: 8,
+            providerInfo: {
+              staticSecret: 'oh no',
+            },
+          },
+        }),
+      /duplicate key value/
+    );
+  });
+
   test('removeWorker marks the worker as stopped', async () => {
     const worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);
