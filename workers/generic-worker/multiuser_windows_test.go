@@ -4,10 +4,13 @@ package main
 
 import (
 	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/win32"
 )
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks
@@ -64,35 +67,44 @@ func TestAppDataNotShared(t *testing.T) {
 //
 //	c:\cygwin\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
-	if os.Getenv("GW_SKIP_MOZILLA_BUILD_TESTS") != "" {
-		t.Skip("Skipping since GW_SKIP_MOZILLA_BUILD_TESTS env var is set")
+	if os.Getenv("GW_SKIP_MSYS_TESTS") != "" {
+		t.Skip("Skipping since GW_SKIP_MSYS_TESTS env var is set")
 	}
+	shell := msysShell(t)
 	setup(t)
 
+	commands := []string{"set PATH=" + win32.CMDExeEscape(filepath.Dir(shell)) + ";%PATH%"}
+	// run several sh commands, as running one is horribly slow, but
+	// let's make sure if you run a lot of them, they are not all slow -
+	// hopefully just the first one is the problem
+	for range 12 {
+		commands = append(commands, run([]string{filepath.Base(shell), "-c", "echo hello"}, ""))
+	}
+
 	payload := GenericWorkerPayload{
-		// run several bash commands, as running one is horribly slow, but
-		// let's make sure if you run a lot of them, they are not all slow -
-		// hopefully just the first one is the problem
-		Command: []string{
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-			`c:\cygwin\bin\bash.exe -c "echo hello"`,
-		},
+		Command:    commands,
 		MaxRunTime: 120,
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// return the path of the shell shipped alongside git for windows
+func msysShell(t *testing.T) string {
+	t.Helper()
+
+	git, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatalf("Git not found in the PATH: %v", err)
+	}
+	// <root>\cmd\git.exe is next to <root>\usr\bin\sh.exe
+	shell := filepath.Join(filepath.Dir(filepath.Dir(git)), "usr", "bin", "sh.exe")
+	if _, err := os.Stat(shell); err != nil {
+		t.Fatalf("Git didn't bring a shell alongside it at %v: %v", shell, err)
+	}
+	return shell
 }
 
 // TestHideCmdWindowEnabled verifies that when hideCmdWindow feature is enabled,
