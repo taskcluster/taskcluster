@@ -3,12 +3,13 @@
 package main
 
 import (
-	"strings"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v110/workers/generic-worker/runtime"
 )
 
 // TestWhoAmI tests that the correct user is running the task, based on value of payload feature toggle RunTaskAsCurrentUser
@@ -67,44 +68,24 @@ func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
 }
 
 // TestPrivilegedGenericWorkerBinaryFailsTask tests that when the generic-worker binary
-// is not accessible to task users (e.g., in a secured directory), the task is
-// reported as exception/internal-error but the worker continues normally.
+// can't be reached, the task is reported as exception/internal-error but the
+// worker continues normally.
 func TestPrivilegedGenericWorkerBinaryFailsTask(t *testing.T) {
 	setup(t)
 
-	goPath, err := host.Output("go", "env", "GOPATH")
-	if err != nil {
-		t.Fatalf("Could not get GOPATH: %v", err)
+	// The worker looks its own binary up through GOPATH when running tests, so
+	// point that at a copy of it and wreck that one.
+	gopath := t.TempDir()
+	binary := filepath.Join(gopath, "bin", filepath.Base(gwruntime.GenericWorkerBinary()))
+	if err := os.MkdirAll(filepath.Dir(binary), 0755); err != nil {
+		t.Fatalf("Could not create %v: %v", filepath.Dir(binary), err)
 	}
-	if goPath == "" {
-		t.Fatal("GOPATH is empty")
+	if _, err := fileutil.Copy(binary, gwruntime.GenericWorkerBinary()); err != nil {
+		t.Fatalf("Could not copy the generic-worker binary to %v: %v", binary, err)
 	}
-	goPath = strings.TrimSpace(goPath)
+	t.Setenv("GOPATH", gopath)
 
-	permissionsBefore, resetPermissions, err := fileutil.GetPermissions(goPath)
-	if err != nil {
-		t.Fatalf("Could not get permissions of GOPATH (before): %v", err)
-	}
-
-	err = fileutil.SecureFiles(goPath)
-	if err != nil {
-		t.Fatalf("Could not secure GOPATH: %v", err)
-	}
-	defer func() {
-		err := resetPermissions()
-		if err != nil {
-			t.Fatalf("Could not reset permissions of GOPATH: %v", err)
-		}
-
-		permissionsAfter, _, err := fileutil.GetPermissions(goPath)
-		if err != nil {
-			t.Fatalf("Could not get permissions of GOPATH (after): %v", err)
-		}
-
-		if permissionsBefore != permissionsAfter {
-			t.Fatalf("Permissions changed from %s to %s", permissionsBefore, permissionsAfter)
-		}
-	}()
+	makeFileUnreachable(t, binary)
 
 	// Submit a task - it should fail with internal-error because the binary isn't accessible
 	// but the worker should continue normally (not crash with INTERNAL_ERROR)

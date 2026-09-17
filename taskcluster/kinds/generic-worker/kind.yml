@@ -283,9 +283,7 @@ tasks:
         - set CGO_ENABLED=0
         - set GOROOT=%CD%\%GO_VERSION%\go
         - set GOPATH=%CD%\gopath%GO_RELEASE%
-        - |
-          :: temporarily add C:\cygwin\bin to PATH - if this works out well, we should probably do it in system setup instead (i.e. in default system PATH of the image set)
-          set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%;C:\cygwin\bin
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%CD%\bin;%PATH%
         - git version
         - go version
         - go env

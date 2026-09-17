@@ -460,10 +460,10 @@ There are a few environment variables that you can set to influence the tests:
 Set to a non-empty string if you wish to skip all tests that require python to
 be installed.
 
-### `GW_SKIP_MOZILLA_BUILD_TESTS`
+### `GW_SKIP_MSYS_TESTS`
 
-Set to a non-empty string if you wish to skip all tests that require
-mozilla-build to be installed.
+Set to a non-empty string if you wish to skip all tests that require the shell
+that git for Windows ships alongside it (`usr\bin\sh.exe`).
 
 ### `GW_SKIP_Z_DRIVE_TESTS`
 
