@@ -1,5 +1,0 @@
-mutation TriggerHook($hookGroupId: ID!, $hookId: ID!, $payload: JSON!) {
-  triggerHook(hookGroupId: $hookGroupId, hookId: $hookId, payload: $payload) {
-    taskId
-  }
-}

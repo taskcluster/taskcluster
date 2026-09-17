@@ -1,12 +1,15 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import submitTaskAction from './submitTaskAction';
 import { getClient } from '../../utils/client';
+import { Auth, Hooks, Queue } from '@taskcluster/client-web';
 
 // Mock getClient to return a mock Queue instance
 vi.mock('../../utils/client', () => ({
   getClient: vi.fn(),
 }));
 vi.mock('@taskcluster/client-web', () => ({
+  Auth: vi.fn(),
+  Hooks: vi.fn(),
   Queue: vi.fn(),
 }));
 // Mock validateActionsJson to avoid fetch in test environment
@@ -33,14 +36,26 @@ describe('submitTaskAction', () => {
     credentials: { clientId: 'test', accessToken: 'secret' },
   };
   const mockCreateTask = vi.fn().mockResolvedValue({});
+  const mockExpandScopes = vi.fn();
+  const mockTriggerHook = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    getClient.mockReturnValue({ createTask: mockCreateTask });
+    getClient.mockImplementation(({ Class }) => {
+      switch (Class) {
+        case Queue:
+          return { createTask: mockCreateTask };
+        case Auth:
+          return { expandScopes: mockExpandScopes };
+        case Hooks:
+          return { triggerHook: mockTriggerHook };
+        default:
+          throw new Error('unexpected client class');
+      }
+    });
   });
 
-  it('action.kind=task: calls Queue.createTask directly (not Apollo)', async () => {
-    const apolloClient = { mutate: vi.fn(), query: vi.fn() };
+  it('action.kind=task: calls Queue.createTask directly', async () => {
     const task = {
       taskId: 'abc123',
       taskGroupId: 'abc123',
@@ -68,18 +83,17 @@ describe('submitTaskAction', () => {
       taskActions: task.taskActions,
       form: '{}',
       action,
-      apolloClient,
       user,
     });
 
     // Queue.createTask should be called directly
     expect(mockCreateTask).toHaveBeenCalledTimes(1);
-    // apolloClient.mutate should NOT be called for task kind
-    expect(apolloClient.mutate).not.toHaveBeenCalled();
+    // no hook is involved for task kind
+    expect(mockExpandScopes).not.toHaveBeenCalled();
+    expect(mockTriggerHook).not.toHaveBeenCalled();
   });
 
   it('action.kind=task: passes authorizedScopes from taskGroup.scopes', async () => {
-    const apolloClient = { mutate: vi.fn(), query: vi.fn() };
     const scopes = ['queue:create-task:proj-test/test-worker'];
     const task = {
       taskId: 'abc123',
@@ -110,7 +124,6 @@ describe('submitTaskAction', () => {
       },
       form: '{}',
       action,
-      apolloClient,
       user,
     });
 
@@ -120,5 +133,67 @@ describe('submitTaskAction', () => {
         authorizedScopes: scopes,
       })
     );
+  });
+
+  const hookAction = {
+    kind: 'hook',
+    name: 'release',
+    title: 'Release',
+    description: 'Trigger a release hook',
+    context: [],
+    schema: {},
+    hookGroupId: 'project-releng',
+    hookId: 'release',
+    hookPayload: { taskId: { $eval: 'taskId' } },
+  };
+  const hookTask = {
+    taskId: 'abc123',
+    taskGroupId: 'abc123',
+    scopes: ['assume:repo:hg.mozilla.org/try:action:generic'],
+  };
+
+  it('action.kind=hook: expands the decision task scopes and triggers the hook over REST', async () => {
+    mockExpandScopes.mockResolvedValue({
+      scopes: ['in-tree:hook-action:project-releng/release'],
+    });
+    mockTriggerHook.mockResolvedValue({ status: { taskId: 'hook123' } });
+
+    const taskId = await submitTaskAction({
+      task: hookTask,
+      taskActions: { variables: {}, actions: [hookAction], version: 1 },
+      form: '{}',
+      action: hookAction,
+      user,
+    });
+
+    expect(getClient).toHaveBeenCalledWith({ Class: Auth, user });
+    expect(mockExpandScopes).toHaveBeenCalledWith({
+      scopes: hookTask.scopes,
+    });
+    expect(getClient).toHaveBeenCalledWith({ Class: Hooks, user });
+    expect(mockTriggerHook).toHaveBeenCalledWith('project-releng', 'release', {
+      taskId: 'abc123',
+    });
+    expect(taskId).toBe('hook123');
+    expect(mockCreateTask).not.toHaveBeenCalled();
+  });
+
+  it('action.kind=hook: refuses when the expanded scopes do not cover the hook', async () => {
+    mockExpandScopes.mockResolvedValue({
+      scopes: ['in-tree:hook-action:project-releng/other'],
+    });
+
+    await expect(
+      submitTaskAction({
+        task: hookTask,
+        taskActions: { variables: {}, actions: [hookAction], version: 1 },
+        form: '{}',
+        action: hookAction,
+        user,
+      })
+    ).rejects.toThrow(
+      "decision task's scopes do not satisfy in-tree:hook-action:project-releng/release"
+    );
+    expect(mockTriggerHook).not.toHaveBeenCalled();
   });
 });
