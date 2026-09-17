@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/gwconfig"
@@ -336,5 +340,46 @@ func TestPreloadedCacheConsumptionBeforeRegistrationUsesColdCache(t *testing.T) 
 	}
 	if _, err := os.Stat(seed); !os.IsNotExist(err) {
 		t.Fatalf("consumed seed cleanup incomplete: %v", err)
+	}
+}
+
+func TestPreloadedCachePreservesModificationTimes(t *testing.T) {
+	seed := setupPreloadedCache(t)
+	old := time.Unix(1700000000, 0)
+	newer := old.Add(time.Hour)
+	for name, stamp := range map[string]time.Time{"foo.c": newer, "foo.o": old} {
+		path := filepath.Join(seed, name)
+		writeSeedFile(t, path, name)
+		if err := os.Chtimes(path, stamp, stamp); err != nil {
+			t.Fatal(err)
+		}
+	}
+	initialisePreloadedCaches(t)
+	for name, want := range map[string]time.Time{"foo.c": newer, "foo.o": old} {
+		info, err := os.Stat(filepath.Join(directoryCaches["checkout"][0].Location, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !info.ModTime().Equal(want) {
+			t.Fatalf("%s: got %v, want %v", name, info.ModTime(), want)
+		}
+	}
+}
+
+func TestPreloadedCacheConsumedMissingSeedIsQuiet(t *testing.T) {
+	setupPreloadedCache(t)
+	initialisePreloadedCaches(t)
+	// Consumption must also suppress the warning after the cache is evicted.
+	directoryCaches = CacheMap{}
+	if err := fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json"); err != nil {
+		t.Fatal(err)
+	}
+	var output bytes.Buffer
+	old := log.Writer()
+	log.SetOutput(&output)
+	defer log.SetOutput(old)
+	initialisePreloadedCaches(t)
+	if strings.Contains(output.String(), "Could not import preloaded") {
+		t.Fatal(output.String())
 	}
 }

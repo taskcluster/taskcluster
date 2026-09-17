@@ -27,8 +27,8 @@ func (c *Config) ValidatePreloadedDirectoryCaches() error {
 		paths = append(paths, path)
 	}
 	for i, seed := range c.PreloadedDirectoryCaches {
-		if seed.CacheName == "" || !filepath.IsAbs(seed.Location) || preloadHasParent(seed.Location) {
-			return fmt.Errorf("preloadedDirectoryCaches[%d] requires cacheName and an absolute location without parent components", i)
+		if seed.CacheName == "" || !filepath.IsAbs(seed.Location) || preloadInvalidPath(seed.Location) {
+			return fmt.Errorf("preloadedDirectoryCaches[%d] requires cacheName and an absolute location without parent components or device prefixes", i)
 		}
 		if names[seed.CacheName] {
 			return fmt.Errorf("duplicate preloaded directory cache name %q", seed.CacheName)
@@ -52,8 +52,8 @@ func (c *Config) ValidatePreloadedDirectoryCaches() error {
 
 // Resolve existing ancestors too: cache storage may not exist at config load.
 func preloadPath(path string) (string, error) {
-	if preloadHasParent(path) {
-		return "", fmt.Errorf("preloaded cache paths must not contain parent components: %q", path)
+	if preloadInvalidPath(path) {
+		return "", fmt.Errorf("preloaded cache paths must not contain parent components or device prefixes: %q", path)
 	}
 	abs, err := filepath.Abs(path)
 	if err != nil {
@@ -76,7 +76,13 @@ func preloadContains(parent, child string) bool {
 	return err == nil && (rel == "." || filepath.IsLocal(rel))
 }
 
-func preloadHasParent(path string) bool {
+func preloadInvalidPath(path string) bool {
+	if runtime.GOOS == "windows" {
+		p := filepath.ToSlash(path)
+		if strings.HasPrefix(p, "//?/") || strings.HasPrefix(p, "//./") || strings.HasPrefix(p, "/??/") {
+			return true
+		}
+	}
 	for _, component := range strings.Split(filepath.ToSlash(path), "/") {
 		if component == ".." {
 			return true

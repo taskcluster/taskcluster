@@ -17,8 +17,18 @@ import (
 // must be controlled by the worker administrator and immutable during import.
 func importPreloadedDirectoryCache(seed gwconfig.PreloadedDirectoryCache) error {
 	start := time.Now()
+	consumed := map[string]bool{}
+	if err := loadFromJSONFile(&consumed, preloadedCacheStateFile); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("could not load seed consumption state: %w", err)
+	}
+	if consumed == nil {
+		consumed = map[string]bool{}
+	}
 	info, err := os.Lstat(seed.Location)
 	if err != nil {
+		if os.IsNotExist(err) && (consumed[filepath.Clean(seed.Location)] || len(directoryCaches[seed.CacheName]) != 0) {
+			return nil
+		}
 		return err
 	}
 	if !info.IsDir() {
@@ -30,17 +40,11 @@ func importPreloadedDirectoryCache(seed gwconfig.PreloadedDirectoryCache) error 
 	if err != nil {
 		return err
 	}
-	consumed := map[string]bool{}
-	if err := loadFromJSONFile(&consumed, preloadedCacheStateFile); err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("could not load seed consumption state: %w", err)
-	}
-	if consumed == nil {
-		consumed = map[string]bool{}
-	}
 	if consumed[location] || len(directoryCaches[seed.CacheName]) != 0 {
-		if err := consumePreloadedCache(consumed, location); err != nil {
+		if err := consumePreloadedCache(consumed, location, filepath.Clean(seed.Location)); err != nil {
 			return err
 		}
+		log.Printf("Removing preloaded directory cache seed %q: already consumed or cache %q already exists", location, seed.CacheName)
 		return os.RemoveAll(location)
 	}
 	root, err := os.OpenRoot(location)
@@ -95,10 +99,32 @@ func importPreloadedDirectoryCache(seed gwconfig.PreloadedDirectoryCache) error 
 		_ = os.RemoveAll(entry.Location)
 		return err
 	}
+	// CopyFS does not preserve timestamps or ownership. Restore metadata before
+	// publishing the cache, including the root used by non-root containers.
+	if err := fs.WalkDir(source, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.Type()&fs.ModeSymlink != 0 {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		destination := filepath.Join(entry.Location, filepath.FromSlash(path))
+		if err := preservePreloadedOwnership(destination, info); err != nil {
+			return err
+		}
+		return os.Chtimes(destination, info.ModTime(), info.ModTime())
+	}); err != nil {
+		_ = os.RemoveAll(entry.Location)
+		return err
+	}
 	// Persist consumption before registering or deleting anything. If the
 	// process stops between these two state writes, use a cold cache on the
 	// next start rather than risk importing a previously consumed seed.
-	if err := consumePreloadedCache(consumed, location); err != nil {
+	if err := consumePreloadedCache(consumed, location, filepath.Clean(seed.Location)); err != nil {
 		_ = os.RemoveAll(entry.Location)
 		return err
 	}
@@ -128,9 +154,15 @@ func importPreloadedDirectoryCache(seed gwconfig.PreloadedDirectoryCache) error 
 // Keep consumption outside CacheMap so purge and eviction cannot erase it.
 const preloadedCacheStateFile = "preloaded-directory-caches.json"
 
-func consumePreloadedCache(consumed map[string]bool, location string) error {
-	if !consumed[location] {
-		consumed[location] = true
+func consumePreloadedCache(consumed map[string]bool, locations ...string) error {
+	changed := false
+	for _, location := range locations {
+		if !consumed[location] {
+			consumed[location] = true
+			changed = true
+		}
+	}
+	if changed {
 		if err := fileutil.WriteToFileAsJSON(&consumed, preloadedCacheStateFile); err != nil {
 			return err
 		}
