@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -274,13 +275,22 @@ func (cache *Cache) Rating() float64 {
 	return float64(cache.LastUsed.Unix())
 }
 
-// sweepUnknownContent deletes anything in dir that is not a cache Location.
+// sweepUnknownContent deletes top-level entries that contain no known cache.
 // Failed deletions are retried on the next call (see #8944).
 func sweepUnknownContent(dir string, caches CacheMap) {
 	keep := map[string]bool{}
 	for _, entries := range caches {
 		for _, cache := range entries {
-			keep[filepath.Base(cache.Location)] = true
+			rel, err := filepath.Rel(dir, cache.Location)
+			if err != nil || !filepath.IsLocal(rel) {
+				continue
+			}
+			if rel == "." {
+				return // The entire directory is a registered cache.
+			}
+			// ponytail: keep the containing directory; nested orphan cleanup is out of scope.
+			top, _, _ := strings.Cut(rel, string(os.PathSeparator))
+			keep[top] = true
 		}
 	}
 	entries, err := os.ReadDir(dir)
@@ -433,6 +443,19 @@ func (feature *MountsFeature) Initialise() error {
 	defer cacheMutex.Unlock()
 	fileCaches.LoadFromFile("file-caches.json", config.DownloadsDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.CachesDir)
+	for _, seed := range config.PreloadedDirectoryCaches {
+		if len(directoryCaches[seed.CacheName]) != 0 {
+			continue
+		}
+		if info, err := os.Stat(seed.Location); err != nil || !info.IsDir() {
+			continue
+		}
+		directoryCaches[seed.CacheName] = []*Cache{{
+			Location: seed.Location, Key: seed.CacheName, Owner: directoryCaches,
+			// Preparation age is unknown; honor outstanding purge requests.
+			LastUsed: time.Now(),
+		}}
+	}
 	sweepUnknownContent(config.CachesDir, directoryCaches)
 	return nil
 }

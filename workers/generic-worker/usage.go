@@ -260,6 +260,12 @@ and reports back results to the queue.
                                             [default: 524288000] (500MiB)
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          preloadedDirectoryCaches          List of objects with cacheName and location. Each
+                                            location is an absolute path to an existing directory.
+                                            Register it as a writable cache at startup if no
+                                            cache exists for that name. Missing paths are skipped.
+                                            On POSIX, use the same filesystem as tasksDir.
+                                            [default: []]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
