@@ -4,21 +4,43 @@ import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import { withAuth } from '../../../utils/Auth';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
+import { decodeArtifactName } from '../../../utils/artifactNames';
 
 @withAuth
-export default class TaskArtifactRedire extends Component {
+export default class TaskArtifactRedirect extends Component {
   state = {
     redirect: false,
   };
 
-  componentDidMount() {
+  getRedirectUrl() {
     const {
       match: {
         params: { artifactName, taskId, runId },
       },
       user,
     } = this.props;
-    const url = getArtifactUrl({ user, taskId, runId, name: artifactName });
+    // react-router's history decodes the pathname before populating route params
+    // which turns '%2526' into '%26' and looses information
+    // so instead we read browser pathname to get raw artifact name
+    const artifactPath = `/tasks/${taskId}/runs/${runId}/`;
+    const artifactPathIndex = window.location.pathname.indexOf(artifactPath);
+    const rawArtifactName =
+      artifactPathIndex === -1
+        ? artifactName
+        : window.location.pathname.slice(
+            artifactPathIndex + artifactPath.length
+          );
+
+    return getArtifactUrl({
+      user,
+      taskId,
+      runId,
+      name: decodeArtifactName(rawArtifactName),
+    });
+  }
+
+  componentDidMount() {
+    const url = this.getRedirectUrl();
 
     window.location = url;
 

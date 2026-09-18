@@ -2,7 +2,7 @@ import helper from './helper.js';
 import assert from 'node:assert';
 import MockDate from 'mockdate';
 import testing from '@taskcluster/lib-testing';
-import { GithubCheckOutput, GithubCheck, getTimeDifference } from '../src/handlers/utils.js';
+import { GithubCheckOutput, GithubCheck, getTimeDifference, buildUrl, buildLogUrl } from '../src/handlers/utils.js';
 import { CHECK_RUN_STATES } from '../src/constants.js';
 
 /**
@@ -145,5 +145,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], () => {
     );
     assert.equal(getTimeDifference(undefined, undefined), null);
     assert.equal(getTimeDifference('timestamp1', 'timestamp2'), null);
+  });
+
+  test('artifact URLs encode names as route parameters', () => {
+    const rootUrl = 'https://taskcluster.example.com';
+    const name = 'public/file?#.txt';
+
+    assert.equal(buildUrl(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/public%2Ffile%3F%23.txt`);
+    assert.equal(
+      buildLogUrl(rootUrl, 'taskId', 0, name),
+      `${rootUrl}/tasks/taskId/runs/0/logs/public%2Ffile%3F%23.txt`
+    );
   });
 });
