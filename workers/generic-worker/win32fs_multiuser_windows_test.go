@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
 	"golang.org/x/sys/windows"
@@ -47,6 +48,121 @@ func grantedTo(t *testing.T, path, user string) bool {
 		t.Fatalf("could not read ACL of %q: %v", path, err)
 	}
 	return strings.TrimSpace(out) == "yes"
+}
+
+func readSD(t *testing.T, path string) *windows.SECURITY_DESCRIPTOR {
+	t.Helper()
+	sd, err := windows.GetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION)
+	if err != nil {
+		t.Fatalf("could not read security descriptor of %q: %v", path, err)
+	}
+	return sd
+}
+
+func daclAllowsWorld(t *testing.T, sd *windows.SECURITY_DESCRIPTOR) bool {
+	t.Helper()
+	dacl, _, err := sd.DACL()
+	if err != nil {
+		if err == windows.ERROR_OBJECT_NOT_FOUND {
+			return true
+		}
+		t.Fatalf("could not read DACL: %v", err)
+	}
+	if dacl == nil {
+		return true
+	}
+	for i := uint16(0); i < dacl.AceCount; i++ {
+		var ace *windows.ACCESS_ALLOWED_ACE
+		if err := windows.GetAce(dacl, uint32(i), &ace); err != nil {
+			t.Fatalf("GetAce: %v", err)
+		}
+		if ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {
+			continue
+		}
+		sid := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
+		if sid.IsWellKnown(windows.WinBuiltinUsersSid) ||
+			sid.IsWellKnown(windows.WinWorldSid) ||
+			sid.IsWellKnown(windows.WinAuthenticatedUserSid) {
+			return true
+		}
+	}
+	return false
+}
+
+func requireWorldACE(t *testing.T, path string) {
+	t.Helper()
+	sd := readSD(t, path)
+	if !daclAllowsWorld(t, sd) {
+		t.Fatalf("%s did not inherit a Users/Everyone ACE: %s", path, sd.String())
+	}
+}
+
+func assertProtectedNoWorld(t *testing.T, path string) {
+	t.Helper()
+	sd := readSD(t, path)
+	sddl := sd.String()
+	control, _, err := sd.Control()
+	if err != nil {
+		t.Fatalf("could not read control of %q: %v", path, err)
+	}
+	if control&windows.SE_DACL_PROTECTED == 0 {
+		t.Errorf("%s DACL is not protected: %s", path, sddl)
+	}
+	if daclAllowsWorld(t, sd) {
+		t.Errorf("%s DACL still grants Users/Everyone: %s", path, sddl)
+	}
+}
+
+func assertGrantedToWorkerAndTaskUser(t *testing.T, path, taskUser string) {
+	t.Helper()
+	if !grantedTo(t, path, taskUser) {
+		t.Errorf("task user was not granted %s", path)
+	}
+	if !grantedTo(t, path, "SYSTEM") {
+		t.Errorf("SYSTEM was not granted %s", path)
+	}
+	if !grantedTo(t, path, "Administrators") {
+		t.Errorf("Administrators was not granted %s", path)
+	}
+}
+
+func mkdirCacheInheritingUsers(t *testing.T, parent string) (cache, nested string) {
+	t.Helper()
+	if err := os.MkdirAll(parent, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	// *S-1-5-32-545 = BUILTIN\Users
+	if err := host.Run("icacls", parent, "/grant", "*S-1-5-32-545:(OI)(CI)(RX)"); err != nil {
+		t.Fatal(err)
+	}
+	cache = filepath.Join(parent, "cache")
+	nested = filepath.Join(cache, "nested", "file.txt")
+	if err := os.MkdirAll(filepath.Dir(nested), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(nested, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{cache, filepath.Dir(nested), nested} {
+		requireWorldACE(t, p)
+	}
+	return cache, nested
+}
+
+func assertSecuredPoolTree(t *testing.T, cache, nested, taskUser string) {
+	t.Helper()
+	for _, path := range []string{cache, filepath.Dir(nested), nested} {
+		assertProtectedNoWorld(t, path)
+		if grantedTo(t, path, taskUser) {
+			t.Errorf("task user still has Full Control of %s", path)
+		}
+		if !grantedTo(t, path, "SYSTEM") {
+			t.Errorf("SYSTEM was not granted %s", path)
+		}
+		if !grantedTo(t, path, "Administrators") {
+			t.Errorf("Administrators was not granted %s", path)
+		}
+	}
 }
 
 func mkAdminOnlySecret(t *testing.T, base string) (secret, secretFile string) {
@@ -244,6 +360,95 @@ func TestGrantFullControl(t *testing.T) {
 			t.Error("granted a hardlink under a root owned by SYSTEM")
 		}
 	})
+
+	t.Run("replaces inherited Users ACEs", func(t *testing.T) {
+		cache, nested := mkdirCacheInheritingUsers(t, filepath.Join(base, "inherited-users"))
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		later := filepath.Join(cache, "later.txt")
+		if err := os.WriteFile(later, []byte("y"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		for _, path := range []string{cache, filepath.Dir(nested), nested} {
+			assertProtectedNoWorld(t, path)
+			assertGrantedToWorkerAndTaskUser(t, path, taskUser)
+		}
+		// later.txt is created after the grant, so it inherits the cache DACL
+		// (ID ACEs) rather than getting a protected DACL of its own.
+		sd := readSD(t, later)
+		if daclAllowsWorld(t, sd) {
+			t.Errorf("%s inherited Users/Everyone: %s", later, sd.String())
+		}
+		assertGrantedToWorkerAndTaskUser(t, later, taskUser)
+	})
+}
+
+func TestSecureCachePoolEntry(t *testing.T) {
+	setup(t)
+	taskUser := taskContext.User.Name
+
+	t.Run("strips the previous task user", func(t *testing.T) {
+		cache, nested := mkdirCacheInheritingUsers(t, t.TempDir())
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		if !grantedTo(t, nested, taskUser) {
+			t.Fatal("precondition: grant should give the task user the nested file")
+		}
+		if err := secureCachePoolEntry(cache); err != nil {
+			t.Fatal(err)
+		}
+		assertSecuredPoolTree(t, cache, nested, taskUser)
+	})
+
+	t.Run("hardens a cache that was never granted", func(t *testing.T) {
+		cache, nested := mkdirCacheInheritingUsers(t, t.TempDir())
+		if err := secureCachePoolEntry(cache); err != nil {
+			t.Fatal(err)
+		}
+		assertSecuredPoolTree(t, cache, nested, taskUser)
+	})
+
+	t.Run("remounts intra-cache hardlinks", func(t *testing.T) {
+		cache, nested := mkdirCacheInheritingUsers(t, t.TempDir())
+		link := filepath.Join(cache, "link.txt")
+		if err := os.Link(nested, link); err != nil {
+			t.Fatal(err)
+		}
+		setOwner(t, nested, taskUser)
+		setOwner(t, cache, taskUser)
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		if err := secureCachePoolEntry(cache); err != nil {
+			t.Fatal(err)
+		}
+		assertSecuredPoolTree(t, cache, nested, taskUser)
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		for _, p := range []string{nested, link} {
+			if !grantedTo(t, p, taskUser) {
+				t.Errorf("task user was not granted %s", p)
+			}
+		}
+	})
+}
+
+func TestReturnCacheToPool(t *testing.T) {
+	setup(t)
+	taskUser := taskContext.User.Name
+	parent := t.TempDir()
+	cache, _ := mkdirCacheInheritingUsers(t, parent)
+	if err := grantFullControl(cache, taskUser, true); err != nil {
+		t.Fatal(err)
+	}
+	dest := filepath.Join(parent, "pool")
+	if err := returnCacheToPool(cache, dest); err != nil {
+		t.Fatal(err)
+	}
+	assertSecuredPoolTree(t, dest, filepath.Join(dest, "nested", "file.txt"), taskUser)
 }
 
 func TestRemoveAllDoesNotFollowJunctions(t *testing.T) {
