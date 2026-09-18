@@ -1010,8 +1010,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		taskMount.Warnf("Could not remove stale cache dir %q: %v", cacheDir, err)
 	}
 
-	if err := RenameCrossDevice(taskCacheDir, cacheDir); err != nil {
-		// Rename failed — evict the entry
+	if err := returnCacheToPool(taskCacheDir, cacheDir); err != nil {
 		cacheMutex.Lock()
 		evictErr := entry.Evict(taskMount)
 		cacheMutex.Unlock()
@@ -1025,6 +1024,13 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	ReleaseCache(entry)
 	cacheMutex.Unlock()
 	return nil
+}
+
+func returnCacheToPool(oldpath, newpath string) error {
+	if err := RenameCrossDevice(oldpath, newpath); err != nil {
+		return err
+	}
+	return secureCachePoolEntry(newpath)
 }
 
 func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {

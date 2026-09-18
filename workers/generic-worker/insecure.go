@@ -172,6 +172,11 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
+// secureCachePoolEntry is a no-op: the insecure engine has no task-user isolation.
+func secureCachePoolEntry(string) error {
+	return nil
+}
+
 func defaultTasksDir() string {
 	// Issue 3779; default tasks directory is `tasks` relative to working directory
 	return "tasks"
