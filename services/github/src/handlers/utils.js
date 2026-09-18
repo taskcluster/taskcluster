@@ -248,12 +248,14 @@ export const getTimeDifference = (timestamp1, timestamp2) => {
   return formattedDifference;
 };
 
+const encodeArtifactName = name => name.split('/').map(encodeURIComponent).join('/');
+
 export const buildUrl = (rootUrl, taskId, runId, artifactName) => {
-  return `${rootUrl}/tasks/${taskId}/runs/${runId}/${artifactName}`;
+  return `${rootUrl}/tasks/${taskId}/runs/${runId}/${encodeArtifactName(artifactName)}`;
 };
 
 export const buildLogUrl = (rootUrl, taskId, runId, artifactName) => {
-  return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${artifactName}`;
+  return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${encodeArtifactName(artifactName)}`;
 };
 
 // this is the same as ui/src/utils/formatBytes.js
