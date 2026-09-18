@@ -57,3 +57,12 @@ it('preserves malformed percent encoding in a direct log link', () => {
     'public/logs/%foo.log'
   );
 });
+
+it('preserves an artifact name encoded as one route parameter', () => {
+  const name = 'public/logs/live.log';
+
+  expectArtifactUrl(
+    `/tasks/${taskId}/runs/0/logs/${encodeURIComponent(name)}`,
+    name
+  );
+});

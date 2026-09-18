@@ -19,12 +19,23 @@ export default class TaskArtifactRedirect extends Component {
       },
       user,
     } = this.props;
+    // react-router's history decodes the pathname before populating route params
+    // which turns '%2526' into '%26' and looses information
+    // so instead we read browser pathname to get raw artifact name
+    const artifactPath = `/tasks/${taskId}/runs/${runId}/`;
+    const artifactPathIndex = window.location.pathname.indexOf(artifactPath);
+    const rawArtifactName =
+      artifactPathIndex === -1
+        ? artifactName
+        : window.location.pathname.slice(
+            artifactPathIndex + artifactPath.length
+          );
 
     return getArtifactUrl({
       user,
       taskId,
       runId,
-      name: decodeArtifactName(artifactName),
+      name: decodeArtifactName(rawArtifactName),
     });
   }
 
