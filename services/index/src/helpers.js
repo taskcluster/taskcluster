@@ -107,7 +107,7 @@ export const taskUtils = {
     }
 
     // Update if we prefer input over what we have
-    if (task.rank <= input.rank) {
+    if (task.expires <= new Date() || task.rank <= input.rank) {
       const updatedTask = await db.fns.update_indexed_task(
         task.namespace,
         task.name,

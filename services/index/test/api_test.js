@@ -40,6 +40,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert(result.taskId === taskId2, 'Wrong taskId');
   });
 
+  test('insert (expired entry is not considered)', async () => {
+    const myns = slugid.v4();
+    const expiredTaskId = slugid.v4();
+    const taskId = slugid.v4();
+
+    await helper.index.insertTask(`${myns}.my-task`, {
+      taskId: expiredTaskId,
+      rank: 42,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNow('-1 day'),
+    });
+
+    const inserted = await helper.index.insertTask(`${myns}.my-task`, {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world - again' },
+      expires: taskcluster.fromNow('25 minutes'),
+    });
+    assert(inserted.taskId === taskId, 'Wrong taskId');
+
+    const result = await helper.index.findTask(`${myns}.my-task`);
+    assert(result.taskId === taskId, 'Wrong taskId');
+  });
+
   test('find (non-existing)', async () => {
     const ns = `${slugid.v4()}.${slugid.v4()}`;
     try {
