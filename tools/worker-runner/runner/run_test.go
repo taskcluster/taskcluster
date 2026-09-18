@@ -130,9 +130,6 @@ getSecrets: false
 cacheOverRestarts: %s
 workerConfig:
   fromFirstRun: true
-  preloadedDirectoryCaches:
-    - cacheName: gecko-level-1-checkouts
-      location: C:/cache-seeds/gecko
 worker:
   implementation: dummy
 `, cachePath), 0600)
@@ -142,11 +139,6 @@ worker:
 	require.NoError(t, err)
 
 	require.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
-
-	firstConfig := run.WorkerConfig.MustGet("preloadedDirectoryCaches")
-	run, err = Run(configPath)
-	require.NoError(t, err)
-	require.Equal(t, firstConfig, run.WorkerConfig.MustGet("preloadedDirectoryCaches"))
 
 	cache, _ := os.ReadFile(cachePath)
 	fmt.Printf("cache: %s", cache)

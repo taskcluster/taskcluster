@@ -39,11 +39,9 @@ func Run(configFile string) (state run.State, err error) {
 		}
 	}
 
-	if !runCached {
-		state.Lock()
-		state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
-		state.Unlock()
-	}
+	state.Lock()
+	state.WorkerConfig = state.WorkerConfig.Merge(runnercfg.WorkerConfig)
+	state.Unlock()
 
 	// initialize provider and (re)register the worker
 
