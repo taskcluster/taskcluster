@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { upgrade, downgrade } from './upgrade.js';
 import { renumberVersions, newVersion } from './versions.js';
 
-const main = async () => {
+const dbOptions = () => {
   const adminDbUrl = process.env.ADMIN_DB_URL;
   if (!adminDbUrl) {
     throw new Error('$ADMIN_DB_URL is not set');
@@ -13,6 +13,10 @@ const main = async () => {
     throw new Error('$USERNAME_PREFIX is not set');
   }
 
+  return { adminDbUrl, usernamePrefix };
+};
+
+const main = async () => {
   /** @param {string} message */
   const showProgress = message => {
     console.log(chalk.green(message));
@@ -24,15 +28,19 @@ const main = async () => {
   }
 
   switch (process.argv[2]) {
-    case 'upgrade':
-      await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion: toVersion });
+    case 'upgrade': {
+      const { adminDbUrl, usernamePrefix } = dbOptions();
+      await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
       break;
-    case 'downgrade':
+    }
+    case 'downgrade': {
       if (!toVersion) {
         throw new Error('must specify a version to downgrade to');
       }
-      await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion: toVersion });
+      const { adminDbUrl, usernamePrefix } = dbOptions();
+      await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
       break;
+    }
     case 'renumber':
       if (process.argv.length !== 5) {
         throw new Error('usage: node db/src/main.js renumber <from> <to>');
