@@ -5,6 +5,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -18,6 +19,8 @@ const maxGrantErrors = 100
 type granter struct {
 	// The new owner
 	sid            *windows.SID
+	admins         *windows.SID
+	system         *windows.SID
 	from           *windows.SID
 	fromPrivileged bool
 	errs           []error
@@ -59,16 +62,21 @@ func (g *granter) mayTake(links uint32, owner *windows.SID) bool {
 	return !privilegedOwner(g.sid) && owner.Equals(g.sid)
 }
 
-func readSecurity(handle windows.Handle, path string) (*windows.SECURITY_DESCRIPTOR, error) {
-	sd, err := windows.GetSecurityInfo(handle, windows.SE_FILE_OBJECT, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION)
+func readOwner(handle windows.Handle, path string) (*windows.SID, error) {
+	sd, err := windows.GetSecurityInfo(handle, windows.SE_FILE_OBJECT, windows.OWNER_SECURITY_INFORMATION)
 	if err != nil {
-		return nil, fmt.Errorf("could not read the security descriptor of %q: %w", path, err)
+		return nil, fmt.Errorf("could not read the owner of %q: %w", path, err)
 	}
-	return sd, nil
+	owner, _, err := sd.Owner()
+	if err != nil {
+		return nil, fmt.Errorf("could not extract the owner of %q: %w", path, err)
+	}
+	return owner, nil
 }
 
-// Gives username ownership of path plus an inheritable full control ACE, and
-// the same for every descendant if recurse is set.
+// grantFullControl replaces the DACL of path with a protected descriptor
+// granting inheritable full control to username, Administrators, and SYSTEM,
+// and takes ownership as username. Descendants are updated if recurse is set.
 func grantFullControl(path, username string, recurse bool) error {
 	if err := safefs.EnsurePrivileges(); err != nil {
 		return err
@@ -77,6 +85,14 @@ func grantFullControl(path, username string, recurse bool) error {
 	sid, _, _, err := windows.LookupSID("", username)
 	if err != nil {
 		return fmt.Errorf("could not look up SID for user %q: %w", username, err)
+	}
+	admins, err := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid)
+	if err != nil {
+		return fmt.Errorf("could not look up the SID of the Administrators group: %w", err)
+	}
+	system, err := windows.CreateWellKnownSid(windows.WinLocalSystemSid)
+	if err != nil {
+		return fmt.Errorf("could not look up the SID of SYSTEM: %w", err)
 	}
 
 	root, err := safefs.OpenPathPinned(path, safefs.SecAccess)
@@ -100,18 +116,14 @@ func grantFullControl(path, username string, recurse bool) error {
 		}
 	}
 
-	sd, err := readSecurity(root, path)
+	owner, err := readOwner(root, path)
 	if err != nil {
 		return err
 	}
-	owner, _, err := sd.Owner()
-	if err != nil {
-		return fmt.Errorf("could not extract the owner of %q: %w", path, err)
-	}
 
-	g := &granter{sid: sid, from: owner, fromPrivileged: privilegedOwner(owner)}
+	g := &granter{sid: sid, admins: admins, system: system, from: owner, fromPrivileged: privilegedOwner(owner)}
 
-	if err := g.grantNode(path, root, sd, dir); err != nil {
+	if err := g.grantNode(path, root, dir); err != nil {
 		return err
 	}
 	if !recurse || !dir || surrogate {
@@ -122,47 +134,54 @@ func grantFullControl(path, username string, recurse bool) error {
 	return g.refusals(path)
 }
 
-func (g *granter) grantNode(name string, handle windows.Handle, sd *windows.SECURITY_DESCRIPTOR, container bool) error {
-	oldDACL, _, err := sd.DACL()
-	if err != nil {
-		return fmt.Errorf("could not extract DACL of %q: %w", name, err)
-	}
-
-	// Inheritance flags only mean anything on something that can have children
-	inheritance := uint32(windows.NO_INHERITANCE)
-	if container {
-		inheritance = windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT
-	}
-
-	access := []windows.EXPLICIT_ACCESS{{
+func fullControlACE(sid *windows.SID, trusteeType windows.TRUSTEE_TYPE, inheritance uint32) windows.EXPLICIT_ACCESS {
+	return windows.EXPLICIT_ACCESS{
 		AccessPermissions: safefs.FileAllAccess,
 		AccessMode:        windows.GRANT_ACCESS,
 		Inheritance:       inheritance,
 		Trustee: windows.TRUSTEE{
 			TrusteeForm:  windows.TRUSTEE_IS_SID,
-			TrusteeType:  windows.TRUSTEE_IS_USER,
-			TrusteeValue: windows.TrusteeValueFromSID(g.sid),
+			TrusteeType:  trusteeType,
+			TrusteeValue: windows.TrusteeValueFromSID(sid),
 		},
-	}}
-	newDACL, err := windows.ACLFromEntries(access, oldDACL)
+	}
+}
+
+func setProtectedOwnerAndDACL(handle windows.Handle, name string, owner *windows.SID, access []windows.EXPLICIT_ACCESS) error {
+	newDACL, err := windows.ACLFromEntries(access, nil)
 	if err != nil {
 		return fmt.Errorf("could not build DACL for %q: %w", name, err)
 	}
-
 	newSD, err := windows.NewSecurityDescriptor()
 	if err != nil {
 		return err
 	}
-	if err := newSD.SetOwner(g.sid, false); err != nil {
+	if err := newSD.SetOwner(owner, false); err != nil {
 		return fmt.Errorf("could not set owner in security descriptor for %q: %w", name, err)
 	}
 	if err := newSD.SetDACL(newDACL, true, false); err != nil {
 		return fmt.Errorf("could not set DACL in security descriptor for %q: %w", name, err)
 	}
+	if err := newSD.SetControl(windows.SE_DACL_PROTECTED, windows.SE_DACL_PROTECTED); err != nil {
+		return fmt.Errorf("could not protect the DACL in security descriptor for %q: %w", name, err)
+	}
 	if err := windows.SetKernelObjectSecurity(handle, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION, newSD); err != nil {
 		return fmt.Errorf("could not set owner/DACL on %q: %w", name, err)
 	}
 	return nil
+}
+
+func (g *granter) grantNode(name string, handle windows.Handle, container bool) error {
+	// Inheritance flags only mean anything on something that can have children
+	inheritance := uint32(windows.NO_INHERITANCE)
+	if container {
+		inheritance = windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT
+	}
+	return setProtectedOwnerAndDACL(handle, name, g.sid, []windows.EXPLICIT_ACCESS{
+		fullControlACE(g.sid, windows.TRUSTEE_IS_USER, inheritance),
+		fullControlACE(g.admins, windows.TRUSTEE_IS_GROUP, inheritance),
+		fullControlACE(g.system, windows.TRUSTEE_IS_USER, inheritance),
+	})
 }
 
 func (g *granter) grantChildren(handle windows.Handle, parentPath string, depth int) {
@@ -207,19 +226,14 @@ func (g *granter) grantChild(parent windows.Handle, name, parentPath string, dep
 		return fmt.Errorf("could not stat %q: %w", childPath, err)
 	}
 
-	sd, err := readSecurity(child, childPath)
-	if err != nil {
-		return err
-	}
-
 	if !dir {
 		links, err := safefs.NumberOfLinks(child)
 		if err != nil {
 			return fmt.Errorf("could not stat %q: %w", childPath, err)
 		}
-		owner, _, err := sd.Owner()
+		owner, err := readOwner(child, childPath)
 		if err != nil {
-			return fmt.Errorf("could not extract the owner of %q: %w", childPath, err)
+			return err
 		}
 		if !g.mayTake(links, owner) {
 			if g.fromPrivileged {
@@ -229,7 +243,7 @@ func (g *granter) grantChild(parent windows.Handle, name, parentPath string, dep
 		}
 	}
 
-	if err := g.grantNode(childPath, child, sd, dir); err != nil {
+	if err := g.grantNode(childPath, child, dir); err != nil {
 		return err
 	}
 	if !dir || surrogate {
@@ -238,4 +252,53 @@ func (g *granter) grantChild(parent windows.Handle, name, parentPath string, dep
 
 	g.grantChildren(child, childPath, depth+1)
 	return nil
+}
+
+func isVolumeRoot(path string) bool {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+	vol := filepath.VolumeName(abs)
+	return vol != "" && (abs == vol || abs == vol+`\`)
+}
+
+// protectWorkerDir replaces path's DACL with a protected SYSTEM/Administrators
+// descriptor so new children do not inherit Users/Everyone from a drive root.
+// Descendants are left unchanged. Volume roots are skipped.
+func protectWorkerDir(path string) error {
+	if isVolumeRoot(path) {
+		log.Printf("Not protecting %q: it is a volume root", path)
+		return nil
+	}
+	if err := safefs.EnsurePrivileges(); err != nil {
+		return err
+	}
+	admins, err := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid)
+	if err != nil {
+		return fmt.Errorf("could not look up the SID of the Administrators group: %w", err)
+	}
+	system, err := windows.CreateWellKnownSid(windows.WinLocalSystemSid)
+	if err != nil {
+		return fmt.Errorf("could not look up the SID of SYSTEM: %w", err)
+	}
+	handle, err := safefs.OpenPathPinned(path, safefs.SecAccess)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(handle) }()
+
+	dir, surrogate, err := safefs.Kind(handle)
+	if err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if !dir || surrogate {
+		return fmt.Errorf("refusing to protect %q: it is not a directory", path)
+	}
+
+	inheritance := uint32(windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT)
+	return setProtectedOwnerAndDACL(handle, path, system, []windows.EXPLICIT_ACCESS{
+		fullControlACE(admins, windows.TRUSTEE_IS_GROUP, inheritance),
+		fullControlACE(system, windows.TRUSTEE_IS_USER, inheritance),
+	})
 }

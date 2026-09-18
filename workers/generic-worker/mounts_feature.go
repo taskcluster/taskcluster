@@ -434,6 +434,14 @@ func (feature *MountsFeature) Initialise() error {
 	fileCaches.LoadFromFile("file-caches.json", config.DownloadsDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.CachesDir)
 	sweepUnknownContent(config.CachesDir, directoryCaches)
+	for _, dir := range []string{config.CachesDir, config.DownloadsDir} {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return fmt.Errorf("could not create worker directory %q: %w", dir, err)
+		}
+		if err := protectWorkerDir(dir); err != nil {
+			return fmt.Errorf("could not protect worker directory %q: %w", dir, err)
+		}
+	}
 	return nil
 }
 
