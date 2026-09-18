@@ -293,6 +293,7 @@ and reports back results to the queue.
                                             location is an absolute path to an existing directory.
                                             Register it as a writable cache at startup if no
                                             cache exists for that name. Missing paths are skipped.
+                                            On POSIX, use the same filesystem as tasksDir.
                                             [default: []]
           privateIP                         The private IP of the worker, used by chain of trust.
           provisionerId                     The taskcluster provisioner which is taking care

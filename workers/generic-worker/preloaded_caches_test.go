@@ -3,6 +3,10 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
+
+	"github.com/mcuadros/go-defaults"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,14 +19,14 @@ func TestPreloadedDirectoryCaches(t *testing.T) {
 	t.Cleanup(func() { config, directoryCaches, fileCaches = originalConfig, originalDirectories, originalFiles })
 	root := t.TempDir()
 	t.Chdir(root)
-	seed := filepath.Join(root, "caches", "seed")
+	seed := filepath.Join(root, "caches", "prepared", "seed")
 	require.NoError(t, os.MkdirAll(seed, 0700))
 	marker := filepath.Join(seed, "marker")
 	require.NoError(t, os.WriteFile(marker, []byte("from image"), 0600))
 	before, err := os.Stat(marker)
 	require.NoError(t, err)
 	config = &gwconfig.Config{
-		CachesDir: filepath.Dir(seed), DownloadsDir: filepath.Join(root, "downloads"),
+		CachesDir: filepath.Join(root, "caches"), DownloadsDir: filepath.Join(root, "downloads"),
 		PreloadedDirectoryCaches: []gwconfig.PreloadedDirectoryCache{
 			{CacheName: "checkout", Location: seed},
 			{CacheName: "checkout", Location: seed}, // Repeated runner configuration is harmless.
@@ -36,6 +40,7 @@ func TestPreloadedDirectoryCaches(t *testing.T) {
 	require.Len(t, directoryCaches["checkout"], 1)
 	entry := directoryCaches["checkout"][0]
 	require.Equal(t, seed, entry.Location)
+	require.True(t, entry.Created.Before(time.Now().Add(-24*time.Hour)), "unknown preparation age must not bypass pending purges")
 	after, err := os.Stat(marker)
 	require.NoError(t, err)
 	require.True(t, os.SameFile(before, after), "registration must not copy the seed")
@@ -65,4 +70,38 @@ func TestPreloadedDirectoryCaches(t *testing.T) {
 	require.NoDirExists(t, seed)
 	require.NoError(t, feature.Initialise())
 	require.Empty(t, directoryCaches, "a purged seed must not return on restart")
+}
+
+func TestPreloadedCachesInTasks(t *testing.T) {
+	setup(t)
+	prepared := filepath.Join(config.CachesDir, t.Name())
+	t.Cleanup(func() { require.NoError(t, os.RemoveAll(prepared)) })
+	names := []string{"pip", "toolchain"}
+	initial := []int{17, 39}
+	mounts := []MountEntry{}
+	payload := GenericWorkerPayload{MaxRunTime: 180}
+	defaults.SetDefaults(&payload)
+	for i, name := range names {
+		location := filepath.Join(prepared, name)
+		require.NoError(t, os.MkdirAll(location, 0700))
+		require.NoError(t, os.WriteFile(filepath.Join(location, "counter"), []byte(strconv.Itoa(initial[i])), 0600))
+		config.PreloadedDirectoryCaches = append(config.PreloadedDirectoryCaches,
+			gwconfig.PreloadedDirectoryCache{CacheName: name, Location: location})
+		mounts = append(mounts, &WritableDirectoryCache{CacheName: name, Directory: name})
+		payload.Command = append(payload.Command, incrementCounterInCacheDir(name)...)
+	}
+	payload.Mounts = toMountArray(t, &mounts)
+	for run := 1; run <= 2; run++ {
+		td := testTask(t)
+		td.Scopes = []string{"generic-worker:cache:pip", "generic-worker:cache:toolchain"}
+		submitAndAssert(t, td, payload, "completed", "completed")
+		for i, name := range names {
+			entries := directoryCaches[name]
+			require.Len(t, entries, 1)
+			require.Equal(t, config.PreloadedDirectoryCaches[i].Location, entries[0].Location)
+			contents, err := os.ReadFile(filepath.Join(entries[0].Location, "counter"))
+			require.NoError(t, err)
+			require.Equal(t, strconv.Itoa(initial[i]+run), string(contents), "task must use and preserve each prepared cache")
+		}
+	}
 }
