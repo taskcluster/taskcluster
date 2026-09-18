@@ -40,6 +40,8 @@ describe.each([false, true])('log route (live: %s)', isLiveLog => {
     'https:foo.log',
     'public/logs/live.log',
     'public/logs/file & name.log',
+    'public/logs/file?query.log',
+    'public/logs/file#fragment.log',
   ])('preserves the artifact name %s through the router', name => {
     expectArtifactUrl(
       buildLogViewerUrl({ taskId, runId: 0, name, isLiveLog }),

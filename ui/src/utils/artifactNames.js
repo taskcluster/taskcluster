@@ -2,8 +2,9 @@ const isSafeLogViewerArtifactName = name =>
   name.split('/').every(
     segment =>
       segment.length > 0 &&
-      // history decodes %25 before rendering hrefs, which can revive %2e dot segments
-      !/[%?#\\]/.test(segment) &&
+      // history decodes %25 before rendering hrefs, which can revive %2e dot
+      // segments; backslashes are normalized to slashes by the browser
+      !/[%\\]/.test(segment) &&
       segment !== '.' &&
       segment !== '..'
   );

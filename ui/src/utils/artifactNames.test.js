@@ -36,14 +36,29 @@ describe('buildLogViewerUrl', () => {
     ).toEqual('/tasks/taskId/runs/0/logs/live/public/logs/live.log');
   });
 
+  it('should build a url for names containing ? or #', () => {
+    expect(
+      buildLogViewerUrl({
+        taskId: 'taskId',
+        runId: 0,
+        name: 'public/logs/live.log?download=1',
+      })
+    ).toEqual('/tasks/taskId/runs/0/logs/public/logs/live.log%3Fdownload%3D1');
+    expect(
+      buildLogViewerUrl({
+        taskId: 'taskId',
+        runId: 0,
+        name: 'public/logs/live#.log',
+      })
+    ).toEqual('/tasks/taskId/runs/0/logs/public/logs/live%23.log');
+  });
+
   it('should return null for names that can alter the route', () => {
     [
       '../../../../../shell#.log',
       '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/shell/x.log',
       'public/../shell.log',
       'public/./shell.log',
-      'public/logs/live.log?download=1',
-      'public/logs/live#.log',
       '..\\..\\..\\..\\..\\shell#.log',
       'public//logs/live.log',
       '/public/logs/live.log',
