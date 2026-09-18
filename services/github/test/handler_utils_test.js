@@ -147,11 +147,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], () => {
     assert.equal(getTimeDifference('timestamp1', 'timestamp2'), null);
   });
 
-  test('artifact URLs encode name segments', () => {
+  test('artifact URLs encode names as route parameters', () => {
     const rootUrl = 'https://taskcluster.example.com';
     const name = 'public/file?#.txt';
 
-    assert.equal(buildUrl(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/public/file%3F%23.txt`);
-    assert.equal(buildLogUrl(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/logs/public/file%3F%23.txt`);
+    assert.equal(buildUrl(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/public%2Ffile%3F%23.txt`);
+    assert.equal(
+      buildLogUrl(rootUrl, 'taskId', 0, name),
+      `${rootUrl}/tasks/taskId/runs/0/logs/public%2Ffile%3F%23.txt`
+    );
   });
 });
