@@ -2433,7 +2433,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "createWorker",
 				Title:       "Create a Worker",
-				Description: "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
+				Description: "Create a new worker.  This is only useful for worker pools where the provider\ndoes not create workers automatically, such as those with a `static` provider\ntype.  Providers that do not support creating workers will return a 400 error.\nWorker IDs cannot be reused after removal.\nIf the ID belongs to a stopped worker or conflicts with an existing worker,\nthis method returns a 409 error.\nUse `updateWorker` to modify an existing worker instead.\nSee the documentation for the individual providers, and in particular the\n[static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)\nfor more information.",
 				Stability:   "stable",
 				Method:      "put",
 				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>",

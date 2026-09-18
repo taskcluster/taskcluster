@@ -269,6 +269,10 @@ class WorkerManager(AsyncBaseClient):
         Create a new worker.  This is only useful for worker pools where the provider
         does not create workers automatically, such as those with a `static` provider
         type.  Providers that do not support creating workers will return a 400 error.
+        Worker IDs cannot be reused after removal.
+        If the ID belongs to a stopped worker or conflicts with an existing worker,
+        this method returns a 409 error.
+        Use `updateWorker` to modify an existing worker instead.
         See the documentation for the individual providers, and in particular the
         [static provider](https://docs.taskcluster.net/docs/reference/core/worker-manager/)
         for more information.
