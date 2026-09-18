@@ -10,8 +10,8 @@ from datetime import timezone
 
 import requests
 
-from taskcluster.generated import _client_importer
-from taskcluster.generated.aio import _client_importer as _async_client_importer
+import taskcluster
+import taskcluster.aio
 from taskcluster.utils import stringDate
 
 logger = logging.getLogger(__name__)
@@ -77,8 +77,8 @@ class TaskclusterConfig:
         if self.options is None:
             self.auth()
 
-        client_importer = _async_client_importer if use_async else _client_importer
-        service = getattr(client_importer, service_name.capitalize(), None)
+        clients = taskcluster.aio if use_async else taskcluster
+        service = getattr(clients, service_name.capitalize(), None)
         assert service is not None, f"Invalid Taskcluster service {service_name}"
         return service(self.options)
 
