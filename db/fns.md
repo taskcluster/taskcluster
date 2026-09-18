@@ -2152,7 +2152,7 @@ end
   * `task_id text`
   * `data jsonb`
   * `expires timestamptz`
-* *Last defined on version*: 100
+* *Last defined on version*: 130
 
 Get tasks matching the given indexes, 0 or 1 per input index.
 
@@ -2181,6 +2181,7 @@ begin
     and
     -- use regexp to extract name part of index
     indexed_tasks.name = (select (regexp_matches(index_pairs, '.+\.([^.]+)'))[1])
+    and indexed_tasks.expires > now()
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end

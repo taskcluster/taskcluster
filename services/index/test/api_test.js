@@ -252,7 +252,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
 
       // shouldn't be matched because it's expired
-      await helper.index.insertTask(`${myns}.my-task3`, {
+      await helper.index.insertTask(`${myns}.my-task4`, {
         taskId: slugid.v4(),
         rank: 44,
         data: { hello: 'world' },
@@ -268,7 +268,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
 
       let results = await helper.index.findTasksAtIndex({
-        indexes: [`${myns}.my-task`, `${myns}.my-task3`],
+        indexes: [`${myns}.my-task`, `${myns}.my-task3`, `${myns}.my-task4`],
       });
 
       assert.deepEqual(results, { tasks: [task1, task3] });

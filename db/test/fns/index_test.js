@@ -175,13 +175,30 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get_tasks_from_indexes_and_namespaces does not omit expired indexed tasks', async (db, _isFake) => {
-      const now = new Date();
-      const taskId = slug.nice();
-      await create_indexed_task(db, { expires: now, taskId });
+    helper.dbTest('get_tasks_from_indexes_and_namespaces only returns non expired tasks', async (db, _isFake) => {
+      const oneDay = fromNow('1 day');
+      await create_indexed_task(db, {
+        namespace: `namespace/1`,
+        name: `name/1`,
+        rank: 1,
+        expires: fromNow('-1 day'),
+      });
+      await create_indexed_task(db, {
+        namespace: `namespace/2`,
+        name: `name/2`,
+        rank: 1,
+        expires: oneDay,
+      });
 
-      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(['name/space.name']), 1000, 0);
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(
+        JSON.stringify(['namespace/1.name/1', 'namespace/2.name/2']),
+        1000,
+        0
+      );
       assert.equal(rows.length, 1);
+      assert.equal(rows[0].namespace, 'namespace/2');
+      assert.equal(rows[0].name, 'name/2');
+      assert.deepEqual(rows[0].expires, oneDay);
     });
 
     helper.dbTest('get_tasks_from_indexes_and_namespaces not found', async (db, _isFake) => {
