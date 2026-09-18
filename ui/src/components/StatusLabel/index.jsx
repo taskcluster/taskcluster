@@ -26,7 +26,7 @@ export default class StatusLabel extends Component {
     /**
      * A GraphQL status/state string.
      */
-    state: string.isRequired,
+    state: string,
     /**
      * Render the label using dense styling.
      */
@@ -42,19 +42,21 @@ export default class StatusLabel extends Component {
 
   render() {
     const { classes, variant, state, mini, className, ...props } = this.props;
+    // the queue reports states and reasons in kebab case (`worker-shutdown`)
+    const label = state ? state.toUpperCase().replace(/-/g, '_') : 'UNKNOWN';
 
     return (
       <Label
         mini={mini}
-        status={variant || labels[state.toUpperCase()] || 'default'}
+        status={variant || labels[label] || 'default'}
         className={classNames(
           {
-            [classes.pending]: state === 'PENDING',
+            [classes.pending]: label === 'PENDING',
           },
           className
         )}
         {...props}>
-        {state || 'UNKNOWN'}
+        {label}
       </Label>
     );
   }

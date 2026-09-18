@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
 import { sum, isEmpty } from 'ramda';
 import { paramCase } from 'param-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
@@ -121,7 +120,6 @@ const toNodeStatus = status => ({
   })),
 });
 
-@withApollo
 @withStyles(theme => ({
   dashboard: {
     overflow: 'hidden',
@@ -785,7 +783,6 @@ export default class TaskGroup extends Component {
         taskActions,
         form,
         action,
-        apolloClient: this.props.client,
         user: this.context.user,
       });
 
