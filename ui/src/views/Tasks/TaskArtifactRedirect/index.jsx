@@ -4,21 +4,32 @@ import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import { withAuth } from '../../../utils/Auth';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
+import { decodeArtifactName } from '../../../utils/artifactNames';
 
 @withAuth
-export default class TaskArtifactRedire extends Component {
+export default class TaskArtifactRedirect extends Component {
   state = {
     redirect: false,
   };
 
-  componentDidMount() {
+  getRedirectUrl() {
     const {
       match: {
         params: { artifactName, taskId, runId },
       },
       user,
     } = this.props;
-    const url = getArtifactUrl({ user, taskId, runId, name: artifactName });
+
+    return getArtifactUrl({
+      user,
+      taskId,
+      runId,
+      name: decodeArtifactName(artifactName),
+    });
+  }
+
+  componentDidMount() {
+    const url = this.getRedirectUrl();
 
     window.location = url;
 
