@@ -25,27 +25,24 @@ export const gcpBuilder = builder =>
       const serviceAccount = req.params.serviceAccount;
       const projectId = req.params.projectId;
 
-      if (!this.gcp.allowedServiceAccounts.includes(serviceAccount)) {
-        return res.reportError('InvalidRequestArguments', `The service account ${serviceAccount} isn't allowed`);
-      }
-
-      if (!this.gcp.credentials) {
-        return res.reportError('ResourceNotFound', 'GCP credentials are not available');
-      }
-
-      if (projectId !== this.gcp.credentials.project_id) {
+      const project = this.gcp.projects[projectId];
+      if (!project) {
         return res.reportError('ResourceNotFound', `The projectId ${projectId} is not configured`);
+      }
+
+      if (!project.allowedServiceAccounts.includes(serviceAccount)) {
+        return res.reportError('InvalidRequestArguments', `The service account ${serviceAccount} isn't allowed`);
       }
 
       const iamcredentials = this.gcp.googleapis.iamcredentials({
         version: 'v1',
-        auth: this.gcp.auth,
+        auth: project.auth,
       });
 
       try {
         const response = await iamcredentials.projects.serviceAccounts.generateAccessToken({
           // NOTE: the `-` here represents the projectId, and uses the projectId
-          // from this.gcp.auth, which is why we verified those match above.
+          // from project.auth, which is verified at startup.
           name: `projects/-/serviceAccounts/${serviceAccount}`,
           scope: ['https://www.googleapis.com/auth/cloud-platform'],
           delegates: [],

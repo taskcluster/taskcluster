@@ -192,40 +192,38 @@ const load = Loader(
     gcp: {
       requires: ['cfg'],
       setup: ({ cfg }) => {
-        const projects = cfg.gcpCredentials.allowedProjects || {};
-        const projectIds = Object.keys(projects);
+        const allowedProjects = cfg.gcpCredentials.allowedProjects || {};
 
-        // NOTE: this is a temporary limit to avoid more massive refactoring, while
-        // supporting a future-compatible configuration format.  There's no other, hidden
-        // reason for this limitation.
-        assert(projectIds.length <= 1, 'at most one GCP project is supported');
+        // per-project auth configuration, keyed by projectId
+        const projects = Object.create(null);
+        for (const [projectId, project] of Object.entries(allowedProjects)) {
+          const { credentials, allowedServiceAccounts } = project;
+          assert.equal(
+            projectId,
+            credentials.project_id,
+            `credentials for project ${projectId} must be for that project`
+          );
+          assert(
+            Array.isArray(allowedServiceAccounts),
+            `allowedServiceAccounts for project ${projectId} must be an array`
+          );
 
-        if (projectIds.length === 0) {
-          return { googleapis, auth: {}, credentials: {}, allowedServiceAccounts: [] };
+          const auth = googleapis.auth.fromJSON(credentials);
+          auth.scopes = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/iam'];
+
+          projects[projectId] = {
+            // the auth object constructed for this project's credentials
+            auth,
+            // service accounts we allow to generate temporary credentials from
+            allowedServiceAccounts,
+          };
         }
 
-        const project = projects[projectIds[0]];
-        const { credentials, allowedServiceAccounts } = project;
-        assert.equal(projectIds[0], credentials.project_id, 'credentials must be for the given project');
-
-        assert(Array.isArray(allowedServiceAccounts));
-
-        // note that this service can currently start up correctly without GCP
-        // credentials configured.
-        const auth = credentials ? googleapis.auth.fromJSON(credentials) : {};
-
-        auth.scopes = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/iam'];
-
-        // return an object with..
         return {
           // the googleapis module (useful for dependency injection in tests)
           googleapis,
-          // the constructed auth object
-          auth,
-          // and the credentials configuration
-          credentials,
-          // service accounts we allow to generate temporary credentials from
-          allowedServiceAccounts,
+          // per-project auth configuration, keyed by projectId
+          projects,
         };
       },
     },
