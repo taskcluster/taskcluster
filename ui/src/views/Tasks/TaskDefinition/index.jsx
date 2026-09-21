@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
+import { Queue } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';
 import JsonDisplay from '../../../components/JsonDisplay';
 import Dashboard from '../../../components/Dashboard';
-import taskQuery from './task.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
-import { withAuth } from '../../../utils/Auth';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
+import withResource from '../../../hocs/withResource';
 
-@withAuth
 @withStyles(theme => ({
   rawDefinition: {
     bottom: theme.spacing(3),
@@ -16,24 +15,23 @@ import { withAuth } from '../../../utils/Auth';
     right: theme.spacing(1),
   },
 }))
-@graphql(taskQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    errorPolicy: 'all',
-    variables: {
-      taskId: props.match.params.taskId,
-    },
-  }),
+@withTaskclusterClient
+@withResource({
+  fetch: props => {
+    return () => {
+      return props
+        .createTaskclusterClient({ Class: Queue })
+        .task(props.match.params.taskId);
+    };
+  },
+  key: props => {
+    return props.match.params.taskId;
+  },
 })
 export default class TaskDefinition extends Component {
   render() {
-    const {
-      classes,
-      match,
-      data: { task, error, loading },
-    } = this.props;
+    const { classes, match, data: rawDefinition, error, loading } = this.props;
     const { taskId } = match.params;
-    const { rawDefinition } = task || {};
 
     if (error) {
       return <ErrorPanel fixed error={error} />;

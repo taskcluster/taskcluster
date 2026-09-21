@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { Queue } from '@taskcluster/client-web';
 import classNames from 'classnames';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -19,19 +18,24 @@ import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { withAuth } from '../../../utils/Auth';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import notify from '../../../utils/notify';
 import Link from '../../../utils/Link';
+import fetchAllPages from '../../../utils/fetchAllPages';
 import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
-import taskQuery from './task.graphql';
 import {
-  INITIAL_CURSOR,
   INTERACTIVE_TASK_STATUS,
   TASK_STATE,
   INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
 
-let previousCursor;
 const NOTIFY_KEY = 'interactive-notify';
+// The queue's REST API reports task states in lowercase; the UI standardizes
+// on the uppercase TASK_STATE values.
+const toUiState = state => {
+  return state?.toUpperCase();
+};
+
 const getInteractiveStatus = ({
   shellArtifact = null,
   taskStatusState = null,
@@ -51,17 +55,30 @@ const getInteractiveStatus = ({
   return INTERACTIVE_TASK_STATUS.READY;
 };
 
+// List every artifact of the latest run. A task that has not been claimed
+// yet has no runs, which the queue reports as a 404; treat that the same as
+// having no artifacts so the page keeps waiting for the session.
+const fetchLatestArtifacts = async (queue, taskId) => {
+  try {
+    return await fetchAllPages(
+      options => {
+        return queue.listLatestArtifacts(taskId, options);
+      },
+      response => {
+        return response.artifacts;
+      }
+    );
+  } catch (err) {
+    if (err.statusCode === 404) {
+      return [];
+    }
+
+    throw err;
+  }
+};
+
 @withAuth
-@graphql(taskQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    errorPolicy: 'all',
-    pollInterval: INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
-    variables: {
-      taskId: props.match.params.taskId,
-    },
-  }),
-})
+@withTaskclusterClient
 @withStyles(theme => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -81,89 +98,53 @@ const getInteractiveStatus = ({
   },
 }))
 export default class InteractiveConnect extends Component {
-  static getDerivedStateFromProps(
-    props,
-    { shellArtifact, artifactsLoading, previousTaskId, sessionReady }
-  ) {
-    const {
-      data: { task, error },
-      match: {
-        params: { taskId },
-      },
-    } = props;
-
-    if (error) {
-      return {
-        artifactsLoading: false,
-      };
-    }
-
-    // Reset state when Task ID changes
-    if (previousTaskId !== taskId) {
-      return {
-        shellArtifact: null,
-        artifactsLoading: true,
-        previousTaskId: taskId,
-        sessionReady: false,
-      };
-    }
-
-    // Get connection URL
-    if (!shellArtifact && task && task.latestArtifacts) {
-      const artifacts = task.latestArtifacts.edges;
-      const interactives = artifacts.reduce((acc, { node: artifact }) => {
-        if (artifact.name.endsWith('shell.html')) {
-          acc.shellArtifact = artifact;
-        }
-
-        return acc;
-      }, {});
-
-      return {
-        ...interactives,
-        ...(artifactsLoading && !task.latestArtifacts.pageInfo.hasNextPage
-          ? { artifactsLoading: false }
-          : null),
-        previousTaskId: taskId,
-        sessionReady:
-          sessionReady ||
-          getInteractiveStatus({
-            shellArtifact: interactives.shellArtifact,
-            taskStatusState: task?.status.state,
-          }) === INTERACTIVE_TASK_STATUS.READY,
-      };
-    }
-
-    return null;
-  }
-
-  constructor(props) {
-    super(props);
-
-    previousCursor = INITIAL_CURSOR;
-  }
-
   state = {
+    task: null,
+    taskState: null,
     shellArtifact: null,
-    artifactsLoading: true,
-    previousTaskId: this.props.match.params.taskId,
+    loading: true,
+    error: null,
     notifyOnReady:
       'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',
     sessionReady: false,
   };
 
+  // Guards against out-of-order responses when the task ID changes while a
+  // poll is in flight, and against updating state after unmounting.
+  requestId = 0;
+
+  componentDidMount() {
+    this.load();
+    this.startPolling();
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const {
-      data: { task, fetchMore },
       match: {
         params: { taskId },
       },
     } = this.props;
     const { sessionReady, notifyOnReady } = this.state;
 
+    if (prevProps.match.params.taskId !== taskId) {
+      this.requestId += 1;
+      this.setState({
+        task: null,
+        taskState: null,
+        shellArtifact: null,
+        loading: true,
+        error: null,
+        sessionReady: false,
+      });
+      this.load();
+      this.startPolling();
+
+      return;
+    }
+
     if (
       // Do not notify initially even if a session is ready
-      prevProps.data.task &&
+      prevState.task &&
       !prevState.sessionReady &&
       sessionReady &&
       notifyOnReady
@@ -172,57 +153,78 @@ export default class InteractiveConnect extends Component {
         body: 'Interactive task is ready for connecting',
       });
     }
+  }
 
-    // We're done fetching
-    if (!task?.latestArtifacts?.pageInfo.hasNextPage) {
-      previousCursor = INITIAL_CURSOR;
+  componentWillUnmount() {
+    this.requestId += 1;
+    this.stopPolling();
+  }
 
-      return;
-    }
+  startPolling() {
+    this.stopPolling();
+    this.pollInterval = setInterval(
+      this.load,
+      INTERACTIVE_CONNECT_TASK_POLL_INTERVAL
+    );
+  }
 
-    if (
-      task.latestArtifacts &&
-      previousCursor === task.latestArtifacts.pageInfo.cursor
-    ) {
-      fetchMore({
-        variables: {
-          taskId,
-          artifactsConnection: {
-            cursor: task.latestArtifacts.pageInfo.nextCursor,
-            previousCursor: task.latestArtifacts.pageInfo.cursor,
-          },
-        },
-        updateQuery(previousResult, { fetchMoreResult, variables }) {
-          if (variables.artifactsConnection.previousCursor === previousCursor) {
-            const { edges, pageInfo } = fetchMoreResult.task.latestArtifacts;
-
-            previousCursor = variables.artifactsConnection.cursor;
-
-            if (!edges.length) {
-              return previousResult;
-            }
-
-            const result = dotProp.set(
-              previousResult,
-              'task.latestArtifacts',
-              latestArtifacts =>
-                dotProp.set(
-                  dotProp.set(
-                    latestArtifacts,
-                    'edges',
-                    previousResult.task.latestArtifacts.edges.concat(edges)
-                  ),
-                  'pageInfo',
-                  pageInfo
-                )
-            );
-
-            return result;
-          }
-        },
-      });
+  stopPolling() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
     }
   }
+
+  load = async () => {
+    const {
+      createTaskclusterClient,
+      match: {
+        params: { taskId },
+      },
+    } = this.props;
+    const id = ++this.requestId;
+    const queue = createTaskclusterClient({ Class: Queue });
+
+    try {
+      const [task, { status }, artifacts] = await Promise.all([
+        queue.task(taskId),
+        queue.status(taskId),
+        fetchLatestArtifacts(queue, taskId),
+      ]);
+
+      if (id !== this.requestId) {
+        return;
+      }
+
+      const taskState = toUiState(status.state);
+      const shellArtifact =
+        artifacts.find(artifact => {
+          return artifact.name.endsWith('shell.html');
+        }) ?? null;
+
+      this.setState(prevState => {
+        return {
+          task,
+          taskState,
+          shellArtifact,
+          loading: false,
+          error: null,
+          sessionReady:
+            prevState.sessionReady ||
+            getInteractiveStatus({
+              shellArtifact,
+              taskStatusState: taskState,
+            }) === INTERACTIVE_TASK_STATUS.READY,
+        };
+      });
+    } catch (error) {
+      if (id !== this.requestId) {
+        return;
+      }
+
+      this.setState({ loading: false, error });
+    }
+  };
 
   handleShellOpen = () => {
     const {
@@ -255,16 +257,15 @@ export default class InteractiveConnect extends Component {
   renderTask = () => {
     const {
       classes,
-      data: { task },
       match: {
         params: { taskId },
       },
       user,
     } = this.props;
-    const { shellArtifact, notifyOnReady } = this.state;
+    const { task, taskState, shellArtifact, notifyOnReady } = this.state;
     const interactiveStatus = getInteractiveStatus({
       shellArtifact,
-      taskStatusState: task?.status.state,
+      taskStatusState: taskState,
     });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
     const isSessionResolved =
@@ -302,7 +303,7 @@ export default class InteractiveConnect extends Component {
           <ListItem>
             <ListItemText
               primary="State"
-              secondary={<StatusLabel state={task.status.state} />}
+              secondary={<StatusLabel state={taskState} />}
             />
           </ListItem>
           <ListItem>
@@ -366,16 +367,13 @@ export default class InteractiveConnect extends Component {
   };
 
   render() {
-    const {
-      data: { task, error },
-    } = this.props;
-    const { artifactsLoading } = this.state;
+    const { task, taskState, loading, error } = this.state;
 
     return (
       <Dashboard title="Interactive Connect">
-        {!error && artifactsLoading && <Spinner loading />}
+        {!error && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {!artifactsLoading && task && this.renderTask()}
+        {!loading && task && taskState && this.renderTask()}
       </Dashboard>
     );
   }
