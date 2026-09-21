@@ -12,7 +12,10 @@ import taskQuery from './task.graphql';
 import Search from '../../../components/Search';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
-import { decodeArtifactName } from '../../../utils/artifactNames';
+import {
+  decodeArtifactName,
+  getRawArtifactName,
+} from '../../../utils/artifactNames';
 import { withAuth } from '../../../utils/Auth';
 
 @withAuth
@@ -48,10 +51,13 @@ export default class TaskLog extends Component {
     const {
       user,
       match: {
-        params: { taskId, runId, name: rawName },
+        params: { taskId, runId, name: artifactName },
       },
+      stream,
     } = this.props;
-    const name = decodeArtifactName(rawName);
+    const artifactPath = `/tasks/${taskId}/runs/${runId}/logs/${stream ? 'live/' : ''}`;
+    const rawArtifactName = getRawArtifactName(artifactPath, artifactName);
+    const name = decodeArtifactName(rawArtifactName);
 
     return getArtifactUrl({ user, taskId, runId, name });
   }

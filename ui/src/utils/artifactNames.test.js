@@ -1,4 +1,8 @@
-import { buildLogViewerUrl, decodeArtifactName } from './artifactNames';
+import {
+  buildLogViewerUrl,
+  decodeArtifactName,
+  getRawArtifactName,
+} from './artifactNames';
 
 describe('decodeArtifactName', () => {
   it('should decode an encoded artifact name', () => {
@@ -68,5 +72,21 @@ describe('buildLogViewerUrl', () => {
         buildLogViewerUrl({ taskId: 'taskId', runId: 0, name })
       ).toBeNull();
     });
+  });
+});
+
+describe('getRawArtifactName', () => {
+  it('should return the artifact name as encoded in the browser URL', () => {
+    const artifactPath = '/tasks/taskId/runs/0/logs/';
+
+    window.history.replaceState(
+      {},
+      '',
+      `${artifactPath}public/logs/file%2526name.log`
+    );
+
+    expect(
+      getRawArtifactName(artifactPath, 'public/logs/file%26name.log')
+    ).toEqual('public/logs/file%2526name.log');
   });
 });
