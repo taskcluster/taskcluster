@@ -296,9 +296,8 @@ export default class TaskGroup extends Component {
       this.load(taskGroupId);
     }
 
-    // subscribe() is a no-op unless the task group or the signed-in user
-    // changed; a user change needs a fresh socket so that connection_init
-    // carries the current credentials.
+    // subscribe() is a no-op unless the task group or user session changed,
+    // including a credential refresh after authentication was rejected.
     this.subscribe(taskGroupId);
   }
 
@@ -530,7 +529,7 @@ export default class TaskGroup extends Component {
   };
 
   subscribe = taskGroupId => {
-    const { user } = this.context;
+    const { user, getCredentials } = this.context;
 
     if (
       this.listener &&
@@ -540,6 +539,8 @@ export default class TaskGroup extends Component {
       return this.listener;
     }
 
+    // Replace the subscription on session changes so refreshed credentials
+    // also recover a listener that stopped after authentication rejection.
     if (this.listener) {
       this.unsubscribe();
     }
@@ -565,14 +566,11 @@ export default class TaskGroup extends Component {
         // shows the last known state until it is reloaded.
         onError: () => {},
         user,
+        getCredentials,
       }
     );
 
-    this.listener = {
-      taskGroupId,
-      user,
-      unsubscribe,
-    };
+    this.listener = { taskGroupId, user, unsubscribe };
   };
 
   handleTaskMessage(taskGroupId, payload) {

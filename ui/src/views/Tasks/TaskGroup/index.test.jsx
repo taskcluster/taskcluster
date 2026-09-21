@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import setupClient from '../../../utils/mockApolloClient';
 import { getClient } from '../../../utils/client';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
+import { AuthContext } from '../../../utils/Auth';
 import TaskGroup from './index';
 
 vi.mock('../../../utils/client', () => ({
@@ -139,5 +140,85 @@ describe('TaskGroup page', () => {
       expect.anything()
     );
     expect(asFragment()).toMatchSnapshot();
+  });
+
+  describe('live-update subscription', () => {
+    beforeEach(() => {
+      subscribeToNamedEvents.mockClear();
+    });
+
+    const makeUser = accessToken => ({
+      credentials: {
+        clientId: 'mozilla-auth0/ad|Mozilla-LDAP|user',
+        accessToken,
+      },
+    });
+    const authValue = user => ({
+      user,
+      getCredentials: vi.fn().mockResolvedValue(user.credentials),
+      authorize: vi.fn(),
+      unauthorize: vi.fn(),
+    });
+    const renderWithUser = async user => {
+      const createClient = setupClient({}, 'type Query { unused: String }');
+      const tree = auth => (
+        <MemoryRouter keyLength={0}>
+          <ApolloProvider client={createClient()}>
+            <AuthContext.Provider value={authValue(auth)}>
+              <TaskGroup
+                match={{ params: { taskGroupId } }}
+                location={{ hash: '' }}
+              />
+            </AuthContext.Provider>
+          </ApolloProvider>
+        </MemoryRouter>
+      );
+      let rerender;
+
+      await act(async () => {
+        ({ rerender } = render(tree(user)));
+      });
+      await act(async () => {
+        vi.runOnlyPendingTimers();
+      });
+
+      return async nextUser => {
+        await act(async () => {
+          rerender(tree(nextUser));
+        });
+      };
+    };
+
+    it('does not retry rejected credentials on an unrelated update', async () => {
+      const user = makeUser('token-1');
+      const rerenderWithUser = await renderWithUser(user);
+      const [, handlers] = subscribeToNamedEvents.mock.calls[0];
+
+      expect(subscribeToNamedEvents).toHaveBeenCalledTimes(1);
+
+      handlers.onError(new Error('Authentication failed'));
+      await rerenderWithUser(user);
+
+      expect(subscribeToNamedEvents).toHaveBeenCalledTimes(1);
+    });
+
+    it('resubscribes after the server rejected the credentials and they were refreshed', async () => {
+      const unsubscribe = vi.fn();
+
+      subscribeToNamedEvents.mockReturnValue(unsubscribe);
+
+      const rerenderWithUser = await renderWithUser(makeUser('token-1'));
+      const [, handlers] = subscribeToNamedEvents.mock.calls[0];
+
+      handlers.onError(new Error('Authentication failed'));
+
+      await rerenderWithUser(makeUser('token-2'));
+
+      expect(unsubscribe).toHaveBeenCalledTimes(1);
+      expect(subscribeToNamedEvents).toHaveBeenCalledTimes(2);
+      expect(subscribeToNamedEvents.mock.calls[1][1].user.credentials).toEqual(
+        makeUser('token-2').credentials
+      );
+    });
   });
 });

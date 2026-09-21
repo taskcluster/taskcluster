@@ -50,6 +50,7 @@ export default class Button extends Component {
       onClick,
       onAuthorize,
       onUnauthorize,
+      getCredentials,
       tooltipProps,
       spanProps,
       id,

@@ -146,6 +146,7 @@ export default class App extends Component {
       theme: theme.darkTheme,
       auth: {
         user: null,
+        getCredentials: () => this.authController.getCredentials(),
         authorize: this.authorize,
         unauthorize: this.unauthorize,
       },

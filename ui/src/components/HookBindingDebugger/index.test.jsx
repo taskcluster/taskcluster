@@ -2,6 +2,7 @@ import React from 'react';
 import { render, act, fireEvent, cleanup } from '@testing-library/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import appTheme from '../../theme';
+import { AuthContext } from '../../utils/Auth';
 import HookBindingDebugger from './index';
 
 // Control the single pulse-subscription seam so tests can drive messages/errors
@@ -28,19 +29,29 @@ const bindings = [
 // default hook schema: only an empty {} payload validates
 const defaultSchema = { type: 'object', additionalProperties: false };
 
-const tree = props => (
-  <MuiThemeProvider theme={appTheme.darkTheme}>
-    <HookBindingDebugger
-      open
-      onClose={vi.fn()}
-      bindings={bindings}
-      triggerSchema={defaultSchema}
-      {...props}
-    />
-  </MuiThemeProvider>
-);
+const tree = (props, auth) => {
+  const debuggerComponent = (
+    <MuiThemeProvider theme={appTheme.darkTheme}>
+      <HookBindingDebugger
+        open
+        onClose={vi.fn()}
+        bindings={bindings}
+        triggerSchema={defaultSchema}
+        {...props}
+      />
+    </MuiThemeProvider>
+  );
 
-const renderDebugger = props => render(tree(props));
+  return auth ? (
+    <AuthContext.Provider value={auth}>
+      {debuggerComponent}
+    </AuthContext.Provider>
+  ) : (
+    debuggerComponent
+  );
+};
+
+const renderDebugger = (props, auth) => render(tree(props, auth));
 
 const start = getByText => {
   fireEvent.click(getByText('Start'));
@@ -150,6 +161,58 @@ describe('HookBindingDebugger', () => {
     rerender(tree({ open: false }));
 
     expect(teardownMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps listening when credentials refresh for the same client', () => {
+    const getCredentials = vi.fn();
+    const firstUser = {
+      credentials: { clientId: 'user', accessToken: 'old-token' },
+    };
+    const { getByText, rerender } = renderDebugger(
+      {},
+      { user: firstUser, getCredentials }
+    );
+
+    start(getByText);
+    rerender(
+      tree(
+        {},
+        {
+          user: {
+            credentials: { clientId: 'user', accessToken: 'fresh-token' },
+          },
+          getCredentials,
+        }
+      )
+    );
+
+    expect(teardownMock).not.toHaveBeenCalled();
+    expect(getByText('Stop')).toBeTruthy();
+  });
+
+  it('stops listening when the signed-in client changes', () => {
+    const getCredentials = vi.fn();
+    const { getByText, rerender } = renderDebugger(
+      {},
+      {
+        user: { credentials: { clientId: 'first' } },
+        getCredentials,
+      }
+    );
+
+    start(getByText);
+    rerender(
+      tree(
+        {},
+        {
+          user: { credentials: { clientId: 'second' } },
+          getCredentials,
+        }
+      )
+    );
+
+    expect(teardownMock).toHaveBeenCalledTimes(1);
+    expect(getByText('Start')).toBeTruthy();
   });
 
   it('restarts, recompiles, and clears stale verdicts when the saved triggerSchema changes', () => {
