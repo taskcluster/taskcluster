@@ -1,4 +1,3 @@
-import path from 'node:path';
 import libUrls from 'taskcluster-lib-urls';
 import { CHECK_RUN_STATES, TASKCLUSTER_YML_PATH } from '../constants.js';
 
@@ -9,8 +8,12 @@ export const taskUI = (rootUrl, taskGroupId, taskId) =>
   );
 export const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
-export const taskLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
-  libUrls.ui(rootUrl, path.join(`/tasks/${taskId}/runs/${runId}/logs/live/`, liveLogName));
+export const taskLiveLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
+  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/live/${encodeURIComponent(liveLogName)}`);
+export const taskLogUI = (rootUrl, taskId, runId, artifactName) =>
+  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/${encodeURIComponent(artifactName)}`);
+export const taskAritfactUI = (rootUrl, taskId, runId, artifactName) =>
+  libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/${encodeURIComponent(artifactName)}`);
 let debugCounter = 0;
 
 /**
@@ -246,14 +249,6 @@ export const getTimeDifference = (timestamp1, timestamp2) => {
   const formattedDifference = parts.join(', ');
 
   return formattedDifference;
-};
-
-export const buildUrl = (rootUrl, taskId, runId, artifactName) => {
-  return `${rootUrl}/tasks/${taskId}/runs/${runId}/${encodeURIComponent(artifactName)}`;
-};
-
-export const buildLogUrl = (rootUrl, taskId, runId, artifactName) => {
-  return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${encodeURIComponent(artifactName)}`;
 };
 
 // this is the same as ui/src/utils/formatBytes.js
