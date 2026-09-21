@@ -1,48 +1,17 @@
 import { fromNow } from '../src/index.js';
 
 describe('fromNow', () => {
-  it('should generate current datetime', () => {
-    const date1 = new Date();
-    const date2 = fromNow();
-
-    // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('should generate with hour format', () => {
-    const date1 = new Date();
+  it('should default the reference to the current datetime', () => {
+    vi.useFakeTimers();
 
-    date1.setHours(date1.getHours() + 2);
+    const now = new Date();
 
-    const date2 = fromNow('2 hours');
-
-    // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
-  });
-
-  it('should generate with year+month format', () => {
-    const day = 24 * 60 * 60 * 1000;
-    const date1 = new Date(Date.now() + 2 * 365 * day + 55 * 30 * day);
-    const date2 = fromNow('2 years 55mo');
-
-    // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
-  });
-
-  it('should generate with month format', () => {
-    const date1 = new Date(Date.now() + 240 * 30 * 24 * 60 * 60 * 1000);
-    const date2 = fromNow('240 months');
-
-    // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
-  });
-
-  it('should generate with -month format', () => {
-    const date1 = new Date(Date.now() - 240 * 30 * 24 * 60 * 60 * 1000);
-    const date2 = fromNow('-240 months');
-
-    // Allow for 10ms margin
-    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
+    expect(fromNow().getTime()).to.equal(now.getTime());
+    expect(fromNow('2 hours').getTime()).to.equal(now.getTime() + 2 * 60 * 60 * 1000);
   });
 
   it('should generate from object definitions', () => {
@@ -65,6 +34,7 @@ describe('fromNow', () => {
       { expr: '30 mo', from: '2017-01-19T16:27:20.974Z', result: '2019-07-08T16:27:20.974Z' },
       { expr: '-30 mo', from: '2017-01-19T16:27:20.974Z', result: '2014-08-03T16:27:20.974Z' },
       { expr: '1 year', from: '2017-01-19T16:27:20.974Z', result: '2018-01-19T16:27:20.974Z' },
+      { expr: '2 years 55mo', from: '2017-01-19T16:27:20.974Z', result: '2023-07-27T16:27:20.974Z' },
     ].forEach(({ expr, from, result }) => {
       expect(fromNow(expr, new Date(from)).toJSON()).to.equal(result);
     });

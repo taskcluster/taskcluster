@@ -150,48 +150,15 @@ suite(testing.suiteName(), () => {
     assert.equal(parseTime('-2d0h').hours, 0);
   });
 
-  suite('fromNow .. current time', () => {
-    test('fromNow()', () => {
-      const d1 = new Date();
-      const d2 = taskcluster.fromNow();
+  test('fromNow() defaults the reference to the current datetime', () => {
+    const twoHours = 2 * 60 * 60 * 1000;
+    const before = Date.now();
+    const d1 = taskcluster.fromNow();
+    const d2 = taskcluster.fromNow('2 hours');
+    const after = Date.now();
 
-      // Allow for 10 ms margin
-      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-    });
-
-    test('fromNow(2 hours)', () => {
-      const d1 = new Date();
-      d1.setHours(d1.getHours() + 2);
-      const d2 = taskcluster.fromNow('2 hours');
-
-      // Allow for 10 ms margin
-      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-    });
-
-    test('fromNow(2 years 55 months)', () => {
-      const day = 24 * 60 * 60 * 1000;
-      const d1 = new Date(Date.now() + 2 * 365 * day + 55 * 30 * day);
-      const d2 = taskcluster.fromNow('2 years 55mo');
-
-      // Allow for 10ms margin
-      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-    });
-
-    test('fromNow(240 months)', () => {
-      const d1 = new Date(Date.now() + 240 * 30 * 24 * 60 * 60 * 1000);
-      const d2 = taskcluster.fromNow('240 months');
-
-      // Allow for 10ms margin
-      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-    });
-
-    test('fromNow(-240 months)', () => {
-      const d1 = new Date(Date.now() - 240 * 30 * 24 * 60 * 60 * 1000);
-      const d2 = taskcluster.fromNow('-240 months');
-
-      // Allow for 10ms margin
-      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-    });
+    assert(d1.getTime() >= before && d1.getTime() <= after);
+    assert(d2.getTime() >= before + twoHours && d2.getTime() <= after + twoHours);
   });
 
   suite('fromNow .. from', () => {
@@ -214,6 +181,7 @@ suite(testing.suiteName(), () => {
       { expr: '30 mo', from: '2017-01-19T16:27:20.974Z', result: '2019-07-08T16:27:20.974Z' },
       { expr: '-30 mo', from: '2017-01-19T16:27:20.974Z', result: '2014-08-03T16:27:20.974Z' },
       { expr: '1 year', from: '2017-01-19T16:27:20.974Z', result: '2018-01-19T16:27:20.974Z' },
+      { expr: '2 years 55mo', from: '2017-01-19T16:27:20.974Z', result: '2023-07-27T16:27:20.974Z' },
     ].forEach(({ expr, from, result }) => {
       test(expr, () => {
         assert.equal(taskcluster.fromNow(expr, new Date(from)).toJSON(), result);
