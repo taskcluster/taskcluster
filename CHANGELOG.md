@@ -3,6 +3,68 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v110.1.0
+
+### DEPLOYERS
+
+▶ [minor] [bug 1599247](http://bugzil.la/1599247)
+The auth service's `gcpCredentials` endpoint now supports any number of GCP projects configured in `gcp_credentials_allowed_projects`, rather than being limited to a single project. Each configured project keeps its own credentials and `allowedServiceAccounts` allow-list, and requests are scoped to the project named in the request path.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 2071937](http://bugzil.la/2071937)
+Generic Worker on Windows no longer interpolates `payload.osGroups` into a PowerShell `-Command` string when adding or removing the task user from OS groups. Membership is updated with `NetLocalGroupAddMembers` / `NetLocalGroupDelMembers`, so group names cannot break out of a PowerShell single-quoted literal (including via Unicode quotation marks U+2018–U+201B).
+
+▶ [patch]
+On Windows, the worker now replaces the whole security descriptor of the files it secures instead of just dropping ACL inheritance on it. The ownership is now also changed to `BUILTIN\Administrators`
+
+### USERS
+
+▶ [minor]
+`index.findTasksAtIndex` no longer returns expired indices
+
+▶ [patch] [#9127](https://github.com/taskcluster/taskcluster/issues/9127)
+Dashboard shows pending and claimed task counts for task queues that worker-manager does not own (hardware workers, for example).
+These queues were previously missing from the dashboard's task totals entirely.
+Discovering them requires the `queue:list-task-queues` scope, plus `queue:pending-count:<taskQueueId>` and `queue:claimed-count:<taskQueueId>` for each queue.
+
+▶ [patch] [#9172](https://github.com/taskcluster/taskcluster/issues/9172)
+In the python client, importing `taskcluster.helper` before anything from `taskcluster.aio` no longer leaves `taskcluster.aio` without any of its clients
+
+▶ [patch]
+Indexing a task no longer silently does nothing when an expired entry with a higher rank still exists at the same index path
+
+▶ [patch] [#9065](https://github.com/taskcluster/taskcluster/issues/9065)
+The worker pools list now shows a "Claimed Tasks" column alongside "Pending Tasks". The claimed counts already came back from the batched `taskQueueCounts` request the page makes, so this adds no extra API calls.
+
+▶ [patch] [#9065](https://github.com/taskcluster/taskcluster/issues/9065)
+UI: Dashboard and Worker Manager load pending/claimed counts in batched requests. Stopping capacity is no longer shown.
+Public deployments must grant both `queue:pending-count:*` and `queue:claimed-count:*` to the `anonymous` role for these counts to appear.
+
+▶ [patch]
+UI: hardened task artifact log links with proper encoding.
+
+▶ [patch] [bug 2072160](http://bugzil.la/2072160)
+Worker-manager improves error handling when duplicate static worker is created.
+
+### DEVELOPERS
+
+▶ [patch]
+`yarn db:new` and `yarn db:renumber` don't require you to provide either `ADMIN_DB_URL` or `USERNAME_PREFIX` anymore
+
+### OTHER
+
+▶ Additional changes not described here: [#9119](https://github.com/taskcluster/taskcluster/issues/9119), [#9127](https://github.com/taskcluster/taskcluster/issues/9127).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0 (fe3ec0e14d)
+
+</details>
+
 ## v110.0.0
 
 ### WORKER-DEPLOYERS
