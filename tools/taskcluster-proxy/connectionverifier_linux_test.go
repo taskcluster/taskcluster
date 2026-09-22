@@ -150,9 +150,9 @@ func TestProxyRejectsForeignUser(t *testing.T) {
 	server, addr := startVerifiedListener(t, "root")
 	t.Cleanup(func() { _ = server.Close() })
 
-	// Sanity check: connecting from this process (root) is admitted by
-	// the root-bypass branch of the verifier — proves the listener
-	// itself is healthy before we judge the rejection case.
+	// Sanity check: connecting from this process (root) is admitted
+	// because root is the allowed user — proves the listener itself is
+	// healthy before we judge the rejection case.
 	require.Equal(t, probeAdmitted, probeAsUID(t, addr, 0),
 		"root should be admitted by --allowed-user=root")
 
@@ -171,10 +171,12 @@ func TestProxyRejectsForeignUser(t *testing.T) {
 // different OS users on the same worker, neither's task can hit the
 // other's proxy."
 //
+// Root must be rejected by both proxies too: the worker runs as root
+// and fetches task-supplied URLs (e.g. mounts), so admitting root would
+// let a task reach a sibling task's proxy through the worker.
+//
 // Skipped without root, or if two distinct non-root system users
-// aren't both available on the host. Root bypass is intentionally not
-// tested here — every proxy admits root because the worker process
-// itself runs as root.
+// aren't both available on the host.
 func TestProxyIsolationBetweenTwoUsers(t *testing.T) {
 	if os.Getuid() != 0 {
 		t.Skip("requires root to setuid the connecting children")
@@ -203,6 +205,8 @@ func TestProxyIsolationBetweenTwoUsers(t *testing.T) {
 		{userA.Username + " -> proxyB", uidA, addrB, probeRejected},
 		{userB.Username + " -> proxyA", uidB, addrA, probeRejected},
 		{userB.Username + " -> proxyB", uidB, addrB, probeAdmitted},
+		{"root -> proxyA", 0, addrA, probeRejected},
+		{"root -> proxyB", 0, addrB, probeRejected},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

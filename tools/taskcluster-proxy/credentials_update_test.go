@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
@@ -75,6 +76,66 @@ func TestCredentialsUpdate(t *testing.T) {
 			newCreds.Certificate,
 			routes.Credentials.Certificate,
 		)
+	}
+}
+
+func TestReadCredentialsUpdates(t *testing.T) {
+	routes := NewRoutesTest(t)
+
+	stream := `{"clientId":"first","accessToken":"firstToken","certificate":"firstCert"}
+{"clientId":"second","accessToken":"secondToken","certificate":"secondCert"}
+`
+	if err := routes.ReadCredentialsUpdates(strings.NewReader(stream)); err != nil {
+		t.Fatalf("Expected no error once the stream is closed, but got: %v", err)
+	}
+
+	// the most recent update wins
+	if routes.Credentials.ClientID != "second" {
+		t.Errorf("ClientId should be \"second\", but got %q", routes.Credentials.ClientID)
+	}
+	if routes.Credentials.AccessToken != "secondToken" {
+		t.Errorf("AccessToken should be \"secondToken\", but got %q", routes.Credentials.AccessToken)
+	}
+	if routes.Credentials.Certificate != "secondCert" {
+		t.Errorf("Certificate should be \"secondCert\", but got %q", routes.Credentials.Certificate)
+	}
+}
+
+func TestReadCredentialsUpdatesStopsOnInvalidJSON(t *testing.T) {
+	routes := NewRoutesTest(t)
+
+	stream := `{"clientId":"first","accessToken":"firstToken","certificate":"firstCert"}
+{"badJS0n!
+{"clientId":"second","accessToken":"secondToken","certificate":"secondCert"}
+`
+	if err := routes.ReadCredentialsUpdates(strings.NewReader(stream)); err == nil {
+		t.Fatal("Expected an error for invalid JSON")
+	}
+
+	// updates before the invalid JSON are applied, updates after it are not
+	if routes.Credentials.ClientID != "first" {
+		t.Errorf("ClientId should be \"first\", but got %q", routes.Credentials.ClientID)
+	}
+}
+
+func TestCredentialsEndpointDisabledWithCredentialsFromStdin(t *testing.T) {
+	routes := NewRoutesTest(t)
+	routes.CredentialsFromStdin = true
+
+	body, err := json.Marshal(&CredentialsUpdate{
+		ClientID:    "newClientId",
+		AccessToken: "newAccessToken",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	response := routes.request("PUT", body)
+	if response.Code != 404 {
+		t.Errorf("Should return 404, but returned %d", response.Code)
+	}
+	if routes.Credentials.ClientID != "clientId" {
+		t.Errorf("ClientId should be unchanged, but got %q", routes.Credentials.ClientID)
 	}
 }
 

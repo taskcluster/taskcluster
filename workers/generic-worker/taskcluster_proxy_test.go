@@ -9,9 +9,15 @@ import (
 )
 
 func TestTaskclusterProxy(t *testing.T) {
-
 	setup(t)
+	testTaskclusterProxy(t, FeatureFlags{})
+}
 
+// testTaskclusterProxy runs a task with the given features that fetches a
+// private artifact through its taskcluster-proxy, after its credentials have
+// been refreshed.
+func testTaskclusterProxy(t *testing.T, features FeatureFlags, extraScopes ...string) {
+	t.Helper()
 	taskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 
 	// We base64 encode the url, because I can't get to the bottom of the
@@ -39,10 +45,9 @@ func TestTaskclusterProxy(t *testing.T) {
 		),
 		MaxRunTime: 180,
 		Env:        map[string]string{},
-		Features: FeatureFlags{
-			TaskclusterProxy: true,
-		},
+		Features:   features,
 	}
+	payload.Features.TaskclusterProxy = true
 	defaults.SetDefaults(&payload)
 
 	// need to set _after_ setting defaults, since this is the zero value
@@ -59,7 +64,7 @@ func TestTaskclusterProxy(t *testing.T) {
 		}
 	}
 	td := testTask(t)
-	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
+	td.Scopes = append([]string{"queue:get-artifact:SampleArtifacts/_/X.txt"}, extraScopes...)
 	td.Dependencies = []string{taskID}
 	reclaimEvery5Seconds = true
 	taskID = submitAndAssert(t, td, payload, "completed", "completed")
