@@ -2,7 +2,14 @@ import helper from './helper.js';
 import assert from 'node:assert';
 import MockDate from 'mockdate';
 import testing from '@taskcluster/lib-testing';
-import { GithubCheckOutput, GithubCheck, getTimeDifference, taskAritfactUI, taskLogUI } from '../src/handlers/utils.js';
+import {
+  GithubCheckOutput,
+  GithubCheck,
+  getTimeDifference,
+  taskArtifactUI,
+  taskLiveLogUI,
+  taskLogUI,
+} from '../src/handlers/utils.js';
 import { CHECK_RUN_STATES } from '../src/constants.js';
 
 /**
@@ -151,7 +158,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], () => {
     const rootUrl = 'https://taskcluster.example.com';
     const name = 'public/file?#.txt';
 
-    assert.equal(taskAritfactUI(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/public%2Ffile%3F%23.txt`);
+    assert.equal(taskArtifactUI(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/public%2Ffile%3F%23.txt`);
     assert.equal(taskLogUI(rootUrl, 'taskId', 0, name), `${rootUrl}/tasks/taskId/runs/0/logs/public%2Ffile%3F%23.txt`);
+    assert.equal(
+      taskLiveLogUI(rootUrl, 'taskId', 0, name),
+      `${rootUrl}/tasks/taskId/runs/0/logs/live/public%2Ffile%3F%23.txt`
+    );
   });
 });

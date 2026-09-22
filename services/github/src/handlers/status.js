@@ -21,7 +21,7 @@ import {
   GithubCheck,
   getTimeDifference,
   taskGroupUI,
-  taskAritfactUI,
+  taskArtifactUI,
   taskLogUI,
   formatBytes,
 } from './utils.js';
@@ -198,8 +198,8 @@ export async function statusHandler(message) {
       CHECKLOGS_TEXT,
       taskLiveLogUI(
         this.context.cfg.taskcluster.rootUrl,
-        runId,
         taskId,
+        runId,
         // docker worker uses `task.payload.log` while
         // generic worker uses `task.payload.logs.live`
         taskDefinition.payload?.logs?.live || taskDefinition.payload?.log
@@ -236,7 +236,7 @@ export async function statusHandler(message) {
         if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
           artifactUrl = taskLogUI(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         } else {
-          artifactUrl = taskAritfactUI(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+          artifactUrl = taskArtifactUI(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         }
         // Add the formatted size to the name if the size exists
         let displayName = element.name;

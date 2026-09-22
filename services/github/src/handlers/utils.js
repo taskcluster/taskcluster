@@ -8,11 +8,11 @@ export const taskUI = (rootUrl, taskGroupId, taskId) =>
   );
 export const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
-export const taskLiveLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
+export const taskLiveLogUI = (rootUrl, taskId, runId, liveLogName = 'public/logs/live.log') =>
   libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/live/${encodeURIComponent(liveLogName)}`);
 export const taskLogUI = (rootUrl, taskId, runId, artifactName) =>
   libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/${encodeURIComponent(artifactName)}`);
-export const taskAritfactUI = (rootUrl, taskId, runId, artifactName) =>
+export const taskArtifactUI = (rootUrl, taskId, runId, artifactName) =>
   libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/${encodeURIComponent(artifactName)}`);
 let debugCounter = 0;
 

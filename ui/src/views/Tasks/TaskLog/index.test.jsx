@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Route } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Route } from 'react-router-dom';
 import { vi } from 'vitest';
 import { buildLogViewerUrl } from '../../../utils/artifactNames';
 import TaskLog from './index';
@@ -17,6 +17,8 @@ vi.mock('@apollo/client/react/hoc', async importOriginal => ({
 
 const taskId = 'eR1kMya2SruyMaRMZguROg';
 const baseUrl = `https://taskcluster.net/api/queue/v1/task/${taskId}/runs/0/artifacts/`;
+
+afterEach(() => window.history.replaceState({}, '', '/'));
 
 function expectArtifactUrl(path, name, isLiveLog = false) {
   render(
@@ -59,10 +61,27 @@ it('preserves malformed percent encoding in a direct log link', () => {
 });
 
 it('preserves an artifact name encoded as one route parameter', () => {
-  const name = 'public/logs/live.log';
+  const name = 'public/logs/100%.log';
+  const artifactPath = `/tasks/${taskId}/runs/0/logs/`;
 
-  expectArtifactUrl(
-    `/tasks/${taskId}/runs/0/logs/${encodeURIComponent(name)}`,
-    name
+  window.history.replaceState(
+    {},
+    '',
+    `${artifactPath}${encodeURIComponent(name)}`
+  );
+
+  render(
+    <BrowserRouter>
+      <Route
+        path="/tasks/:taskId/runs/:runId/logs/:name+"
+        render={({ match }) => (
+          <a href={new TaskLog({ match }).getLogUrl()}>Raw log</a>
+        )}
+      />
+    </BrowserRouter>
+  );
+
+  expect(screen.getByRole('link').getAttribute('href')).toBe(
+    `${baseUrl}${encodeURIComponent(name)}`
   );
 });
