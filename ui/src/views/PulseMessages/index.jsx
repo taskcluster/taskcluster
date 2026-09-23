@@ -173,7 +173,6 @@ export default class PulseMessages extends Component {
       onError: error => {
         this.setState({ error, listening: false });
       },
-      user: this.props.user,
       getCredentials: this.props.getCredentials,
     });
   };

@@ -75,9 +75,8 @@ const connectionInitFrame = credentials =>
  * function that unsubscribes and stops reconnecting.
  *
  * `getCredentials` obtains current credentials before every connection_init,
- * allowing a reconnect to renew short-lived credentials. `user` is retained
- * as a fallback for callers without a credential provider and so callers can
- * still tear down and resubscribe immediately when the signed-in user changes.
+ * allowing a reconnect to renew short-lived credentials. Without it the
+ * connection is anonymous.
  *
  * Authentication rejection stops reconnecting. A caller that later obtains
  * different credentials must subscribe again.
@@ -85,7 +84,7 @@ const connectionInitFrame = credentials =>
 const openEventsSubscription = (
   endpointPath,
   subscribeFrame,
-  { onMessage, onError, user, getCredentials }
+  { onMessage, onError, getCredentials }
 ) => {
   // The events server mints the subscriptionId and returns it in subscribe_ack;
   // it stays null until then. This listener uses a single subscription per
@@ -129,22 +128,16 @@ const openEventsSubscription = (
       socket.send(JSON.stringify(connectionInitFrame(credentials)));
     };
 
-    socket.onopen = () => {
-      if (!getCredentials) {
-        sendConnectionInit(user?.credentials);
-        return;
+    socket.onopen = async () => {
+      try {
+        sendConnectionInit(await getCredentials?.());
+      } catch (error) {
+        if (!torn && ws === socket) {
+          failureReported = true;
+          onError(error);
+          socket.close();
+        }
       }
-
-      Promise.resolve()
-        .then(() => getCredentials())
-        .then(sendConnectionInit)
-        .catch(error => {
-          if (!torn && ws === socket) {
-            failureReported = true;
-            onError(error);
-            socket.close();
-          }
-        });
     };
 
     socket.onmessage = ({ data }) => {
@@ -224,7 +217,7 @@ const openEventsSubscription = (
  * Subscribe to Pulse messages arriving on the given raw bindings (each an
  * `{ exchange, pattern }` or `{ exchange, routingKeyPattern }`) via the
  * /subscription/raw endpoint. Used by the Pulse debugger views, which bind arbitrary
- * exchanges directly. `handlers` includes `{ onMessage, onError, user,
+ * exchanges directly. `handlers` includes `{ onMessage, onError,
  * getCredentials }`; see openEventsSubscription. Returns a teardown function
  * that unsubscribes.
  */
@@ -244,7 +237,7 @@ const subscribeToPulseMessages = (bindings, handlers) =>
  * `{ taskGroupId }`); omitted routing-key fields are wildcarded. `service`
  * selects whose events the names refer to (e.g. 'queue') and is required — the
  * server rejects a subscribe frame without it. `handlers` includes `{
- * onMessage, onError, user, getCredentials }`; see
+ * onMessage, onError, getCredentials }`; see
  * openEventsSubscription. Returns a teardown function that unsubscribes.
  */
 const subscribeToNamedEvents = (

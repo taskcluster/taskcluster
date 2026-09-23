@@ -565,7 +565,6 @@ export default class TaskGroup extends Component {
         // There is no polling fallback here: after a dropped socket the page
         // shows the last known state until it is reloaded.
         onError: () => {},
-        user,
         getCredentials,
       }
     );

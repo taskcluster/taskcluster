@@ -189,36 +189,26 @@ describe('TaskGroup page', () => {
       };
     };
 
-    it('does not retry rejected credentials on an unrelated update', async () => {
+    it('keeps the subscription when re-rendered with the same user', async () => {
       const user = makeUser('token-1');
       const rerenderWithUser = await renderWithUser(user);
-      const [, handlers] = subscribeToNamedEvents.mock.calls[0];
 
-      expect(subscribeToNamedEvents).toHaveBeenCalledTimes(1);
-
-      handlers.onError(new Error('Authentication failed'));
       await rerenderWithUser(user);
 
       expect(subscribeToNamedEvents).toHaveBeenCalledTimes(1);
     });
 
-    it('resubscribes after the server rejected the credentials and they were refreshed', async () => {
+    it('resubscribes when the signed-in user changes', async () => {
       const unsubscribe = vi.fn();
 
       subscribeToNamedEvents.mockReturnValue(unsubscribe);
 
       const rerenderWithUser = await renderWithUser(makeUser('token-1'));
-      const [, handlers] = subscribeToNamedEvents.mock.calls[0];
-
-      handlers.onError(new Error('Authentication failed'));
 
       await rerenderWithUser(makeUser('token-2'));
 
       expect(unsubscribe).toHaveBeenCalledTimes(1);
       expect(subscribeToNamedEvents).toHaveBeenCalledTimes(2);
-      expect(subscribeToNamedEvents.mock.calls[1][1].user.credentials).toEqual(
-        makeUser('token-2').credentials
-      );
     });
   });
 });

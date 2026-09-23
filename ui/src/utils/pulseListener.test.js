@@ -54,14 +54,6 @@ FakeWebSocket.OPEN = 1;
 FakeWebSocket.CLOSING = 2;
 FakeWebSocket.CLOSED = 3;
 
-// Drain settled promises without depending on the exact depth of the
-// listener's onopen promise chain.
-const flushPromises = async () => {
-  for (let i = 0; i < 20; i++) {
-    await Promise.resolve();
-  }
-};
-
 beforeEach(() => {
   window.env = {
     GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost/subscription',
@@ -91,7 +83,7 @@ describe('subscribeToPulseMessages', () => {
     );
   });
 
-  it('sends connection_init on open', () => {
+  it('sends connection_init on open', async () => {
     subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
       onMessage: vi.fn(),
       onError: vi.fn(),
@@ -100,6 +92,7 @@ describe('subscribeToPulseMessages', () => {
     const ws = FakeWebSocket._lastInstance;
 
     ws.simulateOpen();
+    await Promise.resolve();
 
     expect(ws.sent[0]).toEqual({ type: 'connection_init' });
   });
@@ -418,10 +411,9 @@ describe('error and reconnection handling', () => {
     const ws = FakeWebSocket._lastInstance;
 
     ws.simulateOpen();
-    await flushPromises();
     teardown();
     resolveCredentials({ clientId: 'user', accessToken: 'fresh-token' });
-    await flushPromises();
+    await Promise.resolve();
 
     expect(ws.sent).toEqual([]);
   });

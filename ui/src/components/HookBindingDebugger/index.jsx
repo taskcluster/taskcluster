@@ -255,7 +255,6 @@ export default class HookBindingDebugger extends Component {
     this.unsubscribeFn = subscribeToPulseMessages(this.props.bindings, {
       onMessage: this.handleMessage,
       onError: this.handleError,
-      user: this.props.user,
       getCredentials: this.props.getCredentials,
     });
   };

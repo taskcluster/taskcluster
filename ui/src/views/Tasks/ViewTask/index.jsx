@@ -248,7 +248,6 @@ export default class ViewTask extends Component {
         // the task query polls on TASK_POLL_INTERVAL, so a dropped socket
         // degrades to polling rather than losing updates
         onError: () => {},
-        user,
         getCredentials,
       }
     );

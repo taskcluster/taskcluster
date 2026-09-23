@@ -31,6 +31,7 @@ function SpeedDialAction(props) {
     user,
     onAuthorize,
     onUnauthorize,
+    getCredentials,
     tooltipTitle,
     ...rest
   } = props;
