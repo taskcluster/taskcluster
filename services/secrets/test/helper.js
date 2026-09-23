@@ -8,6 +8,9 @@ export const load = testing.stickyLoader(loadMain);
 const helper = { load };
 export default helper;
 
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
+
 suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
@@ -52,19 +55,24 @@ helper.withServer = skipping => {
     }
     await load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    const rootUrl = 'http://localhost:60415';
-    load.cfg('taskcluster.rootUrl', rootUrl);
-    testing.fakeauth.start(testClients, { rootUrl });
+    testing.fakeauth.start(testClients, { rootUrl: helper.rootUrl });
 
     helper.client = async clientId => {
       const SecretsClient = taskcluster.createClient(builder.reference());
 
       return new SecretsClient({
         credentials: { clientId, accessToken: 'unused' },
-        rootUrl,
+        rootUrl: helper.rootUrl,
         retries: 0,
       });
     };

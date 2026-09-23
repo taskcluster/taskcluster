@@ -8,11 +8,13 @@ import testing from '@taskcluster/lib-testing';
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';
 
-export const rootUrl = 'http://localhost:60409';
 export const load = testing.stickyLoader(loadMain);
 
-const helper = { load, rootUrl };
+const helper = { load };
 export default helper;
+
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
 
 helper.load.inject('profile', 'test');
 helper.load.inject('process', 'test');
@@ -159,7 +161,22 @@ helper.withServer = skipping => {
 
     await load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
+    // Recreate fakes that were built before the real rootUrl was known.
+    if (helper.queue) {
+      helper.queue = stubbedQueue();
+      helper.load.inject('queue', helper.queue);
+    }
+    if (helper.notify) {
+      helper.notify = stubbedNotify();
+      helper.load.inject('notify', helper.notify);
+    }
 
     testing.fakeauth.start(
       {
