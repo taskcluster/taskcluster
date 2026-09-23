@@ -462,6 +462,8 @@ type MountEntry interface {
 	Unmount(taskMount *TaskMount) error
 	FSContent() (FSContent, error)
 	RequiredScopes() []string
+	// path is where the mount is placed, relative to the task directory
+	path() string
 }
 
 // FSContent represents file system content - it is based on the auto-generated
@@ -552,6 +554,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 			tm.payloadError = fmt.Errorf("unrecognised mount entry in payload - %#v", m)
 		}
 	}
+	tm.validateMountPaths()
 	tm.initRequiredScopes()
 	tm.initReferencedTaskIDs()
 	tm.initIndexClient()
@@ -565,6 +568,21 @@ func (taskMount *TaskMount) Unmarshal(rm json.RawMessage, m MountEntry) {
 	if taskMount.payloadError == nil {
 		taskMount.payloadError = json.Unmarshal(rm, m)
 		taskMount.mounts = append(taskMount.mounts, m)
+	}
+}
+
+func (taskMount *TaskMount) validateMountPaths() {
+	if taskMount.payloadError != nil {
+		return
+	}
+	// Reject absolute paths and paths that escape the task directory, so that
+	// tasks cannot mount content anywhere else on the worker. Clean maps "" to
+	// ".", which has always meant the task directory itself.
+	for _, mount := range taskMount.mounts {
+		if !filepath.IsLocal(filepath.Clean(mount.path())) {
+			taskMount.payloadError = fmt.Errorf("[mounts] mount path %q must be a relative path inside the task directory", mount.path())
+			return
+		}
 	}
 }
 
@@ -870,6 +888,10 @@ func (w *WritableDirectoryCache) FSContent() (FSContent, error) {
 	return nil, nil
 }
 
+func (w *WritableDirectoryCache) path() string {
+	return w.Directory
+}
+
 // No scopes directly required for a ReadOnlyDirectory (scopes may be required
 // for its content though - handled separately)
 func (r *ReadOnlyDirectory) RequiredScopes() []string {
@@ -880,6 +902,10 @@ func (r *ReadOnlyDirectory) RequiredScopes() []string {
 // *RawContent or *Base64Content that is listed in the given *ReadOnlyDirectory
 func (r *ReadOnlyDirectory) FSContent() (FSContent, error) {
 	return FSContentFrom(r.Content)
+}
+
+func (r *ReadOnlyDirectory) path() string {
+	return r.Directory
 }
 
 // No scopes directly required for a FileMount (scopes may be required for its
@@ -894,8 +920,12 @@ func (f *FileMount) FSContent() (FSContent, error) {
 	return FSContentFrom(f.Content)
 }
 
+func (f *FileMount) path() string {
+	return f.File
+}
+
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
-	target := fileutil.AbsFrom(taskMount.task.TaskDir(), w.Directory)
+	target := filepath.Join(taskMount.task.TaskDir(), w.Directory)
 
 	exists, existsErr := safefs.Exists(target)
 	if existsErr != nil {
@@ -993,7 +1023,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 }
 
 func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
-	taskCacheDir := fileutil.AbsFrom(taskMount.task.TaskDir(), w.Directory)
+	taskCacheDir := filepath.Join(taskMount.task.TaskDir(), w.Directory)
 	entry, ok := taskMount.poolEntries[w]
 	if !ok {
 		return Failure(fmt.Errorf("could not persist cache %q due to missing pool entry", w.CacheName))
@@ -1032,7 +1062,7 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 	if err != nil {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
-	dir := fileutil.AbsFrom(taskMount.task.TaskDir(), r.Directory)
+	dir := filepath.Join(taskMount.task.TaskDir(), r.Directory)
 	return extract(c, r.Format, dir, taskMount)
 }
 
@@ -1047,7 +1077,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return err
 	}
 
-	file := fileutil.AbsFrom(taskMount.task.TaskDir(), f.File)
+	file := filepath.Join(taskMount.task.TaskDir(), f.File)
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
 		return fmt.Errorf("cannot mount file at path %v since it already exists as a directory", file)
 	}

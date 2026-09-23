@@ -490,10 +490,11 @@ type (
 		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
-		// The filesystem location to mount the file. This can be a
-		// path relative to the task directory, or an absolute path.
-		// The file will be created as the task user, so the target
-		// location must be writable by the task user.
+		// The filesystem location to mount the file.
+		// Must be a path relative to the task directory that stays
+		// inside it. Absolute paths and paths escaping the task
+		// directory (e.g. `../foo`) are rejected as a malformed
+		// payload since generic-worker 111.0.0.
 		//
 		// Since: generic-worker 5.4.0
 		File string `json:"file"`
@@ -721,10 +722,10 @@ type (
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
-		// This can be a path relative to the task directory, or an
-		// absolute path. The directory will be created as the task
-		// user, so the target location must be writable by the task
-		// user.
+		// Must be a path relative to the task directory that stays
+		// inside it. Absolute paths and paths escaping the task
+		// directory (e.g. `../foo`) are rejected as a malformed
+		// payload since generic-worker 111.0.0.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -788,10 +789,11 @@ type (
 		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
-		// This can be a path relative to the task directory, or an
-		// absolute path. The directory must not already exist. It
-		// is created as the task user, so its parent must be
-		// writable by the task user.
+		// Must be a path relative to the task directory that stays
+		// inside it. Absolute paths and paths escaping the task
+		// directory (e.g. `../foo`) are rejected as a malformed
+		// payload since generic-worker 111.0.0.
+		// The directory must not already exist.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -997,7 +999,7 @@ func JSONSchema() string {
           "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
         },
         "file": {
-          "description": "The filesystem location to mount the file. This can be a\npath relative to the task directory, or an absolute path.\nThe file will be created as the task user, so the target\nlocation must be writable by the task user.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the file.\nMust be a path relative to the task directory that stays\ninside it. Absolute paths and paths escaping the task\ndirectory (e.g. ` + "`" + `../foo` + "`" + `) are rejected as a malformed\npayload since generic-worker 111.0.0.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
         },
@@ -1049,7 +1051,7 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nMust be a path relative to the task directory that stays\ninside it. Absolute paths and paths escaping the task\ndirectory (e.g. ` + "`" + `../foo` + "`" + `) are rejected as a malformed\npayload since generic-worker 111.0.0.\n\nSince: generic-worker 5.4.0",
           "title": "Directory",
           "type": "string"
         },
@@ -1105,7 +1107,7 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory must not already exist. It\nis created as the task user, so its parent must be\nwritable by the task user.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nMust be a path relative to the task directory that stays\ninside it. Absolute paths and paths escaping the task\ndirectory (e.g. ` + "`" + `../foo` + "`" + `) are rejected as a malformed\npayload since generic-worker 111.0.0.\nThe directory must not already exist.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },

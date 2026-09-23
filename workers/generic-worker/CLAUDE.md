@@ -111,9 +111,9 @@ Features implement the `Feature` / `TaskFeature` interfaces:
 - The multiuser engine creates a restricted OS user per task. The task user can
   only write within their task directory (granted via `chown` on posix, `icacls`
   on Windows).
-- Mount paths (file/directory/cache) can be relative (resolved against the task
-  directory) or absolute. Absolute paths require the target to be writable by
-  the task user.
+- Mount paths (file/directory/cache) must be relative and stay inside the task
+  directory (`filepath.IsLocal`). Absolute or escaping paths are rejected as
+  `malformed-payload`.
 - `CreateFileAsTaskUser` / `CreateDirAsTaskUser` run `generic-worker create-file`
   / `create-dir` subcommands as the task user. These will fail if the target
   location is not writable by the task user.
