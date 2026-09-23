@@ -447,7 +447,12 @@ func (feature *MountsFeature) Initialise() error {
 		if len(directoryCaches[seed.CacheName]) != 0 {
 			continue
 		}
-		if info, err := os.Stat(seed.Location); err != nil || !info.IsDir() {
+		info, err := os.Stat(seed.Location)
+		if err != nil || !info.IsDir() {
+			if err == nil {
+				err = fmt.Errorf("path is not a directory")
+			}
+			log.Printf("WARNING: preloaded directory cache %q for %q is unavailable, ignoring: %v", seed.Location, seed.CacheName, err)
 			continue
 		}
 		directoryCaches[seed.CacheName] = []*Cache{{

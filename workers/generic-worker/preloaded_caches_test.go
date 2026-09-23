@@ -4,10 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
+	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/fileutil"
@@ -40,7 +39,7 @@ func TestPreloadedDirectoryCaches(t *testing.T) {
 	require.Len(t, directoryCaches["checkout"], 1)
 	entry := directoryCaches["checkout"][0]
 	require.Equal(t, seed, entry.Location)
-	require.True(t, entry.Created.Before(time.Now().Add(-24*time.Hour)), "unknown preparation age must not bypass pending purges")
+	require.True(t, entry.Created.IsZero(), "preloaded cache age must remain unknown for purge checks")
 	after, err := os.Stat(marker)
 	require.NoError(t, err)
 	require.True(t, os.SameFile(before, after), "registration must not copy the seed")
