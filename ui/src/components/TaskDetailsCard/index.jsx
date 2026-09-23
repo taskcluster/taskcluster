@@ -28,6 +28,7 @@ import { pageInfo, task } from '../../utils/prop-types';
 import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
 import { getTaskDefinitions, getTaskStatuses } from '../../utils/queueTask';
+import sort from '../../utils/sort';
 
 @withStyles(theme => ({
   headline: {
@@ -120,10 +121,18 @@ export default class TaskDetailsCard extends Component {
     showPayload: false,
     dependentTasks: null,
     loading: false,
+    sortBy: 'Name',
+    sortDirection: 'asc',
   };
 
   handleTogglePayload = () => {
     this.setState({ showPayload: !this.state.showPayload });
+  };
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
   };
 
   componentDidMount() {
@@ -180,6 +189,20 @@ export default class TaskDetailsCard extends Component {
       user,
       onChangePriority,
     } = this.props;
+    const { sortBy, sortDirection } = this.state;
+    const sortedDependents = Array.isArray(dependents?.edges)
+      ? {
+          ...dependents,
+          edges: [...dependents.edges].sort((a, b) => {
+            const first = a.node?.metadata?.name || '';
+            const second = b.node?.metadata?.name || '';
+
+            return sortDirection === 'desc'
+              ? sort(second, first)
+              : sort(first, second);
+          }),
+        }
+      : dependents;
     const { showPayload, dependentTasks, loading } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
@@ -379,10 +402,13 @@ export default class TaskDetailsCard extends Component {
                   </ListItem>
                   <ConnectionDataTable
                     withoutTopPagination
-                    connection={dependents}
+                    connection={sortedDependents}
+                    headers={['Name']}
+                    maxHeight={400}
                     pageSize={DEPENDENTS_PAGE_SIZE}
-                    sortByHeader={null}
-                    sortDirection="desc"
+                    sortByHeader={sortBy}
+                    sortDirection={sortDirection}
+                    onHeaderClick={this.handleHeaderClick}
                     onPageChange={onDependentsPageChange}
                     allowFilter
                     filterFunc={({ node }, filterValue) =>

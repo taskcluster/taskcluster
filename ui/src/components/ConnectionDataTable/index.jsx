@@ -40,6 +40,10 @@ import { pageInfo } from '../../utils/prop-types';
   tableWrapper: {
     overflowX: 'auto',
   },
+  tableWrapperWithMaxHeight: {
+    maxHeight: 400,
+    overflowY: 'auto',
+  },
   thWithTopPagination: {
     height: theme.spacing(4),
   },
@@ -157,6 +161,7 @@ export default class ConnectionDataTable extends Component {
     filterFunc: null,
     lazyRender: false,
     rowHeight: 48,
+    maxHeight: null,
   };
 
   state = {
@@ -283,6 +288,7 @@ export default class ConnectionDataTable extends Component {
       filterFunc,
       lazyRender,
       rowHeight,
+      maxHeight,
     } = this.props;
     const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || headers?.length || 1;
@@ -345,7 +351,10 @@ export default class ConnectionDataTable extends Component {
             }}
           />
         )}
-        <div className={classes.tableWrapper}>
+        <div
+          className={classNames(classes.tableWrapper, {
+            [classes.tableWrapperWithMaxHeight]: maxHeight,
+          })}>
           <Table size={size}>
             {headers && (
               <TableHead>
