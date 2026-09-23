@@ -288,7 +288,6 @@ func sweepUnknownContent(dir string, caches CacheMap) {
 			if rel == "." {
 				return // The entire directory is a registered cache.
 			}
-			// ponytail: keep the containing directory; nested orphan cleanup is out of scope.
 			top, _, _ := strings.Cut(rel, string(os.PathSeparator))
 			keep[top] = true
 		}
