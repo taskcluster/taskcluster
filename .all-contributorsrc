@@ -2128,9 +2128,19 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "s1h2r3e4-alt",
+      "name": "s1h2r3e4-alt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/214851891?v=4",
+      "profile": "https://github.com/s1h2r3e4-alt",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
-  "commitConvention": "none"
+  "commitConvention": "none",
+  "commitType": "docs"
 }
