@@ -181,8 +181,18 @@ export default class SubscriptionConnection {
   async handleConnectionInit(frame) {
     clearTimeout(this.connectionInitTimeout);
 
+    let credentials = null;
+
+    if (frame.authorization) {
+      try {
+        credentials = decryptToken(frame.authorization);
+      } catch {
+        await this.rejectAuthentication();
+        return;
+      }
+    }
+
     try {
-      const credentials = frame.authorization ? decryptToken(frame.authorization) : null;
       const authClient = this.authFactory({ credentials });
       const scopes = await authClient.currentScopes();
       const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
@@ -217,12 +227,7 @@ export default class SubscriptionConnection {
       // it can resubscribe with fresh credentials or stop, rather than
       // reconnecting with the same stale token forever.
       if (err.statusCode === 401) {
-        await this.sendError({
-          code: 'AuthenticationFailed',
-          message: 'Authentication failed: credentials are invalid or expired',
-          details: {},
-        });
-        this.ws.close(CLOSE_CODES.AUTHENTICATION_FAILED, 'AuthenticationFailed');
+        await this.rejectAuthentication();
         return;
       }
 
@@ -230,6 +235,15 @@ export default class SubscriptionConnection {
       await this.sendError({ code: 'InternalError', message: 'Internal error during authentication', details: {} });
       this.ws.close(CLOSE_CODES.INTERNAL_ERROR, 'Internal error');
     }
+  }
+
+  async rejectAuthentication() {
+    await this.sendError({
+      code: 'AuthenticationFailed',
+      message: 'Authentication failed: credentials are invalid or expired',
+      details: {},
+    });
+    this.ws.close(CLOSE_CODES.AUTHENTICATION_FAILED, 'AuthenticationFailed');
   }
 
   handleSubscribe(frame) {

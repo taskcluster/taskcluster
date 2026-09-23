@@ -35,7 +35,7 @@ const makeMonitor = reportedErrors => ({
 
 // Builds a connection whose auth client throws `err`, and runs the
 // connection_init handshake, returning the fake ws for assertions.
-const handshakeWith = async err => {
+const handshakeWith = async (err, initFrame = { type: 'connection_init' }) => {
   const ws = makeWs();
   const reportedErrors = [];
   const connection = new SubscriptionConnection({
@@ -52,7 +52,7 @@ const handshakeWith = async err => {
     connectionInitTimeoutMilliSeconds: 10000,
   });
 
-  await connection.onMessage(JSON.stringify({ type: 'connection_init' }));
+  await connection.onMessage(JSON.stringify(initFrame));
   connection.teardown(1000);
 
   return { ws, reportedErrors };
@@ -73,6 +73,17 @@ suite(testing.suiteName(), () => {
         details: {},
       },
     ]);
+    assert.deepEqual(ws.closes, [{ code: 4401, reason: 'AuthenticationFailed' }]);
+    assert.deepEqual(reportedErrors, []);
+  });
+
+  test('malformed authorization token produces AuthenticationFailed and close 4401', async () => {
+    const { ws, reportedErrors } = await handshakeWith(new Error('unreachable'), {
+      type: 'connection_init',
+      authorization: 'Bearer Hello :)',
+    });
+
+    assert.equal(ws.frames[0].code, 'AuthenticationFailed');
     assert.deepEqual(ws.closes, [{ code: 4401, reason: 'AuthenticationFailed' }]);
     assert.deepEqual(reportedErrors, []);
   });
