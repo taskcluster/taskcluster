@@ -290,10 +290,11 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           preloadedDirectoryCaches          List of objects with cacheName and location. Each
-                                            location is an absolute path to an existing directory.
-                                            Register it in place as a writable cache at startup if
-                                            no cache exists for that name. Generic-worker does not
-                                            copy the directory contents. Missing paths are skipped.
+                                            location must be an absolute path. At startup,
+                                            generic-worker registers an existing directory as a
+                                            writable cache if no cache with that name is loaded.
+                                            It does not copy the directory during registration.
+                                            Missing or non-directory paths are skipped.
                                             On POSIX, use the same filesystem as tasksDir.
                                             [default: []]
           privateIP                         The private IP of the worker, used by chain of trust.
