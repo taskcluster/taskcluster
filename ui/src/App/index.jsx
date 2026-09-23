@@ -138,7 +138,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
-    this.authController = new AuthController(this.apolloClient);
+    this.authController = new AuthController();
     this.authController.on('user-changed', this.handleUserChanged);
 
     const state = {

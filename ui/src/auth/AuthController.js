@@ -1,7 +1,5 @@
 import mitt from 'mitt';
 import { AUTH_STORE } from '../utils/constants';
-import credentialsQuery from './credentials.graphql';
-import removeKeys from '../utils/removeKeys';
 import UserSession from './UserSession';
 
 /**
@@ -14,14 +12,13 @@ import UserSession from './UserSession';
  * changes (possibly if no user information actually changed).
  */
 export default class AuthController {
-  constructor(client) {
+  constructor() {
     const events = mitt();
 
     this.on = events.on;
     this.off = events.off;
     this.emit = events.emit;
 
-    this.client = client;
     this.user = null;
     this.initialized = false;
     this.renewalPromise = null;
@@ -144,16 +141,17 @@ export default class AuthController {
    * session cookie
    */
   fetchCredentials = async () => {
-    const { data } = await this.client.query({
-      query: credentialsQuery,
-      fetchPolicy: 'no-cache',
-      context: {
-        // signal that this request does not need an Authorization header,
-        // since it is required to generate such a header
-        noAuthorizationHeader: true,
-      },
+    // This request is authenticated by the session cookie, so it does not
+    // need an Authorization header (which is what it is used to generate).
+    const response = await fetch('/login/credentials', {
+      method: 'GET',
+      credentials: 'same-origin',
     });
 
-    return removeKeys(data.getCredentials, ['__typename']);
+    if (!response.ok) {
+      throw new Error(`Could not fetch credentials: ${response.status}`);
+    }
+
+    return response.json();
   };
 }

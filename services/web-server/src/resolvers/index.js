@@ -2,7 +2,6 @@ import deepmerge from 'deepmerge';
 
 import Root from './Root.js';
 import Artifacts from './Artifacts.js';
-import Auth from './Auth.js';
 import CachePurges from './CachePurges.js';
 import Clients from './Clients.js';
 import Hooks from './Hooks.js';
@@ -18,7 +17,6 @@ import WorkerManager from './WorkerManager.js';
 const resolvers = deepmerge.all([
   Root,
   Artifacts,
-  Auth,
   CachePurges,
   Clients,
   Hooks,

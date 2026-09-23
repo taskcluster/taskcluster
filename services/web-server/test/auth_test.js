@@ -9,9 +9,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.resetTables();
 
   test('Unauthorized', async () => {
-    const credentialsQuery = await helper.loadFixture('credentials.graphql');
-    const res = await request.post(`http://localhost:${helper.serverPort}/graphql`).send({ query: credentialsQuery });
-
-    assert.equal(res.body.errors[0].message, 'Authentication is required to generate credentials');
+    try {
+      await request.get(`http://localhost:${helper.serverPort}/login/credentials`);
+      assert.fail('Expected the request to fail');
+    } catch (err) {
+      assert.equal(err.status, 401);
+      assert.equal(err.response.body.message, 'Authentication is required to generate credentials');
+    }
   });
 });

@@ -12,6 +12,8 @@ import credentials from './credentials.js';
 import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
+import generateCredentials from '../utils/generateCredentials.js';
+import regenerateSession from '../utils/regenerateSession.js';
 import { traceMiddleware } from '@taskcluster/lib-app';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -125,6 +127,46 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
     });
 
     res.status(200).send();
+  });
+
+  // Return whether the current session is logged in.
+  app.get('/login/is-logged-in', cors(corsOptions), (req, res) => {
+    res.status(200).json({ isLoggedIn: Boolean(req.user) });
+  });
+
+  // Return a set of Taskcluster credentials for the logged-in user, based on
+  // the current session cookie. The resulting credentials expire in a
+  // relatively short time; callers should monitor their expiration and call
+  // this endpoint again to refresh them.
+  app.get('/login/credentials', cors(corsOptions), async (req, res) => {
+    if (!req.user) {
+      // Don't report much to the user, to avoid revealing sensitive information, although
+      // it is likely in the service logs.
+      return res.status(401).json({
+        code: 'Unauthorized',
+        message: 'Authentication is required to generate credentials',
+      });
+    }
+
+    try {
+      const credsResponse = await generateCredentials({
+        cfg,
+        strategy: strategies[req.user.identityProviderId],
+        identity: req.user.identity,
+        monitor,
+      });
+
+      await regenerateSession(req);
+
+      return res.status(200).json(credsResponse);
+    } catch (err) {
+      monitor.reportError(err);
+
+      return res.status(401).json({
+        code: 'Unauthorized',
+        message: 'Could not generate credentials for this user',
+      });
+    }
   });
 
   Object.values(strategies).forEach(strategy => {
