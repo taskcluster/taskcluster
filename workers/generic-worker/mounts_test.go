@@ -600,7 +600,6 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 func TestMounts(t *testing.T) {
 
 	setup(t)
-	absPathTestDir := worldWritableTempDir(t, t.Name())
 
 	taskID1 := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
 	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/build/mozharness.zip")
@@ -698,34 +697,6 @@ func TestMounts(t *testing.T) {
 			}`),
 			Format: "tar.gz",
 		},
-
-		// file mount using absolute path (issue #6689)
-		// Uses a temp dir rather than taskContext.TaskDir since
-		// TaskDir changes with each task run (CreateArtifactFromFile
-		// above runs 3 tasks). The absolute path is outside the task
-		// directory, which is the key scenario this tests: AbsFrom
-		// should not prepend TaskDir.
-		&FileMount{
-			File: filepath.Join(absPathTestDir, "abs-path-test.txt"),
-			Content: json.RawMessage(`{
-				"raw": "Hello Absolute Path!"
-			}`),
-		},
-
-		// read only directory using absolute path (issue #6689)
-		&ReadOnlyDirectory{
-			Directory: filepath.Join(absPathTestDir, "abs-path-dir"),
-			Content: json.RawMessage(`{
-				"url": "https://github.com/taskcluster/logserver/raw/53134a5b9cbece05752c0ecc1a6c6d7c2fbf6580/node_modules/express/node_modules/connect/node_modules/multiparty/test/fixture/file/binaryfile.tar.gz"
-			}`),
-			Format: "tar.gz",
-		},
-
-		// writable directory cache using absolute path (issue #6689)
-		&WritableDirectoryCache{
-			CacheName: "tc-test-cache-2",
-			Directory: filepath.Join(absPathTestDir, "tc-test-cache-2"),
-		},
 	}
 
 	payload := GenericWorkerPayload{
@@ -752,28 +723,10 @@ func TestMounts(t *testing.T) {
 		"generic-worker:cache:tc-test-cache-1",
 		"generic-worker:cache:tc-test-artifact-cache",
 		"generic-worker:cache:tc-test-url-cache",
-		"generic-worker:cache:tc-test-cache-2",
 	}
 
 	// check task succeeded
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
-
-	// Verify absolute path mounts (issue #6689)
-	checkSHA256(
-		t,
-		"72f67646b2476b2dfef67d0e2db47043fbabc8725a6476763fd53c9450074d8c",
-		filepath.Join(absPathTestDir, "abs-path-test.txt"),
-	)
-	checkSHA256(
-		t,
-		"19168d6dc3cc840bd02658e30d761cd555bb1f2bb42da18edf08917dcaa55cf5",
-		filepath.Join(absPathTestDir, "abs-path-dir", "package.json"),
-	)
-	if entries := directoryCaches["tc-test-cache-2"]; len(entries) == 0 {
-		t.Error("Expected tc-test-cache-2 to be persisted, but no pool entries found")
-	} else if _, err := os.Stat(entries[0].Location); err != nil {
-		t.Errorf("Expected tc-test-cache-2 to be persisted, but got: %v", err)
-	}
 
 	checkSHA256(
 		t,
@@ -816,80 +769,66 @@ func TestMounts(t *testing.T) {
 
 // TestCachesCanBeModified tests that writable directory caches persist data
 // across tasks. We run three consecutive tasks that increment a counter file
-// in the cache, then verify the counter has the expected value. This is
-// tested with both a relative path (inside the task directory) and an
-// absolute path (outside the task directory).
+// in the cache, then verify the counter has the expected value.
 func TestCachesCanBeModified(t *testing.T) {
 	setup(t)
 
-	testCacheModifications := func(t *testing.T, cacheDir string) {
-		t.Helper()
-
-		mounts := []MountEntry{
-			&WritableDirectoryCache{
-				CacheName: "tc-test-modifications-cache",
-				Directory: cacheDir,
-			},
-		}
-
-		payload := GenericWorkerPayload{
-			Mounts:     toMountArray(t, &mounts),
-			Command:    incrementCounterInCacheDir(cacheDir),
-			MaxRunTime: 180,
-		}
-		defaults.SetDefaults(&payload)
-
-		execute := func() {
-			td := testTask(t)
-			td.Scopes = []string{"generic-worker:cache:tc-test-modifications-cache"}
-			_ = submitAndAssert(t, td, payload, "completed", "completed")
-		}
-
-		getCounter := func() int {
-			counterFile := filepath.Join(directoryCaches["tc-test-modifications-cache"][0].Location, "counter")
-			bytes, err := os.ReadFile(counterFile)
-			if err != nil {
-				t.Fatalf("Error when trying to read cache file: %v", err)
-			}
-			val, err := strconv.Atoi(string(bytes))
-			if err != nil {
-				t.Fatalf("Error reading int value from counter file")
-			}
-			return val
-		}
-
-		execute()
-		startCounter := getCounter()
-
-		execute()
-		execute()
-		endCounter := getCounter()
-
-		if endCounter != startCounter+2 {
-			t.Fatalf("Was expecting counter to have value %v but had %v", startCounter+2, endCounter)
-		}
+	cacheDir := filepath.Join("my-task-caches", "tc-test-modifications-cache")
+	mounts := []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "tc-test-modifications-cache",
+			Directory: cacheDir,
+		},
 	}
 
-	t.Run("RelativePath", func(t *testing.T) {
-		testCacheModifications(t, filepath.Join("my-task-caches", "tc-test-modifications-cache"))
-	})
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    incrementCounterInCacheDir(cacheDir),
+		MaxRunTime: 180,
+	}
+	defaults.SetDefaults(&payload)
 
-	t.Run("AbsolutePath", func(t *testing.T) {
-		absPathTestDir := worldWritableTempDir(t, "abs-path-cache-test")
-		testCacheModifications(t, filepath.Join(absPathTestDir, "tc-test-modifications-cache"))
-	})
+	execute := func() {
+		td := testTask(t)
+		td.Scopes = []string{"generic-worker:cache:tc-test-modifications-cache"}
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	}
+
+	getCounter := func() int {
+		counterFile := filepath.Join(directoryCaches["tc-test-modifications-cache"][0].Location, "counter")
+		bytes, err := os.ReadFile(counterFile)
+		if err != nil {
+			t.Fatalf("Error when trying to read cache file: %v", err)
+		}
+		val, err := strconv.Atoi(string(bytes))
+		if err != nil {
+			t.Fatalf("Error reading int value from counter file")
+		}
+		return val
+	}
+
+	execute()
+	startCounter := getCounter()
+
+	execute()
+	execute()
+	endCounter := getCounter()
+
+	if endCounter != startCounter+2 {
+		t.Fatalf("Was expecting counter to have value %v but had %v", startCounter+2, endCounter)
+	}
 }
 
 func TestWritableDirectoryCacheOverExistingDirectory(t *testing.T) {
 	setup(t)
 
-	dir := worldWritableTempDir(t, "existing-cache-dir")
-	existingFile := filepath.Join(dir, "existing.txt")
-	if err := os.WriteFile(existingFile, []byte("data"), 0666); err != nil {
-		t.Fatalf("Could not create %v: %v", existingFile, err)
-	}
-
+	dir := "existing-cache-dir"
 	mounts := []MountEntry{
+		// creates dir before the cache is mounted
+		&FileMount{
+			File:    filepath.Join(dir, "existing.txt"),
+			Content: json.RawMessage(`{"raw": "data"}`),
+		},
 		&WritableDirectoryCache{
 			CacheName: "tc-test-banana-cache",
 			Directory: dir,
@@ -912,11 +851,101 @@ func TestWritableDirectoryCacheOverExistingDirectory(t *testing.T) {
 	if !strings.Contains(logtext, "since it already exists") {
 		t.Fatalf("Was expecting log to report that the cache directory already exists, but it contains:\n%v", logtext)
 	}
-	if _, err := os.Stat(existingFile); err != nil {
-		t.Fatalf("Was expecting %v to be left in place, but: %v", existingFile, err)
-	}
 	if entries := directoryCaches["tc-test-banana-cache"]; len(entries) != 0 {
 		t.Fatalf("Was expecting no cache entry to have been created, but found %v", entries)
+	}
+}
+
+func TestMountPathOutsideTaskDirectory(t *testing.T) {
+	setup(t)
+
+	paths := []struct {
+		name string
+		path string
+	}{
+		{"Absolute", filepath.Join(os.TempDir(), t.Name())},
+		{"Escaping", filepath.Join("..", t.Name())},
+	}
+	for _, p := range paths {
+		mounts := []struct {
+			name  string
+			mount MountEntry
+		}{
+			{"WritableDirectoryCache", &WritableDirectoryCache{
+				CacheName: "tc-test-cache-1",
+				Directory: p.path,
+			}},
+			{"ReadOnlyDirectory", &ReadOnlyDirectory{
+				Directory: p.path,
+				Content:   json.RawMessage(`{"raw": "data"}`),
+				Format:    "zip",
+			}},
+			{"FileMount", &FileMount{
+				File:    p.path,
+				Content: json.RawMessage(`{"raw": "data"}`),
+			}},
+		}
+		for _, m := range mounts {
+			t.Run(p.name+m.name, func(t *testing.T) {
+				mounts := []MountEntry{m.mount}
+				payload := GenericWorkerPayload{
+					Mounts:     toMountArray(t, &mounts),
+					Command:    helloGoodbye(),
+					MaxRunTime: 180,
+				}
+				defaults.SetDefaults(&payload)
+
+				td := testTask(t)
+				td.Scopes = []string{"generic-worker:cache:tc-test-cache-1"}
+
+				_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+				logtext := LogText(t)
+				if !strings.Contains(logtext, "must be a relative path inside the task directory") {
+					t.Fatalf("Was expecting log to reject mount path %q, but it contains:\n%v", p.path, logtext)
+				}
+			})
+		}
+	}
+}
+
+// TestReadOnlyDirectoryAtTaskDirectory checks that both "" and "." mount a
+// read-only directory at the root of the task directory.
+func TestReadOnlyDirectoryAtTaskDirectory(t *testing.T) {
+	setup(t)
+
+	taskID := CreateArtifactFromFile(t, "mozharness.zip", "public/build/mozharness.zip")
+
+	for _, dir := range []string{"", "."} {
+		t.Run(fmt.Sprintf("%q", dir), func(t *testing.T) {
+			mounts := []MountEntry{
+				&ReadOnlyDirectory{
+					Directory: dir,
+					Content: json.RawMessage(`{
+						"taskId":   "` + taskID + `",
+						"artifact": "public/build/mozharness.zip"
+					}`),
+					Format: "zip",
+				},
+			}
+
+			payload := GenericWorkerPayload{
+				Mounts:     toMountArray(t, &mounts),
+				Command:    helloGoodbye(),
+				MaxRunTime: 180,
+			}
+			defaults.SetDefaults(&payload)
+
+			td := testTask(t)
+			td.Dependencies = []string{taskID}
+
+			_ = submitAndAssert(t, td, payload, "completed", "completed")
+
+			extracted := regexp.MustCompile(`Extracting zip file .* to '` + regexp.QuoteMeta(taskContext.TaskDir) + `'`)
+			if logtext := LogText(t); !extracted.MatchString(logtext) {
+				t.Fatalf("Was expecting mozharness.zip to be extracted into the task directory %v, but log contains:\n%v", taskContext.TaskDir, logtext)
+			}
+		})
 	}
 }
 

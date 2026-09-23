@@ -35,14 +35,6 @@ func makeFileUnreachable(t *testing.T, path string) {
 	}
 }
 
-func makeDirTaskUserProof(t *testing.T, dir string) {
-	t.Helper()
-	err := host.Run("icacls", dir, "/grant:r", "Administrators:(GA)", "/inheritance:r")
-	if err != nil {
-		t.Fatalf("Failed to restrict %s to the Administrators group: %v", dir, err)
-	}
-}
-
 // makeDirWorldWritable makes a directory writable by any user, so that
 // the multiuser engine task user can write to it. On Windows this
 // grants full control to Everyone via icacls.
