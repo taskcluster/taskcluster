@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
-import { withApollo } from '@apollo/client/react/hoc';
 import { object, arrayOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import RouteWithProps from '../components/RouteWithProps';
@@ -10,10 +9,8 @@ import Snackbar from '../components/Snackbar';
 import { route } from '../utils/prop-types';
 import { withAuth } from '../utils/Auth';
 import isThirdPartyLogin from '../utils/isThirdPartyLogin';
-import isLoggedInQuery from './isLoggedIn.graphql';
 import { AUTH_STARTED } from '../utils/constants';
 
-@withApollo
 @withStyles(theme => ({
   '@global': {
     [[
@@ -75,10 +72,22 @@ export default class Main extends Component {
   // Called on user change because of <App key={auth.user} ... />
   async componentDidMount() {
     const { user, onUnauthorize } = this.props;
-    const { data } = await this.props.client.query({
-      query: isLoggedInQuery,
-      fetchPolicy: 'network-only',
-    });
+    let isLoggedIn = null;
+
+    try {
+      const response = await fetch('/login/is-logged-in', {
+        method: 'GET',
+        credentials: 'same-origin',
+      });
+
+      if (response.ok) {
+        ({ isLoggedIn } = await response.json());
+      }
+    } catch (_err) {
+      // If the check fails, leave isLoggedIn null so we don't unauthorize a
+      // user based on an inconclusive result.
+    }
+
     const thirdPartyLogin = isThirdPartyLogin();
     const isOneLoginStrategy =
       window.env.UI_LOGIN_STRATEGY_NAMES &&
@@ -98,12 +107,7 @@ export default class Main extends Component {
       return;
     }
 
-    if (
-      user &&
-      user.identityProviderId !== 'manual' &&
-      data &&
-      data.isLoggedIn === false
-    ) {
+    if (user && user.identityProviderId !== 'manual' && isLoggedIn === false) {
       onUnauthorize();
 
       return;

@@ -52,6 +52,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
       assert(logout.body);
     });
+
+    test('login/is-logged-in', async () => {
+      const res = await request.get(`http://localhost:${helper.serverPort}/login/is-logged-in`);
+      assert.equal(res.body.isLoggedIn, false);
+    });
   });
 
   suite('service endpoints', () => {
