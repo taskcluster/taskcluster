@@ -38,6 +38,10 @@ const useStyles = makeStyles(theme => ({
   tableWrapper: {
     overflowX: 'auto',
   },
+  tableWrapperWithMaxHeight: {
+    maxHeight: 400,
+    overflowY: 'auto',
+  },
   thWithTopPagination: {
     height: theme.spacing(4),
   },
@@ -83,6 +87,7 @@ export default function PaginatedDataTable({
   filterFunc = null,
   lazyRender = false,
   rowHeight = 48,
+  maxHeight = null,
 }) {
   const classes = useStyles();
   const [filterValue, setFilterValue] = useState('');
@@ -193,7 +198,10 @@ export default function PaginatedDataTable({
           }}
         />
       )}
-      <div className={classes.tableWrapper}>
+      <div
+        className={classNames(classes.tableWrapper, {
+          [classes.tableWrapperWithMaxHeight]: maxHeight,
+        })}>
         <Table size={size}>
           {headers && (
             <TableHead>
@@ -308,4 +316,6 @@ PaginatedDataTable.propTypes = {
   lazyRender: bool,
   /** Height in pixels of a single row. */
   rowHeight: number,
+  /** Cap the table's height and scroll its rows vertically past it. */
+  maxHeight: number,
 };

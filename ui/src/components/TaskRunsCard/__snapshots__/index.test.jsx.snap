@@ -190,7 +190,7 @@ exports[`should render TaskRunsCard 1`] = `
                     class="MuiListItem-root TaskRunsCard-artifactsListItemContainer-7"
                   >
                     <div
-                      class="ConnectionDataTable-tableWrapper-32"
+                      class="makeStyles-tableWrapper-31"
                     >
                       <table
                         class="MuiTable-root"
@@ -317,7 +317,9 @@ exports[`should render TaskRunsCard 1`] = `
                                 </div>
                                 <div
                                   class="TaskRunsCard-sizeCell-20"
-                                />
+                                >
+                                  2 KB
+                                </div>
                                 <div>
                                   <svg
                                     class="mdi-icon "
@@ -473,7 +475,7 @@ exports[`should render TaskRunsCard 1`] = `
           </li>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-37 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2022-02-03T14:41:19.706Z (Copy)"
@@ -509,7 +511,7 @@ exports[`should render TaskRunsCard 1`] = `
           </div>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-37 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2022-02-03T14:43:54.086Z (Copy)"
@@ -545,7 +547,7 @@ exports[`should render TaskRunsCard 1`] = `
           </div>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-37 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2022-02-03T14:45:28.396Z (Copy)"
@@ -672,7 +674,7 @@ exports[`should render TaskRunsCard 1`] = `
           </a>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-37 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2022-02-03T15:03:54.082Z (Copy)"

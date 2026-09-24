@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { func, number, string } from 'prop-types';
+import { arrayOf, bool, number, string } from 'prop-types';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
@@ -25,14 +25,14 @@ import CheckIcon from 'mdi-react/CheckIcon';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '../Label';
 import Button from '../Button';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import NoRunsIcon from './NoRunsIcon';
 import getIconFromMime from '../../utils/getIconFromMime';
 import { ARTIFACTS_PAGE_SIZE, ARTIFACTS_SHOW_MAX } from '../../utils/constants';
-import { runs } from '../../utils/prop-types';
+import { artifact, pagination, runs } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
 import { getArtifactUrl } from '../../utils/getArtifactUrl';
 import { buildLogViewerUrl } from '../../utils/artifactNames';
@@ -137,12 +137,13 @@ const DOTS_VARIANT_LIMIT = 5;
   { withTheme: true }
 )
 /**
- * Render a paginated card layout for the runs of a GraphQL task response.
+ * Render a paginated card layout for the runs of a task.
  */
 export default class TaskRunsCard extends Component {
   static propTypes = {
+    taskId: string.isRequired,
     /**
-     * A collection of runs for a GraphQL task.
+     * The runs of the task, as reported in its status by the queue.
      */
     runs: runs.isRequired,
     /**
@@ -155,10 +156,11 @@ export default class TaskRunsCard extends Component {
      * updated.
      */
     selectedRunId: number.isRequired,
-    /**
-     * Execute a function to load new artifacts when paging through them.
-     */
-    onArtifactsPageChange: func.isRequired,
+    /** A page of the selected run's artifacts, as listed by the queue. */
+    artifacts: arrayOf(artifact),
+    /** Whether the artifacts page is still being fetched. */
+    artifactsLoading: bool,
+    ...pagination,
     /**
      * A custom live log name given in the task.payload.logs.live field
      * in generic worker payloads and in the task.payload.log field
@@ -166,6 +168,13 @@ export default class TaskRunsCard extends Component {
      * Defaults to `public/logs/live.log`.
      */
     liveLogName: string,
+  };
+
+  static defaultProps = {
+    artifacts: [],
+    artifactsLoading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
   state = {
@@ -179,12 +188,12 @@ export default class TaskRunsCard extends Component {
   isLiveLog = () => {
     const { state } = this.getCurrentRun();
 
-    return state === 'PENDING' || state === 'RUNNING';
+    return state === 'pending' || state === 'running';
   };
 
   getArtifactInfo = ({ name, contentType }) => {
-    const { taskId, runId } = this.getCurrentRun();
-    const { user } = this.props;
+    const { runId } = this.getCurrentRun();
+    const { taskId, user } = this.props;
     const logViewerUrl =
       contentType.startsWith('text/plain') && name.endsWith('.log')
         ? buildLogViewerUrl({
@@ -229,15 +238,15 @@ export default class TaskRunsCard extends Component {
   };
 
   handleNext = () => {
-    const { location, history } = this.props;
-    const { taskId, runId } = this.getCurrentRun();
+    const { taskId, location, history } = this.props;
+    const { runId } = this.getCurrentRun();
 
     history.push(`/tasks/${taskId}/runs/${runId + 1}${location.hash}`);
   };
 
   handlePrevious = () => {
-    const { location, history } = this.props;
-    const { taskId, runId } = this.getCurrentRun();
+    const { taskId, location, history } = this.props;
+    const { runId } = this.getCurrentRun();
 
     history.push(`/tasks/${taskId}/runs/${runId - 1}${location.hash}`);
   };
@@ -251,33 +260,11 @@ export default class TaskRunsCard extends Component {
       : history.replace(`${location.pathname}#artifacts`);
   };
 
-  getLiveLogArtifactFromRun = run => {
-    const { liveLogName = 'public/logs/live.log' } = this.props;
-    const artifact = run?.artifacts?.edges?.find(
-      ({ node: { name } }) => name === liveLogName
-    );
+  getLiveLogArtifact = () => {
+    const { artifacts, liveLogName = 'public/logs/live.log' } = this.props;
 
-    if (!artifact) {
-      return;
-    }
-
-    return artifact.node;
+    return artifacts.find(({ name }) => name === liveLogName);
   };
-
-  createSortedArtifactsConnection(artifacts) {
-    // artifacts may be null if there was an error fetching them
-    if (!artifacts) {
-      return {
-        edges: [],
-        pageInfo: {},
-      };
-    }
-
-    return {
-      ...artifacts,
-      edges: sortArtifacts([...artifacts.edges]),
-    };
-  }
 
   onCopyClick(url) {
     this.setState({
@@ -355,31 +342,43 @@ export default class TaskRunsCard extends Component {
   }
 
   renderArtifactsTable() {
-    const { onArtifactsPageChange } = this.props;
-    const run = this.getCurrentRun();
-    const artifacts = this.createSortedArtifactsConnection(run?.artifacts);
+    const {
+      artifacts,
+      artifactsLoading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
 
     return (
-      <ConnectionDataTable
-        connection={artifacts}
+      <PaginatedDataTable
+        items={sortArtifacts(artifacts)}
         pageSize={ARTIFACTS_PAGE_SIZE}
         columnsSize={3}
-        onPageChange={onArtifactsPageChange}
+        page={page}
+        loading={artifactsLoading}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onNextPage={onNextPage}
+        onPreviousPage={onPreviousPage}
         withoutTopPagination
         allowFilter
-        filterFunc={({ node: { name } }, filterValue) =>
+        filterFunc={({ name }, filterValue) =>
           String(name).includes(filterValue)
         }
-        renderRow={({ node: artifact }) => this.renderArtifactRow({ artifact })}
+        renderRow={artifact => this.renderArtifactRow({ artifact })}
       />
     );
   }
 
   render() {
-    const { classes, runs, selectedRunId, taskQueueId, theme } = this.props;
+    const { classes, runs, selectedRunId, taskQueueId, theme, artifacts } =
+      this.props;
     const run = this.getCurrentRun();
-    const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
-    const artifactsCount = run?.artifacts?.edges?.length;
+    const liveLogArtifact = run && this.getLiveLogArtifact();
+    const artifactsCount = artifacts.length;
     const showArtifactsCollapse = artifactsCount > ARTIFACTS_SHOW_MAX;
     const showArtifacts =
       window.location.hash === '#artifacts' || !showArtifactsCollapse;

@@ -3,23 +3,14 @@ import { satisfiesExpression } from 'taskcluster-lib-scopes';
 import cloneDeep from 'lodash.clonedeep';
 import jsone from 'json-e';
 import { load } from 'js-yaml';
-import { Queue } from '@taskcluster/client-web';
+import { Auth, Hooks, Queue } from '@taskcluster/client-web';
 import removeKeys from '../../utils/removeKeys';
 import { nice } from '../../utils/slugid';
-import expandScopesQuery from './expandScopes.graphql';
-import triggerHookQuery from './triggerHook.graphql';
 import validateActionsJson from '../../utils/validateActionsJson';
 import ajv from '../../utils/ajv';
 import { getClient } from '../../utils/client';
 
-export default async ({
-  task,
-  form,
-  action,
-  apolloClient,
-  user,
-  taskActions,
-}) => {
+export default async ({ task, form, action, user, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
   // We need to source scopes from somewhere. Typically these come from the
   // task we're given, which is either a regular decision task or an action
@@ -82,30 +73,20 @@ export default async ({
   const { hookId, hookGroupId } = action;
   // verify that the decision task has
   // the appropriate in-tree:action-hook:.. scope
-  const {
-    data: { expandScopes },
-  } = await apolloClient.query({
-    query: expandScopesQuery,
-    variables: {
-      scopes: taskGroup.scopes || [],
-    },
+  const auth = getClient({ Class: Auth, user });
+  const { scopes: expandedScopes } = await auth.expandScopes({
+    scopes: taskGroup.scopes || [],
   });
   const expression = `in-tree:hook-action:${hookGroupId}/${hookId}`;
 
-  if (!satisfiesExpression(expandScopes, expression)) {
+  if (!satisfiesExpression(expandedScopes, expression)) {
     throw new Error(
       `Action is misconfigured: decision task's scopes do not satisfy ${expression}`
     );
   }
 
-  const result = await apolloClient.mutate({
-    mutation: triggerHookQuery,
-    variables: {
-      hookGroupId,
-      hookId,
-      payload: hookPayload,
-    },
-  });
+  const hooks = getClient({ Class: Hooks, user });
+  const { status } = await hooks.triggerHook(hookGroupId, hookId, hookPayload);
 
-  return result.data.triggerHook.taskId;
+  return status.taskId;
 };
