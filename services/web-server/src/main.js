@@ -2,14 +2,6 @@ import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
 import assert from 'node:assert';
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@as-integrations/express5';
-import compression from 'compression';
-import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import depthLimit from './validation/guardedDepthLimit.js';
-import { NoFragmentCyclesRule } from 'graphql/validation/rules/NoFragmentCyclesRule.js';
-import { createComplexityLimitRule } from 'graphql-validation-complexity';
-import queryLimit from 'graphql-query-count-limit';
 import loader from '@taskcluster/lib-loader';
 import config from '@taskcluster/lib-config';
 import libReferences from '@taskcluster/lib-references';
@@ -21,13 +13,8 @@ import taskcluster from '@taskcluster/client';
 import tcdb from '@taskcluster/db';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import createApp from './servers/createApp.js';
-import formatError from './servers/formatError.js';
 import clients from './clients.js';
-import createContext from './createContext.js';
-import createSchema from './createSchema.js';
 import createSubscriptionServer from './servers/createSubscriptionServer.js';
-import resolvers from './resolvers/index.js';
-import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
 import scanner from './login/scanner.js';
 import { validateRegisteredClients } from './validateConfig.js';
@@ -96,34 +83,9 @@ const load = loader(
         }),
     },
 
-    schema: {
-      requires: [],
-      setup: () =>
-        createSchema({
-          typeDefs,
-          resolvers,
-          resolverValidationOptions: {
-            requireResolversForResolveType: false,
-          },
-        }),
-    },
-
     clients: {
       requires: [],
       setup: () => clients,
-    },
-
-    context: {
-      requires: ['cfg', 'pulseEngine', 'strategies', 'clients', 'monitor'],
-      setup: ({ cfg, pulseEngine, strategies, clients, monitor }) =>
-        createContext({
-          clients,
-          pulseEngine,
-          rootUrl: cfg.taskcluster.rootUrl,
-          strategies,
-          cfg,
-          monitor: monitor.childMonitor('context'),
-        }),
     },
 
     schemaset: {
@@ -178,31 +140,10 @@ const load = loader(
     },
 
     httpServer: {
-      requires: ['cfg', 'app', 'schema', 'context', 'monitor', 'authFactory', 'pulseEngine', 'clients'],
-      setup: async ({ cfg, app, schema, context, monitor, authFactory, pulseEngine, clients }) => {
+      requires: ['cfg', 'app', 'monitor', 'authFactory', 'pulseEngine', 'clients'],
+      setup: async ({ cfg, app, monitor, authFactory, pulseEngine, clients }) => {
         const httpServer = createServer(app);
-        const server = new ApolloServer({
-          schema,
-          formatError,
-          plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-          csrfPrevention: true,
-          introspection: true,
-          parseOptions: {
-            maxTokens: 100000,
-          },
-          validationRules: [NoFragmentCyclesRule, queryLimit(1000), depthLimit(10), createComplexityLimitRule(4500)],
-        });
-        await server.start();
         monitor.exposeMetrics('default');
-
-        // https://www.apollographql.com/docs/apollo-server/migration
-        app.use(
-          '/graphql',
-          compression(),
-          expressMiddleware(server, {
-            context,
-          })
-        );
 
         createSubscriptionServer({
           cfg,
@@ -315,12 +256,6 @@ const load = loader(
         await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
 
         console.log(`\n\nWeb server running on port ${cfg.server.port}.`);
-        if (cfg.app.playground) {
-          console.log(
-            `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
-          http://localhost:${cfg.server.port}/playground\n`
-          );
-        }
         if (!cfg.pulse.namespace) {
           console.log(`\nNo Pulse namespace defined; no Pulse messages will be received.\n`);
         }
