@@ -11,8 +11,8 @@
 // where ${TASKCLUSTER_ROOT_URL} points to the root URL of
 // your taskcluster deployment.
 
-// The web-server service provides a GraphQL gateway to Taskcluster APIs,
-// as well as profiler endpoints that generate Firefox Profiler–compatible
+// The web-server service handles user login and Pulse message streaming
+// for the Taskcluster UI, as well as profiler endpoints that generate Firefox Profiler–compatible
 // profiles from task group metadata and task logs.
 //
 // See:

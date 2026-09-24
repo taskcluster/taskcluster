@@ -5,7 +5,6 @@ web:
   paths:
     - '/login/*'
     - '/subscription'
-    - '/graphql'
     - '/api/web-server/*'
 scanner:
   type: cron
