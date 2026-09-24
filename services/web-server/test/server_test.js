@@ -22,12 +22,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.withServer(skipping);
 
       test('request', async () => {
-        try {
-          await request.post(`http://localhost:${helper.serverPort}/graphql`).set('origin', requestOrigin);
-          assert.fail();
-        } catch (e) {
-          assert.equal(e.response.headers['access-control-allow-origin'], responseOrigin);
-        }
+        const res = await request
+          .post(`http://localhost:${helper.serverPort}/login/logout`)
+          .set('origin', requestOrigin);
+        assert.equal(res.headers['access-control-allow-origin'], responseOrigin);
       });
     });
   };
@@ -71,6 +69,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('lbheartbeat', async () => {
       const heartbeat = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__lbheartbeat__`);
       assert(heartbeat.body);
+    });
+    test('graphql is no longer served', async () => {
+      const res = await request.post(`http://localhost:${helper.serverPort}/graphql`).ok(() => true);
+      assert.equal(res.status, 404);
     });
   });
 });

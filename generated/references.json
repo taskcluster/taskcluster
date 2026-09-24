@@ -20558,7 +20558,7 @@
           "version": 1
         },
         {
-          "description": "The PulseEngine has created a queue and bound it to one or more exchanges in\nresponse to a GraphQL subsscription request.",
+          "description": "The PulseEngine has created a queue and bound it to one or more exchanges in\nresponse to a /subscription WebSocket subscribe request.",
           "fields": {
             "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
           },
@@ -20722,18 +20722,6 @@
           "version": 1
         },
         {
-          "description": "A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.",
-          "fields": {
-            "operationName": "The name of the graphql query performed. If the operation is anonymous\n(i.e., the operation is query { ... } instead of query NamedQuery { ... })\n, then operationName is null.",
-            "query": "The graphQL query string"
-          },
-          "level": "notice",
-          "name": "requestReceived",
-          "title": "Request Received",
-          "type": "request-received",
-          "version": 1
-        },
-        {
           "description": "Metrics of a node process.",
           "fields": {
             "lastCpuUsage": "The output of node's process.cpuUsage",
@@ -20758,7 +20746,7 @@
           "version": 1
         },
         {
-          "description": "The PulseEngine has deleted a queue bound to one or more exchanges in\nresponse to termination of a GraphQL subsscription request.",
+          "description": "The PulseEngine has deleted a queue bound to one or more exchanges in\nresponse to termination of a /subscription WebSocket subscription.",
           "fields": {
             "subscriptionId": "The subscriptionId, which will also appear in the AMQP queue name"
           },
@@ -20810,7 +20798,7 @@
     "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The web-server service provides a GraphQL gateway to Taskcluster APIs,\nas well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
+      "description": "The web-server service handles user login and Pulse message streaming\nfor the Taskcluster UI, as well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
       "entries": [
         {
           "args": [

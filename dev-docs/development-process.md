@@ -97,7 +97,7 @@ These checks will help keep the code clean and will potentially save CI resource
 To be able to run the UI locally, you will need to set up a Taskcluster deployment to point to.
 This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [firefox-ci](https://firefox-ci-tc.services.mozilla.com/).
 
-If you just want to change the UI without changing the backend or graphql API, then you will only need the [latest node](#node) version and `yarn` installed:
+If you just want to change the UI without changing the backend, then you will only need the [latest node](#node) version and `yarn` installed:
 
 ```sh
 cd ui
@@ -112,7 +112,7 @@ yarn start
 You will can now open the UI at <http://localhost:5080>. It will automatically reload when you make changes to the code.
 All API calls would be proxied to the Taskcluster deployment you specified in `TASKCLUSTER_ROOT_URL`.
 
-If your changes require updating API or graphQL resolvers, you can start the services locally using `docker`:
+If your changes require updating backend APIs, you can start the services locally using `docker`:
 
 ```sh
 # from the root project directory

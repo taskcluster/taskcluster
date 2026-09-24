@@ -3,12 +3,9 @@ import path from 'node:path';
 import session from 'express-session';
 import cors from 'cors';
 import express from 'express';
-import graphqlPlayground from 'graphql-playground-middleware-express';
-const playground = graphqlPlayground.default;
 import passport from 'passport';
 import MemoryStoreFactory from 'memorystore';
 const MemoryStore = MemoryStoreFactory(session);
-import credentials from './credentials.js';
 import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
@@ -89,18 +86,6 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
   app.use(passport.session());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
-  app.options('/graphql', cors(corsOptions));
-  app.post('/graphql', cors(corsOptions), credentials());
-
-  if (cfg.app.playground) {
-    app.get(
-      '/playground',
-      cors(corsOptions),
-      playground({
-        endpoint: '/graphql',
-      })
-    );
-  }
 
   passport.serializeUser((user, done) => {
     const { identityProviderId, identity } = user;

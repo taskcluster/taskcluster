@@ -654,11 +654,6 @@ http {
       proxy_pass $pass;
       ${extraDirectives}
     }
-    location /graphql {
-      set $pass http://web-server-web:${serviceHostPort('web-server')};
-      proxy_pass $pass;
-      ${extraDirectives}
-    }
     location /subscription {
       set $pass http://web-server-web:${serviceHostPort('web-server')};
       proxy_pass $pass;

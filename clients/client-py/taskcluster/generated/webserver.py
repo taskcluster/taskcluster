@@ -15,8 +15,8 @@ _defaultConfig = config
 
 class WebServer(BaseClient):
     """
-    The web-server service provides a GraphQL gateway to Taskcluster APIs,
-    as well as profiler endpoints that generate Firefox Profiler–compatible
+    The web-server service handles user login and Pulse message streaming
+    for the Taskcluster UI, as well as profiler endpoints that generate Firefox Profiler–compatible
     profiles from task group metadata and task logs.
     """
 

@@ -116,15 +116,15 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /graphql
+            value: /api/web-server
       backendRefs:
         - name: taskcluster-web-server
           port: 80
     - matches:
         - path:
             type: PathPrefix
-            value: /api/web-server
+            value: /api/worker-manager
       backendRefs:
-        - name: taskcluster-web-server
+        - name: taskcluster-worker-manager
           port: 80
 {{- end }}
