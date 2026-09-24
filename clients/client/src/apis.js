@@ -4050,7 +4050,7 @@ export default {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The web-server service provides a GraphQL gateway to Taskcluster APIs,\nas well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
+      "description": "The web-server service handles user login and Pulse message streaming\nfor the Taskcluster UI, as well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
       "entries": [
         {
           "args": [

@@ -1,3 +1,0 @@
-extend type Query {
-  expandScopes(scopes: [String]!): [String]!
-}

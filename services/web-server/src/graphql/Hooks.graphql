@@ -1,3 +1,0 @@
-extend type Mutation {
-  triggerHook(hookGroupId: ID!, hookId: ID!, payload: JSON!): TaskStatus
-}

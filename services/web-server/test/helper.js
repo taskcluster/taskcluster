@@ -14,11 +14,6 @@ import sinon from 'sinon';
 import GithubClient from '../src/login/clients/GithubClient.js';
 import libUrls from 'taskcluster-lib-urls';
 import request from 'superagent';
-import merge from 'deepmerge';
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
-import got from 'got';
-import path from 'node:path';
-import fs from 'node:fs/promises';
 
 const helper = {};
 export default helper;
@@ -81,23 +76,6 @@ helper.withFakeAuthFactory = skipping => {
 
   suiteTeardown(() => {
     helper.load.remove('authFactory');
-  });
-};
-
-helper.withClients = skipping => {
-  suiteSetup('withClients', async () => {
-    if (skipping()) {
-      return;
-    }
-
-    const clients = stubbedClients();
-
-    helper.load.inject('clients', clients);
-    helper.clients = clients;
-  });
-
-  suiteTeardown(() => {
-    helper.load.remove('clients');
   });
 };
 
@@ -180,37 +158,6 @@ helper.githubFixtures = {
   },
 };
 
-helper.makeTaskDefinition = (options = {}) =>
-  merge(
-    {
-      provisionerId: 'no-provisioner-extended-extended',
-      workerType: 'test-worker-extended-extended',
-      schedulerId: 'my-scheduler-extended-extended',
-      taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
-      dependencies: [],
-      requires: 'ALL_COMPLETED',
-      routes: [],
-      priority: 'LOWEST',
-      retries: 5,
-      created: taskcluster.fromNowJSON(),
-      deadline: taskcluster.fromNowJSON('3 days'),
-      expires: taskcluster.fromNowJSON('3 days'),
-      scopes: [],
-      payload: {},
-      metadata: {
-        name: 'Testing task',
-        description: 'Task created during tests',
-        owner: 'haali@mozilla.com',
-        source: 'https://github.com/taskcluster/taskcluster',
-      },
-      tags: {
-        purpose: 'taskcluster-testing',
-      },
-      extra: {},
-    },
-    options
-  );
-
 helper.withGithubClient = () => {
   function githubClient() {
     let currentUsername = null;
@@ -267,53 +214,6 @@ helper.withGithubClient = () => {
   });
 };
 
-helper.getHttpClient = (clientOptions = {}) => {
-  const gotFetch = async (url, options) => {
-    // Map Fetch API options to Got options
-    const gotOptions = {
-      method: options.method || 'GET',
-      headers: options.headers,
-      body: options.body,
-      responseType: 'json',
-      throwHttpErrors: false,
-    };
-
-    // Got uses json option for sending JSON, while Fetch API uses body
-    if (options.headers && options.headers['Content-Type'] === 'application/json' && options.body) {
-      gotOptions.json = JSON.parse(options.body);
-      delete gotOptions.body;
-    }
-
-    // Make the request
-    const response = await got(url, gotOptions);
-
-    // Mimic the Fetch API response
-    const fetchResponse = {
-      ok: response.statusCode >= 200 && response.statusCode < 300,
-      status: response.statusCode,
-      statusText: response.statusMessage,
-      json: async () => response.body,
-      text: async () => JSON.stringify(response.body, null, 2),
-      headers: new Headers(response.headers),
-    };
-
-    // useful to debug real errors before HttpLink throws obfuscated errors
-    if (!clientOptions.suppressErrors && (!fetchResponse.ok || response.body?.errors)) {
-      console.error(`Error from ${url}: \n${await fetchResponse.text()}`);
-    }
-
-    return fetchResponse;
-  };
-
-  const cache = new InMemoryCache();
-  const httpLink = new HttpLink({
-    uri: `http://localhost:${helper.serverPort}/graphql`,
-    fetch: gotFetch,
-  });
-
-  return new ApolloClient({ cache, link: httpLink });
-};
-
 const stubbedAuth = () => {
   const auth = new taskcluster.Auth({
     rootUrl: helper.rootUrl,
@@ -347,228 +247,8 @@ const stubbedAuthFactory = () => {
     });
 };
 
-const stubbedClients = () => {
-  const tasks = new Map();
-  const roles = new Map();
-  const workerPools = new Map();
-  const options = {
-    rootUrl: helper.rootUrl,
-    // credentials are required to generate signed URLs
-    credentials: {
-      clientId: 'testing',
-      accessToken: 'testing',
-    },
-  };
-
-  teardown(() => {
-    tasks.clear();
-    roles.clear();
-    workerPools.clear();
-  });
-
-  helper.fakes = {
-    makeWorkerPool: (workerPoolId, workerPool) => {
-      workerPools.set(workerPoolId, {
-        ...workerPool,
-        workerPoolId,
-      });
-    },
-    hasWorkerPool: workerPoolId => {
-      return workerPools.has(workerPoolId);
-    },
-  };
-
-  return () => ({
-    github: new taskcluster.Github(options),
-    hooks: new taskcluster.Hooks({
-      ...options,
-      fake: {
-        createHook: async (hookGroupId, hookId, payload) => {
-          return Promise.resolve({
-            hookGroupId,
-            hookId,
-            payload,
-          });
-        },
-        hook: async (hookGroupId, hookId) => {
-          return Promise.resolve({
-            hookGroupId,
-            hookId,
-          });
-        },
-        listLastFires: async (hookGroupId, hookId, _filter) => {
-          const taskStates = ['unscheduled', 'pending', 'running', 'completed', 'failed', 'exception', 'unknown'];
-          const fireResults = ['success', 'error', 'no-fire'];
-          const lastFires = taskStates.map((taskState, i) => ({
-            hookGroupId,
-            hookId,
-            taskId: taskcluster.slugid(),
-            taskState,
-            result: fireResults[i % fireResults.length],
-            error: '',
-          }));
-          return Promise.resolve({ lastFires });
-        },
-      },
-    }),
-    index: new taskcluster.Index(options),
-    purgeCache: new taskcluster.PurgeCache(options),
-    secrets: new taskcluster.Secrets(options),
-    queueEvents: new taskcluster.QueueEvents(options),
-    notify: new taskcluster.Notify(options),
-    workerManager: new taskcluster.WorkerManager({
-      ...options,
-      fake: {
-        workerPool: async workerPoolId => workerPools.get(workerPoolId),
-        listWorkerPools: async ({ limit = 1000 }) => ({ workerPools: [...workerPools.values()].slice(0, limit) }),
-        listWorkerPoolsStats: async ({ limit = 1000 }) => ({
-          workerPoolsStats: [...workerPools.values()].slice(0, limit),
-        }),
-        deleteWorkerPool: async workerPoolId => {
-          if (!workerPools.has(workerPoolId)) {
-            throw new Error(`No such worker pool ${workerPoolId}`);
-          }
-          workerPools.delete(workerPoolId);
-        },
-      },
-    }),
-    auth: new taskcluster.Auth({
-      ...options,
-      fake: {
-        listRoles: async () => {
-          const allRoles = [];
-          for (const roleId of roles.keys()) {
-            allRoles.push(roles.get(roleId));
-          }
-          return Promise.resolve(allRoles);
-        },
-        listRoleIds: async () => {
-          const roleIds = Array.from(roles.keys());
-          return Promise.resolve({ roleIds });
-        },
-        role: async roleId => {
-          const role = roles.get(roleId);
-
-          return role ? Promise.resolve(role) : Promise.reject(new Error('role not found'));
-        },
-        createRole: async (roleId, role) => {
-          const newRole = {
-            roleId: roleId,
-            scopes: role.scopes,
-            description: role.description,
-            created: taskcluster.fromNowJSON(),
-            lastModified: taskcluster.fromNowJSON(),
-            expandedScopes: [],
-          };
-          roles.set(roleId, newRole);
-          return Promise.resolve(newRole);
-        },
-        updateRole: async (roleId, role) => {
-          if (!roles.has(roleId)) {
-            return Promise.reject('role not found');
-          }
-          const updatedRole = {
-            roleId: roleId,
-            scopes: role.scopes,
-            description: role.description,
-            created: taskcluster.fromNowJSON(),
-            lastModified: taskcluster.fromNowJSON(),
-            expandedScopes: [],
-            ...role,
-          };
-          roles.set(roleId, updatedRole);
-          return Promise.resolve(updatedRole);
-        },
-        deleteRole: async roleId => {
-          if (!roles.has(roleId)) {
-            return Promise.reject('role not found');
-          }
-          roles.delete(roleId);
-          return Promise.resolve(roleId);
-        },
-      },
-    }),
-    queue: new taskcluster.Queue({
-      ...options,
-      fake: {
-        task: async taskId => {
-          const taskDef = tasks.get(taskId);
-
-          return taskDef
-            ? Promise.resolve({
-                taskId,
-                ...taskDef,
-              })
-            : Promise.reject(new Error('task not found'));
-        },
-        createTask: async (taskId, taskDef) => {
-          tasks.set(taskId, taskDef);
-          const taskRun = {
-            taskId,
-            runId: 0,
-            state: 'running',
-            reasonCreated: 'scheduled',
-            scheduled: taskcluster.fromNowJSON(),
-          };
-          const taskStatus = {
-            taskId,
-            provisionerId: taskDef.provisionerId,
-            workerType: taskDef.workerType,
-            schedulerId: taskDef.schedulerId,
-            taskGroupId: taskDef.taskGroupId,
-            deadline: taskDef.deadline,
-            expires: taskDef.expires,
-            retriesLeft: 1,
-            state: 'running',
-            runs: taskRun,
-          };
-
-          return Promise.resolve(taskStatus);
-        },
-        getArtifact: async (taskId, runId, name) => {
-          const artifact = {
-            taskId: taskId,
-            runId: runId,
-            name: name,
-          };
-          return Promise.resolve(artifact);
-        },
-        listArtifacts: async (taskId, runId, _options) => {
-          const artifacts = ['1', '2', '3'].map(artifactSuffix => {
-            return {
-              taskId,
-              runId,
-              name: `artifact-${artifactSuffix}`,
-            };
-          });
-          return Promise.resolve({ artifacts });
-        },
-        listLatestArtifacts: async (taskId, _options) => {
-          const artifacts = ['1', '2', '3'].map(artifactSuffix => {
-            return {
-              taskId,
-              name: `artifact-${artifactSuffix}`,
-            };
-          });
-          return Promise.resolve({ artifacts });
-        },
-        pendingTasks: async _taskQueueId => 0,
-      },
-    }),
-  });
-};
-
 helper.resetTables = () => {
   setup('reset tables', async () => {
     await resetTables({ tableNames: ['authorization_codes', 'access_tokens', 'sessions', 'github_access_tokens'] });
   });
-};
-
-const __dirname = new URL('.', import.meta.url).pathname;
-const fixturesCache = new Map();
-helper.loadFixture = async name => {
-  if (!fixturesCache.has(name)) {
-    fixturesCache.set(name, await fs.readFile(path.resolve(__dirname, 'fixtures', name), 'utf8'));
-  }
-  return fixturesCache.get(name);
 };

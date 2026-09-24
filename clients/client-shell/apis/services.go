@@ -2117,7 +2117,7 @@ var services = map[string]definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "web-server",
 		Title:       "Web Server Service",
-		Description: "The web-server service provides a GraphQL gateway to Taskcluster APIs,\nas well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
+		Description: "The web-server service handles user login and Pulse message streaming\nfor the Taskcluster UI, as well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Name:        "ping",

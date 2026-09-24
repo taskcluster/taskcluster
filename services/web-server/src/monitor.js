@@ -22,7 +22,7 @@ MonitorManager.register({
   level: 'debug',
   description: `
     The PulseEngine has created a queue and bound it to one or more exchanges in
-    response to a GraphQL subsscription request.`,
+    response to a /subscription WebSocket subscribe request.`,
   fields: {
     subscriptionId: 'The subscriptionId, which will also appear in the AMQP queue name',
   },
@@ -36,7 +36,7 @@ MonitorManager.register({
   level: 'debug',
   description: `
     The PulseEngine has deleted a queue bound to one or more exchanges in
-    response to termination of a GraphQL subsscription request.`,
+    response to termination of a /subscription WebSocket subscription.`,
   fields: {
     subscriptionId: 'The subscriptionId, which will also appear in the AMQP queue name',
   },
@@ -81,22 +81,5 @@ MonitorManager.register({
     is not in the configured allowedCORSOrigins.`,
   fields: {
     origin: 'The rejected Origin header value',
-  },
-});
-
-MonitorManager.register({
-  name: 'requestReceived',
-  title: 'Request Received',
-  type: 'request-received',
-  version: 1,
-  level: 'notice',
-  description:
-    'A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.',
-  fields: {
-    query: 'The graphQL query string',
-    operationName: `
-      The name of the graphql query performed. If the operation is anonymous
-      (i.e., the operation is query { ... } instead of query NamedQuery { ... })
-      , then operationName is null.`,
   },
 });
