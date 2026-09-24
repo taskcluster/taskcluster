@@ -14,6 +14,7 @@ import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
 import generateCredentials from '../utils/generateCredentials.js';
 import regenerateSession from '../utils/regenerateSession.js';
+import WebServerError from '../utils/WebServerError.js';
 import { traceMiddleware } from '@taskcluster/lib-app';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -138,7 +139,7 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
   // the current session cookie. The resulting credentials expire in a
   // relatively short time; callers should monitor their expiration and call
   // this endpoint again to refresh them.
-  app.get('/login/credentials', cors(corsOptions), async (req, res) => {
+  app.post('/login/credentials', cors(corsOptions), async (req, res) => {
     if (!req.user) {
       // Don't report much to the user, to avoid revealing sensitive information, although
       // it is likely in the service logs.
@@ -160,11 +161,20 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
 
       return res.status(200).json(credsResponse);
     } catch (err) {
+      // generateCredentials throws a WebServerError when the user cannot be
+      // authenticated; anything else is an unexpected failure.
+      if (err instanceof WebServerError) {
+        return res.status(401).json({
+          code: 'Unauthorized',
+          message: err.message,
+        });
+      }
+
       monitor.reportError(err);
 
-      return res.status(401).json({
-        code: 'Unauthorized',
-        message: 'Could not generate credentials for this user',
+      return res.status(500).json({
+        code: 'InternalServerError',
+        message: 'Internal error generating credentials',
       });
     }
   });

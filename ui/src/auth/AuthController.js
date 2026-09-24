@@ -144,7 +144,7 @@ export default class AuthController {
     // This request is authenticated by the session cookie, so it does not
     // need an Authorization header (which is what it is used to generate).
     const response = await fetch('/login/credentials', {
-      method: 'GET',
+      method: 'POST',
       credentials: 'same-origin',
     });
 

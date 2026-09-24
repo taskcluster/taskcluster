@@ -81,11 +81,16 @@ window.addEventListener(‘message', function handler(e) {
 
 ## 2. Taskcluster Credentials
 
-Authenticating with a login strategy returns back an access token to the caller.
-To get Taskcluster credentials, the caller must make a request to
-the graphQL `getCredentials` endpoint, including the `accessToken` and `provider`.
-The `accessToken` will be verified against the `provider`.
-The response will contain Taskcluster credentials corresponding to a temporary client.
+Authenticating with a login strategy establishes a session, identified by a
+session cookie. To get Taskcluster credentials, the caller must make a
+`POST /login/credentials` request to the web-server, including the session cookie.
+The session's user will be verified against its identity provider, and the
+response will contain Taskcluster credentials corresponding to a temporary client,
+in the form `{credentials: {clientId, accessToken, certificate}, expires}`.
+If there is no logged-in session, or the user cannot be found, the response is a 401.
+
+Callers can check whether the current session is logged in with
+`GET /login/is-logged-in`, which responds with `{isLoggedIn: true|false}`.
 
 ## 3. Calling Taskcluster APIs
 
