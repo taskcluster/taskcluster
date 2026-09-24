@@ -17,12 +17,12 @@ import { requestArtifact } from './requestArtifact.js';
 import {
   taskUI,
   makeDebug,
-  taskLogUI,
+  taskLiveLogUI,
   GithubCheck,
   getTimeDifference,
   taskGroupUI,
-  buildUrl,
-  buildLogUrl,
+  taskArtifactUI,
+  taskLogUI,
   formatBytes,
 } from './utils.js';
 
@@ -196,10 +196,10 @@ export async function statusHandler(message) {
     );
     const CHECK_LOGS_TEXT_OUTPUT = markdownAnchor(
       CHECKLOGS_TEXT,
-      taskLogUI(
+      taskLiveLogUI(
         this.context.cfg.taskcluster.rootUrl,
-        runId,
         taskId,
+        runId,
         // docker worker uses `task.payload.log` while
         // generic worker uses `task.payload.logs.live`
         taskDefinition.payload?.logs?.live || taskDefinition.payload?.log
@@ -234,9 +234,9 @@ export async function statusHandler(message) {
       artifactList.artifacts.forEach(element => {
         let artifactUrl;
         if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
-          artifactUrl = buildLogUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+          artifactUrl = taskLogUI(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         } else {
-          artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+          artifactUrl = taskArtifactUI(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         }
         // Add the formatted size to the name if the size exists
         let displayName = element.name;

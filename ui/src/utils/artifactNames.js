@@ -9,6 +9,20 @@ const isSafeLogViewerArtifactName = name =>
       segment !== '..'
   );
 
+// react-router's history decodes the pathname before populating route params
+// which turns '%2526' into '%26' and loses information
+// Reading the browser pathname only preserves it for URLs loaded directly
+// internal links must use buildLogViewerUrl to avoid unsafe names that history cannot preserve
+export const getRawArtifactName = (artifactPath, artifactName) => {
+  const artifactPathIndex = window.location.pathname.indexOf(artifactPath);
+  const rawArtifactName =
+    artifactPathIndex === -1
+      ? artifactName
+      : window.location.pathname.slice(artifactPathIndex + artifactPath.length);
+
+  return rawArtifactName;
+};
+
 export const decodeArtifactName = name => {
   try {
     return decodeURIComponent(name);
