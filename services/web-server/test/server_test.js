@@ -48,6 +48,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   suite('auth endpoints', () => {
     helper.withServer(skipping);
 
+    test('login sets a Lax SameSite session cookie', async () => {
+      const login = await request.get(`http://localhost:${helper.serverPort}/login/test`);
+      const sessionCookie = login.headers['set-cookie']?.find(cookie => cookie.startsWith('connect.sid='));
+
+      assert.match(sessionCookie, /(?:^|;)\s*SameSite=Lax(?:;|$)/);
+    });
+
     test('login/logout', async () => {
       const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
       assert(logout.body);

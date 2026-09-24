@@ -22,7 +22,7 @@ This service provides the backend for secure user authentication using pluggable
 Each relies on a different upstream identity provider to identify users.
 
 These strategies are used to generate user sessions that are tracked with session cookies.
-The Taskcluster UI then uses the `getCredentials` query periodically to fetch fresh Taskcluster credentials corresponding to the signed-in user.
+The Taskcluster UI then uses `POST /login/credentials` periodically to fetch fresh Taskcluster credentials corresponding to the signed-in user.
 Again, this approach is intended only for use by the Taskcluster UI.
 
 The following login strategies are supported:
