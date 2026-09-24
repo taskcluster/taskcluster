@@ -44,6 +44,7 @@ export default class UserMenuButton extends Component {
       onMenuClick,
       onAuthorize,
       onUnauthorize,
+      getCredentials,
       ...props
     } = this.props;
     const avatarSrc = getPictureFromUser(user);

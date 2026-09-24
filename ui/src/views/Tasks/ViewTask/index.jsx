@@ -337,15 +337,15 @@ export default class ViewTask extends Component {
   };
 
   subscribe(taskId, refetch) {
-    const { user } = this.context;
+    const { user, getCredentials } = this.context;
 
     if (this.listener) {
       if (this.listener.taskId === taskId && this.listener.user === user) {
         return this.listener;
       }
 
-      // a user change needs a fresh socket so that connection_init carries
-      // the current credentials
+      // Replace the subscription on session changes so refreshed credentials
+      // also recover a listener that stopped after authentication rejection.
       this.unsubscribe();
     }
 
@@ -370,15 +370,11 @@ export default class ViewTask extends Component {
         // the task query polls on TASK_POLL_INTERVAL, so a dropped socket
         // degrades to polling rather than losing updates
         onError: () => {},
-        user,
+        getCredentials,
       }
     );
 
-    this.listener = {
-      taskId,
-      user,
-      unsubscribe,
-    };
+    this.listener = { taskId, user, unsubscribe };
   }
 
   unsubscribe() {

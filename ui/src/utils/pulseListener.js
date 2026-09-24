@@ -40,18 +40,29 @@ const RECONNECT_MAX_MS = 30000;
 
 // The server closes with this code after rejecting connection_init for missing
 // the `web:read-pulse` scope. Retrying with the same credentials cannot
-// succeed, so it is the one close that does not schedule a reconnect.
+// succeed, so it does not schedule a reconnect.
 const CLOSE_INSUFFICIENT_SCOPES = 4403;
+
+// The server closes with this code after rejecting connection_init because the
+// latest available credentials were still invalid or expired. Repeating that
+// attempt cannot succeed, so stop rather than spamming the server. The error
+// frame that precedes this close has already reached onError.
+const CLOSE_AUTHENTICATION_FAILED = 4401;
+
+const NO_RECONNECT_CLOSE_CODES = new Set([
+  CLOSE_INSUFFICIENT_SCOPES,
+  CLOSE_AUTHENTICATION_FAILED,
+]);
 
 // The server authenticates on the connection_init frame rather than the HTTP
 // upgrade. The token is the same shape the HTTP GraphQL link sends in its
 // Authorization header; an anonymous user sends a bare connection_init and is
 // checked against the anonymous role's scopes.
-const connectionInitFrame = user =>
-  user?.credentials
+const connectionInitFrame = credentials =>
+  credentials
     ? {
         type: 'connection_init',
-        authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+        authorization: `Bearer ${btoa(JSON.stringify(credentials))}`,
       }
     : { type: 'connection_init' };
 
@@ -63,14 +74,17 @@ const connectionInitFrame = user =>
  * reconnects with backoff and re-sends the subscribe frame. Returns a teardown
  * function that unsubscribes and stops reconnecting.
  *
- * `user` is the signed-in user from AuthContext (or null); its credentials are
- * sent on connection_init. The user is captured for the life of the
- * subscription, so callers must tear down and resubscribe when it changes.
+ * `getCredentials` obtains current credentials before every connection_init,
+ * allowing a reconnect to renew short-lived credentials. Without it the
+ * connection is anonymous.
+ *
+ * Authentication rejection stops reconnecting. A caller that later obtains
+ * different credentials must subscribe again.
  */
 const openEventsSubscription = (
   endpointPath,
   subscribeFrame,
-  { onMessage, onError, user }
+  { onMessage, onError, getCredentials }
 ) => {
   // The events server mints the subscriptionId and returns it in subscribe_ack;
   // it stays null until then. This listener uses a single subscription per
@@ -100,13 +114,33 @@ const openEventsSubscription = (
     // A failed connect fires `onerror` *and* `onclose(1006)`; guard so a single
     // failure reports through onError only once.
     let failureReported = false;
-    ws = new WebSocket(getEventsWsUrl(endpointPath));
+    const socket = new WebSocket(getEventsWsUrl(endpointPath));
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify(connectionInitFrame(user)));
+    ws = socket;
+
+    const sendConnectionInit = credentials => {
+      // Credential renewal can finish after this connection was replaced or
+      // the subscription was torn down. Never send on that stale socket.
+      if (torn || ws !== socket || socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      socket.send(JSON.stringify(connectionInitFrame(credentials)));
     };
 
-    ws.onmessage = ({ data }) => {
+    socket.onopen = async () => {
+      try {
+        sendConnectionInit(await getCredentials?.());
+      } catch (error) {
+        if (!torn && ws === socket) {
+          failureReported = true;
+          onError(error);
+          socket.close();
+        }
+      }
+    };
+
+    socket.onmessage = ({ data }) => {
       let frame;
 
       try {
@@ -120,7 +154,7 @@ const openEventsSubscription = (
           // A live connection resets the backoff, so a later drop retries
           // promptly rather than at the accumulated delay.
           reconnectAttempts = 0;
-          ws.send(JSON.stringify(subscribeFrame));
+          socket.send(JSON.stringify(subscribeFrame));
           break;
         case 'subscribe_ack':
           subscriptionId = frame.subscriptionId;
@@ -136,14 +170,14 @@ const openEventsSubscription = (
       }
     };
 
-    ws.onerror = () => {
+    socket.onerror = () => {
       if (!torn && !failureReported) {
         failureReported = true;
         onError(new Error('WebSocket connection error'));
       }
     };
 
-    ws.onclose = event => {
+    socket.onclose = event => {
       if (!torn && !event.wasClean && !failureReported) {
         failureReported = true;
         onError(
@@ -152,9 +186,9 @@ const openEventsSubscription = (
       }
 
       // Reconnect after any close we didn't initiate, clean or not, unless the
-      // server rejected our credentials outright; the error frame that
-      // precedes that close has already reached onError.
-      if (!torn && event.code !== CLOSE_INSUFFICIENT_SCOPES) {
+      // server rejected our credentials outright (missing scope or expired credentials)
+      // The error frame that precedes those closes has already reached onError
+      if (!torn && !NO_RECONNECT_CLOSE_CODES.has(event.code)) {
         scheduleReconnect();
       }
     };
@@ -183,9 +217,9 @@ const openEventsSubscription = (
  * Subscribe to Pulse messages arriving on the given raw bindings (each an
  * `{ exchange, pattern }` or `{ exchange, routingKeyPattern }`) via the
  * /subscription/raw endpoint. Used by the Pulse debugger views, which bind arbitrary
- * exchanges directly. `handlers` is `{ onMessage, onError, user }`, where
- * `user` is the signed-in user whose credentials authenticate the connection.
- * Returns a teardown function that unsubscribes.
+ * exchanges directly. `handlers` includes `{ onMessage, onError,
+ * getCredentials }`; see openEventsSubscription. Returns a teardown function
+ * that unsubscribes.
  */
 const subscribeToPulseMessages = (bindings, handlers) =>
   openEventsSubscription(
@@ -202,9 +236,9 @@ const subscribeToPulseMessages = (bindings, handlers) =>
  * 'taskCompleted']`) and a `routingKey` object of fields to match (e.g.
  * `{ taskGroupId }`); omitted routing-key fields are wildcarded. `service`
  * selects whose events the names refer to (e.g. 'queue') and is required — the
- * server rejects a subscribe frame without it. `handlers` is `{ onMessage,
- * onError, user }`, where `user` is the signed-in user whose credentials
- * authenticate the connection. Returns a teardown function that unsubscribes.
+ * server rejects a subscribe frame without it. `handlers` includes `{
+ * onMessage, onError, getCredentials }`; see
+ * openEventsSubscription. Returns a teardown function that unsubscribes.
  */
 const subscribeToNamedEvents = (
   { service, subscriptions, routingKey },

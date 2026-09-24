@@ -7,6 +7,7 @@ const PING_INTERVAL_MS = 30000;
 // plus the standard 1011 (internal error) where that's the better fit.
 const CLOSE_CODES = {
   PROTOCOL_ERROR: 4400,
+  AUTHENTICATION_FAILED: 4401,
   INSUFFICIENT_SCOPES: 4403,
   LIFETIME_EXCEEDED: 4408,
   INTERNAL_ERROR: 1011,
@@ -180,8 +181,18 @@ export default class SubscriptionConnection {
   async handleConnectionInit(frame) {
     clearTimeout(this.connectionInitTimeout);
 
+    let credentials = null;
+
+    if (frame.authorization) {
+      try {
+        credentials = decryptToken(frame.authorization);
+      } catch {
+        await this.rejectAuthentication();
+        return;
+      }
+    }
+
     try {
-      const credentials = frame.authorization ? decryptToken(frame.authorization) : null;
       const authClient = this.authFactory({ credentials });
       const scopes = await authClient.currentScopes();
       const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
@@ -211,10 +222,28 @@ export default class SubscriptionConnection {
       this.monitor.log.websocketConnected({ clientId: this.clientId });
       await this.send({ type: FRAME_TYPES.CONNECTION_ACK });
     } catch (err) {
+      // An invalid or expired credential is a client problem
+      // tell the client explicitly (with a close code it recognizes) so
+      // it can resubscribe with fresh credentials or stop, rather than
+      // reconnecting with the same stale token forever.
+      if (err.statusCode === 401) {
+        await this.rejectAuthentication();
+        return;
+      }
+
       this.monitor.reportError(err);
       await this.sendError({ code: 'InternalError', message: 'Internal error during authentication', details: {} });
       this.ws.close(CLOSE_CODES.INTERNAL_ERROR, 'Internal error');
     }
+  }
+
+  async rejectAuthentication() {
+    await this.sendError({
+      code: 'AuthenticationFailed',
+      message: 'Authentication failed: credentials are invalid or expired',
+      details: {},
+    });
+    this.ws.close(CLOSE_CODES.AUTHENTICATION_FAILED, 'AuthenticationFailed');
   }
 
   handleSubscribe(frame) {

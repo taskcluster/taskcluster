@@ -83,7 +83,7 @@ describe('subscribeToPulseMessages', () => {
     );
   });
 
-  it('sends connection_init on open', () => {
+  it('sends connection_init on open', async () => {
     subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
       onMessage: vi.fn(),
       onError: vi.fn(),
@@ -92,6 +92,7 @@ describe('subscribeToPulseMessages', () => {
     const ws = FakeWebSocket._lastInstance;
 
     ws.simulateOpen();
+    await Promise.resolve();
 
     expect(ws.sent[0]).toEqual({ type: 'connection_init' });
   });
@@ -346,6 +347,77 @@ describe('error and reconnection handling', () => {
     expect(second.sent.find(f => f.type === 'subscribe')).toBeDefined();
   });
 
+  it('gets fresh credentials before reconnecting', async () => {
+    const staleCredentials = {
+      clientId: 'user',
+      accessToken: 'stale-token',
+    };
+    const freshCredentials = {
+      clientId: 'user',
+      accessToken: 'fresh-token',
+    };
+    const getCredentials = vi
+      .fn()
+      .mockResolvedValueOnce(staleCredentials)
+      .mockResolvedValueOnce(freshCredentials);
+
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+      getCredentials,
+    });
+
+    const first = FakeWebSocket._lastInstance;
+
+    first.simulateOpen();
+    await vi.waitFor(() => expect(first.sent).toHaveLength(1));
+
+    expect(first.sent[0]).toEqual({
+      type: 'connection_init',
+      authorization: `Bearer ${btoa(JSON.stringify(staleCredentials))}`,
+    });
+
+    first.simulateClose(4408, true);
+    vi.runOnlyPendingTimers();
+
+    const second = FakeWebSocket._lastInstance;
+
+    second.simulateOpen();
+    await vi.waitFor(() => expect(second.sent).toHaveLength(1));
+
+    expect(getCredentials).toHaveBeenCalledTimes(2);
+    expect(second.sent[0]).toEqual({
+      type: 'connection_init',
+      authorization: `Bearer ${btoa(JSON.stringify(freshCredentials))}`,
+    });
+  });
+
+  it('does not send credentials after teardown while renewal is pending', async () => {
+    let resolveCredentials;
+    const getCredentials = vi.fn(
+      () =>
+        new Promise(resolve => {
+          resolveCredentials = resolve;
+        })
+    );
+    const teardown = subscribeToPulseMessages(
+      [{ exchange: 'e', pattern: '#' }],
+      {
+        onMessage: vi.fn(),
+        onError: vi.fn(),
+        getCredentials,
+      }
+    );
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    teardown();
+    resolveCredentials({ clientId: 'user', accessToken: 'fresh-token' });
+    await Promise.resolve();
+
+    expect(ws.sent).toEqual([]);
+  });
+
   it('stops reconnecting after teardown', () => {
     const teardown = subscribeToPulseMessages(
       [{ exchange: 'e', pattern: '#' }],
@@ -362,6 +434,63 @@ describe('error and reconnection handling', () => {
     vi.runOnlyPendingTimers();
 
     // No new socket was opened by a reconnect.
+    expect(FakeWebSocket._lastInstance).toBe(first);
+  });
+
+  it('does not reconnect after authentication failure, and surfaces the error', () => {
+    const onError = vi.fn();
+
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError,
+    });
+
+    const first = FakeWebSocket._lastInstance;
+
+    first.simulateOpen();
+    // The server sends an error frame, then closes with the auth-failure code.
+    first.simulateMessage({
+      type: 'error',
+      code: 'AuthenticationFailed',
+      message: 'Authentication failed: credentials are invalid or expired',
+    });
+    first.simulateClose(4401, true);
+    vi.runOnlyPendingTimers();
+
+    expect(onError).toHaveBeenCalledWith(
+      new Error('Authentication failed: credentials are invalid or expired')
+    );
+    // The captured credentials are stale; retrying cannot succeed.
+    expect(FakeWebSocket._lastInstance).toBe(first);
+  });
+
+  it('reconnects after the connection lifetime expires', () => {
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    const first = FakeWebSocket._lastInstance;
+
+    first.simulateOpen();
+    first.simulateClose(4408, true);
+    vi.runOnlyPendingTimers();
+
+    expect(FakeWebSocket._lastInstance).not.toBe(first);
+  });
+
+  it('does not reconnect after an insufficient-scopes close', () => {
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    const first = FakeWebSocket._lastInstance;
+
+    first.simulateOpen();
+    first.simulateClose(4403, true);
+    vi.runOnlyPendingTimers();
+
     expect(FakeWebSocket._lastInstance).toBe(first);
   });
 });
