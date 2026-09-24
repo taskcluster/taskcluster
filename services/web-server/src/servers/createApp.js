@@ -74,11 +74,11 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
               checkPeriod: 1000 * 60 * 60,
             }),
       secret: cfg.login.sessionSecret,
-      sameSite: true,
       resave: false,
       saveUninitialized: false,
       unset: 'destroy',
       cookie: {
+        sameSite: 'lax',
         secure: URL.parse(cfg.app.publicUrl)?.hostname !== 'localhost',
         httpOnly: true,
         // 1 week
