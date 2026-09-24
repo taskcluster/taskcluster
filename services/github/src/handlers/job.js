@@ -441,27 +441,42 @@ export async function jobHandler(message) {
   // Create tasks (if present)
   if (graphConfig.tasks && graphConfig.tasks.length > 0) {
     const taskGroupMap = new Map();
-    try {
-      for (const { task } of graphConfig.tasks) {
-        let routes = taskGroupMap.get(task.taskGroupId);
-        if (!routes) {
-          routes = new Set();
-          taskGroupMap.set(task.taskGroupId, routes);
-        }
-        for (const route of task.routes || []) {
-          routes.add(route);
-        }
+    for (const { task } of graphConfig.tasks) {
+      let routes = taskGroupMap.get(task.taskGroupId);
+      if (!routes) {
+        routes = new Set();
+        taskGroupMap.set(task.taskGroupId, routes);
       }
-    } catch (e) {
-      return await this.createExceptionComment({
-        debug,
-        instGithub,
-        organization,
-        repository,
-        sha,
-        error: e,
-        pullNumber,
-      });
+      for (const route of task.routes || []) {
+        routes.add(route);
+      }
+    }
+
+    // Tasks may set their own taskGroupId, we refuse groups that already belong to another build
+    // redeliveries of the same event are allowed
+    for (const taskGroupId of taskGroupMap.keys()) {
+      const [existing] = await context.db.fns.get_github_build_pr(taskGroupId);
+      if (
+        existing &&
+        (existing.organization !== organization ||
+          existing.repository !== repository ||
+          existing.sha !== sha ||
+          existing.event_id !== message.payload.eventId)
+      ) {
+        debug(`taskGroupId ${taskGroupId} already belongs to another build, refusing to create tasks`);
+        return await this.createExceptionComment({
+          debug,
+          instGithub,
+          organization,
+          repository,
+          sha,
+          error: new Error(
+            `Task group \`${taskGroupId}\` is already used by another build. ` +
+              'Tasks in `.taskcluster.yml` cannot be added to task groups created for other builds.'
+          ),
+          pullNumber,
+        });
+      }
     }
 
     const builds = [];

@@ -296,6 +296,15 @@ Each hook is triggered via `hooks.triggerHook` with a payload containing:
 
 Note that hook `context` values are passed as-is and **do not support JSON-e templating**.
 
+<Warning>
+Hook templates should use `payload.taskId` as the task's `taskGroupId`, and
+nothing else. `payload.context` and `payload.event` are controlled by the
+repository, so if the template reads `taskGroupId` from them, a repository could
+put the hook's task into some other build's task group and have its status
+show up on that build's commit. Taskcluster-Github can't catch this, because the
+hook's task is created by the hooks service.
+</Warning>
+
 ### Scopes for Hooks
 
 The repository role (e.g. `repo:github.com/<owner>/<repo>:branch:<branch>`) must include the scope `github:trigger-hook:<hookGroupId>/<hookId>` for each hook being triggered. For example:
