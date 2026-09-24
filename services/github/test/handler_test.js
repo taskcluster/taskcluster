@@ -927,6 +927,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildB.sha, COMMIT_SHA);
     });
 
+    test('refuses to create tasks in a task group owned by another build', async () => {
+      const now = new Date();
+      await helper.db.fns.create_github_build_pr(
+        'other-org',
+        'other-repo',
+        'abcdef0123456789abcdef0123456789abcdef01',
+        GROUP_B,
+        'pending',
+        now,
+        now,
+        9988,
+        'push',
+        uuidv1(),
+        null
+      );
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert(handlers.createTasks.notCalled, 'no tasks should be created');
+      assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      const { body } = github.inst(INST_ID).repos.createCommitComment.firstCall.args[0];
+      assert(body.includes(`Task group \`${GROUP_B}\` is already used by another build`));
+      assert(!body.includes('other-org'), 'comment should not reveal the other build');
+
+      const [buildA] = await helper.db.fns.get_github_build_pr(GROUP_A);
+      assert.equal(buildA, undefined, 'no build record should be created for any group');
+      const [buildB] = await helper.db.fns.get_github_build_pr(GROUP_B);
+      assert.equal(buildB.organization, 'other-org');
+    });
+
     test('multi-group yml publishes taskGroupCreationRequested once per unique group', async () => {
       github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
