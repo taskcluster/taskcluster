@@ -10,7 +10,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('Unauthorized', async () => {
     try {
-      await request.get(`http://localhost:${helper.serverPort}/login/credentials`);
+      await request.post(`http://localhost:${helper.serverPort}/login/credentials`);
       assert.fail('Expected the request to fail');
     } catch (err) {
       assert.equal(err.status, 401);
