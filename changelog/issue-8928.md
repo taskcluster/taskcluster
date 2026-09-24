@@ -1,4 +1,4 @@
-level: silent
+level: patch
 audience: developers
 reference: issue 8928
 ---

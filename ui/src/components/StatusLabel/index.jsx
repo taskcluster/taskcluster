@@ -24,9 +24,10 @@ export default class StatusLabel extends Component {
 
   static propTypes = {
     /**
-     * A GraphQL status/state string.
+     * The state to display, e.g. a task state (`completed`) or a run
+     * reason (`worker-shutdown`). Case and dashes are normalized.
      */
-    state: string,
+    state: string.isRequired,
     /**
      * Render the label using dense styling.
      */
