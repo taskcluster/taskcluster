@@ -1,17 +1,5 @@
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
-import {
-  ApolloClient,
-  ApolloProvider,
-  InMemoryCache,
-  createHttpLink,
-  defaultDataIdFromObject,
-  from,
-  split,
-} from '@apollo/client';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { setContext } from '@apollo/client/link/context';
-import { getMainDefinition } from '@apollo/client/utilities';
 import { ErrorBoundary } from 'react-error-boundary';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
@@ -25,115 +13,14 @@ import db from '../utils/db';
 import reportError from '../utils/reportError';
 import ErrorPanel from '../components/ErrorPanel';
 import theme from '../theme';
-import possibleTypes from '../fragments/possibleTypes.json';
 import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 import './index.css';
-
-const absoluteUrl = (url, overrides = {}) =>
-  Object.assign(new URL(url, window.location), overrides).toString();
 
 export default class App extends Component {
   static propTypes = {
     routes: arrayOf(route).isRequired,
   };
-
-  cache = new InMemoryCache({
-    possibleTypes,
-    dataIdFromObject: object => {
-      switch (object.__typename) {
-        case 'TaskStatus': {
-          const taskId = object.taskId || null;
-
-          return taskId
-            ? `${object.taskId}-${object.__typename}`
-            : defaultDataIdFromObject(object);
-        }
-
-        default: {
-          // fall back to default handling
-          return defaultDataIdFromObject(object);
-        }
-      }
-    },
-  });
-
-  httpLink = createHttpLink({
-    uri: absoluteUrl(window.env.GRAPHQL_ENDPOINT),
-    credentials: 'same-origin',
-  });
-
-  wsLink = new WebSocketLink({
-    uri: absoluteUrl(window.env.GRAPHQL_SUBSCRIPTION_ENDPOINT, {
-      // allow configuration of https:// or http:// and translate to ws:// or wss://
-      protocol: window.location.protocol === 'https:' ? 'wss:' : 'ws:',
-    }),
-    options: {
-      reconnect: true,
-      lazy: true,
-      connectionCallback: error => {
-        if (error?.message?.includes('InsufficientScopes')) {
-          this.setState({ subscriptionError: error });
-          // close without reconnect
-          // note: immediate is used to ensure error is propagated
-          // to the subscriber before channel is closed
-          setImmediate(() => this.wsLink.subscriptionClient.close());
-        }
-      },
-      connectionParams: async () => {
-        const user = await this.authController.getUser();
-
-        if (user?.credentials) {
-          return {
-            Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
-          };
-        }
-      },
-    },
-  });
-
-  /**
-   * Add an Authorization header to every request, unless
-   * context.noAuthorizationHeader; the latter can be set on
-   * a request as an argument to `client.query({..})`.
-   */
-  authLink = setContext(
-    async (_request, { noAuthorizationHeader, headers }) => {
-      if (noAuthorizationHeader) {
-        return {};
-      }
-
-      const user = await this.authController.getUser();
-
-      if (!user?.credentials) {
-        return {};
-      }
-
-      return {
-        headers: {
-          ...headers,
-          Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
-        },
-      };
-    }
-  );
-
-  apolloClient = new ApolloClient({
-    cache: this.cache,
-    link: from([
-      this.authLink,
-      split(
-        // split based on operation type
-        ({ query }) => {
-          const { kind, operation } = getMainDefinition(query);
-
-          return kind === 'OperationDefinition' && operation === 'subscription';
-        },
-        this.wsLink,
-        this.httpLink
-      ),
-    ]),
-  });
 
   constructor(props) {
     super(props);
@@ -150,7 +37,6 @@ export default class App extends Component {
         authorize: this.authorize,
         unauthorize: this.unauthorize,
       },
-      subscriptionError: null,
     };
 
     if (window.env.SENTRY_DSN) {
@@ -227,7 +113,7 @@ export default class App extends Component {
 
   render() {
     const { routes } = this.props;
-    const { auth, error, theme, subscriptionError } = this.state;
+    const { auth, error, theme } = this.state;
 
     // Note that there are two error boundaries here.  The first will catch
     // errors in the stack of providers, but presents its error panel without
@@ -236,32 +122,29 @@ export default class App extends Component {
     // catch errors in those components.
     return (
       <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
-        <ApolloProvider client={this.apolloClient}>
-          <AuthContext.Provider value={auth}>
-            <TaskclusterClientContext.Provider
-              value={this.createTaskclusterClient}>
-              <ToggleThemeContext.Provider value={this.toggleTheme}>
-                <MuiThemeProvider theme={theme}>
-                  <CssBaseline />
-                  <ErrorBoundary
-                    FallbackComponent={ErrorPanel}
-                    onError={reportError}>
-                    <Main
-                      error={error}
-                      subscriptionError={subscriptionError}
-                      key={
-                        auth.user?.credentials
-                          ? auth.user.credentials.clientId
-                          : ''
-                      }
-                      routes={routes}
-                    />
-                  </ErrorBoundary>
-                </MuiThemeProvider>
-              </ToggleThemeContext.Provider>
-            </TaskclusterClientContext.Provider>
-          </AuthContext.Provider>
-        </ApolloProvider>
+        <AuthContext.Provider value={auth}>
+          <TaskclusterClientContext.Provider
+            value={this.createTaskclusterClient}>
+            <ToggleThemeContext.Provider value={this.toggleTheme}>
+              <MuiThemeProvider theme={theme}>
+                <CssBaseline />
+                <ErrorBoundary
+                  FallbackComponent={ErrorPanel}
+                  onError={reportError}>
+                  <Main
+                    error={error}
+                    key={
+                      auth.user?.credentials
+                        ? auth.user.credentials.clientId
+                        : ''
+                    }
+                    routes={routes}
+                  />
+                </ErrorBoundary>
+              </MuiThemeProvider>
+            </ToggleThemeContext.Provider>
+          </TaskclusterClientContext.Provider>
+        </AuthContext.Provider>
       </ErrorBoundary>
     );
   }
