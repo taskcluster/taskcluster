@@ -29,7 +29,8 @@ properties:
   expires:
     title:          "Expiration"
     description: |
-      Date at which this entry expires from the task index.
+      Date at which this entry expires from the task index. This must be a date
+      in the future.
     type:           string
     format:         date-time
 additionalProperties: false

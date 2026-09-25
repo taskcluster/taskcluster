@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const expiredTaskId = slugid.v4();
     const taskId = slugid.v4();
 
-    await helper.index.insertTask(`${myns}.my-task`, {
+    await helper.insertExpiredTask(`${myns}.my-task`, {
       taskId: expiredTaskId,
       rank: 42,
       data: { hello: 'world' },
@@ -62,6 +62,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const result = await helper.index.findTask(`${myns}.my-task`);
     assert(result.taskId === taskId, 'Wrong taskId');
+  });
+
+  test('insert (expiring in the past)', async () => {
+    const myns = slugid.v4();
+
+    await assert.rejects(
+      () =>
+        helper.index.insertTask(`${myns}.my-task`, {
+          taskId: slugid.v4(),
+          rank: 42,
+          data: { hello: 'world' },
+          expires: taskcluster.fromNow('-1 day'),
+        }),
+      err => err.statusCode === 400 && /expires must be a date in the future/.test(err.message),
+      'Expected the insertion to be rejected'
+    );
+
+    const rows = await helper.db.fns.get_indexed_task(myns, 'my-task');
+    assert.deepEqual(rows, [], 'Expected nothing to be inserted');
   });
 
   test('find (non-existing)', async () => {
@@ -128,7 +147,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day') })
         ),
         ...expiredPaths.map(path =>
-          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day') })
+          helper.insertExpiredTask(path, {
+            taskId,
+            rank: 13,
+            data: {},
+            expires: taskcluster.fromNow('-1 day'),
+          })
         ),
       ]);
     });
@@ -224,7 +248,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       expired.setDate(expired.getDate() - 1);
       const new_expires = expired.toJSON();
 
-      await helper.index.insertTask(`${myns}.my-task`, {
+      await helper.insertExpiredTask(`${myns}.my-task`, {
         taskId: taskId,
         rank: 41,
         data: { hello: 'world' },
@@ -276,7 +300,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
 
       // shouldn't be matched because it's expired
-      await helper.index.insertTask(`${myns}.my-task4`, {
+      await helper.insertExpiredTask(`${myns}.my-task4`, {
         taskId: slugid.v4(),
         rank: 44,
         data: { hello: 'world' },

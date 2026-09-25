@@ -304,6 +304,10 @@ builder.declare(
     // Parse date string
     input.expires = new Date(input.expires);
 
+    if (input.expires <= new Date()) {
+      return res.reportError('InputError', 'expires must be a date in the future', {});
+    }
+
     // Insert task
     return helpers.taskUtils.insertTask(this.db, namespace, input).then(task => {
       res.reply(helpers.taskUtils.serialize(task));

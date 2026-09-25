@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import builder from '../src/api.js';
+import helpers from '../src/helpers.js';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
 import { globalAgent } from 'node:http';
@@ -206,6 +207,15 @@ const stubbedQueue = () => {
 
   return queue;
 };
+
+export const insertExpiredTask = async (path, { taskId, rank, data, expires }) => {
+  const [namespace, name] = helpers.splitNamespace(path);
+  const expiresDate = new Date(expires);
+
+  await helpers.namespaceUtils.ensureNamespace(helper.db, namespace, expiresDate);
+  await helper.db.fns.create_indexed_task(namespace, name, rank, taskId, data, expiresDate);
+};
+helper.insertExpiredTask = insertExpiredTask;
 
 export const resetTables = () => {
   setup('reset tables', async () => {

@@ -206,7 +206,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const myns = slugid.v4();
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
-    await helper.index.insertTask(`${myns}.my-task`, {
+    await helper.insertExpiredTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
@@ -251,7 +251,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
 
-    await helper.index.insertTask(`${myns}.one-ns.my-task`, {
+    await helper.insertExpiredTask(`${myns}.one-ns.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
@@ -264,7 +264,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
-    await helper.index.insertTask(`${myns}.another-ns.my-task`, {
+    await helper.insertExpiredTask(`${myns}.another-ns.my-task`, {
       taskId: taskId2,
       rank: 42,
       data: { hello: 'world two' },

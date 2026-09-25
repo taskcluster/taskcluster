@@ -48,7 +48,8 @@ type (
 		// Additional properties allowed
 		Data json.RawMessage `json:"data"`
 
-		// Date at which this entry expires from the task index.
+		// Date at which this entry expires from the task index. This must be a date
+		// in the future.
 		Expires tcclient.Time `json:"expires"`
 
 		// If multiple tasks are indexed with the same `namespace` the task with the
