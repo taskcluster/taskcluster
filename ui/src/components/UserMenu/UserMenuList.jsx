@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
 import Avatar from '@material-ui/core/Avatar';
 import List from '@material-ui/core/List';
 import { withStyles } from '@material-ui/core/styles';
@@ -13,7 +12,6 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
 import username from '../../utils/username';
 
 @withAuth
-@withApollo
 @withStyles(theme => ({
   avatar: {
     backgroundColor: theme.palette.secondary.main,

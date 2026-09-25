@@ -1,8 +1,6 @@
 import React from 'react';
 import { render, act } from '@testing-library/react';
-import { ApolloProvider } from '@apollo/client';
 import { MemoryRouter } from 'react-router-dom';
-import setupClient from '../../../utils/mockApolloClient';
 import { getClient } from '../../../utils/client';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
 import { AuthContext } from '../../../utils/Auth';
@@ -92,9 +90,6 @@ describe('TaskGroup page', () => {
   });
 
   it('should render TaskGroup page', async () => {
-    // an Apollo client is still required by @withApollo, which the page keeps
-    // for submitTaskAction's hook-kind actions
-    const createClient = setupClient({}, 'type Query { unused: String }');
     const location = {
       hash: '#term',
     };
@@ -103,12 +98,7 @@ describe('TaskGroup page', () => {
     await act(async () => {
       ({ asFragment } = render(
         <MemoryRouter keyLength={0}>
-          <ApolloProvider client={createClient()}>
-            <TaskGroup
-              match={{ params: { taskGroupId } }}
-              location={location}
-            />
-          </ApolloProvider>
+          <TaskGroup match={{ params: { taskGroupId } }} location={location} />
         </MemoryRouter>
       ));
     });
@@ -160,17 +150,14 @@ describe('TaskGroup page', () => {
       unauthorize: vi.fn(),
     });
     const renderWithUser = async user => {
-      const createClient = setupClient({}, 'type Query { unused: String }');
       const tree = auth => (
         <MemoryRouter keyLength={0}>
-          <ApolloProvider client={createClient()}>
-            <AuthContext.Provider value={authValue(auth)}>
-              <TaskGroup
-                match={{ params: { taskGroupId } }}
-                location={{ hash: '' }}
-              />
-            </AuthContext.Provider>
-          </ApolloProvider>
+          <AuthContext.Provider value={authValue(auth)}>
+            <TaskGroup
+              match={{ params: { taskGroupId } }}
+              location={{ hash: '' }}
+            />
+          </AuthContext.Provider>
         </MemoryRouter>
       );
       let rerender;

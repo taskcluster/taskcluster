@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
 import { bool, func } from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
@@ -18,7 +17,6 @@ import UserSession from '../../auth/UserSession';
 import { AUTH_STARTED } from '../../utils/constants';
 
 @withAuth
-@withApollo
 export default class SignInDialog extends Component {
   static propTypes = {
     open: bool.isRequired,

@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { object } from 'prop-types';
-import { withApollo } from '@apollo/client/react/hoc';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -12,7 +11,6 @@ import getPictureFromUser from '../../utils/getPictureFromUser';
 import username from '../../utils/username';
 
 @withAuth
-@withApollo
 @withStyles(theme => ({
   avatarButton: {
     height: 6 * theme.spacing(1),
