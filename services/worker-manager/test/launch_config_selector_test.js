@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { WorkerPoolStats } from '../src/data.js';
+import { launchConfigHealth, HEALTH_FLOOR } from '../src/launch-config-selector.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -62,6 +63,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.deepEqual(msgs[0].Fields.weights, weights);
     assert.deepEqual(msgs[0].Fields.remainingCapacity, remainingCapacity);
     monitor.manager.reset();
+  };
+
+  const getDebugMessage = async () => {
+    const monitor = await helper.load('monitor');
+    const msgs = monitor.manager.messages.filter(({ Type }) => Type === 'launch-config-selector-debug');
+    assert.equal(msgs.length, 1);
+    monitor.manager.reset();
+    return msgs[0].Fields;
   };
 
   setup(async () => {
@@ -191,13 +200,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     ]);
 
     const workerPoolStats = new WorkerPoolStats(wp.workerPoolId);
-    workerPoolStats.totalErrors = 25;
     workerPoolStats.errorsByLaunchConfig.set('lc1', 25); // one that causes all errors
 
     const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
-    const counts = getDistribution(wrc, 100);
-    assert.equal(counts.lc2, 100);
-    await assertDebugMessage(wp.workerPoolId, { lc1: 0, lc2: 1 }, { lc1: maxCapacity, lc2: maxCapacity });
+    const counts = getDistribution(wrc, 1000);
+    // lc1 health is 1 - 25/26 = 1/26, so it gets ~3.7% of selections
+    assert.ok(counts.lc2 >= 900, `lc2 should get almost all selections, got ${counts.lc2}`);
+    const fields = await getDebugMessage();
+    assert.equal(fields.weights.lc1, 1 / 26);
+    assert.equal(fields.weights.lc2, 1);
   });
 
   test('select capacity should respect individual max capacity', async () => {
@@ -230,16 +241,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(wrc.selectCapacity(25).length, 5);
   });
 
-  test('single LC with negative weight due to errors still provisions when it has capacity', async () => {
+  test('single LC with negative weight due to capacity still provisions when it has capacity', async () => {
     const wp = await createWorkerPool([
-      genAwsLaunchConfig({ launchConfigId: 'lc1', initialWeight: 1, maxCapacity: 100 }),
+      genAwsLaunchConfig({ launchConfigId: 'lc1', initialWeight: 0.5, maxCapacity: 100 }),
     ]);
 
-    // simulate: 60% capacity used, 50% error rate
-    // This will cause weight to go negative: 1 - 0.6 - 0.5 = -0.1
+    // 60% capacity used with initialWeight 0.5 makes the base weight 0.5 - 0.6 = -0.1,
+    // and heavy errors scale it but cannot make it positive
     const workerPoolStats = new WorkerPoolStats(wp.workerPoolId);
     workerPoolStats.capacityByLaunchConfig.set('lc1', 60);
-    workerPoolStats.totalErrors = 100;
     workerPoolStats.errorsByLaunchConfig.set('lc1', 50);
 
     const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
@@ -252,5 +262,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(configs[0].launchConfigId, 'lc1', 'Should select lc1');
 
     await assertDebugMessage(wp.workerPoolId, { lc1: 0.01 }, { lc1: 40 });
+  });
+
+  test('launchConfigHealth', () => {
+    assert.equal(launchConfigHealth(0, 0), 1);
+    assert.equal(launchConfigHealth(0, 25), 1);
+    assert.equal(launchConfigHealth(1, 0), 0.5);
+    assert.ok(Math.abs(launchConfigHealth(10, 0) - 1 / 11) < 1e-12);
+    assert.ok(Math.abs(launchConfigHealth(1, 1) - 2 / 3) < 1e-12);
+    assert.equal(launchConfigHealth(49, 0), HEALTH_FLOOR);
+    assert.equal(launchConfigHealth(100, 0), HEALTH_FLOOR);
+  });
+
+  test('when several configs are failing, they are floored and the healthy config gets most selections', async () => {
+    const failing = ['lc1', 'lc2', 'lc3', 'lc4', 'lc5', 'lc6', 'lc7'];
+    const wp = await createWorkerPool(
+      [...failing, 'lc8'].map(launchConfigId => genAwsLaunchConfig({ launchConfigId, initialWeight: 1 }))
+    );
+    const workerPoolStats = new WorkerPoolStats(wp.workerPoolId);
+    for (const id of failing) {
+      workerPoolStats.errorsByLaunchConfig.set(id, 500);
+    }
+    workerPoolStats.successesByLaunchConfig.set('lc8', 50);
+    const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
+
+    const fields = await getDebugMessage();
+    for (const id of failing) {
+      assert.equal(fields.weights[id], HEALTH_FLOOR);
+    }
+    assert.equal(fields.weights.lc8, 1);
+
+    // expected healthy share is 1 / (1 + 7 * 0.02) ~= 0.877; stays under lc8's remaining capacity of 1000
+    const counts = getDistribution(wrc, 500);
+    const share = (counts.lc8 || 0) / 500;
+    assert.ok(share > 0.8 && share < 0.95, `healthy share should be ~0.88, got ${share}`);
   });
 });

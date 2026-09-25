@@ -237,7 +237,6 @@ export class WorkerPoolStats {
     this.stoppedCount = stats.stoppedCount ?? 0;
     this.quarantinedCapacity = stats.quarantinedCapacity ?? 0;
 
-    this.totalErrors = 0;
     this.capacityByLaunchConfig = new Map();
     this.errorsByLaunchConfig = new Map();
     /** @type {Map<string, { existingCapacity: number, requestedCapacity: number, stoppingCapacity: number }>} */
