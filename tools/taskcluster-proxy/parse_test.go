@@ -45,6 +45,30 @@ func TestNondefaultPort(t *testing.T) {
 	}
 }
 
+func TestCredentialsStdin(t *testing.T) {
+	args := []string{
+		"--root-url", "https://tc-tests.example.com",
+		"--client-id", "abc",
+		"--access-token", "ghi",
+	}
+
+	routes, _, _, _, err := ParseCommandArgs(args, false)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if routes.CredentialsFromStdin {
+		t.Fatal("Was expecting credentials from stdin to be off by default")
+	}
+
+	routes, _, _, _, err = ParseCommandArgs(append(args, "--credentials-stdin"), false)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if !routes.CredentialsFromStdin {
+		t.Fatal("Was expecting --credentials-stdin to enable credentials from stdin")
+	}
+}
+
 func TestWithTwoScopes(t *testing.T) {
 	routes, address, _, _, err := ParseCommandArgs(
 		[]string{

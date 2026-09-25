@@ -50,6 +50,13 @@ task id.
                                     different network namespace and is not
                                     visible in this process's /proc/net/tcp)
                                     [default: ].
+    --credentials-stdin             Read credentials updates from stdin, as a
+                                    stream of JSON objects in the same format
+                                    as the /credentials endpoint, which is
+                                    disabled. Lets the launching process
+                                    refresh credentials without connecting to
+                                    the proxy. The proxy exits when stdin is
+                                    closed, and fails on invalid input.
 `
 )
 
@@ -57,6 +64,18 @@ func main() {
 	routes, address, allowedUser, allowedNetwork, err := ParseCommandArgs(os.Args[1:], true)
 	if err != nil {
 		log.Fatalf("%v", err)
+	}
+
+	if routes.CredentialsFromStdin {
+		go func() {
+			if err := routes.ReadCredentialsUpdates(os.Stdin); err != nil {
+				log.Fatalf("Invalid credentials update on stdin: %v", err)
+			}
+			// stdin is closed when the launching process exits or is done
+			// with the proxy, so don't keep serving the task's credentials.
+			log.Print("stdin closed, exiting")
+			os.Exit(0)
+		}()
 	}
 
 	verifier, err := newConnectionVerifier(allowedUser, allowedNetwork)
@@ -74,9 +93,10 @@ func main() {
 		// MASQUERADE rules can rewrite the source IP, leaving the
 		// connection invisible in /proc/net/tcp from the proxy's
 		// perspective and outside the allowed-network CIDR. Listen on
-		// 127.0.0.1 too so the launcher has a NAT-free loopback path.
-		// Loopback connections are always visible in /proc/net/tcp, so
-		// the UID-based admission (root and the task user) covers it.
+		// 127.0.0.1 too so the launcher has a NAT-free loopback path
+		// for its readiness check. Loopback connections are always
+		// visible in /proc/net/tcp, so the UID-based admission (task
+		// user only) covers it.
 		_, port, splitErr := net.SplitHostPort(address)
 		if splitErr != nil {
 			log.Fatalf("Failed to split host/port from %s: %v", address, splitErr)
@@ -259,5 +279,6 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 			Credentials:  creds,
 		},
 	)
+	routes.CredentialsFromStdin = arguments["--credentials-stdin"].(bool)
 	return
 }
