@@ -40,9 +40,9 @@ and reports back results to the queue.
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker cat-file                 --cat-file CAT-FILE
-    generic-worker create-file              --create-file CREATE-FILE
-    generic-worker create-dir               --create-dir CREATE-DIR
-    generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
+    generic-worker create-file              --root ROOT --create-file CREATE-FILE
+    generic-worker create-dir               --root ROOT --create-dir CREATE-DIR
+    generic-worker unarchive                --root ROOT --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
     generic-worker status
     generic-worker --help
     generic-worker --version
@@ -93,6 +93,9 @@ and reports back results to the queue.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.` + sidSID() + `
     --cat-file CAT-FILE                     The path to the file to write to stdout.
+    --root ROOT                             The directory that --create-file, --create-dir
+                                            and --archive-dst must stay inside of, even
+                                            through symbolic links.
     --create-file CREATE-FILE               The path to the file to create.
     --create-dir CREATE-DIR                 The path to the directory to create.
     --archive-src ARCHIVE-SRC               The path to the archive file to unarchive.

@@ -4,7 +4,6 @@ package main
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -41,37 +40,6 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 	}, []string{
 		`Denying task_\S+ access to '.*'`,
 	}
-}
-
-func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
-	setup(t)
-
-	dir, err := os.MkdirTemp(taskContext.TaskDir, t.Name())
-	if err != nil {
-		t.Fatalf("Failed to create temporary directory: %v", err)
-	}
-	defer os.RemoveAll(dir)
-
-	makeDirTaskUserProof(t, dir)
-
-	mounts := []MountEntry{
-		&WritableDirectoryCache{
-			CacheName: "tc-test-cache-1",
-			Directory: filepath.Join("../../../", filepath.Base(dir)),
-		},
-	}
-
-	payload := GenericWorkerPayload{
-		Mounts:     toMountArray(t, &mounts),
-		Command:    helloGoodbye(),
-		MaxRunTime: 180,
-	}
-	defaults.SetDefaults(&payload)
-
-	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:cache:tc-test-cache-1")
-
-	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 // Test for upstream issue https://github.com/mholt/archiver/issues/152

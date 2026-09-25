@@ -109,23 +109,49 @@ func CatFile(src string, dst io.Writer) error {
 	return err
 }
 
-func CreateFile(file string) (err error) {
-	var f *os.File
-	f, err = os.Create(file)
-	defer func() {
-		closeErr := f.Close()
-		if err == nil {
-			err = closeErr
-		}
-	}()
-	return
+func openRoot(root, path string) (*os.Root, string, error) {
+	name, err := filepath.Rel(root, path)
+	if err != nil {
+		return nil, "", err
+	}
+	r, err := os.OpenRoot(root)
+	return r, name, err
 }
 
-func CreateDir(dir string) error {
-	return os.MkdirAll(dir, 0700)
+func CreateFile(root, file string) (*os.File, error) {
+	r, name, err := openRoot(root, file)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	return r.Create(name)
 }
 
-func Unarchive(source, destination, format string) error {
+func CreateDir(root, dir string) error {
+	r, name, err := openRoot(root, dir)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	if err := r.MkdirAll(name, 0700); err != nil {
+		return fmt.Errorf("cannot create directory %v: %w", dir, err)
+	}
+	return nil
+}
+
+func Unarchive(source, root, destination, format string) error {
+	r, name, err := openRoot(root, destination)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	dest, err := r.OpenRoot(name)
+	if err != nil {
+		return err
+	}
+	defer dest.Close()
+
 	f, err := os.Open(source)
 	if err != nil {
 		return fmt.Errorf("opening archive %v: %w", source, err)
@@ -154,13 +180,17 @@ func Unarchive(source, destination, format string) error {
 		if !strings.HasPrefix(destPath, cleanDest) && destPath != filepath.Clean(destination) {
 			return fmt.Errorf("illegal file path in archive: %s", info.NameInArchive)
 		}
+		name, err := filepath.Rel(destination, destPath)
+		if err != nil {
+			return err
+		}
 
 		if info.IsDir() {
-			return os.MkdirAll(destPath, info.Mode()|0700)
+			return dest.MkdirAll(name, info.Mode().Perm()|0700)
 		}
 
 		if info.LinkTarget != "" {
-			if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			if err := dest.MkdirAll(filepath.Dir(name), 0755); err != nil {
 				return err
 			}
 			if info.Mode()&fs.ModeSymlink != 0 {
@@ -169,17 +199,21 @@ func Unarchive(source, destination, format string) error {
 				if !strings.HasPrefix(resolvedTarget, cleanDest) && resolvedTarget != filepath.Clean(destination) {
 					return fmt.Errorf("illegal symlink target in archive: %s -> %s", info.NameInArchive, info.LinkTarget)
 				}
-				return os.Symlink(info.LinkTarget, destPath)
+				return dest.Symlink(info.LinkTarget, name)
 			}
 			// Hardlink - validate target resolves within destination to prevent path traversal
 			hardlinkTarget := filepath.Clean(filepath.Join(destination, info.LinkTarget))
 			if !strings.HasPrefix(hardlinkTarget, cleanDest) && hardlinkTarget != filepath.Clean(destination) {
 				return fmt.Errorf("illegal hardlink target in archive: %s -> %s", info.NameInArchive, info.LinkTarget)
 			}
-			return os.Link(hardlinkTarget, destPath)
+			hardlinkName, err := filepath.Rel(destination, hardlinkTarget)
+			if err != nil {
+				return err
+			}
+			return dest.Link(hardlinkName, name)
 		}
 
-		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+		if err := dest.MkdirAll(filepath.Dir(name), 0755); err != nil {
 			return err
 		}
 
@@ -189,7 +223,8 @@ func Unarchive(source, destination, format string) error {
 		}
 		defer inFile.Close()
 
-		outFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+		// os.Root rejects setuid, setgid and sticky bits
+		outFile, err := dest.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode().Perm())
 		if err != nil {
 			return err
 		}
