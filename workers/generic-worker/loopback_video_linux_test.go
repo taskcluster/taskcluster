@@ -30,6 +30,13 @@ func TestLoopbackVideo(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:"+td.ProvisionerID+"/"+td.WorkerType)
 
+	switch engine {
+	case "insecure":
+		// modprobe requires root, so loopback video device setup fails as non-root
+		_ = submitAndAssert(t, td, payload, "failed", "failed")
+		return
+	}
+
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 	logText := LogText(t)
