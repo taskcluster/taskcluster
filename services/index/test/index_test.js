@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     retries: 3,
     created: new Date().toJSON(),
     deadline: new Date().toJSON(),
-    expires: taskcluster.fromNow('1 day'),
+    expires: taskcluster.fromNow('1 day').toJSON(),
     payload: {},
     metadata: {
       name: 'Print `"Hello World"` Once',
@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     task.extra = {
       index: {
         rank: 42,
-        expires: taskcluster.fromNow('1 hour'),
+        expires: taskcluster.fromNow('1 hour').toJSON(),
         data: {
           hello: 'world',
         },
@@ -151,6 +151,34 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     result = await helper.index.findTask('my-ns.my-indexed-thing-again');
     assert.equal(result.taskId, taskId, 'Wrong taskId');
   });
+
+  const indexTaskWithExtraExpires = async expires => {
+    const taskId = slugid.nice();
+    const task = makeTask();
+    task.extra = { index: { rank: 42, expires, data: {} } };
+    helper.queue.addTask(taskId, task);
+
+    await helper.fakePulseMessage({
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'route.index.abc',
+      routes: task.routes,
+      payload: { status: { taskId } },
+    });
+  };
+
+  for (const [name, expires] of [
+    ['garbage', 'garbage'],
+    ['null', null],
+    ['numeric', 0],
+    ['already expired', taskcluster.fromNow('-1 hour').toJSON()],
+  ]) {
+    test(`Run task with .extra.index.expires being ${name}`, async () => {
+      await indexTaskWithExtraExpires(expires);
+
+      const rows = await helper.db.fns.get_indexed_task('my-ns', 'my-indexed-thing');
+      assert.deepEqual(rows, [], 'Expected the task not to be indexed');
+    });
+  }
 
   test('Expiring Indexed Tasks', async () => {
     // Create expiration

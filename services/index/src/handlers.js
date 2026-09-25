@@ -103,6 +103,11 @@ Handlers.prototype.completed = function (message) {
     // Parse expiration date
     expires = new Date(options.expires);
 
+    if (Number.isNaN(expires.getTime()) || expires <= new Date()) {
+      debug('Expected a future date from task.extra.index.expires, failed on %j', message);
+      return;
+    }
+
     // Check that we have a number
     if (typeof options.rank !== 'number') {
       debug('Expected number from task.extra.index.rank, failing on %j', message);
