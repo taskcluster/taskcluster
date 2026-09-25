@@ -252,6 +252,44 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  test('WorkerPoolStats counts recent launch successes by launch config', async () => {
+    const recentSince = new Date(Date.now() - 15 * 60 * 1000);
+    const wps = new WorkerPoolStats('wp/id', {}, { recentSince });
+    const recent = new Date(Date.now() - 5 * 60 * 1000);
+    const old = new Date(Date.now() - 30 * 60 * 1000);
+    const running = (launchConfigId, created, lastModified, capacity = 1) =>
+      new Worker({ capacity, state: Worker.states.RUNNING, launchConfigId, created, lastModified });
+
+    // counted: running, registered recently, has a launch config
+    wps.updateFromWorker(running('lc-1', recent, recent, 4));
+    // counted: slow to boot, created before the window but registered inside it
+    wps.updateFromWorker(running('lc-1', old, recent));
+    // not counted: registered before the window
+    wps.updateFromWorker(running('lc-1', old, old));
+    // not counted: not registered yet
+    wps.updateFromWorker(
+      new Worker({ capacity: 1, state: Worker.states.REQUESTED, launchConfigId: 'lc-2', lastModified: recent })
+    );
+    // not counted: stopping
+    wps.updateFromWorker(
+      new Worker({ capacity: 1, state: Worker.states.STOPPING, launchConfigId: 'lc-2', lastModified: recent })
+    );
+
+    // counts workers, not capacity
+    assert.equal(wps.successesByLaunchConfig.get('lc-1'), 2);
+    assert.equal(wps.successesByLaunchConfig.has('lc-2'), false);
+    assert.equal(wps.successesByLaunchConfig.size, 1);
+  });
+
+  test('WorkerPoolStats without recentSince does not count successes', async () => {
+    const wps = new WorkerPoolStats('wp/id', {});
+    wps.updateFromWorker(
+      new Worker({ capacity: 1, state: Worker.states.RUNNING, launchConfigId: 'lc-1', lastModified: new Date() })
+    );
+    assert.equal(wps.recentSince, null);
+    assert.equal(wps.successesByLaunchConfig.size, 0);
+  });
+
   suite('Worker.updateInstanceFields', () => {
     test('preserves queue fields when undefined', () => {
       const worker = Worker.fromApi({
