@@ -220,8 +220,9 @@ export class WorkerPoolStats {
   /**
    * @param {string} workerPoolId
    * @param {Record<string, number>} stats
+   * @param {{ recentSince?: Date | null }} [options]
    */
-  constructor(workerPoolId, stats = {}) {
+  constructor(workerPoolId, stats = {}, { recentSince = null } = {}) {
     this.workerPoolId = workerPoolId;
     /** @type {Set<string>} */
     this.providers = new Set([]);
@@ -241,6 +242,11 @@ export class WorkerPoolStats {
     this.errorsByLaunchConfig = new Map();
     /** @type {Map<string, { existingCapacity: number, requestedCapacity: number, stoppingCapacity: number }>} */
     this.capacityByWorkerGroup = new Map();
+
+    // workers that registered at or after this time count as launch successes
+    this.recentSince = recentSince;
+    /** @type {Map<string, number>} */
+    this.successesByLaunchConfig = new Map();
   }
 
   forProvision() {
@@ -310,6 +316,15 @@ export class WorkerPoolStats {
         worker.launchConfigId,
         this.capacityByLaunchConfig.get(worker.launchConfigId) + worker.capacity || worker.capacity
       );
+
+      // providers set lastModified when a worker registers and becomes RUNNING, and do not
+      // change it again until the worker stops, so it is the worker's registration time
+      if (this.recentSince && worker.state === Worker.states.RUNNING && worker.lastModified >= this.recentSince) {
+        this.successesByLaunchConfig.set(
+          worker.launchConfigId,
+          (this.successesByLaunchConfig.get(worker.launchConfigId) || 0) + 1
+        );
+      }
     }
 
     if (worker.workerGroup) {
