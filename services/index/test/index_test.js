@@ -205,7 +205,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const myns = slugid.v4();
     const taskId = slugid.v4();
-    const taskId2 = slugid.v4();
+    const taskId2 = helper.makeFakeTask();
     await helper.insertExpiredTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
@@ -249,7 +249,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     expiry.setDate(expiry.getDate() - 1);
     const myns = slugid.v4();
     const taskId = slugid.v4();
-    const taskId2 = slugid.v4();
+    const taskId2 = helper.makeFakeTask();
 
     await helper.insertExpiredTask(`${myns}.one-ns.my-task`, {
       taskId: taskId,
@@ -292,7 +292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     expiry.setDate(expiry.getDate() + 10);
     const res = [];
     for (let i = 1; i <= 10; i++) {
-      const taskId = slugid.nice();
+      const taskId = helper.makeFakeTask();
       await helper.index.insertTask(`${myns}.my-task${_.toString(i)}.new${_.toString(i)}`, {
         taskId: taskId,
         rank: i,

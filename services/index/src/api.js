@@ -308,6 +308,32 @@ builder.declare(
       return res.reportError('InputError', 'expires must be a date in the future', {});
     }
 
+    const referencedTask = await this.queue.task(input.taskId).catch(err => {
+      if (err.statusCode === 404) {
+        return null;
+      }
+      throw err;
+    });
+
+    if (!referencedTask) {
+      return res.reportError('InputError', 'Task {{taskId}} does not exist', {
+        taskId: input.taskId,
+      });
+    }
+
+    const taskExpires = new Date(referencedTask.expires);
+
+    if (taskExpires <= new Date()) {
+      return res.reportError('InputError', 'Task {{taskId}} has already expired on {{taskExpires}}', {
+        taskId: input.taskId,
+        taskExpires: taskExpires.toJSON(),
+      });
+    }
+
+    if (input.expires > taskExpires) {
+      input.expires = taskExpires;
+    }
+
     // Insert task
     return helpers.taskUtils.insertTask(this.db, namespace, input).then(task => {
       res.reply(helpers.taskUtils.serialize(task));
