@@ -41,6 +41,8 @@ tasks:
         - name: public/playwright-report
           path: /builds/worker/checkouts/taskcluster/ui/playwright-report
           type: directory
+      env:
+        TASKCLUSTER_ROOT_URL: https://dev.alpha.taskcluster-dev.net
     run:
       command: >-
         cd ui &&
