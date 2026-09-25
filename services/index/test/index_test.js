@@ -164,6 +164,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       routes: task.routes,
       payload: { status: { taskId } },
     });
+
+    return task;
   };
 
   for (const [name, expires] of [
@@ -179,6 +181,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.deepEqual(rows, [], 'Expected the task not to be indexed');
     });
   }
+
+  test('Run task with .extra.index.expires outliving the task', async () => {
+    const task = await indexTaskWithExtraExpires(taskcluster.fromNow('10 years').toJSON());
+
+    const result = await helper.index.findTask('my-ns.my-indexed-thing');
+    assert.equal(result.expires, new Date(task.expires).toJSON(), "Expected the expiry to be capped to the task's");
+  });
+
+  test('Run task with a .extra.index.expires shorter than the task', async () => {
+    const expires = taskcluster.fromNow('1 hour').toJSON();
+    await indexTaskWithExtraExpires(expires);
+
+    const result = await helper.index.findTask('my-ns.my-indexed-thing');
+    assert.equal(result.expires, expires, 'Expected the given expiry to be used');
+  });
 
   test('Expiring Indexed Tasks', async () => {
     // Create expiration

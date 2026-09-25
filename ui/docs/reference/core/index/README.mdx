@@ -73,9 +73,9 @@ For example:
       # set with rank zero.
       rank: 4000
 
-      # Specified when the entries expires. max 1 year, defaults to 1 year if not
-      # provided
-      expires: new Date().toJSON()
+      # Specifies when the entry expires. Defaults to the task's expiry and is
+      # silently capped to it.
+      expires: fromNow('1 year')
 
       # A little informal data to store along with taskId
       data: {
