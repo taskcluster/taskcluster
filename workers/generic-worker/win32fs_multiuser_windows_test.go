@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/host"
 	"golang.org/x/sys/windows"
@@ -47,6 +48,113 @@ func grantedTo(t *testing.T, path, user string) bool {
 		t.Fatalf("could not read ACL of %q: %v", path, err)
 	}
 	return strings.TrimSpace(out) == "yes"
+}
+
+func readSD(t *testing.T, path string) *windows.SECURITY_DESCRIPTOR {
+	t.Helper()
+	sd, err := windows.GetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION)
+	if err != nil {
+		t.Fatalf("could not read security descriptor of %q: %v", path, err)
+	}
+	return sd
+}
+
+func daclAllowsWorld(t *testing.T, sd *windows.SECURITY_DESCRIPTOR) bool {
+	t.Helper()
+	dacl, _, err := sd.DACL()
+	if err != nil {
+		if err == windows.ERROR_OBJECT_NOT_FOUND {
+			return true
+		}
+		t.Fatalf("could not read DACL: %v", err)
+	}
+	if dacl == nil {
+		return true
+	}
+	for i := uint16(0); i < dacl.AceCount; i++ {
+		var ace *windows.ACCESS_ALLOWED_ACE
+		if err := windows.GetAce(dacl, uint32(i), &ace); err != nil {
+			t.Fatalf("GetAce: %v", err)
+		}
+		if ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {
+			continue
+		}
+		sid := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
+		if sid.IsWellKnown(windows.WinBuiltinUsersSid) ||
+			sid.IsWellKnown(windows.WinWorldSid) ||
+			sid.IsWellKnown(windows.WinAuthenticatedUserSid) {
+			return true
+		}
+	}
+	return false
+}
+
+func requireWorldACE(t *testing.T, path string) {
+	t.Helper()
+	sd := readSD(t, path)
+	if !daclAllowsWorld(t, sd) {
+		t.Fatalf("%s did not inherit a Users/Everyone ACE: %s", path, sd.String())
+	}
+}
+
+func assertProtectedNoWorld(t *testing.T, path string) {
+	t.Helper()
+	sd := readSD(t, path)
+	sddl := sd.String()
+	control, _, err := sd.Control()
+	if err != nil {
+		t.Fatalf("could not read control of %q: %v", path, err)
+	}
+	if control&windows.SE_DACL_PROTECTED == 0 {
+		t.Errorf("%s DACL is not protected: %s", path, sddl)
+	}
+	if daclAllowsWorld(t, sd) {
+		t.Errorf("%s DACL still grants Users/Everyone: %s", path, sddl)
+	}
+}
+
+func assertNoWorld(t *testing.T, path string) {
+	t.Helper()
+	if sd := readSD(t, path); daclAllowsWorld(t, sd) {
+		t.Errorf("%s inherited Users/Everyone: %s", path, sd.String())
+	}
+}
+
+func assertGranted(t *testing.T, path string, users ...string) {
+	t.Helper()
+	for _, user := range users {
+		if !grantedTo(t, path, user) {
+			t.Errorf("%s was not granted %s", user, path)
+		}
+	}
+}
+
+func grantUsersInheritable(t *testing.T, path string) {
+	t.Helper()
+	// *S-1-5-32-545 = BUILTIN\Users
+	if err := host.Run("icacls", path, "/grant", "*S-1-5-32-545:(OI)(CI)(RX)"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func mkdirCacheInheritingUsers(t *testing.T, parent string) (cache, nested string) {
+	t.Helper()
+	if err := os.MkdirAll(parent, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	grantUsersInheritable(t, parent)
+	cache = filepath.Join(parent, "cache")
+	nested = filepath.Join(cache, "nested", "file.txt")
+	if err := os.MkdirAll(filepath.Dir(nested), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(nested, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{cache, filepath.Dir(nested), nested} {
+		requireWorldACE(t, p)
+	}
+	return cache, nested
 }
 
 func mkAdminOnlySecret(t *testing.T, base string) (secret, secretFile string) {
@@ -242,6 +350,68 @@ func TestGrantFullControl(t *testing.T) {
 
 		if err := grantFullControl(cache, taskUser, true); err == nil {
 			t.Error("granted a hardlink under a root owned by SYSTEM")
+		}
+	})
+
+	t.Run("replaces inherited Users ACEs", func(t *testing.T) {
+		cache, nested := mkdirCacheInheritingUsers(t, filepath.Join(base, "inherited-users"))
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		later := filepath.Join(cache, "later.txt")
+		if err := os.WriteFile(later, []byte("y"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		for _, path := range []string{cache, filepath.Dir(nested), nested} {
+			assertProtectedNoWorld(t, path)
+			assertGranted(t, path, taskUser, "SYSTEM", "Administrators")
+		}
+		// later.txt is created after the grant, so it inherits the cache DACL
+		// (ID ACEs) rather than getting a protected DACL of its own.
+		assertNoWorld(t, later)
+		assertGranted(t, later, taskUser, "SYSTEM", "Administrators")
+	})
+}
+
+func TestProtectWorkerDir(t *testing.T) {
+	setup(t)
+
+	t.Run("stops new children inheriting Users", func(t *testing.T) {
+		parent := t.TempDir()
+		grantUsersInheritable(t, parent)
+		dir := filepath.Join(parent, "caches")
+		existing := filepath.Join(dir, "old.txt")
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(existing, []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		requireWorldACE(t, dir)
+		requireWorldACE(t, existing)
+
+		if err := protectWorkerDir(dir); err != nil {
+			t.Fatal(err)
+		}
+		assertProtectedNoWorld(t, dir)
+		assertGranted(t, dir, "SYSTEM", "Administrators")
+
+		later := filepath.Join(dir, "later.txt")
+		if err := os.WriteFile(later, []byte("y"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		assertNoWorld(t, later)
+		requireWorldACE(t, existing)
+	})
+
+	t.Run("skips a volume root", func(t *testing.T) {
+		vol := filepath.VolumeName(t.TempDir()) + `\`
+		before := readSD(t, vol).String()
+		if err := protectWorkerDir(vol); err != nil {
+			t.Fatal(err)
+		}
+		if got := readSD(t, vol).String(); got != before {
+			t.Errorf("modified volume root %s DACL: %s -> %s", vol, before, got)
 		}
 	})
 }

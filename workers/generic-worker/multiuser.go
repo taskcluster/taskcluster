@@ -359,7 +359,7 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 		return safefs.Remove(file.Name())
 	}
 
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, ctx.TaskDir, []string{}, pd)
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--root", ctx.TaskDir, "--create-dir", dir}, ctx.TaskDir, []string{}, pd)
 	if err != nil {
 		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, err)
 	}
@@ -374,7 +374,7 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 }
 
 func CreateFileAsTaskUser(file string, ctx *TaskContext, pd *process.PlatformData) (*os.File, error) {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, ctx.TaskDir, []string{}, pd)
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--root", ctx.TaskDir, "--create-file", file}, ctx.TaskDir, []string{}, pd)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, err)
 	}

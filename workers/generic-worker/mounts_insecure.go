@@ -20,7 +20,7 @@ func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 }
 
 func unarchive(source, destination, format string, ctx *TaskContext, pd *process.PlatformData) error {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, "", []string{})
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--root", ctx.TaskDir, "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, "", []string{})
 	if err != nil {
 		return fmt.Errorf("cannot create process to unarchive %v to %v as task user: %v", source, destination, err)
 	}
