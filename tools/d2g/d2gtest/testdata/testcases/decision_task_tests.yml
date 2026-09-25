@@ -97,7 +97,7 @@ testSuite:
         - --env-file
         - env.list
         - --
-        - mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06
+        - __D2G_IMAGE_ID__
         - /builds/worker/bin/run-task
         - --gecko-checkout=/builds/worker/checkouts/gecko
         - --gecko-sparse-profile=build/sparse-profiles/taskgraph
