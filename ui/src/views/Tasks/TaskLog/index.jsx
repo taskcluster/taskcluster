@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
+import { Queue } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
@@ -8,7 +8,6 @@ import Button from '../../../components/Button';
 import Log from '../../../components/Log';
 import Link from '../../../utils/Link';
 import Helmet from '../../../components/Helmet';
-import taskQuery from './task.graphql';
 import Search from '../../../components/Search';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
@@ -17,8 +16,10 @@ import {
   getRawArtifactName,
 } from '../../../utils/artifactNames';
 import { withAuth } from '../../../utils/Auth';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
 @withAuth
+@withTaskclusterClient
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
@@ -33,18 +34,61 @@ import { withAuth } from '../../../utils/Auth';
     right: theme.spacing(3),
   },
 }))
-@graphql(taskQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    errorPolicy: 'all',
-    variables: {
-      taskId: props.match.params.taskId,
-    },
-  }),
-})
 export default class TaskLog extends Component {
+  state = {
+    task: null,
+    status: null,
+  };
+
+  // Guards against out-of-order responses when the task ID changes while a
+  // fetch is in flight, and against updating state after unmounting.
+  requestId = 0;
+
+  componentDidMount() {
+    this.load();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.taskId !== this.props.match.params.taskId) {
+      this.setState({ task: null, status: null });
+      this.load();
+    }
+  }
+
+  componentWillUnmount() {
+    this.requestId += 1;
+  }
+
+  // The task name and run state only decorate the page title and favicon;
+  // the log itself is fetched by the Log component. Either request failing
+  // (e.g. missing scopes or an expired task) leaves that part blank rather
+  // than hiding the log.
+  load = async () => {
+    const {
+      createTaskclusterClient,
+      match: {
+        params: { taskId },
+      },
+    } = this.props;
+    const id = ++this.requestId;
+    const queue = createTaskclusterClient({ Class: Queue });
+    const [task, status] = await Promise.allSettled([
+      queue.task(taskId),
+      queue.status(taskId),
+    ]);
+
+    if (id !== this.requestId) {
+      return;
+    }
+
+    this.setState({
+      task: task.status === 'fulfilled' ? task.value : null,
+      status: status.status === 'fulfilled' ? status.value.status : null,
+    });
+  };
+
   getCurrentRun() {
-    return this.props.data.task?.status.runs[this.props.match.params.runId];
+    return this.state.status?.runs[this.props.match.params.runId];
   }
 
   getLogUrl() {
@@ -71,12 +115,8 @@ export default class TaskLog extends Component {
   }
 
   render() {
-    const {
-      classes,
-      match,
-      stream,
-      data: { task },
-    } = this.props;
+    const { classes, match, stream } = this.props;
+    const { task } = this.state;
     const url = this.getLogUrl();
     const run = this.getCurrentRun();
 

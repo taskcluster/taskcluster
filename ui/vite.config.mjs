@@ -2,7 +2,6 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import mdx from '@mdx-js/rollup';
-import graphql from '@rollup/plugin-graphql';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import remarkGfm from 'remark-gfm';
 import rehypePrism from 'rehype-prism-plus';
@@ -118,7 +117,6 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-    graphql(),
     nodePolyfills({ globals: { Buffer: true, global: true, process: true } }),
     envJs(),
   ],
