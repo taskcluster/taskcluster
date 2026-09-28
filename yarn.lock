@@ -9447,6 +9447,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nodemailer@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "nodemailer@npm:10.0.2"
+  checksum: 10c0/dd95a9fef50652e724c7966517c537e0a207f5faa17a6c5daf7e392e74a1d01a9453747b03306d7e2e271ee3500cc42c8deca970859222d398a456c658b13592
+  languageName: node
+  linkType: hard
+
 "nodemailer@npm:^7.0.12":
   version: 7.0.13
   resolution: "nodemailer@npm:7.0.13"
@@ -9458,13 +9465,6 @@ __metadata:
   version: 9.0.1
   resolution: "nodemailer@npm:9.0.1"
   checksum: 10c0/4213f01aa211127c1ce33243c5e45e7f831601a933d03fa864cd827b1bd5ea2782cb4b43722bee7028cbc193733d9802dad1120fe67181448eb0b7de52218a37
-  languageName: node
-  linkType: hard
-
-"nodemailer@npm:^9.1.1":
-  version: 9.1.1
-  resolution: "nodemailer@npm:9.1.1"
-  checksum: 10c0/b213a2a906697a735f6eb21103629b7a77aeac297b6d843efd4588157999bf6d19381853ac1224e472f5a34aec2e2412444151a2c6ec6e8c52150afa3055039c
   languageName: node
   linkType: hard
 
@@ -11692,7 +11692,7 @@ __metadata:
     nock: "npm:^14.0.17"
     node-fetch: "npm:^3.3.2"
     node-forge: "npm:^1.4.0"
-    nodemailer: "npm:^9.1.1"
+    nodemailer: "npm:^10.0.2"
     oauth2orize: "npm:^1.11.0"
     open-editor: "npm:^5.1.0"
     p-queue: "npm:^9.3.3"

@@ -103,7 +103,7 @@
     "newrelic": "^12.25.0",
     "node-fetch": "^3.3.2",
     "node-forge": "^1.4.0",
-    "nodemailer": "^9.1.1",
+    "nodemailer": "^10.0.2",
     "oauth2orize": "^1.11.0",
     "p-queue": "^9.3.3",
     "p-synchronize": "^1.0.0",
