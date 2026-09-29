@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"strings"
 
 	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
@@ -77,10 +74,7 @@ type TaskclusterProxyTask struct {
 	taskclusterProxy         *tcproxy.TaskclusterProxy
 	task                     *TaskRun
 	taskStatusChangeListener *TaskStatusChangeListener
-	taskclusterProxyAddress  string
-	taskclusterProxyPort     uint16
 	dockerNetwork            string // per-task Docker network name (d2g only)
-	dockerSubnet             string // per-task Docker network subnet, CIDR (d2g only)
 }
 
 func (l *TaskclusterProxyTask) ReservedArtifacts() []string {
@@ -105,6 +99,8 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		proxyPort = config.TaskclusterProxyPort
 	}
 
+	var proxyAddress string
+	var dockerSubnet string // per-task Docker network subnet, CIDR (d2g only)
 	switch l.task.Payload.TaskclusterProxyInterface {
 	case "docker-bridge":
 		// Create a per-task Docker network for isolation. Each container
@@ -128,7 +124,6 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("could not determine gateway/subnet for Docker network %s: %s", networkName, err))
 		}
-		var dockerSubnet string
 		for line := range strings.SplitSeq(strings.TrimSpace(out), "\n") {
 			fields := strings.Fields(line)
 			if len(fields) != 2 {
@@ -139,26 +134,25 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 			if ipAddress == nil || ipAddress.To4() == nil {
 				continue
 			}
-			l.taskclusterProxyAddress = gw
+			proxyAddress = gw
 			dockerSubnet = subnet
 			break
 		}
-		if l.taskclusterProxyAddress == "" {
+		if proxyAddress == "" {
 			return executionError(internalError, errored, fmt.Errorf("no IPv4 gateway found for Docker network %s in %q", networkName, out))
 		}
-		l.dockerSubnet = dockerSubnet
 
 		// Make the network name and gateway available to d2g for docker run
 		err = l.task.setVariable("TASKCLUSTER_DOCKER_NETWORK", networkName)
 		if err != nil {
 			return MalformedPayloadError(err)
 		}
-		err = l.task.setVariable("TASKCLUSTER_PROXY_GATEWAY", l.taskclusterProxyAddress)
+		err = l.task.setVariable("TASKCLUSTER_PROXY_GATEWAY", proxyAddress)
 		if err != nil {
 			return MalformedPayloadError(err)
 		}
 	case "localhost":
-		l.taskclusterProxyAddress = "127.0.0.1"
+		proxyAddress = "127.0.0.1"
 	default:
 		return executionError(internalError, errored, fmt.Errorf("INTERNAL BUG: Unsupported taskcluster proxy interface enum option should not have made it here: %q", l.task.Payload.TaskclusterProxyInterface))
 	}
@@ -210,13 +204,17 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 	allowedUser := ""
 	allowedNetwork := ""
 	if l.task.Context.User != nil {
-		allowedUser = l.task.Context.User.Name
-		allowedNetwork = l.dockerSubnet
+		var err error
+		allowedUser, err = proxyAllowedUser(l.task)
+		if err != nil {
+			return executionError(internalError, errored, err)
+		}
+		allowedNetwork = dockerSubnet
 	}
 
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
-		l.taskclusterProxyAddress,
+		proxyAddress,
 		proxyPort,
 		config.RootURL,
 		creds,
@@ -227,21 +225,20 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("could not start taskcluster proxy on port %d: %s", proxyPort, err))
 	}
 	l.taskclusterProxy = taskclusterProxy
-	l.taskclusterProxyPort = proxyPort
 
 	err = l.task.setVariable("TASKCLUSTER_PROXY_URL",
-		fmt.Sprintf("http://%s:%d", l.taskclusterProxyAddress, proxyPort))
+		fmt.Sprintf("http://%s:%d", proxyAddress, proxyPort))
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
 
-	l.registerCredentialRefresh()
+	l.registerCredentialRefresh(proxyPort)
 	return nil
 }
 
 // registerCredentialRefresh sets up a listener that refreshes proxy credentials
 // when a task is reclaimed.
-func (l *TaskclusterProxyTask) registerCredentialRefresh() {
+func (l *TaskclusterProxyTask) registerCredentialRefresh(proxyPort uint16) {
 	l.taskStatusChangeListener = &TaskStatusChangeListener{
 		Name: "taskcluster-proxy",
 		Callback: func(ts TaskStatus) {
@@ -250,38 +247,13 @@ func (l *TaskclusterProxyTask) registerCredentialRefresh() {
 				return
 			}
 			newCreds := l.task.TaskReclaimResponse.Credentials
-			b, err := json.Marshal(&newCreds)
-			if err != nil {
-				panic(err)
+			// Credentials go over the proxy's stdin rather than its
+			// /credentials endpoint: the proxy only admits connections
+			// from the task user, not from the worker.
+			if err := l.taskclusterProxy.UpdateCredentials(&newCreds); err != nil {
+				panic(fmt.Sprintf("Could not send refreshed credentials to taskcluster-proxy on port %v: %v", proxyPort, err))
 			}
-			buffer := bytes.NewBuffer(b)
-			// When the proxy is bound to a docker-bridge gateway IP,
-			// the worker (which lives in the host netns) talks to the
-			// proxy's loopback companion listener on 127.0.0.1. That
-			// keeps the control-plane request out of the routing/NAT
-			// path used for container traffic, so the proxy's UID
-			// admission has a clean /proc/net/tcp entry to verify
-			// against. tc-proxy binds 127.0.0.1 in addition to the
-			// configured ip-address whenever --allowed-network is set.
-			refreshHost := l.taskclusterProxyAddress
-			if l.dockerSubnet != "" {
-				refreshHost = "127.0.0.1"
-			}
-			putURL := fmt.Sprintf("http://%s:%v/credentials", refreshHost, l.taskclusterProxyPort)
-			req, err := http.NewRequest("PUT", putURL, buffer)
-			if err != nil {
-				panic(fmt.Sprintf("Could not create PUT request to taskcluster-proxy /credentials endpoint: %v", err))
-			}
-			client := &http.Client{}
-			res, err := client.Do(req)
-			if err != nil {
-				panic(fmt.Sprintf("Could not PUT to %v: %v", putURL, err))
-			}
-			defer res.Body.Close()
-			if res.StatusCode != 200 {
-				panic(fmt.Sprintf("Got http status code %v when issuing PUT to %v", res.StatusCode, putURL))
-			}
-			log.Printf("Got http status code %v when issuing PUT to %v with clientId %v", res.StatusCode, putURL, newCreds.ClientID)
+			log.Printf("Sent refreshed credentials to taskcluster-proxy on port %v with clientId %v", proxyPort, newCreds.ClientID)
 			l.task.Infof("[taskcluster-proxy] Successfully refreshed taskcluster-proxy credentials: %v", newCreds.ClientID)
 		},
 	}

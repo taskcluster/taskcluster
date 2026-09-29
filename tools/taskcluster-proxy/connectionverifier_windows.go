@@ -49,19 +49,6 @@ func (v *windowsVerifier) Verify(conn net.Conn) error {
 		return fmt.Errorf("failed to get SID for PID %d: %w", pid, err)
 	}
 
-	// Always allow SYSTEM (S-1-5-18) - the worker process runs as
-	// SYSTEM and needs to reach tc-proxy for credential refresh and
-	// health checks. The previous implementation also compared against
-	// the Administrators *group* SID (S-1-5-32-544); that check was
-	// dead code because tokenUser.User.Sid is always a *user* SID.
-	// If we ever need to admit any process running with admin
-	// privileges, the correct test is to enumerate token groups via
-	// GetTokenGroups, not to compare the user SID.
-	systemSID, _ := windows.StringToSid("S-1-5-18")
-	if systemSID != nil && sid.Equals(systemSID) {
-		return nil
-	}
-
 	if !v.allowedSID.Equals(sid) {
 		return &ErrUnauthorizedConnection{
 			ExpectedUser: v.username,

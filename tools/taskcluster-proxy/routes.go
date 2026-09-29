@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -26,6 +27,9 @@ type Routes struct {
 	tcclient.Client
 	services tc.Services
 	lock     sync.RWMutex
+	// CredentialsFromStdin disables the /credentials endpoint, since
+	// credentials are only updated via ReadCredentialsUpdates.
+	CredentialsFromStdin bool
 }
 
 // CredentialsUpdate is the internal representation of the json body which is
@@ -136,6 +140,11 @@ func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 // CredentialsHandler is the HTTP Handler for serving the /credentials endpoint
 func (routes *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Request) {
 	routes.setHeaders(res)
+	if routes.CredentialsFromStdin {
+		log.Print("Rejected /credentials request: credentials are only updated via stdin")
+		res.WriteHeader(404)
+		return
+	}
 	if req.Method != "PUT" {
 		log.Printf("Invalid method %s\n", req.Method)
 		res.WriteHeader(405)
@@ -153,13 +162,35 @@ func (routes *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Requ
 		return
 	}
 
+	routes.UpdateCredentials(credentials)
+	res.WriteHeader(200)
+}
+
+// UpdateCredentials replaces the credentials used to sign proxied requests.
+func (routes *Routes) UpdateCredentials(credentials *CredentialsUpdate) {
 	routes.lock.Lock()
 	defer routes.lock.Unlock()
 	routes.Credentials.ClientID = credentials.ClientID
 	routes.Credentials.AccessToken = credentials.AccessToken
 	routes.Credentials.Certificate = credentials.Certificate
+}
 
-	res.WriteHeader(200)
+// ReadCredentialsUpdates applies each JSON credentials object read from r.
+// It returns nil once r is closed, or an error if r contains invalid JSON,
+// after which no further updates can be read.
+func (routes *Routes) ReadCredentialsUpdates(r io.Reader) error {
+	decoder := json.NewDecoder(r)
+	for {
+		credentials := &CredentialsUpdate{}
+		if err := decoder.Decode(credentials); err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return err
+		}
+		routes.UpdateCredentials(credentials)
+		log.Printf("Updated credentials: clientId %v", credentials.ClientID)
+	}
 }
 
 // RootHandler is the HTTP Handler for / endpoint

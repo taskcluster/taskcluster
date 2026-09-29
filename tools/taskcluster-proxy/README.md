@@ -4,8 +4,6 @@ taskcluster-proxy is the proxy server which is used by Taskcluster workers to
 enable individual tasks to talk to various Taskcluster services (auth, queue,
 scheduler, ...) without hardcoding credentials into the containers themselves.
 
-* When used by docker-worker the taskcluster-proxy runs in a separate docker
-  container linked to the task docker container.
 * When used by generic-worker, the taskcluster-proxy runs as a separate
   native executable on the host.
 
@@ -99,10 +97,6 @@ Credentials may also be passed using environment variables:
 ## Example usage
 
 For simplicity the below examples run under `localhost`.
-
-When taskcluster-proxy is running under docker-worker, it is run in a linked
-container which is accessible from the docker-worker task container via an http
-connection to the host `taskcluster` on port 80.
 
 When taskcluster-proxy is running under generic-worker, it is run as a native
 executable on the task host machine, running on port 80. For convenience, the
@@ -203,15 +197,22 @@ curl http://localhost:8080/bewit --data 'https://taskcluster.example.com/api/que
 
 The proxy has the endpoint `/credentials` which accepts a `PUT` request for
 updating the credentials used by a running taskcluster-proxy, without needing
-to restart it. The body is a credentials object object in json format.
-This endpoint is called by `docker-worker` and
-`generic-worker` when they receive updated temporary credentials from the queue
-for a running task (see
-[`queue.claimWork`](https://docs.taskcluster.net/docs/reference/platform/queue/api#claimWork)).
+to restart it. The body is a credentials object in json format, such as the
+updated temporary credentials a worker receives from the queue for a running
+task (see
+[`queue.reclaimTask`](https://docs.taskcluster.net/docs/reference/platform/queue/api#reclaimTask)).
 Existing requests will be completed before the credentials are updated, and new
 requests will be queued behind the credentials update request. Therefore if a
 long transaction is currently in place, the credentials update request may take
 longer to complete.
+
+When started with `--credentials-stdin`, the proxy instead accepts the same
+JSON credentials objects on its stdin, one after another, and the
+`/credentials` endpoint is disabled. `generic-worker` uses this, since with
+`--allowed-user` the proxy only admits connections from the task user and not
+from the worker itself. In this mode the proxy exits when its stdin is closed,
+so it doesn't outlive the process that launched it, and exits with an error if
+it reads invalid JSON.
 
 
 ### Proxy Request (`/`)
