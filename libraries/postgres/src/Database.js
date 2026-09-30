@@ -73,6 +73,7 @@ class Database {
     serviceName,
     monitor,
     statementTimeout,
+    connectionTimeoutMillis,
     poolSize,
   }) {
     assert(readDbUrl, 'readDbUrl is required');
@@ -87,6 +88,7 @@ class Database {
       urlsByMode: { [READ]: readDbUrl, [WRITE]: writeDbUrl },
       monitor,
       statementTimeout,
+      connectionTimeoutMillis,
       poolSize,
       keyring,
     });
@@ -542,10 +544,12 @@ class Database {
    * @param {Keyring} [options.keyring]
    * @param {MonitorManager} [options.monitor]
    * @param {number} [options.statementTimeout]
+   * @param {number} [options.connectionTimeoutMillis]
    * @param {number} [options.poolSize]
    */
-  constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
+  constructor({ urlsByMode, monitor, statementTimeout, connectionTimeoutMillis, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
+    assert(!connectionTimeoutMillis || typeof connectionTimeoutMillis === 'number');
     /**
      * @param {string} dbUrl
      * @returns {pg.Pool}
@@ -556,6 +560,7 @@ class Database {
         // and write pool, this is a maximum of 10 concurrent connections.  Other
         // requests will be queued.
         max: poolSize || 5,
+        connectionTimeoutMillis,
       };
 
       /// post-process the DB URL a little bit

@@ -37,6 +37,7 @@ export interface SetupOptions {
   serviceName: string;
   monitor?: MonitorManager;
   statementTimeout?: number;
+  connectionTimeoutMillis?: number;
   poolSize?: number;
 }
 
