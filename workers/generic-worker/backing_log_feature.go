@@ -81,6 +81,6 @@ func (bltf *BackingLogTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, fileutil.AbsFrom(taskDir, logPath)))
 	}
 	if config.CleanUpTaskDirs {
-		_ = os.Remove(fileutil.AbsFrom(taskDir, logPath))
+		_ = safefs.Remove(fileutil.AbsFrom(taskDir, logPath))
 	}
 }
