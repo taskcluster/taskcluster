@@ -2606,36 +2606,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/auth-app@npm:^8.3.0":
-  version: 8.3.0
-  resolution: "@octokit/auth-app@npm:8.3.0"
+"@octokit/auth-app@npm:^8.3.1":
+  version: 8.3.1
+  resolution: "@octokit/auth-app@npm:8.3.1"
   dependencies:
-    "@octokit/auth-oauth-app": "npm:^9.0.4"
-    "@octokit/auth-oauth-user": "npm:^6.0.3"
-    "@octokit/request": "npm:^10.0.13"
-    "@octokit/request-error": "npm:^7.1.1"
-    "@octokit/types": "npm:^17.0.0"
+    "@octokit/auth-oauth-app": "npm:^9.0.5"
+    "@octokit/auth-oauth-user": "npm:^6.0.4"
+    "@octokit/request": "npm:^10.0.16"
+    "@octokit/request-error": "npm:^7.1.2"
+    "@octokit/types": "npm:^18.0.0"
     toad-cache: "npm:^3.7.0"
     universal-github-app-jwt: "npm:^2.2.0"
     universal-user-agent: "npm:^7.0.0"
-  checksum: 10c0/cc74d6d54abb9e0f65b80d67c437dc4617379ed3a875904edb41b63f298627ac0cf8f6b66b07773d4a48bdec24c8f39674281a11b362e73b82c41728e9a7a519
+  checksum: 10c0/821d1998a65a86e0134e13bc4cb26ecba72490ae6775ac1463dc9c2a365526d657b5fbb238838e896e4b0a6fde61629a484b4dcfc9416ff874a9affda13d8515
   languageName: node
   linkType: hard
 
-"@octokit/auth-oauth-app@npm:^9.0.4":
-  version: 9.0.4
-  resolution: "@octokit/auth-oauth-app@npm:9.0.4"
+"@octokit/auth-oauth-app@npm:^9.0.5":
+  version: 9.0.5
+  resolution: "@octokit/auth-oauth-app@npm:9.0.5"
   dependencies:
-    "@octokit/auth-oauth-device": "npm:^8.0.4"
-    "@octokit/auth-oauth-user": "npm:^6.0.3"
-    "@octokit/request": "npm:^10.0.13"
-    "@octokit/types": "npm:^17.0.0"
+    "@octokit/auth-oauth-device": "npm:^8.0.5"
+    "@octokit/auth-oauth-user": "npm:^6.0.4"
+    "@octokit/request": "npm:^10.0.16"
+    "@octokit/types": "npm:^18.0.0"
     universal-user-agent: "npm:^7.0.0"
-  checksum: 10c0/752993bc65170fa71038d3f3e0dfedf9a8e05b491316335461692b770cf1b2362057d7d2686ff3b278064fdd2b0dc4b2b0151f095ffd1aa329c19223ee12356e
+  checksum: 10c0/dff8b29059e9b29b477542e0aefbd16b0c31b14afc60150933902f72b9c9e8afdea003a4181fab9bfbdb569a9b0b648aa718525223f6a33b6ce9ae451a0f6da6
   languageName: node
   linkType: hard
 
-"@octokit/auth-oauth-device@npm:^8.0.4, @octokit/auth-oauth-device@npm:^8.0.5":
+"@octokit/auth-oauth-device@npm:^8.0.5":
   version: 8.0.5
   resolution: "@octokit/auth-oauth-device@npm:8.0.5"
   dependencies:
@@ -2647,7 +2647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/auth-oauth-user@npm:^6.0.3":
+"@octokit/auth-oauth-user@npm:^6.0.4":
   version: 6.0.4
   resolution: "@octokit/auth-oauth-user@npm:6.0.4"
   dependencies:
@@ -2817,7 +2817,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/request@npm:^10.0.13, @octokit/request@npm:^10.0.16":
+"@octokit/request@npm:^10.0.16":
   version: 10.0.16
   resolution: "@octokit/request@npm:10.0.16"
   dependencies:
@@ -11597,7 +11597,7 @@ __metadata:
     "@googleapis/iam": "npm:^36.0.0"
     "@googleapis/iamcredentials": "npm:^10"
     "@graphql-tools/schema": "npm:^10.1.0"
-    "@octokit/auth-app": "npm:^8.3.0"
+    "@octokit/auth-app": "npm:^8.3.1"
     "@octokit/core": "npm:^7.0.8"
     "@octokit/plugin-retry": "npm:^8.1.1"
     "@octokit/plugin-throttling": "npm:^11.0.5"
