@@ -15,7 +15,7 @@ export default class PurgeCache extends Client {
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"};
     this.purgeCache.entry = {"args":["workerPoolId"],"category":"Purge-Cache Service","input":true,"method":"post","name":"purgeCache","query":[],"route":"/purge-cache/<workerPoolId>","scopes":"purge-cache:<workerPoolId>:<cacheName>","stability":"stable","type":"function"};
     this.allPurgeRequests.entry = {"args":[],"category":"Purge-Cache Service","method":"get","name":"allPurgeRequests","output":true,"query":["continuationToken","limit"],"route":"/purge-cache/list","scopes":"purge-cache:all-purge-requests","stability":"stable","type":"function"};
-    this.purgeRequests.entry = {"args":["workerPoolId"],"category":"Purge-Cache Service","method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<workerPoolId>","scopes":"purge-cache:purge-requests::<workerPoolId>","stability":"stable","type":"function"};
+    this.purgeRequests.entry = {"args":["workerPoolId"],"category":"Purge-Cache Service","method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<workerPoolId>","scopes":"purge-cache:purge-requests:<workerPoolId>","stability":"stable","type":"function"};
     this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"};
   }
   // Respond without doing anything.

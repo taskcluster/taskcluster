@@ -120,7 +120,7 @@ builder.declare(
       since: dt => (Date.parse(dt) ? null : 'Invalid Date'),
     },
     name: 'purgeRequests',
-    scopes: 'purge-cache:purge-requests::<workerPoolId>',
+    scopes: 'purge-cache:purge-requests:<workerPoolId>',
     output: 'purge-cache-request-list.yml',
     title: 'Open Purge Requests for a worker pool',
     stability: APIBuilder.stability.stable,
