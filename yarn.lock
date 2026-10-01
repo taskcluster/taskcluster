@@ -1371,9 +1371,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/arm-network@npm:^38.0.0":
-  version: 38.0.0
-  resolution: "@azure/arm-network@npm:38.0.0"
+"@azure/arm-network@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@azure/arm-network@npm:39.0.0"
   dependencies:
     "@azure-rest/core-client": "npm:^2.7.0"
     "@azure/abort-controller": "npm:^2.1.2"
@@ -1383,7 +1383,7 @@ __metadata:
     "@azure/core-util": "npm:^1.12.0"
     "@azure/logger": "npm:^1.2.0"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/631f2602bfbba783e07c0b858599c2b8071926fa23407652cab8d50f8b7a4e010b09cc81b9c1c68befe0bafc881f281970b249aaf465ba26edd7b0ecf598c226
+  checksum: 10c0/5345e286b902db20e773065e08ed43e695c11b53bb26d5b50f298eb5b22b4d517d83096745fb9f58e99994f1689462c4cc8846a24e161045375d81917348b736
   languageName: node
   linkType: hard
 
@@ -11586,7 +11586,7 @@ __metadata:
     "@aws-sdk/middleware-endpoint": "npm:^3.374.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.1118.0"
     "@azure/arm-compute": "npm:^22.4.0"
-    "@azure/arm-network": "npm:^38.0.0"
+    "@azure/arm-network": "npm:^39.0.0"
     "@azure/arm-resources": "npm:^7.0.0"
     "@azure/arm-resourcesdeployments": "npm:1.0.0-beta.1"
     "@azure/identity": "npm:^4.13.2"
