@@ -271,6 +271,13 @@ suite(testing.suiteName(), () => {
     },
   };
 
+  const serviceUnavailableError = {
+    code: 'ServiceUnavailable',
+    message: 'The server is temporarily over capacity and gave up on this request.',
+    requestInfo: {},
+    details: {},
+  };
+
   const expectError = (promise, code) => {
     return promise.then(
       () => {
@@ -316,6 +323,21 @@ suite(testing.suiteName(), () => {
       test('Simple GET (wrong accessToken)', async () => {
         nock(urlPrefix).get('/v1/get-test').reply(403, authFailedError);
         await expectError(client.get(), 'AuthorizationFailed');
+      });
+
+      test('Simple GET (over capacity)', async () => {
+        nock(urlPrefix).get('/v1/get-test').reply(503, serviceUnavailableError);
+        await client
+          .use({ retries: 0 })
+          .get()
+          .then(
+            () => assert(false, 'should have failed'),
+            err => {
+              assert.equal(err.code, 'ServiceUnavailable');
+              assert.equal(err.statusCode, 503);
+              assert.equal(err.overCapacity, true);
+            }
+          );
       });
 
       test('GET with parameter', async () => {
