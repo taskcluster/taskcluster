@@ -2137,7 +2137,7 @@ export default {
             "since"
           ],
           "route": "/purge-cache/<workerPoolId>",
-          "scopes": "purge-cache:purge-requests::<workerPoolId>",
+          "scopes": "purge-cache:purge-requests:<workerPoolId>",
           "stability": "stable",
           "title": "Open Purge Requests for a worker pool",
           "type": "function"

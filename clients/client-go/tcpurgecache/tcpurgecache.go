@@ -197,7 +197,7 @@ func (purgeCache *PurgeCache) AllPurgeRequests_SignedURL(continuationToken, limi
 //
 // Required scopes:
 //
-//	purge-cache:purge-requests::<workerPoolId>
+//	purge-cache:purge-requests:<workerPoolId>
 //
 // See #purgeRequests
 func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPurgeRequestList, error) {
@@ -214,7 +214,7 @@ func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPu
 //
 // Required scopes:
 //
-//	purge-cache:purge-requests::<workerPoolId>
+//	purge-cache:purge-requests:<workerPoolId>
 //
 // See PurgeRequests for more details.
 func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string, duration time.Duration) (*url.URL, error) {
