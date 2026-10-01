@@ -37,10 +37,9 @@ When a task is retrieved from the index the result includes a `taskId` and an ad
 
 ## Entry Expiration
 
-all indexed entries must have an expiration date.
-Typically this defaults to one year, if not specified.
+All indexed entries must have a valid expiration date in the future. An entry asking for an expiration greater than the task it points to will be capped to the task's expiration date.
+Entries created through a route also default to the task's expiry when none is given.
 If you are indexing tasks to make it easy to find artifacts, consider using the artifact's expiration date.
-This is the default behavior when tasks are indexed in response to Pulse messages.
 
 ## Valid Characters
 
@@ -73,9 +72,9 @@ For example:
       # set with rank zero.
       rank: 4000
 
-      # Specified when the entries expires. max 1 year, defaults to 1 year if not
-      # provided
-      expires: new Date().toJSON()
+      # Specifies when the entry expires. Defaults to the task's expiry and is
+      # silently capped to it.
+      expires: fromNow('1 year')
 
       # A little informal data to store along with taskId
       data: {

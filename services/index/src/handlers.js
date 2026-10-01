@@ -85,23 +85,32 @@ Handlers.prototype.completed = function (message) {
   // Get task definition
   return this.queue.task(message.payload.status.taskId).then(task => {
     // Create default expiration date
-    let expires;
+    let taskExpires;
     if (task.expires) {
-      expires = new Date(task.expires);
+      taskExpires = new Date(task.expires);
     } else {
-      expires = new Date(task.created);
-      expires.setDate(expires.getDate() + 365);
+      taskExpires = new Date(task.created);
+      taskExpires.setDate(taskExpires.getDate() + 365);
     }
 
     // Get `index` from `extra` section
     const options = _.defaults({}, task.extra?.index || {}, {
       rank: 0,
-      expires: expires.toJSON(),
+      expires: taskExpires.toJSON(),
       data: {},
     });
 
     // Parse expiration date
-    expires = new Date(options.expires);
+    let expires = new Date(options.expires);
+
+    if (expires > taskExpires) {
+      expires = taskExpires;
+    }
+
+    if (Number.isNaN(expires.getTime()) || expires <= new Date()) {
+      debug('Expected a future date from task.extra.index.expires, failed on %j', message);
+      return;
+    }
 
     // Check that we have a number
     if (typeof options.rank !== 'number') {

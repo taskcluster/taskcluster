@@ -1,5 +1,7 @@
 import assert from 'node:assert';
 import builder from '../src/api.js';
+import helpers from '../src/helpers.js';
+import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
 import { globalAgent } from 'node:http';
@@ -184,7 +186,11 @@ const stubbedQueue = () => {
     fake: {
       task: async taskId => {
         const task = tasks[taskId];
-        assert(task, `fake queue has no task ${taskId}`);
+        if (!task) {
+          const err = new Error(`fake queue has no task ${taskId}`);
+          err.statusCode = 404;
+          throw err;
+        }
         return task;
       },
       latestArtifact: async (taskId, name) => {
@@ -206,6 +212,22 @@ const stubbedQueue = () => {
 
   return queue;
 };
+
+export const insertExpiredTask = async (path, { taskId, rank, data, expires }) => {
+  const [namespace, name] = helpers.splitNamespace(path);
+  const expiresDate = new Date(expires);
+
+  await helpers.namespaceUtils.ensureNamespace(helper.db, namespace, expiresDate);
+  await helper.db.fns.create_indexed_task(namespace, name, rank, taskId, data, expiresDate);
+};
+helper.insertExpiredTask = insertExpiredTask;
+
+export const makeFakeTask = (expires = taskcluster.fromNow('100 days')) => {
+  const taskId = slugid.nice();
+  helper.queue.addTask(taskId, { expires: new Date(expires).toJSON() });
+  return taskId;
+};
+helper.makeFakeTask = makeFakeTask;
 
 export const resetTables = () => {
   setup('reset tables', async () => {

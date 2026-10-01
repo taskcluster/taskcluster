@@ -19,8 +19,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('insert (and rank)', async () => {
     const myns = slugid.v4();
-    const taskId = slugid.v4();
-    const taskId2 = slugid.v4();
+    const taskId = helper.makeFakeTask();
+    const taskId2 = helper.makeFakeTask();
     await helper.index.insertTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
@@ -43,9 +43,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   test('insert (expired entry is not considered)', async () => {
     const myns = slugid.v4();
     const expiredTaskId = slugid.v4();
-    const taskId = slugid.v4();
+    const taskId = helper.makeFakeTask();
 
-    await helper.index.insertTask(`${myns}.my-task`, {
+    await helper.insertExpiredTask(`${myns}.my-task`, {
       taskId: expiredTaskId,
       rank: 42,
       data: { hello: 'world' },
@@ -62,6 +62,95 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const result = await helper.index.findTask(`${myns}.my-task`);
     assert(result.taskId === taskId, 'Wrong taskId');
+  });
+
+  test('insert (expiring in the past)', async () => {
+    const myns = slugid.v4();
+
+    await assert.rejects(
+      () =>
+        helper.index.insertTask(`${myns}.my-task`, {
+          taskId: helper.makeFakeTask(),
+          rank: 42,
+          data: { hello: 'world' },
+          expires: taskcluster.fromNow('-1 day'),
+        }),
+      err => err.statusCode === 400 && /expires must be a date in the future/.test(err.message),
+      'Expected the insertion to be rejected'
+    );
+
+    const rows = await helper.db.fns.get_indexed_task(myns, 'my-task');
+    assert.deepEqual(rows, [], 'Expected nothing to be inserted');
+  });
+
+  test('insert (expiring after the task is capped)', async () => {
+    const myns = slugid.v4();
+    const taskExpires = taskcluster.fromNow('1 day');
+    const taskId = helper.makeFakeTask(taskExpires);
+
+    const inserted = await helper.index.insertTask(`${myns}.my-task`, {
+      taskId,
+      rank: 42,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNow('10 days'),
+    });
+
+    assert.equal(inserted.expires, taskExpires.toJSON(), 'Expected the expiry to be capped to the task');
+  });
+
+  test('insert (already expired task)', async () => {
+    const myns = slugid.v4();
+    const taskId = helper.makeFakeTask(taskcluster.fromNow('-1 day'));
+
+    await assert.rejects(
+      () =>
+        helper.index.insertTask(`${myns}.my-task`, {
+          taskId,
+          rank: 42,
+          data: { hello: 'world' },
+          expires: taskcluster.fromNow('1 day'),
+        }),
+      err => err.statusCode === 400 && /has already expired/.test(err.message),
+      'Expected the insertion to be rejected'
+    );
+
+    const rows = await helper.db.fns.get_indexed_task(myns, 'my-task');
+    assert.deepEqual(rows, [], 'Expected nothing to be inserted');
+  });
+
+  test('insert (expiring before the task)', async () => {
+    const myns = slugid.v4();
+    const taskId = helper.makeFakeTask(taskcluster.fromNow('10 days'));
+
+    const expires = taskcluster.fromNow('1 day');
+    const inserted = await helper.index.insertTask(`${myns}.my-task`, {
+      taskId,
+      rank: 42,
+      data: { hello: 'world' },
+      expires,
+    });
+
+    assert.equal(inserted.taskId, taskId, 'Wrong taskId');
+    assert.equal(inserted.expires, expires.toJSON(), 'Wrong expiry');
+  });
+
+  test('insert (unknown task)', async () => {
+    const myns = slugid.v4();
+
+    await assert.rejects(
+      () =>
+        helper.index.insertTask(`${myns}.my-task`, {
+          taskId: slugid.v4(),
+          rank: 42,
+          data: { hello: 'world' },
+          expires: taskcluster.fromNow('1 day'),
+        }),
+      err => err.statusCode === 400 && /does not exist/.test(err.message),
+      'Expected the insertion to be rejected'
+    );
+
+    const rows = await helper.db.fns.get_indexed_task(myns, 'my-task');
+    assert.deepEqual(rows, [], 'Expected nothing to be inserted');
   });
 
   test('find (non-existing)', async () => {
@@ -82,7 +171,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('find (no scopes)', async () => {
     const myns = slugid.v4();
-    const taskId = slugid.v4();
+    const taskId = helper.makeFakeTask();
     await helper.index.insertTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
@@ -121,14 +210,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const expiredPaths = ['pqr', 'pqr.stu', 'pqr.stu2', 'ppt', 'ppt.stu'];
 
-      const taskId = slugid.v4();
+      const taskId = helper.makeFakeTask();
 
       await Promise.all([
         ...paths.map(path =>
           helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day') })
         ),
         ...expiredPaths.map(path =>
-          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day') })
+          helper.insertExpiredTask(path, {
+            taskId,
+            rank: 13,
+            data: {},
+            expires: taskcluster.fromNow('-1 day'),
+          })
         ),
       ]);
     });
@@ -224,7 +318,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       expired.setDate(expired.getDate() - 1);
       const new_expires = expired.toJSON();
 
-      await helper.index.insertTask(`${myns}.my-task`, {
+      await helper.insertExpiredTask(`${myns}.my-task`, {
         taskId: taskId,
         rank: 41,
         data: { hello: 'world' },
@@ -253,7 +347,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // shouldn't be matched: lower rank than the next
       await helper.index.insertTask(`${myns}.my-task`, {
-        taskId: slugid.v4(),
+        taskId: helper.makeFakeTask(),
         rank: 40,
         data: { hello: 'world' },
         expires: not_expired,
@@ -261,7 +355,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // should be matched
       const task1 = await helper.index.insertTask(`${myns}.my-task`, {
-        taskId: slugid.v4(),
+        taskId: helper.makeFakeTask(),
         rank: 41,
         data: { hello: 'world' },
         expires: not_expired,
@@ -269,14 +363,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // shouldn't be matched because of its name
       await helper.index.insertTask(`${myns}.my-task2`, {
-        taskId: slugid.v4(),
+        taskId: helper.makeFakeTask(),
         rank: 42,
         data: { hello: 'world' },
         expires: not_expired,
       });
 
       // shouldn't be matched because it's expired
-      await helper.index.insertTask(`${myns}.my-task4`, {
+      await helper.insertExpiredTask(`${myns}.my-task4`, {
         taskId: slugid.v4(),
         rank: 44,
         data: { hello: 'world' },
@@ -285,7 +379,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // Should be matched
       const task3 = await helper.index.insertTask(`${myns}.my-task3`, {
-        taskId: slugid.v4(),
+        taskId: helper.makeFakeTask(),
         rank: 43,
         data: { hello: 'world' },
         expires: not_expired,
@@ -342,7 +436,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('access artifact using anonymous scopes', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     debug('### Insert task into index');
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
@@ -373,7 +467,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('access private artifact (with * scope)', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     debug('### Insert task into index');
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
@@ -397,7 +491,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('access private artifact (with no scopes)', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     debug('### Insert task into index');
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
@@ -417,7 +511,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('authenticated request to public artifact omits bewit', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
@@ -443,7 +537,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('falls back to signed URL if anonymous scope check fails', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
@@ -465,7 +559,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('public artifact falls back to queue redirect when latestArtifact returns no url', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
@@ -495,7 +589,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('public artifact falls back to queue redirect when latestArtifact call fails', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
       rank: 41,
@@ -521,7 +615,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('delete task', async () => {
-    const taskId = slugid.nice();
+    const taskId = helper.makeFakeTask();
     debug('### Insert task into index');
     await helper.index.insertTask('some.testing.name.space', {
       taskId: taskId,

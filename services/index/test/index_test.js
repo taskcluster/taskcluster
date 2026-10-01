@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     retries: 3,
     created: new Date().toJSON(),
     deadline: new Date().toJSON(),
-    expires: taskcluster.fromNow('1 day'),
+    expires: taskcluster.fromNow('1 day').toJSON(),
     payload: {},
     metadata: {
       name: 'Print `"Hello World"` Once',
@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     task.extra = {
       index: {
         rank: 42,
-        expires: taskcluster.fromNow('1 hour'),
+        expires: taskcluster.fromNow('1 hour').toJSON(),
         data: {
           hello: 'world',
         },
@@ -152,6 +152,51 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(result.taskId, taskId, 'Wrong taskId');
   });
 
+  const indexTaskWithExtraExpires = async expires => {
+    const taskId = slugid.nice();
+    const task = makeTask();
+    task.extra = { index: { rank: 42, expires, data: {} } };
+    helper.queue.addTask(taskId, task);
+
+    await helper.fakePulseMessage({
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'route.index.abc',
+      routes: task.routes,
+      payload: { status: { taskId } },
+    });
+
+    return task;
+  };
+
+  for (const [name, expires] of [
+    ['garbage', 'garbage'],
+    ['null', null],
+    ['numeric', 0],
+    ['already expired', taskcluster.fromNow('-1 hour').toJSON()],
+  ]) {
+    test(`Run task with .extra.index.expires being ${name}`, async () => {
+      await indexTaskWithExtraExpires(expires);
+
+      const rows = await helper.db.fns.get_indexed_task('my-ns', 'my-indexed-thing');
+      assert.deepEqual(rows, [], 'Expected the task not to be indexed');
+    });
+  }
+
+  test('Run task with .extra.index.expires outliving the task', async () => {
+    const task = await indexTaskWithExtraExpires(taskcluster.fromNow('10 years').toJSON());
+
+    const result = await helper.index.findTask('my-ns.my-indexed-thing');
+    assert.equal(result.expires, new Date(task.expires).toJSON(), "Expected the expiry to be capped to the task's");
+  });
+
+  test('Run task with a .extra.index.expires shorter than the task', async () => {
+    const expires = taskcluster.fromNow('1 hour').toJSON();
+    await indexTaskWithExtraExpires(expires);
+
+    const result = await helper.index.findTask('my-ns.my-indexed-thing');
+    assert.equal(result.expires, expires, 'Expected the given expiry to be used');
+  });
+
   test('Expiring Indexed Tasks', async () => {
     // Create expiration
     const expiry = new Date();
@@ -160,8 +205,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const myns = slugid.v4();
     const taskId = slugid.v4();
-    const taskId2 = slugid.v4();
-    await helper.index.insertTask(`${myns}.my-task`, {
+    const taskId2 = helper.makeFakeTask();
+    await helper.insertExpiredTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
@@ -204,9 +249,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     expiry.setDate(expiry.getDate() - 1);
     const myns = slugid.v4();
     const taskId = slugid.v4();
-    const taskId2 = slugid.v4();
+    const taskId2 = helper.makeFakeTask();
 
-    await helper.index.insertTask(`${myns}.one-ns.my-task`, {
+    await helper.insertExpiredTask(`${myns}.one-ns.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
@@ -219,7 +264,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
-    await helper.index.insertTask(`${myns}.another-ns.my-task`, {
+    await helper.insertExpiredTask(`${myns}.another-ns.my-task`, {
       taskId: taskId2,
       rank: 42,
       data: { hello: 'world two' },
@@ -247,7 +292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     expiry.setDate(expiry.getDate() + 10);
     const res = [];
     for (let i = 1; i <= 10; i++) {
-      const taskId = slugid.nice();
+      const taskId = helper.makeFakeTask();
       await helper.index.insertTask(`${myns}.my-task${_.toString(i)}.new${_.toString(i)}`, {
         taskId: taskId,
         rank: i,
