@@ -37,6 +37,7 @@ if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) 
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
 
 If `connectionTimeoutMillis` is set, DB function calls will fail after waiting that long for a free (or new) client, instead of waiting indefinitely.
+Errors from an exhausted/overloaded pool are marked `overCapacity`, which @taskcluster/lib-api transforms into a 503.
 
 The `azureCryptoKey`, and `dbCryptoKeys` parameters are explained below in "Secret Data" and "Encryption".
 

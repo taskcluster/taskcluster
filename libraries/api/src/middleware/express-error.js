@@ -31,6 +31,14 @@ export const expressError = ({ errorCodes, entry }) => {
       return;
     }
 
+    if (!(err instanceof ErrorReply) && err.overCapacity) {
+      err = new ErrorReply({
+        code: 'ServiceUnavailable',
+        message: 'The server is temporarily over capacity and gave up on this request.',
+        details: {},
+      });
+    }
+
     if (!(err instanceof ErrorReply)) {
       const incidentId = v4();
 

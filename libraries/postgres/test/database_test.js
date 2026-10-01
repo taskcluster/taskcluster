@@ -487,7 +487,7 @@ helper.dbSuite(path.basename(__filename), () => {
 
       await assert.rejects(
         () => db.fns.slow(),
-        err => /timeout exceeded when trying to connect/.test(err.message)
+        err => /timeout exceeded when trying to connect/.test(err.message) && err.overCapacity
       );
 
       assert.equal((await holdingResult).code, QUERY_CANCELED);

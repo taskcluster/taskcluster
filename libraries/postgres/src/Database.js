@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { annotateError } from './util.js';
 import Keyring from './Keyring.js';
 import { strict as assert } from 'node:assert';
-import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants.js';
+import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE, TOO_MANY_CONNECTIONS } from './constants.js';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import pgConnectionString from 'pg-connection-string';
 const { parse: parseConnectionString } = pgConnectionString;
@@ -14,6 +14,12 @@ import { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dro
 
 // Postgres extensions to "create".
 const EXTENSIONS = ['pgcrypto'];
+
+// Messages pg-pool uses when `connectionTimeoutMillis` is exceeded
+const CONNECTION_TIMEOUT_MESSAGES = [
+  'timeout exceeded when trying to connect',
+  'Connection terminated due to connection timeout',
+];
 
 // Node-postgres assumes that all Date objects are in the local timezone.  In
 // Taskcluster, we always use Date objects in UTC.  Happily, the library's
@@ -633,6 +639,25 @@ class Database {
   }
 
   /**
+   * Check a client out of the given pool, marking a pool or server that is out
+   * of connections so that lib-api answers with a 503.
+   *
+   * @private
+   * @param {pg.Pool} pool
+   * @returns {Promise<pg.PoolClient>}
+   */
+  async _connect(pool) {
+    try {
+      return await pool.connect();
+    } catch (err) {
+      if (CONNECTION_TIMEOUT_MESSAGES.includes(err.message) || err.code === TOO_MANY_CONNECTIONS) {
+        err.overCapacity = true;
+      }
+      throw err;
+    }
+  }
+
+  /**
    * Run cb with a client.
    *
    * This is for use in tests and within this library only.  All "real" access
@@ -651,7 +676,7 @@ class Database {
     if (!pool) {
       throw new Error(`No DB pool for mode ${mode}`);
     }
-    const client = await pool.connect();
+    const client = await this._connect(pool);
     // while we have the client "checked out" from the pool, the pool has
     // stopped listening for error events on it.  We don't actually care
     // about such error events, as they will simply cause an error on the

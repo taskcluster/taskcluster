@@ -102,3 +102,8 @@ The provided payload is too big.
 An internal error occurred. The error message is not returned, lest it expose
 security-sensitive issues, but is logged and available to Taskcluster
 administrators.
+
+### ServiceUnavailable: 503
+
+The service is over capacity and gave up on the request, typically because it
+could not get a database connection in time.

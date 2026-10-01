@@ -380,6 +380,7 @@ are only for very specific conditions that the API library detects):
  * `ResourceExpired`: HTTP 410, If the resource expired over time
  * `InputTooLarge`: HTTP 413, Only if the payload is too big
  * `InternalServerError`: HTTP 500, Only for internal errors
+ * `ServiceUnavailable`: HTTP 503, Only when the service is over capacity
 
 In any case, the `messagePattern` and details are combined to produce an error
 message.  Strings surrounded by `{{..}}` in `messagepattern` are used as keys
