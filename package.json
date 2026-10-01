@@ -161,7 +161,7 @@
     "mockdate": "^3.0.2",
     "moment": "^2.31.0",
     "nock": "^14.0.17",
-    "open-editor": "^5.1.0",
+    "open-editor": "^6.0.0",
     "qlobber": "^8.0.1",
     "semver": "^7.8.5",
     "sinon": "^21.1.2",
