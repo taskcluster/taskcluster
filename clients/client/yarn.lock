@@ -103,7 +103,7 @@ __metadata:
   resolution: "@taskcluster/client@workspace:."
   dependencies:
     debug: "npm:^4.1.1"
-    got: "npm:^15.0.3"
+    got: "npm:^16.0.0"
     hawk: "npm:^9.0.1"
     http-proxy: "npm:^1.18.0"
     lodash: "npm:^4.17.4"
@@ -155,13 +155,6 @@ __metadata:
   version: 0.1.0
   resolution: "byte-counter@npm:0.1.0"
   checksum: 10c0/2e7b9cf902d06a6601f8ab893964a8b6b9e2b2dfc60fcee0d340e50b95aa3dc77c4d34ddf3e63cc374b4e5b1d0d694a942de6fbe8ee95d39418f3fdff666b6a4
-  languageName: node
-  linkType: hard
-
-"cacheable-lookup@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "cacheable-lookup@npm:7.0.0"
-  checksum: 10c0/63a9c144c5b45cb5549251e3ea774c04d63063b29e469f7584171d059d3a88f650f47869a974e2d07de62116463d742c287a81a625e791539d987115cb081635
   languageName: node
   linkType: hard
 
@@ -269,23 +262,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"got@npm:^15.0.3":
-  version: 15.1.0
-  resolution: "got@npm:15.1.0"
+"got@npm:^16.0.0":
+  version: 16.0.0
+  resolution: "got@npm:16.0.0"
   dependencies:
     "@sindresorhus/is": "npm:^8.0.0"
     byte-counter: "npm:^0.1.0"
-    cacheable-lookup: "npm:^7.0.0"
     cacheable-request: "npm:^13.0.18"
     chunk-data: "npm:^0.1.0"
     decompress-response: "npm:^10.0.0"
-    http2-wrapper: "npm:^2.2.1"
     keyv: "npm:^5.6.0"
     lowercase-keys: "npm:^4.0.1"
     responselike: "npm:^4.0.2"
     type-fest: "npm:^5.6.0"
     uint8array-extras: "npm:^1.5.0"
-  checksum: 10c0/3d506d6d0593ffa56eb0bb5826ca1dce237f6d440d61029d76e07de10dacffae15a49685a949e71e33922a8965a7edce80b1d8300f1b5598eb5a0ac63db6b760
+  checksum: 10c0/1d4d4c0900f808cf0e5ef661cf66ef45864e3f6abdc54fd01fae64cefce80fb15a94bde950c31450a494dd86d6d09c0c8f8099b3c6f63409eef23f523ecf82f7
   languageName: node
   linkType: hard
 
@@ -323,16 +314,6 @@ __metadata:
     follow-redirects: "npm:^1.0.0"
     requires-port: "npm:^1.0.0"
   checksum: 10c0/148dfa700a03fb421e383aaaf88ac1d94521dfc34072f6c59770528c65250983c2e4ec996f2f03aa9f3fe46cd1270a593126068319311e3e8d9e610a37533e94
-  languageName: node
-  linkType: hard
-
-"http2-wrapper@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "http2-wrapper@npm:2.2.1"
-  dependencies:
-    quick-lru: "npm:^5.1.1"
-    resolve-alpn: "npm:^1.2.0"
-  checksum: 10c0/7207201d3c6e53e72e510c9b8912e4f3e468d3ecc0cf3bf52682f2aac9cd99358b896d1da4467380adc151cf97c412bedc59dc13dae90c523f42053a7449eedb
   languageName: node
   linkType: hard
 
@@ -524,13 +505,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"quick-lru@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "quick-lru@npm:5.1.1"
-  checksum: 10c0/a24cba5da8cec30d70d2484be37622580f64765fb6390a928b17f60cd69e8dbd32a954b3ff9176fa1b86d86ff2ba05252fae55dc4d40d0291c60412b0ad096da
-  languageName: node
-  linkType: hard
-
 "readdirp@npm:^5.0.0":
   version: 5.1.1
   resolution: "readdirp@npm:5.1.1"
@@ -542,13 +516,6 @@ __metadata:
   version: 1.0.0
   resolution: "requires-port@npm:1.0.0"
   checksum: 10c0/b2bfdd09db16c082c4326e573a82c0771daaf7b53b9ce8ad60ea46aa6e30aaf475fe9b164800b89f93b748d2c234d8abff945d2551ba47bf5698e04cd7713267
-  languageName: node
-  linkType: hard
-
-"resolve-alpn@npm:^1.2.0":
-  version: 1.2.1
-  resolution: "resolve-alpn@npm:1.2.1"
-  checksum: 10c0/b70b29c1843bc39781ef946c8cd4482e6d425976599c0f9c138cec8209e4e0736161bf39319b01676a847000085dfdaf63583c6fb4427bf751a10635bd2aa0c4
   languageName: node
   linkType: hard
 
