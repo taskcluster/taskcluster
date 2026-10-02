@@ -14,11 +14,3 @@ func makeFileUnreachable(t *testing.T, path string) {
 		t.Fatalf("Failed to chmod %s: %v", path, err)
 	}
 }
-
-func makeDirTaskUserProof(t *testing.T, dir string) {
-	t.Helper()
-	err := os.Chmod(dir, 0700)
-	if err != nil {
-		t.Fatalf("Failed to chmod %s: %v", dir, err)
-	}
-}
