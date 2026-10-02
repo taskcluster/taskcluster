@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import { camelCase } from 'camel-case';
+import { camelCase } from 'change-case';
 import { arrayOf, string, func, number, bool } from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from 'mdi-react/CloseIcon';

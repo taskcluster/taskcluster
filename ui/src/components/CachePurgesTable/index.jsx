@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { string, bool, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import { camelCase } from 'camel-case';
+import { camelCase } from 'change-case';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DateDistance from '../DateDistance';

@@ -7,7 +7,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import InformationIcon from 'mdi-react/InformationOutlineIcon';
-import { camelCase } from 'camel-case';
+import { camelCase } from 'change-case';
 import { withStyles } from '@material-ui/core/styles';
 import { memoize } from '../../../utils/memoize';
 import Spinner from '../../../components/Spinner';
