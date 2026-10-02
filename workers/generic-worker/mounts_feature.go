@@ -49,6 +49,10 @@ var (
 	fileCacheDownloads singleflight.Group
 )
 
+// maxParallelMountDownloads is the maximum number of mount contents a task
+// downloads at the same time.
+const maxParallelMountDownloads = 8
+
 type (
 	CacheMap     map[string][]*Cache
 	FileCacheMap map[string]*Cache
@@ -453,6 +457,15 @@ type TaskMount struct {
 	poolEntries map[*WritableDirectoryCache]*Cache
 	// fileCacheRefs tracks file caches this task is using, so Stop can release them.
 	fileCacheRefs []*Cache
+	// downloads holds the content that downloadContent fetched ahead of
+	// mounting, keyed by the mount entry it is for.
+	downloads map[MountEntry]cachedContent
+}
+
+// cachedContent is a file in the file cache holding the content of a mount.
+type cachedContent struct {
+	file   string
+	sha256 string
 }
 
 // Represents an individual Mount listed in task payload - there
@@ -709,6 +722,10 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 		taskMount.Warn("Could not reach purgecache service to see if caches need purging:")
 		taskMount.Warn(err.Error())
 	}
+	err = taskMount.downloadContent()
+	if err != nil {
+		return Failure(fmt.Errorf("[mounts] %s", err))
+	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
 		err = mount.Mount(taskMount)
@@ -722,6 +739,76 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 		taskMount.mounted = append(taskMount.mounted, mount)
 	}
 	return nil
+}
+
+// downloadContent fetches the content of the read-only directory and file
+// mounts into the file cache in parallel, so that mounting them (which happens
+// sequentially, in payload order) doesn't wait on one download after another.
+// Writable directory caches are skipped, since their content is only needed if
+// there is no existing cache to reuse, and so are mounts whose content is the
+// same as that of an earlier mount, which find it in the file cache when they
+// are mounted. If any content cannot be fetched, the error of the first such
+// mount in the payload is returned.
+func (taskMount *TaskMount) downloadContent() error {
+	type result struct {
+		content cachedContent
+		err     error
+		panic   any
+	}
+	results := make([]*result, len(taskMount.mounts))
+	seen := map[string]bool{}
+	sem := make(chan struct{}, maxParallelMountDownloads)
+	var wg sync.WaitGroup
+	for i, mount := range taskMount.mounts {
+		if _, ok := mount.(*WritableDirectoryCache); ok {
+			continue
+		}
+		fsContent, err := mount.FSContent()
+		if err != nil || fsContent == nil {
+			// leave it to Mount to report
+			continue
+		}
+		if seen[fsContent.String()] {
+			continue
+		}
+		seen[fsContent.String()] = true
+		r := &result{}
+		results[i] = r
+		wg.Go(func() {
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			// Panics signal internal worker errors, and are re-raised below
+			// in the task goroutine, which handles them.
+			defer func() { r.panic = recover() }()
+			r.content.file, r.content.sha256, r.err = ensureCached(fsContent, taskMount)
+		})
+	}
+	wg.Wait()
+	taskMount.downloads = map[MountEntry]cachedContent{}
+	var firstErr error
+	for i, r := range results {
+		switch {
+		case r == nil:
+		case r.panic != nil:
+			panic(r.panic)
+		case r.err != nil:
+			if firstErr == nil {
+				firstErr = r.err
+			}
+		default:
+			taskMount.downloads[taskMount.mounts[i]] = r.content
+		}
+	}
+	return firstErr
+}
+
+// cachedFile returns the file in the file cache holding the given content of
+// mount, and its SHA256, downloading it unless downloadContent already did.
+func (taskMount *TaskMount) cachedFile(mount MountEntry, fsContent FSContent) (file string, sha256 string, err error) {
+	if c, ok := taskMount.downloads[mount]; ok {
+		return c.file, c.sha256, nil
+	}
+	return ensureCached(fsContent, taskMount)
 }
 
 // called when a task has completed
@@ -975,7 +1062,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 				_ = evictEntry()
 				return fmt.Errorf("not able to retrieve FSContent: %v", fsErr)
 			}
-			if extractErr := extract(c, w.Format, target, taskMount); extractErr != nil {
+			if extractErr := extract(w, c, w.Format, target, taskMount); extractErr != nil {
 				_ = evictEntry()
 				return extractErr
 			}
@@ -1033,7 +1120,7 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
 	dir := fileutil.AbsFrom(taskMount.task.TaskDir(), r.Directory)
-	return extract(c, r.Format, dir, taskMount)
+	return extract(r, c, r.Format, dir, taskMount)
 }
 
 // Nothing to do - original archive file wasn't moved
@@ -1056,7 +1143,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	// content is cached and pass the cache info to the handler instead of
 	// copying the file to the task directory.
 	if handler, ok := taskMount.task.FileMountHandlers[f.File]; ok {
-		cachedFile, sha256, err := ensureCached(fsContent, taskMount)
+		cachedFile, sha256, err := taskMount.cachedFile(f, fsContent)
 		if err != nil {
 			return err
 		}
@@ -1064,7 +1151,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return handler(cachedFile, sha256)
 	}
 
-	return decompress(fsContent, f.Format, file, taskMount)
+	return decompress(f, fsContent, f.Format, file, taskMount)
 }
 
 // Nothing to do - original archive file was copied, not moved
@@ -1208,9 +1295,9 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 	return
 }
 
-func extract(fsContent FSContent, format string, dir string, taskMount *TaskMount) (err error) {
+func extract(mount MountEntry, fsContent FSContent, format string, dir string, taskMount *TaskMount) (err error) {
 	var cacheFile string
-	cacheFile, _, err = ensureCached(fsContent, taskMount)
+	cacheFile, _, err = taskMount.cachedFile(mount, fsContent)
 	if err != nil {
 		log.Printf("Could not cache content: %v", err)
 		return
@@ -1242,8 +1329,8 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 	return unarchive(copyToPath, dir, format, taskMount.task.GetContext(), taskMount.task.pd)
 }
 
-func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
-	cacheFile, _, err := ensureCached(fsContent, taskMount)
+func decompress(mount MountEntry, fsContent FSContent, format string, file string, taskMount *TaskMount) error {
+	cacheFile, _, err := taskMount.cachedFile(mount, fsContent)
 	if err != nil {
 		log.Printf("Could not cache content: %v", err)
 		return err
