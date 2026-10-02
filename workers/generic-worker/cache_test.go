@@ -3,9 +3,12 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -805,4 +808,164 @@ func TestMountsInitialiseSweepsOrphanedCaches(t *testing.T) {
 	if _, err := os.Stat(orphan); !os.IsNotExist(err) {
 		t.Errorf("Expected Initialise to delete orphan %v, stat gave: %v", orphan, err)
 	}
+}
+
+// fakeMount is a MountEntry with the given content, that does nothing when
+// mounted.
+type fakeMount struct {
+	content FSContent
+}
+
+func (m *fakeMount) Mount(taskMount *TaskMount) error {
+	return nil
+}
+
+func (m *fakeMount) Unmount(taskMount *TaskMount) error {
+	return nil
+}
+
+func (m *fakeMount) FSContent() (FSContent, error) {
+	return m.content, nil
+}
+
+func (m *fakeMount) RequiredScopes() []string {
+	return []string{}
+}
+
+func (m *fakeMount) path() string {
+	return "."
+}
+
+// barrierFSContent is a fakeFSContent whose download only completes once all
+// downloads sharing its barrier have started, so it fails unless they run in
+// parallel.
+type barrierFSContent struct {
+	*fakeFSContent
+	started *sync.WaitGroup
+	all     chan struct{}
+}
+
+func (b *barrierFSContent) Download(taskMount *TaskMount) (string, string, error) {
+	b.started.Done()
+	select {
+	case <-b.all:
+		return b.fakeFSContent.Download(taskMount)
+	case <-time.After(10 * time.Second):
+		return "", "", errors.New("timed out waiting for other downloads to start")
+	}
+}
+
+type failingFSContent struct {
+	*fakeFSContent
+}
+
+func (f *failingFSContent) Download(taskMount *TaskMount) (string, string, error) {
+	return "", "", errors.New("download of " + f.key + " failed")
+}
+
+type panickingFSContent struct {
+	*fakeFSContent
+}
+
+func (p *panickingFSContent) Download(taskMount *TaskMount) (string, string, error) {
+	panic("internal error downloading " + p.key)
+}
+
+func useEmptyFileCaches(t *testing.T) {
+	t.Helper()
+	cacheMutex.Lock()
+	origCaches := fileCaches
+	fileCaches = FileCacheMap{}
+	cacheMutex.Unlock()
+	t.Cleanup(func() {
+		cacheMutex.Lock()
+		fileCaches = origCaches
+		cacheMutex.Unlock()
+	})
+}
+
+func TestDownloadContentInParallel(t *testing.T) {
+	useEmptyFileCaches(t)
+	const n = 3
+	var started sync.WaitGroup
+	started.Add(n)
+	all := make(chan struct{})
+	go func() {
+		started.Wait()
+		close(all)
+	}()
+	tm := &TaskMount{task: &TaskRun{}}
+	for i := range n {
+		content := fmt.Sprintf("content %d", i)
+		tm.mounts = append(tm.mounts, &fakeMount{content: &barrierFSContent{
+			fakeFSContent: &fakeFSContent{key: fmt.Sprintf("fake://%d", i), dir: t.TempDir(), content: content, requiredSHA: shaOf(content)},
+			started:       &started,
+			all:           all,
+		}})
+	}
+	// writable directory caches are not downloaded in advance
+	tm.mounts = append(tm.mounts, &WritableDirectoryCache{CacheName: "banana-cache", Content: []byte(`{"raw": "banana"}`)})
+	defer func() {
+		cacheMutex.Lock()
+		tm.releaseFileCaches()
+		cacheMutex.Unlock()
+	}()
+
+	if err := tm.downloadContent(); err != nil {
+		t.Fatalf("Expected downloads to succeed, got: %v", err)
+	}
+	if len(tm.downloads) != n {
+		t.Fatalf("Expected %v downloads, got %v", n, len(tm.downloads))
+	}
+	for i, mount := range tm.mounts[:n] {
+		content := fmt.Sprintf("content %d", i)
+		file, sha, err := tm.cachedFile(mount, nil)
+		if err != nil {
+			t.Fatalf("Expected download of mount %v, got: %v", i, err)
+		}
+		if sha != shaOf(content) {
+			t.Errorf("Expected SHA256 %v for mount %v, got %v", shaOf(content), i, sha)
+		}
+		if data, readErr := os.ReadFile(file); readErr != nil || string(data) != content {
+			t.Errorf("Expected %q for mount %v, got %q (err %v)", content, i, data, readErr)
+		}
+	}
+}
+
+func TestDownloadContentReturnsFirstError(t *testing.T) {
+	useEmptyFileCaches(t)
+	dir := t.TempDir()
+	ok := &fakeMount{content: &fakeFSContent{key: "fake://ok", dir: dir, content: "ok"}}
+	tm := &TaskMount{task: &TaskRun{}, mounts: []MountEntry{
+		ok,
+		&fakeMount{content: &failingFSContent{&fakeFSContent{key: "fake://first"}}},
+		&fakeMount{content: &failingFSContent{&fakeFSContent{key: "fake://second"}}},
+	}}
+	defer func() {
+		cacheMutex.Lock()
+		tm.releaseFileCaches()
+		cacheMutex.Unlock()
+	}()
+
+	err := tm.downloadContent()
+	if err == nil || err.Error() != "download of fake://first failed" {
+		t.Fatalf("Expected error from first failing mount, got: %v", err)
+	}
+	if _, found := tm.downloads[ok]; !found {
+		t.Error("Expected successful download to be kept")
+	}
+}
+
+func TestDownloadContentPropagatesPanic(t *testing.T) {
+	useEmptyFileCaches(t)
+	tm := &TaskMount{task: &TaskRun{}, mounts: []MountEntry{
+		&fakeMount{content: &panickingFSContent{&fakeFSContent{key: "fake://panic"}}},
+	}}
+	defer func() {
+		// singleflight wraps the panic value, along with a stack trace
+		if r := recover(); !strings.Contains(fmt.Sprint(r), "internal error downloading fake://panic") {
+			t.Errorf("Expected download panic to be re-raised, got: %v", r)
+		}
+	}()
+	_ = tm.downloadContent()
 }
