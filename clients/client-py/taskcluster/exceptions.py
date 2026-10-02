@@ -10,11 +10,11 @@ class TaskclusterFailure(Exception):
 class TaskclusterRestFailure(TaskclusterFailure):
     """Failures in the HTTP Rest API"""
 
-    def __init__(self, msg, superExc, status_code=500, body={}):
+    def __init__(self, msg, superExc, status_code=500, body=None):
         TaskclusterFailure.__init__(self, msg)
         self.superExc = superExc
         self.status_code = status_code
-        self.body = body
+        self.body = body if body is not None else {}
 
     def __reduce__(self):
         return (
@@ -37,11 +37,11 @@ class TaskclusterConnectionError(TaskclusterFailure):
 class TaskclusterAuthFailure(TaskclusterFailure):
     """Invalid Credentials"""
 
-    def __init__(self, msg, superExc=None, status_code=500, body={}):
+    def __init__(self, msg, superExc=None, status_code=500, body=None):
         TaskclusterFailure.__init__(self, msg)
         self.superExc = superExc
         self.status_code = status_code
-        self.body = body
+        self.body = body if body is not None else {}
 
     def __reduce__(self):
         return (
