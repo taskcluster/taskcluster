@@ -3,6 +3,7 @@ import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'node:assert';
 import * as hugeBufs from './fixtures/huge_bufs.js';
+import { entityBufDecodeTest } from './entity_buf_decode.js';
 
 const ASCII = _.range(1, 128)
   .map(i => String.fromCharCode(i))
@@ -32,9 +33,6 @@ const encodeCompositeKey = (key1, key2) => `${encodeStringKey(key1)}~${encodeStr
 
 const decodeCompositeKey = key => key.split('~').map(decodeStringKey);
 
-// (this is used by 0010_test.js, too)
-export let entityBufDecodeTest = null;
-
 suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
@@ -44,24 +42,6 @@ suite(testing.suiteName(), () => {
   });
 
   const b64 = x => Buffer.from(x).toString('base64');
-
-  entityBufDecodeTest = (name, encoded, expected, xfail) => {
-    test(`entity_buf_decode: ${name}${xfail && ' (XFAIL)'}`, async () => {
-      await helper.withDbClient(async client => {
-        const t = await client.query(
-          `
-          select entity_buf_decode($1, 'val') as decoded
-        `,
-          [encoded]
-        );
-        if (!xfail) {
-          assert.equal(t.rows[0].decoded, expected);
-        } else {
-          assert.notEqual(t.rows[0].decoded, expected);
-        }
-      });
-    });
-  };
 
   entityBufDecodeTest('0 bufs', { __bufchunks_val: 0 }, '');
   entityBufDecodeTest('empty', { __bufchunks_val: 1, __buf0_val: '' }, '');
