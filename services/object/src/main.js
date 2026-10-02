@@ -52,6 +52,7 @@ const load = loader(
           serviceName: 'object',
           monitor: monitor.childMonitor('db'),
           statementTimeout: process === 'server' ? 30000 : 0,
+          connectionTimeoutMillis: process === 'server' ? 10000 : 0,
         }),
     },
 

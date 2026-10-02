@@ -8,6 +8,7 @@ export const INVALID_PARAMETER_VALUE = '22023';
 export const NUMERIC_VALUE_OUT_OF_RANGE = '22003';
 export const QUERY_CANCELED = '57014';
 export const READ_ONLY_SQL_TRANSACTION = '25006';
+export const TOO_MANY_CONNECTIONS = '53300';
 export const UNDEFINED_COLUMN = '42703';
 export const UNDEFINED_OBJECT = '42704';
 export const UNDEFINED_TABLE = '42P01';

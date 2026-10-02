@@ -379,6 +379,21 @@ helper.dbSuite(path.basename(__filename), () => {
       );
     });
 
+    test('non-numeric connectionTimeoutMillis is not allowed', async () => {
+      await assert.rejects(
+        () =>
+          Database.setup({
+            schema,
+            readDbUrl: helper.dbUrl,
+            writeDbUrl: helper.dbUrl,
+            serviceName: 'service-1',
+            connectionTimeoutMillis: 'about 3 seconds',
+            monitor,
+          }),
+        err => err.code === 'ERR_ASSERTION'
+      );
+    });
+
     test('setup creates keyring', async () => {
       db = await Database.setup({
         schema,
@@ -450,6 +465,32 @@ helper.dbSuite(path.basename(__filename), () => {
         () => db.fns.slow(),
         err => err.code === QUERY_CANCELED
       );
+    });
+
+    test('methods are rejected if connectionTimeoutMillis is exceeded', async () => {
+      await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        poolSize: 1,
+        statementTimeout: 1000,
+        connectionTimeoutMillis: 500,
+        monitor,
+      });
+
+      // Make sure we're reusing a connection later to avoid racing the connections
+      await db.fns.addup(0);
+      const holding = db.fns.slow();
+      const holdingResult = holding.catch(err => err);
+
+      await assert.rejects(
+        () => db.fns.slow(),
+        err => /timeout exceeded when trying to connect/.test(err.message) && err.overCapacity
+      );
+
+      assert.equal((await holdingResult).code, QUERY_CANCELED);
     });
 
     test('read-only methods are called in read-only transactions', async () => {

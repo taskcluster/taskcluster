@@ -23,6 +23,7 @@ const db = Database.setup({
   serviceName: ...,
   monitor: ...,
   statementTimeout: ..., // optional
+  connectionTimeoutMillis: ..., // optional
   poolSize: ..., // optional, default 5
   azureCryptoKey: ..., // optional, for backward compatibility
   dbCryptoKeys: ..., // optional, only required if encrypting columns, usually from cfg.postgres.dbCryptoKeys
@@ -35,10 +36,13 @@ The `monitor` is a @taskcluster/lib-monitor instance, used to report database me
 if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
 
+If `connectionTimeoutMillis` is set, DB function calls will fail after waiting that long for a free (or new) client, instead of waiting indefinitely.
+Errors from an exhausted/overloaded pool are marked `overCapacity`, which @taskcluster/lib-api transforms into a 503.
+
 The `azureCryptoKey`, and `dbCryptoKeys` parameters are explained below in "Secret Data" and "Encryption".
 
 The `poolSize` parameter specifies the maximum number of Postgres clients in each pool of clients, with two pools (read and write) in use.
-DB function calls made when there are no clients available will be queued and wait until a client is avaliable.
+DB function calls made when there are no clients available will be queued, and wait until a client is avaliable or `connectionTimeoutMillis` elapses.
 
 Once that is finished, the methods defined in the schema can be called on the `db.fns` object.
 For example, if the schema defines a `getWidgetsPerWorker` method:

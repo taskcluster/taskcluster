@@ -51,6 +51,7 @@ const load = loader(
           serviceName: 'purge_cache',
           monitor: monitor.childMonitor('db'),
           statementTimeout: process === 'server' ? 30000 : 0,
+          connectionTimeoutMillis: process === 'server' ? 10000 : 0,
         }),
     },
 

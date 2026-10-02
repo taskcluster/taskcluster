@@ -428,6 +428,9 @@ export const createClient = (reference, name) => {
                 err.body = res.body;
                 err.code = res.body.code || 'UnknownError';
                 err.statusCode = res.statusCode;
+                if (res.statusCode === 503 && err.code === 'ServiceUnavailable') {
+                  err.overCapacity = true;
+                }
 
                 // Decide if we should retry or just throw
                 if (
