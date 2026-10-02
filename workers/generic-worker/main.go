@@ -235,13 +235,13 @@ func main() {
 		err := fileutil.CatFile(arguments["--cat-file"].(string), os.Stdout)
 		exitOnError(CANT_CAT_FILE, err, "Error writing file %v to stdout", arguments["--cat-file"].(string))
 	case arguments["create-file"]:
-		err := fileutil.CreateFile(arguments["--create-file"].(string))
+		_, err := fileutil.CreateFile(arguments["--root"].(string), arguments["--create-file"].(string))
 		exitOnError(CANT_CREATE_FILE, err, "Error creating file %v", arguments["--create-file"].(string))
 	case arguments["create-dir"]:
-		err := fileutil.CreateDir(arguments["--create-dir"].(string))
+		err := fileutil.CreateDir(arguments["--root"].(string), arguments["--create-dir"].(string))
 		exitOnError(CANT_CREATE_DIRECTORY, err, "Error creating directory %v", arguments["--create-dir"].(string))
 	case arguments["unarchive"]:
-		err := fileutil.Unarchive(arguments["--archive-src"].(string), arguments["--archive-dst"].(string), arguments["--archive-fmt"].(string))
+		err := fileutil.Unarchive(arguments["--archive-src"].(string), arguments["--root"].(string), arguments["--archive-dst"].(string), arguments["--archive-fmt"].(string))
 		exitOnError(CANT_UNARCHIVE, err, "Error unarchiving %v to %v", arguments["--archive-src"].(string), arguments["--archive-dst"].(string))
 	default:
 		// platform specific...
