@@ -51,6 +51,11 @@ updates:
       default-days: 7
     rebase-strategy: "disabled"
     groups:
+      client-web-vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "vite"
       # Groups together all minor/patch version updates for dependencies
       client-web-node-deps:
         patterns:
@@ -102,6 +107,12 @@ updates:
       default-days: 7
     rebase-strategy: "disabled"
     groups:
+      ui-vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "vite"
+          - "@vitejs/*"
       # Groups together all minor/patch version updates for dependencies
       ui-node-deps:
         patterns:
