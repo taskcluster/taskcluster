@@ -12,8 +12,8 @@ const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-
 const builder = new APIBuilder({
   title: 'Web Server Service',
   description: [
-    'The web-server service provides a GraphQL gateway to Taskcluster APIs,',
-    'as well as profiler endpoints that generate Firefox Profiler–compatible',
+    'The web-server service handles user login and Pulse message streaming',
+    'for the Taskcluster UI, as well as profiler endpoints that generate Firefox Profiler–compatible',
     'profiles from task group metadata and task logs.',
   ].join('\n'),
   serviceName: 'web-server',
