@@ -910,6 +910,13 @@
     "title": "API Errors"
   },
   {
+    "element": "h3",
+    "id": "serviceunavailable-503",
+    "path": "/manual/design/apis/errors",
+    "subtitle": "ServiceUnavailable: 503",
+    "title": "API Errors"
+  },
+  {
     "element": "h1",
     "id": "roles",
     "path": "/manual/design/apis/hawk/roles",

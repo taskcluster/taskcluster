@@ -15,6 +15,7 @@ export const ERROR_CODES = {
   ResourceExpired: 410, // If the resource expired over time
   InputTooLarge: 413, // Only if the payload is too big
   InternalServerError: 500, // Only for internal errors
+  ServiceUnavailable: 503, // Only when the service is over capacity
 };
 
 /**

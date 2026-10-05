@@ -1,7 +1,7 @@
 import request from 'superagent';
 import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
-import helper from './helper.js';
+import helper, { monitorManager } from './helper.js';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import { setIsProduction } from '../src/middleware/express-error.js';
@@ -158,6 +158,40 @@ suite(testing.suiteName(), () => {
             params: {},
             payload: {},
           })
+        );
+      });
+  });
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/503',
+      name: '503',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (_req, _res) => {
+      const err = new Error('timeout exceeded when trying to connect');
+      err.overCapacity = true;
+      throw err;
+    }
+  );
+
+  test('overCapacity error is replied without being reported', async () => {
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/503');
+    return request
+      .get(url)
+      .then(() => assert(false, 'should have failed!'))
+      .catch(res => {
+        assert.equal(res.status, 503);
+        const response = JSON.parse(res.response.text);
+        assert.equal(response.code, 'ServiceUnavailable');
+        assert(!/timeout exceeded/.test(res.response.text));
+        assert.deepEqual(
+          monitorManager.messages.filter(({ Type }) => Type === 'monitor.error'),
+          []
         );
       });
   });

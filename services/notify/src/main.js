@@ -70,6 +70,7 @@ const load = loader(
           readDbUrl: cfg.postgres.readDbUrl,
           writeDbUrl: cfg.postgres.writeDbUrl,
           statementTimeout: process === 'server' ? 30000 : 0,
+          connectionTimeoutMillis: process === 'server' ? 10000 : 0,
           monitor: monitor.childMonitor('db'),
         }),
     },
