@@ -100,6 +100,9 @@ func (qp *QueueProvider) Artifact(w http.ResponseWriter, r *http.Request) {
 
 func (qp *QueueProvider) LatestArtifact(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
+	if !qp.artifactReadAllowed(w, r, vars["name"]) {
+		return
+	}
 	out, err := qp.queue.LatestArtifact(vars["taskId"], vars["name"])
 	if err != nil {
 		ReportError(w, err)
@@ -150,4 +153,16 @@ func (qp *QueueProvider) CancelTask(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
 	out, err := qp.queue.CancelTask(vars["taskId"])
 	JSON(w, out, err)
+}
+
+func (qp *QueueProvider) artifactReadAllowed(w http.ResponseWriter, r *http.Request, name string) bool {
+	q, ok := qp.queue.(*Queue)
+	if !ok {
+		return true
+	}
+	if err := q.authorizeArtifactRead(hawkClientID(r), name); err != nil {
+		ReportError(w, err)
+		return false
+	}
+	return true
 }

@@ -1215,6 +1215,69 @@ func TestIndexedArtifactCacheHitOnSameTaskID(t *testing.T) {
 	}
 }
 
+// TestCachedArtifactMountRequiresScope verifies that a cached non-public
+// artifact is not mounted for a task that lacks queue:get-artifact, for a
+// direct mount and for the same bytes reached through the index. A task with
+// the scope reuses the cache. The artifact name is one the CI client can grant.
+func TestCachedArtifactMountRequiresScope(t *testing.T) {
+	setup(t)
+	const artifactName = "SampleArtifacts/_/X.txt"
+	sourceTaskID := CreateArtifactFromFile(t, artifactName, artifactName)
+	scope := []string{"queue:get-artifact:" + artifactName}
+	deps := []string{sourceTaskID}
+	direct := json.RawMessage(`{"taskId":"` + sourceTaskID + `","artifact":"` + artifactName + `"}`)
+	denied := "cannot reuse cached copy of task " + sourceTaskID + " artifact " + artifactName
+
+	submitMount(t, direct, scope, deps, "completed", "completed")
+	submitMount(t, direct, []string{}, deps, "failed", "failed")
+	if !strings.Contains(LogText(t), denied) {
+		t.Fatalf("Expected log to contain %q\n%v", denied, LogText(t))
+	}
+	submitMount(t, direct, scope, deps, "completed", "completed")
+	assertCacheHit(t)
+
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+	indexArtifact(t, namespace, sourceTaskID, 1)
+	raw, err := json.Marshal(&IndexedContent{Artifact: artifactName, Namespace: namespace})
+	if err != nil {
+		t.Fatal(err)
+	}
+	submitMount(t, raw, []string{}, []string{}, "failed", "failed")
+	if !strings.Contains(LogText(t), denied) {
+		t.Fatalf("Expected log to contain %q\n%v", denied, LogText(t))
+	}
+	submitMount(t, raw, scope, []string{}, "completed", "completed")
+	assertCacheHit(t)
+}
+
+func submitMount(t *testing.T, content json.RawMessage, scopes, dependencies []string, state, reason string) {
+	t.Helper()
+	mounts := []MountEntry{
+		&FileMount{
+			File:    "mounted-artifact",
+			Content: content,
+		},
+	}
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = scopes
+	td.Dependencies = dependencies
+	_ = submitAndAssert(t, td, payload, state, reason)
+}
+
+func assertCacheHit(t *testing.T) {
+	t.Helper()
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "No SHA256 specified in task mounts for") || strings.Contains(logtext, "Downloading") {
+		t.Fatalf("Expected a cache hit.\nLog:\n%v", logtext)
+	}
+}
+
 func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
 
 	setup(t)
