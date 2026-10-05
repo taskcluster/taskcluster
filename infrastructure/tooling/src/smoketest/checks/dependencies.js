@@ -34,14 +34,17 @@ tasks.push({
       utils.status({ message: `Created task ${taskIds[i]}` });
     }
     const pollStartTime = new Date();
-    while (Date.now() - pollStartTime < 1200000) {
+    while (Date.now() - pollStartTime < 300000) {
       const statuses = [];
       let message = 'Task execution status:';
       for (let i = 0; i < taskCount; i++) {
         const taskStatus = await queue.status(taskIds[i]);
         message += `\n\t${i}. ${taskIds[i]}:${taskStatus.status.state}`;
+        if (['exception', 'failed'].includes(taskStatus.status.state)) {
+          throw new Error(`Task ${taskIds[i]} resolved as ${taskStatus.status.state}\n${message}`);
+        }
         if (i > 0) {
-          if (taskStatus.status.state === ('pending' || 'running' || 'completed')) {
+          if (['pending', 'running', 'completed'].includes(taskStatus.status.state)) {
             if (taskStatus.status.runs) {
               const scheduledDate = new Date(taskStatus.status.runs[taskStatus.status.runs.length - 1].scheduled);
               const previousTaskCompletion = new Date(
