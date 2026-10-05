@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import Drawer from '@material-ui/core/Drawer';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import { arrayOf, bool, object } from 'prop-types';
-import { camelCase } from 'camel-case';
+import { camelCase } from 'change-case';
 import LinkIcon from 'mdi-react/LinkIcon';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';

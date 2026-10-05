@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
 import { func, arrayOf, string, bool } from 'prop-types';
-import { camelCase } from 'camel-case';
+import { camelCase } from 'change-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
