@@ -6,11 +6,15 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptest"
+	"regexp"
 	"runtime"
 	"testing"
+	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
 	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v110/internal/scopes"
 	"github.com/taskcluster/taskcluster/v110/internal/testrooturl"
 )
@@ -25,15 +29,141 @@ func getFreePort(t *testing.T) uint16 {
 	return uint16(listener.Addr().(*net.TCPAddr).Port)
 }
 
+func proxyExecutable() string {
+	if runtime.GOOS == "windows" {
+		return "taskcluster-proxy.exe"
+	}
+	return "taskcluster-proxy"
+}
+
+func TestUpdateCredentials(t *testing.T) {
+	// Fake deployment that records the Hawk id the proxy signs requests with.
+	signedWith := make(chan string, 100)
+	hawkID := regexp.MustCompile(`id="([^"]*)"`)
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if m := hawkID.FindStringSubmatch(r.Header.Get("Authorization")); m != nil {
+			signedWith <- m[1]
+		}
+		_, _ = w.Write([]byte("{}"))
+	}))
+	defer upstream.Close()
+
+	creds := &tcclient.Credentials{
+		ClientID:    "original-client",
+		AccessToken: "original-token",
+	}
+	port := getFreePort(t)
+	ll, err := New(proxyExecutable(), "127.0.0.1", port, upstream.URL, creds, "", "")
+	if err != nil {
+		t.Fatalf("Could not initiate taskcluster-proxy process:\n%s", err)
+	}
+	defer func() {
+		if err := ll.Terminate(); err != nil {
+			t.Fatalf("Failed to terminate taskcluster-proxy process:\n%s", err)
+		}
+	}()
+
+	err = ll.UpdateCredentials(&tcqueue.TaskCredentials{
+		ClientID:    "refreshed-client",
+		AccessToken: "refreshed-token",
+	})
+	if err != nil {
+		t.Fatalf("Could not update credentials: %v", err)
+	}
+
+	// The proxy applies stdin updates asynchronously, so poll until a
+	// proxied request is signed with the refreshed credentials.
+	url := fmt.Sprintf("http://127.0.0.1:%d/auth/v1/scopes/current", port)
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		res, err := http.Get(url)
+		if err != nil {
+			t.Fatalf("Could not make request through taskcluster-proxy: %v", err)
+		}
+		res.Body.Close()
+		select {
+		case id := <-signedWith:
+			if id == "refreshed-client" {
+				return
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("upstream did not receive a signed request from taskcluster-proxy")
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("taskcluster-proxy never started signing with the refreshed credentials")
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func TestUpdateCredentialsAfterTerminate(t *testing.T) {
+	ll := startProxy(t)
+	if err := ll.Terminate(); err != nil {
+		t.Fatalf("Failed to terminate taskcluster-proxy process:\n%s", err)
+	}
+	if err := ll.UpdateCredentials(&tcqueue.TaskCredentials{ClientID: "new"}); err == nil {
+		t.Fatal("Expected an error updating credentials of a terminated proxy")
+	}
+}
+
+// startProxy starts a taskcluster-proxy that is never sent any requests.
+func startProxy(t *testing.T) *TaskclusterProxy {
+	t.Helper()
+	creds := &tcclient.Credentials{
+		ClientID:    "client",
+		AccessToken: "token",
+	}
+	ll, err := New(proxyExecutable(), "127.0.0.1", getFreePort(t), "http://127.0.0.1:1", creds, "", "")
+	if err != nil {
+		t.Fatalf("Could not initiate taskcluster-proxy process:\n%s", err)
+	}
+	return ll
+}
+
+// waitForExit waits for the proxy process to exit on its own, and returns
+// its exit code.
+func waitForExit(t *testing.T, ll *TaskclusterProxy) int {
+	t.Helper()
+	exited := make(chan error, 1)
+	go func() { exited <- ll.command.Wait() }()
+	select {
+	case <-exited:
+		return ll.command.ProcessState.ExitCode()
+	case <-time.After(10 * time.Second):
+		_ = ll.command.Process.Kill()
+		t.Fatal("taskcluster-proxy did not exit")
+		return -1
+	}
+}
+
+func TestProxyExitsWhenStdinClosed(t *testing.T) {
+	ll := startProxy(t)
+	if err := ll.stdin.Close(); err != nil {
+		t.Fatalf("Could not close taskcluster-proxy stdin: %v", err)
+	}
+	if code := waitForExit(t, ll); code != 0 {
+		t.Fatalf("Expected taskcluster-proxy to exit with code 0, but got %d", code)
+	}
+}
+
+func TestProxyExitsOnInvalidCredentials(t *testing.T) {
+	ll := startProxy(t)
+	defer ll.stdin.Close()
+	if _, err := ll.stdin.Write([]byte("{\"badJS0n!\n")); err != nil {
+		t.Fatalf("Could not write to taskcluster-proxy stdin: %v", err)
+	}
+	if code := waitForExit(t, ll); code == 0 {
+		t.Fatal("Expected taskcluster-proxy to exit with a non-zero code")
+	}
+	// the worker must get an error, not block, if the proxy has gone away
+	if err := ll.UpdateCredentials(&tcqueue.TaskCredentials{ClientID: "new"}); err == nil {
+		t.Fatal("Expected an error updating credentials of an exited proxy")
+	}
+}
+
 func TestTcProxy(t *testing.T) {
 	rootURL, clientID, accessToken, certificate := testrooturl.GetWithCreds(t)
-	var executable string
-	switch runtime.GOOS {
-	case "windows":
-		executable = "taskcluster-proxy.exe"
-	default:
-		executable = "taskcluster-proxy"
-	}
+	executable := proxyExecutable()
 	creds := &tcclient.Credentials{
 		ClientID:         clientID,
 		AccessToken:      accessToken,

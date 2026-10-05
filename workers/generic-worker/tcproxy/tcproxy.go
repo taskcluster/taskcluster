@@ -4,7 +4,9 @@
 package tcproxy
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -14,12 +16,14 @@ import (
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
+	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcqueue"
 )
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.
 type TaskclusterProxy struct {
 	mut      sync.Mutex
 	command  *exec.Cmd
+	stdin    io.WriteCloser
 	HTTPPort uint16
 	Pid      int
 }
@@ -39,11 +43,16 @@ type TaskclusterProxy struct {
 // but does not match are still rejected, so a sibling task's host
 // process is not admitted just because its source IP happens to be inside
 // the CIDR.
+//
+// Updated credentials are delivered with UpdateCredentials, over the proxy
+// process's stdin, since the proxy does not admit connections from the
+// worker's own OS user.
 func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials, allowedUser string, allowedNetwork string) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
 		"--ip-address", ipAddress,
+		"--credentials-stdin",
 	}
 	if allowedUser != "" {
 		args = append(args, "--allowed-user", allowedUser)
@@ -63,7 +72,12 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	)
 	l.command.Stdout = os.Stdout
 	l.command.Stderr = os.Stderr
-	err := l.command.Start()
+	stdin, err := l.command.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	l.stdin = stdin
+	err = l.command.Start()
 	// Note - we're assuming here that if the process fails to launch we'll get
 	// an error. We should test this to be sure.
 	if err != nil {
@@ -89,6 +103,7 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 			_, _ = l.command.Process.Wait()
 			log.Printf("Killed taskcluster-proxy process (PID %v) after readiness timeout", l.Pid)
 		}
+		_ = l.stdin.Close()
 		return nil, err
 	}
 	return l, nil
@@ -109,11 +124,27 @@ func (l *TaskclusterProxy) Terminate() error {
 			log.Printf("Error while waiting for taskcluster proxy to stop: %v", err)
 		}
 		log.Printf("Stopped taskcluster proxy process (PID %v)", l.Pid)
+		_ = l.stdin.Close()
 		l.HTTPPort = 0
 		l.Pid = 0
 		l.command = nil
 	}()
 	return l.command.Process.Kill()
+}
+
+// UpdateCredentials sends new credentials to the running proxy process.
+func (l *TaskclusterProxy) UpdateCredentials(creds *tcqueue.TaskCredentials) error {
+	l.mut.Lock()
+	defer l.mut.Unlock()
+	if l.command == nil {
+		return fmt.Errorf("taskcluster proxy is not running")
+	}
+	b, err := json.Marshal(creds)
+	if err != nil {
+		return err
+	}
+	_, err = l.stdin.Write(append(b, '\n'))
+	return err
 }
 
 func waitForPortToBeActive(ipAddress string, port uint16) error {
