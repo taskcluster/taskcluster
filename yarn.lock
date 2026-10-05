@@ -5838,10 +5838,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-security-policy@npm:^0.3.0":
-  version: 0.3.4
-  resolution: "content-security-policy@npm:0.3.4"
-  checksum: 10c0/7c3f786e3685c615dbadf5172f2bedee541150db6227142d674edc062a33b6355f18c5b36e4f08c7fb028e79aa5d95a3e6bc083b9f5e3b31cc704ac0bcb1eae3
+"content-security-policy@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "content-security-policy@npm:0.4.0"
+  checksum: 10c0/d9b3ea5d2bd3da068a37dc1d290cc1fcc91b40290e2dc139d21e6207de0afed5b3b576590ca263c6a615dc3f748876a8afd167954de16ea55a14ebfe30b9227d
   languageName: node
   linkType: hard
 
@@ -11678,7 +11678,7 @@ __metadata:
     commander: "npm:^9.4.1"
     compression: "npm:^1.8.1"
     console-taskgraph: "npm:^1.7.2"
-    content-security-policy: "npm:^0.3.0"
+    content-security-policy: "npm:^0.4.0"
     content-type: "npm:^1.0.4"
     cors: "npm:^2.8.6"
     cron-parser: "npm:5.10.0"

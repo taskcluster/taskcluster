@@ -113,7 +113,7 @@ suite(testing.suiteName(), () => {
         );
         assert.equal(
           err.response.headers['content-security-policy'],
-          "report-uri /__cspreport__;default-src 'none';frame-ancestors 'none';",
+          "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; report-uri /__cspreport__",
           'Correct CSP is set in headers'
         );
         return;
