@@ -7,7 +7,7 @@ import (
 )
 
 func freeDiskSpaceBytes(dir string) (uint64, error) {
-	path, err := syscall.UTF16PtrFromString(".")
+	path, err := syscall.UTF16PtrFromString(dir)
 	if err != nil {
 		return 0, err
 	}
