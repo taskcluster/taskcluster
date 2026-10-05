@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v110/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v110/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v111/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v111/internal/mocktc/tc"
 )
 
 type SecretsProvider struct {

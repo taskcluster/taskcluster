@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	tcclient "github.com/taskcluster/taskcluster/v110/clients/client-go"
-	"github.com/taskcluster/taskcluster/v110/tools/workerproto"
-	"github.com/taskcluster/taskcluster/v110/workers/generic-worker/graceful"
+	tcclient "github.com/taskcluster/taskcluster/v111/clients/client-go"
+	"github.com/taskcluster/taskcluster/v111/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v111/workers/generic-worker/graceful"
 )
 
 var (

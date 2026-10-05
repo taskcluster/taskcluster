@@ -3,6 +3,95 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v111.0.0
+
+### USERS
+
+▶ [MAJOR]
+The `purgeCache.purgeRequests` method now correctly requires the scope `purge-cache:purge-requests:<workerPoolId>` instead of `purge-cache:purge-requests::<workerPoolId>`
+
+▶ [MAJOR] [bug 2070520](http://bugzil.la/2070520)
+`index.insertTask` will now reject an `expires` that is in the past, a
+`taskId` that does not resolve to a task, and will silently cap the index
+expiry to the task's own expiry.
+
+▶ [minor] [bug 2070520](http://bugzil.la/2070520)
+Index entries created from `index.*` routes are now capped at the expiry of the
+task they point at. Tasks whose `task.extra.index.expires` is not a valid date
+in the future are no longer indexed, and no longer leave an empty namespace
+behind them.
+
+▶ [patch] [bug 2059401](http://bugzil.la/2059401)
+GitHub service now leaves a clear error comment when a task in `.taskcluster.yml` uses a `taskGroupId` that belongs to another build. Such tasks were already rejected before, just without a helpful error.
+
+▶ [patch] [#9180](https://github.com/taskcluster/taskcluster/issues/9180)
+Live-update subscriptions in the UI now obtain fresh credentials each time they connect, and stop retrying when the server rejects the credentials as expired. The web-server no longer reports expired subscription credentials as internal errors.
+
+▶ [patch] [bug 2072159](http://bugzil.la/2072159)
+UI artifact redirects, log views, and GitHub check-run artifact links now preserve names containing URL-special characters.
+
+▶ [patch]
+Web-server session cookie is now set with `SameSite=lax` to mitigate CSRF against session-authenticated endpoints.
+The cookie is no longer sent on cross-site requests, while same-origin UI and OAuth login redirects are unaffected.
+
+### DEVELOPERS
+
+▶ [patch] [#8928](https://github.com/taskcluster/taskcluster/issues/8928)
+Fixes view task page UI to call switching from GraphQL to REST endpoints
+
+▶ [patch] [#3665](https://github.com/taskcluster/taskcluster/issues/3665)
+Service and library tests now allocate ephemeral ports via `testing.getFreePort()`, avoiding intermittent `EADDRINUSE` failures when multiple suites start HTTP servers.
+
+▶ [patch] [#9186](https://github.com/taskcluster/taskcluster/issues/9186)
+The UI now fetches user credentials and login status from the new web-server
+REST endpoints `POST /login/credentials` and `GET /login/is-logged-in`, which
+are authenticated by the session cookie. The `getCredentials` and `isLoggedIn`
+GraphQL queries have been removed.
+
+▶ [patch] [#9181](https://github.com/taskcluster/taskcluster/issues/9181)
+The task definition, task redirect (edit / interactive) and interactive connect
+UI views now fetch their data through the Taskcluster REST clients.
+
+▶ [patch] [#9194](https://github.com/taskcluster/taskcluster/issues/9194)
+The task log UI view now fetches the task name and run state through the
+Taskcluster REST clients. This was the last UI view using GraphQL, so the
+Apollo client, its GraphQL/subscription links, and the `@apollo/client`,
+`graphql`, `subscriptions-transport-ws`, `@graphql-tools/*` and
+`@rollup/plugin-graphql` dependencies have been removed from the UI.
+
+### OTHER
+
+▶ Additional change not described here: [#9142](https://github.com/taskcluster/taskcluster/issues/9142).
+
+### Automated Package Updates
+
+<details>
+<summary>21 Dependabot updates</summary>
+
+* build(deps): bump got from 15.1.0 to 16.0.0 in /clients/client (3e181a3ee5)
+* build(deps): bump the client-web-node-deps group across 1 directory with 2 updates (f8896422ea)
+* build(deps): bump @azure/arm-network from 38.0.0 to 39.0.0 (8852eb1398)
+* build(deps-dev): bump open-editor from 5.1.0 to 6.0.0 (c4da206fe1)
+* build(deps-dev): bump ruff (0273f0b2f0)
+* build(deps): bump the gh-actions-deps group with 3 updates (999b792723)
+* build(deps): bump @octokit/auth-app (b49308908d)
+* build(deps): bump the go-deps group with 5 updates (bc9badb97d)
+* build(deps): bump the client-rust-deps group (2fef9afbbe)
+* build(deps-dev): bump mocha from 11.8.0 to 12.0.2 in /clients/client (c1179551ba)
+* build(deps): bump nodemailer from 10.0.9 to 10.0.10 (011eaf6fab)
+* build(deps): bump brace-expansion from 1.1.18 to 1.1.21 (82c3535230)
+* build(deps): bump nodemailer from 10.0.2 to 10.0.9 (75cf6102f3)
+* build(deps-dev): bump moment from 2.30.1 to 2.31.0 (df386e2f66)
+* build(deps): bump axios from 1.18.1 to 1.20.0 (b885f99b8a)
+* build(deps): bump @grpc/grpc-js from 1.14.4 to 1.14.5 (06ed81b510)
+* build(deps): bump nodemailer from 9.1.1 to 10.0.2 (4b1dffc5cd)
+* build(deps): bump undici from 6.28.0 to 6.29.0 (7c69d7611b)
+* build(deps): bump undici from 6.28.0 to 6.29.0 in /clients/client-web (8cfc392628)
+* build(deps): bump fast-uri from 3.1.6 to 3.1.8 (a18250160d)
+* build(deps): bump fast-uri from 3.1.6 to 3.1.8 in /ui (808a405c91)
+
+</details>
+
 ## v110.1.0
 
 ### DEPLOYERS
