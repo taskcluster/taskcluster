@@ -3,6 +3,34 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v112.0.0
+
+### ADMINS
+
+▶ [patch]
+Web processes now bound how long a database call will wait for a free database connection to 10s instead of forever. When that wait trips, REST API endpoints now return a 503 `ServiceUnavailable` error instead of a 500.
+
+### USERS
+
+▶ [MAJOR]
+Generic Worker now requires `mounts` paths (properties `directory` and `file`) to be relative paths that stay inside the task directory. Tasks with absolute mount paths, or relative paths that escape the task directory (e.g. `../foo`), resolve as `exception/malformed-payload`.
+
+▶ [patch]
+Generic Worker now writes mounted content through the task directory without following symbolic links out of it. A mount whose path passes through a link leaving the task directory (for example one left in a writable cache by an earlier task) now fails the task instead of writing elsewhere.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump the node-deps group across 1 directory with 17 updates (8c3b565981)
+* build(deps): bump the ui-node-deps group across 1 directory with 2 updates (a50495cb12)
+* build(deps-dev): bump ruff (24512ee3c0)
+* build(deps): bump github.com/shirou/gopsutil/v4 (e4ff1d5699)
+* build(deps): bump hmac-sha256 (629dddf61e)
+
+</details>
+
 ## v111.0.0
 
 ### USERS

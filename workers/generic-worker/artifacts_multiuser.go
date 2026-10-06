@@ -10,9 +10,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v111/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v111/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v111/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v112/workers/generic-worker/runtime"
 )
 
 type taskUserFile struct {

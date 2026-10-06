@@ -13,9 +13,9 @@ import (
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v111/clients/client-go"
-	"github.com/taskcluster/taskcluster/v111/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v111/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v112/clients/client-go"
+	"github.com/taskcluster/taskcluster/v112/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/artifacts"
 )
 
 var (
