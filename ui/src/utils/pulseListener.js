@@ -11,7 +11,7 @@ const getEventsWsUrl = endpointPath => {
   // own endpoint under it ('raw' or 'named'). Resolves against the current
   // origin when relative (dev: proxied by Vite) and is used as-is when absolute
   // (deployed: 'https://host/subscription').
-  const base = window.env?.GRAPHQL_SUBSCRIPTION_ENDPOINT || '/subscription';
+  const base = window.env?.SUBSCRIPTION_ENDPOINT || '/subscription';
   const url = new URL(
     `${base.replace(/\/$/, '')}/${endpointPath}`,
     window.location.href

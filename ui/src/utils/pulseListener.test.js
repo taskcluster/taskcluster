@@ -56,7 +56,7 @@ FakeWebSocket.CLOSED = 3;
 
 beforeEach(() => {
   window.env = {
-    GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost/subscription',
+    SUBSCRIPTION_ENDPOINT: 'http://localhost/subscription',
   };
   vi.stubGlobal('WebSocket', FakeWebSocket);
   // Reconnection is scheduled with setTimeout; fake timers keep those pending
@@ -280,7 +280,7 @@ describe('subscribeToPulseMessages', () => {
 
 describe('events WebSocket url', () => {
   it('maps an http endpoint to ws', () => {
-    window.env = { GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://host/subscription' };
+    window.env = { SUBSCRIPTION_ENDPOINT: 'http://host/subscription' };
 
     subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
       onMessage: vi.fn(),
@@ -291,7 +291,7 @@ describe('events WebSocket url', () => {
   });
 
   it('preserves a wss endpoint rather than downgrading it to ws', () => {
-    window.env = { GRAPHQL_SUBSCRIPTION_ENDPOINT: 'wss://host/subscription' };
+    window.env = { SUBSCRIPTION_ENDPOINT: 'wss://host/subscription' };
 
     subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
       onMessage: vi.fn(),

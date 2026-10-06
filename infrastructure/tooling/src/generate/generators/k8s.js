@@ -388,7 +388,7 @@ const extras = {
   ui: {
     vars: [
       { type: '!env', var: 'APPLICATION_NAME' },
-      { type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT' },
+      { type: '!env', var: 'SUBSCRIPTION_ENDPOINT' },
       { type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES' },
       { type: '!env:string', var: 'BANNER_MESSAGE', optional: true },
       { type: '!env:json', var: 'SITE_SPECIFIC', optional: true },

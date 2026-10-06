@@ -76,7 +76,7 @@ PORT=9000
 If you are not running the web service on your local machine, you will also need to set
 
 ```bash
-GRAPHQL_SUBSCRIPTION_ENDPOINT=https://mydomain.com/subscription
+SUBSCRIPTION_ENDPOINT=https://mydomain.com/subscription
 ```
 
 The Taskcluster team has a series of [best practices](../dev-docs/best-practices/ui.md) for the UI which may help

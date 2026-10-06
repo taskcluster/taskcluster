@@ -11,7 +11,7 @@
   YARN_FLAGS = "--immutable"
   NODE_VERSION = "24.20.0"
   APPLICATION_NAME = "Taskcluster"
-  GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
+  SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
   UI_LOGIN_STRATEGY_NAMES = ""
   TASKCLUSTER_ROOT_URL = "https://community-tc.services.mozilla.com"
 

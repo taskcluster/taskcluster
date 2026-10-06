@@ -67,7 +67,7 @@ export default async ({ userConfig, answer, configTmpl }) => {
 
   // UI should just build these from rootUrl itself, but that makes testing
   // difficult.
-  setDefault('ui.graphql_subscription_endpoint', `${rootUrl}/subscription`);
+  setDefault('ui.subscription_endpoint', `${rootUrl}/subscription`);
 
   return userConfig;
 };
