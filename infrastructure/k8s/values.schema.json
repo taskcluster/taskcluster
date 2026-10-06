@@ -2487,9 +2487,6 @@
           "title": "node debug env var",
           "type": "string"
         },
-        "graphql_endpoint": {
-          "type": "string"
-        },
         "graphql_subscription_endpoint": {
           "type": "string"
         },
@@ -2551,7 +2548,6 @@
       "required": [
         "procs",
         "graphql_subscription_endpoint",
-        "graphql_endpoint",
         "ui_login_strategy_names"
       ],
       "title": "Configuration options for ui",

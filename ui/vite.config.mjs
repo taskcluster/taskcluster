@@ -125,7 +125,6 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: true,
     proxy: {
       '/login': proxy(proxyTarget),
-      '/graphql': proxy(proxyTarget),
       '/schemas': proxy(proxyTarget),
       '/references': proxy(proxyTarget),
       '/api/web-server': proxy(proxyTarget),
