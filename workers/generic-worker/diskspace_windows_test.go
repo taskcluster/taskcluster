@@ -11,6 +11,6 @@ func TestFreeDiskSpaceUsesRequestedDirectory(t *testing.T) {
 		t.Fatalf("querying an existing directory: %v", err)
 	}
 	if _, err := freeDiskSpaceBytes(filepath.Join(dir, "missing")); err == nil {
-		t.Fatal("expected an error for a missing directory; the current directory must not be used instead")
+		t.Fatal("expected an error for a missing directory")
 	}
 }
