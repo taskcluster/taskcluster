@@ -6,16 +6,6 @@ import ReferenceLinks from '@taskcluster/ui/components/ReferenceLinks';
 
 The "web-server" service provides the backend for the Taskcluster UI.
 
-## GraphQL
-
-The UI and web-server communicate via GraphQL.
-GraphQL requests to the web-server service are translated into REST API calls to other services.
-This allows flexible queries from the UI and makes room for optimizations in the backend.
-
-*IMPORTANT*: the GraphQL interface is intended *only* for use by the Taskcluster UI service.
-It is not a general-purpose interface to Taskcluster and will change incompatibly and without warning from version to version of the Taskcluster services.
-All external integrations with Taskcluster should use the documented REST API.
-
 ## User Login
 
 This service provides the backend for secure user authentication using pluggable login strategies.

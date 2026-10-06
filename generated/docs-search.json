@@ -2164,13 +2164,6 @@
   },
   {
     "element": "h2",
-    "id": "graphql",
-    "path": "/reference/core/web-server",
-    "subtitle": "GraphQL",
-    "title": "Web Server"
-  },
-  {
-    "element": "h2",
     "id": "identity",
     "path": "/reference/core/web-server",
     "subtitle": "Identity",
