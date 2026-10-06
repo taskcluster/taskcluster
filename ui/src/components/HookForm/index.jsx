@@ -174,10 +174,10 @@ const initialHook = {
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
   static propTypes = {
-    /** Part of a GraphQL hook response containing info about that hook.
+    /** Part of a hook response containing info about that hook.
      Not needed when creating a new hook */
     hook: object.isRequired,
-    /** Part of the same Grahql hook response as above containing info
+    /** Part of the same hook response as above containing info
      about some last hook fired attempts */
     loading: bool,
     hookLastFires: array,

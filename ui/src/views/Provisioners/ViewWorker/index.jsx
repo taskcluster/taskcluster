@@ -135,8 +135,7 @@ export default class ViewWorker extends Component {
     });
   };
 
-  // Replaces the GraphQL resolver that decorated each recent task with its run
-  // status and metadata. `recentTasks` only carries `{ taskId, runId }`, so we
+  // `recentTasks` only carries `{ taskId, runId }`, so we
   // load the run (from the task status) and the task metadata per entry.
   enrichRecentTasks = async worker => {
     const recentTasks = worker.recentTasks ?? [];

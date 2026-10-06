@@ -12,7 +12,7 @@ const VALID_SLUGID_2 = 'YsJwVJjqTN2a2sSeawNFQw';
 
 /**
  * Lightweight Express app for testing profiler routes via lib-api
- * without needing the full web-server setup (no DB, auth, or GraphQL).
+ * without needing the full web-server setup (no DB or auth).
  */
 async function createTestApp(mockClients) {
   const schemaset = new SchemaSet({ serviceName: 'web-server' });

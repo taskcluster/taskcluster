@@ -55,8 +55,8 @@ const NO_RECONNECT_CLOSE_CODES = new Set([
 ]);
 
 // The server authenticates on the connection_init frame rather than the HTTP
-// upgrade. The token is the same shape the HTTP GraphQL link sends in its
-// Authorization header; an anonymous user sends a bare connection_init and is
+// upgrade. The token is being sendt in Authorization header.
+// An anonymous user sends a bare connection_init and is
 // checked against the anonymous role's scopes.
 const connectionInitFrame = credentials =>
   credentials

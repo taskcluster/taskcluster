@@ -13,7 +13,7 @@ import labels from '../../utils/labels';
   },
 }))
 /**
- * A label color-coded based on known statuses from GraphQL responses.
+ * A label color-coded based on known statuses from responses.
  */
 export default class StatusLabel extends Component {
   static defaultProps = {

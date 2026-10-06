@@ -100,7 +100,7 @@ export default class TaskGroupStats extends Component {
     filter: taskState,
     searchTerm: string,
 
-    /** A Task GraphQL PageConnection instance. */
+    /** A Task PageConnection instance. */
     taskGroup: shape({
       pageInfo,
       edges: arrayOf(task),

@@ -22,7 +22,7 @@ import TableCellItem from '../TableCellItem';
  */
 export default class WorkerDetailsCard extends Component {
   static propTypes = {
-    /** A GraphQL worker response. */
+    /** A worker response. */
     worker: worker.isRequired,
   };
 

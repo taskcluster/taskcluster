@@ -70,7 +70,7 @@ import scopeLink from '../../utils/scopeLink';
 /** A form to view/edit/create a client */
 export default class ClientForm extends Component {
   static propTypes = {
-    /** A GraphQL client response. Not needed when creating a new client  */
+    /** A client response. Not needed when creating a new client  */
     client,
     /** Set to `true` when creating a new client. */
     isNewClient: bool,

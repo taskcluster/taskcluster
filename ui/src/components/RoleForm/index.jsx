@@ -55,7 +55,7 @@ import scopeLink from '../../utils/scopeLink';
 /** A form to view/edit/create a role */
 export default class RoleForm extends Component {
   static propTypes = {
-    /** A GraphQL role response. Not needed when creating a new role  */
+    /** A role response. Not needed when creating a new role  */
     role,
     /** Set to `true` when creating a new role. */
     isNewRole: bool,
