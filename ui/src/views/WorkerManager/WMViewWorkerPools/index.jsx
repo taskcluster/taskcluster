@@ -264,11 +264,13 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           warning
           error={
             taskQueueCountsError &&
-            // An InsufficientScopes message lists two scopes per pool.
-            `Failed to load task queue counts${
-              taskQueueCountsError.code ? ` (${taskQueueCountsError.code})` : ''
-            }. Counts require the queue:pending-count and queue:claimed-count ` +
-              `scopes for every worker pool listed here.`
+            // An InsufficientScopes message lists two scopes per pool, so
+            // summarize it rather than showing it.
+            (taskQueueCountsError.body?.code === 'InsufficientScopes'
+              ? 'Failed to load task queue counts. Counts require the ' +
+                'queue:pending-count and queue:claimed-count scopes for ' +
+                'every worker pool listed here.'
+              : `Failed to load task queue counts: ${taskQueueCountsError.message}`)
           }
         />
         {!initialLoad && (
