@@ -1,6 +1,7 @@
 import taskcluster from '@taskcluster/client';
 import slug from 'slugid';
 import assert from 'node:assert';
+import sinon from 'sinon';
 import helper from './helper.js';
 import { WorkerPool, Worker } from '../src/data.js';
 import testing from '@taskcluster/lib-testing';
@@ -55,6 +56,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const worker = Worker.fromApi({ ...defaultWorker, ...overrides });
     return worker.create(helper.db);
   };
+
+  // spy on the per-pool counts aggregation, which is expensive for large pools
+  const spyWorkerPoolCounts = () => sinon.spy(helper.db.fns, 'get_worker_pool_counts_and_capacity');
+
+  teardown(() => {
+    sinon.restore();
+  });
 
   const capturePulseMessages = () => {
     const messages = [];
@@ -658,6 +666,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     throw new Error('creation of an already existing worker pool succeeded');
   });
 
+  test('create worker pool (already exists, identical) includes worker counts and capacity', async () => {
+    const input = {
+      providerId: 'testing1',
+      description: 'e',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+    await createWorker({ state: Worker.states.RUNNING, capacity: 3 });
+
+    const data = await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    assert.equal(data.runningCount, 1);
+    assert.equal(data.runningCapacity, 3);
+    assert.equal(data.currentCapacity, 3);
+  });
+
   test('update worker pool (does not exist)', async () => {
     try {
       await helper.workerManager.updateWorkerPool('pp/oo', {
@@ -741,6 +767,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       return;
     }
     throw new Error('get of non-existent worker pool succeeded');
+  });
+
+  test('get worker pool includes worker counts and capacity', async () => {
+    await createWorkerPool();
+    await createWorker({ state: Worker.states.RUNNING, capacity: 3 });
+
+    const data = await helper.workerManager.workerPool(workerPoolId);
+
+    assert.equal(data.runningCount, 1);
+    assert.equal(data.runningCapacity, 3);
+    assert.equal(data.currentCapacity, 3);
   });
 
   test('get worker pools - one worker pool', async () => {
@@ -973,6 +1010,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     assert.deepStrictEqual(data.workers, []);
+  });
+
+  test('list workers for a given worker pool does not compute worker pool counts', async () => {
+    await createWorkerPool();
+    await createWorker({});
+    const spy = spyWorkerPoolCounts();
+
+    const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+
+    assert.equal(data.workers.length, 1);
+    assert.equal(spy.callCount, 0);
   });
 
   test('list workers for a given worker pool and group', async () => {
@@ -1392,6 +1440,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         }),
       /Worker pool does not exist/
     );
+  });
+
+  test('Report a worker error does not compute worker pool counts', async () => {
+    await createWorkerPool();
+    await createWorker({});
+    const spy = spyWorkerPoolCounts();
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      workerGroup,
+      workerId,
+      kind: 'worker-error',
+      title: 'Something is Wrong',
+      description: 'Uhoh!',
+      extra: {},
+    });
+
+    assert.equal(spy.callCount, 0);
   });
 
   test('get worker pool errors - no errors in db', async () => {
@@ -1867,6 +1932,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
       assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
       assert(scopes.has(`worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${workerId}`), msg);
+    });
+
+    test('does not compute worker pool counts', async () => {
+      await createWorkerPool({});
+      await createWorker({});
+      const spy = spyWorkerPoolCounts();
+
+      await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      assert.equal(spy.callCount, 0);
     });
 
     test('registers with systemBootTime and records metrics', async () => {

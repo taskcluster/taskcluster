@@ -106,14 +106,20 @@ export class WorkerPool {
 
   /**
    * Get a worker pool from the DB, or undefined if it does not exist.
+   *
+   * Worker counts and capacities are only fetched with `includeStats: true`,
+   * since computing them aggregates every worker row in the pool, which is
+   * expensive for large pools.
+   *
    * @param {Database} db
    * @param {string} workerPoolId
+   * @param {{ includeStats?: boolean }} [options]
    * @returns {Promise<WorkerPool|undefined>}
    */
-  static async get(db, workerPoolId) {
+  static async get(db, workerPoolId, { includeStats = false } = {}) {
     const [rows, stats] = await Promise.all([
       db.fns.get_worker_pool_with_launch_configs(workerPoolId),
-      db.fns.get_worker_pool_counts_and_capacity(workerPoolId),
+      includeStats ? db.fns.get_worker_pool_counts_and_capacity(workerPoolId) : [],
     ]);
 
     if (rows.length === 1) {

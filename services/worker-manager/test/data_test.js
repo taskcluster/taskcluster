@@ -1,8 +1,9 @@
 import assert from 'node:assert';
+import sinon from 'sinon';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
-import { Worker, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
+import { Worker, WorkerPool, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -298,6 +299,58 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // Null is preserved (not treated as undefined)
       assert.strictEqual(worker.firstClaim, null);
+    });
+  });
+
+  suite('WorkerPool.get', () => {
+    const workerPoolId = 'foo/bar';
+
+    setup(async () => {
+      await WorkerPool.fromApi({
+        workerPoolId,
+        providerId: 'testing1',
+        description: 'pool',
+        config: {},
+        owner: 'example@example.com',
+        emailOnError: false,
+      }).create(helper.db);
+      await Worker.fromApi({
+        workerPoolId,
+        workerGroup: 'wg',
+        workerId: 'wi',
+        providerId: 'testing1',
+        capacity: 3,
+        state: Worker.states.RUNNING,
+        providerData: {},
+      }).create(helper.db);
+    });
+
+    teardown(() => {
+      sinon.restore();
+    });
+
+    test('skips counts and capacity by default', async () => {
+      const spy = sinon.spy(helper.db.fns, 'get_worker_pool_counts_and_capacity');
+      const workerPool = await WorkerPool.get(helper.db, workerPoolId);
+      assert.equal(spy.callCount, 0);
+      assert.equal(workerPool.workerPoolId, workerPoolId);
+      assert.equal(workerPool.providerId, 'testing1');
+      assert.equal(workerPool.runningCount, undefined);
+    });
+
+    test('includes counts and capacity with includeStats: true', async () => {
+      const spy = sinon.spy(helper.db.fns, 'get_worker_pool_counts_and_capacity');
+      const workerPool = await WorkerPool.get(helper.db, workerPoolId, { includeStats: true });
+      assert.equal(spy.callCount, 1);
+      assert.equal(workerPool.workerPoolId, workerPoolId);
+      assert.equal(workerPool.runningCount, 1);
+      assert.equal(workerPool.runningCapacity, 3);
+      assert.equal(workerPool.currentCapacity, 3);
+    });
+
+    test('returns undefined for a missing pool', async () => {
+      assert.equal(await WorkerPool.get(helper.db, 'no/such'), undefined);
+      assert.equal(await WorkerPool.get(helper.db, 'no/such', { includeStats: true }), undefined);
     });
   });
 });

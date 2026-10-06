@@ -198,7 +198,7 @@ builder.declare(
     });
 
     // refresh from DB to include launchConfigIds
-    workerPool = await WorkerPool.get(this.db, workerPoolId);
+    workerPool = await WorkerPool.get(this.db, workerPoolId, { includeStats: true });
 
     this.monitor.log.auditEvent({
       service: 'worker-manager',
@@ -525,7 +525,7 @@ builder.declare(
   async function (req, res) {
     const { workerPoolId } = req.params;
 
-    const workerPool = await WorkerPool.get(this.db, workerPoolId);
+    const workerPool = await WorkerPool.get(this.db, workerPoolId, { includeStats: true });
     if (!workerPool) {
       return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
     }
