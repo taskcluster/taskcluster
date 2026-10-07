@@ -10,7 +10,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/host"
 	"golang.org/x/sys/windows"
 )
 

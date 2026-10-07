@@ -3,7 +3,7 @@ package fileutil
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/safefs"
 	"golang.org/x/sys/windows"
 )
 

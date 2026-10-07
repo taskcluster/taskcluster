@@ -15,10 +15,10 @@ import (
 	"maps"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v112/tools/d2g"
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v113/tools/d2g"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/process"
 )
 
 const (

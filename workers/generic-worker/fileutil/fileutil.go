@@ -16,7 +16,7 @@ import (
 
 	"github.com/mholt/archives"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/safefs"
 )
 
 func WriteToFileAsJSON(obj any, filename string) error {

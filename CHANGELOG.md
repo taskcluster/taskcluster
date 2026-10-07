@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v113.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#8874](https://github.com/taskcluster/taskcluster/issues/8874)
+The UI subscription endpoint setting has been renamed: use `SUBSCRIPTION_ENDPOINT` instead of `GRAPHQL_SUBSCRIPTION_ENDPOINT`, and `ui.subscription_endpoint` instead of `ui.graphql_subscription_endpoint`. Update deployment configuration before upgrading.
+
+▶ [patch]
+The public deployment scope list in the anonymous role docs now includes `queue:list-task-queues`, which the dashboard needs to show counts for task queues that worker-manager does not own.
+The worker pools page now only blames missing scopes when task queue counts fail with `InsufficientScopes`, and shows the actual error otherwise.
+
+▶ [patch] [#9206](https://github.com/taskcluster/taskcluster/issues/9206)
+Worker Manager now computes a worker pool's worker counts and capacities only when it actually returns them, in the `workerPool` and `createWorkerPool` endpoints. Previously every worker pool lookup computed them, including each `registerWorker` call, the worker scanner, and provider error reporting. That query reads every worker row in the pool, so a large pool scaling up quickly could drive database CPU to 100% as each newly booted worker registered.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 2071833](http://bugzil.la/2071833)
+Generic Worker on Windows multiuser now replaces (instead of merging) DACLs when granting a task user control of task and writable-directory-cache trees, and protects those DACLs from inheritance so leftover `BUILTIN\Users` / Everyone ACEs cannot follow the cache. `cachesDir` and `downloadsDir` are given a protected worker-only DACL at startup so they no longer inherit those ACEs from a drive root.
+
+▶ [patch]
+On Windows, generic-worker now checks free space on the configured task volume. Previously, it checked the process working directory even when `tasksDir` was on a different volume, which could cause incorrect cache cleanup decisions.
+
+### DEVELOPERS
+
+▶ [MAJOR] [#9190](https://github.com/taskcluster/taskcluster/issues/9190)
+The web-server service no longer serves a GraphQL API. The `/graphql` endpoint and the `/playground` page have been removed.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump proxy-addr from 2.0.7 to 2.0.8 (9981e7e41d)
+* build(deps): bump source-map-js from 1.2.1 to 1.2.2 (04c5604dac)
+* build(deps): bump source-map-js from 1.2.1 to 1.2.2 in /ui (2f8e37d423)
+
+</details>
+
 ## v112.0.0
 
 ### ADMINS

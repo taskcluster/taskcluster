@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v112/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v113/tools/d2g/dockerworker"
 )
 
 // TestDockerWorkerSchemaMatchesD2G verifies that this engine's embedded

@@ -15,7 +15,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v112/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v113/clients/client-go/tcqueue"
 )
 
 func skipWithoutShellArtifactAccess(t *testing.T) {

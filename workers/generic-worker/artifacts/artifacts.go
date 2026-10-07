@@ -4,9 +4,9 @@ import (
 	"io"
 	"os"
 
-	tcclient "github.com/taskcluster/taskcluster/v112/clients/client-go"
-	"github.com/taskcluster/taskcluster/v112/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v112/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
+	"github.com/taskcluster/taskcluster/v113/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/gwconfig"
 )
 
 type (
