@@ -103,35 +103,7 @@ export default class ErrorPanel extends Component {
       return null;
     }
 
-    // handle GraphQLErrors as a special case
-    if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-      const errors = error.graphQLErrors;
-
-      // Log extensions for all errors received
-      errors.forEach(err => {
-        if (err?.extensions) {
-          // biome-ignore lint/suspicious/noConsole: log web server error extensions to help with debugging
-          console.log('Error from web-server:', err.extensions);
-        }
-      });
-
-      // construct a markdown summary of all of the errors (at most 3)
-      if (errors.length > 1) {
-        message.push(
-          `${errors.length} errors occurred fetching data for this page:`
-        );
-
-        errors.slice(0, 3).forEach(err => {
-          message.push(`* ${err.message}`);
-        });
-
-        if (errors.length > 3) {
-          message.push('* (further errors hidden; see console)');
-        }
-      } else {
-        message.push(errors[0].message);
-      }
-    } else if (error.networkError) {
+    if (error.networkError) {
       // special-case networkError as well, although note that this still shows
       // JSON errors when the response is not JSON, regardless of content-type.
       message.push(

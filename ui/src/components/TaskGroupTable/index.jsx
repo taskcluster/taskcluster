@@ -236,7 +236,7 @@ export default class TaskGroupTable extends Component {
   };
 
   static propTypes = {
-    /** Task GraphQL PageConnection instance. */
+    /** Task PageConnection instance. */
     taskGroupConnection: shape({
       edges: arrayOf(task),
       pageInfo,

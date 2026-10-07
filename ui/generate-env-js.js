@@ -4,8 +4,7 @@ const fs = require('fs');
 const ENV_VARS = [
   {name: 'APPLICATION_NAME', defaultValue: 'Taskcluster', json: false},
   {name: 'TASKCLUSTER_ROOT_URL', defaultValue: 'https://tc.example.com', json: false},
-  {name: 'GRAPHQL_ENDPOINT', defaultValue: '/graphql', json: false},
-  {name: 'GRAPHQL_SUBSCRIPTION_ENDPOINT', defaultValue: '/subscription', json: false},
+  {name: 'SUBSCRIPTION_ENDPOINT', defaultValue: '/subscription', json: false},
   {name: 'DOCS_ONLY', defaultValue: false, json: false},
   {name: 'UI_LOGIN_STRATEGY_NAMES', defaultValue: '', json: false},
   {name: 'SENTRY_DSN', defaultValue: '', json: false},

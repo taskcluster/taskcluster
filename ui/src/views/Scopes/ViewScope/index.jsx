@@ -50,9 +50,8 @@ export default class ViewScope extends Component {
     this.setState({ loading: true, error: null });
 
     try {
-      // Matches the previous GraphQL behavior: a single page of clients (the
-      // web-server connection loader capped this at 1000) plus all roles,
-      // filtered client-side.
+      // A single page of clients (the web-server connection loader capped this at 1000)
+      // plus all roles, filtered client-side.
       const [roles, { clients }] = await Promise.all([
         this.authClient.listRoles(),
         this.authClient.listClients({ limit: VIEW_CLIENTS_PAGE_SIZE }),

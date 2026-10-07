@@ -87,8 +87,7 @@ const defaultValues = {
   PULSE_AMQPS: 'false',
 
   APPLICATION_NAME: 'Taskcluster',
-  GRAPHQL_ENDPOINT: `http://taskcluster/graphql`,
-  GRAPHQL_SUBSCRIPTION_ENDPOINT: `http://taskcluster/subscription`,
+  SUBSCRIPTION_ENDPOINT: `http://taskcluster/subscription`,
   UI_LOGIN_STRATEGY_NAMES: 'local',
   SITE_SPECIFIC: JSON.stringify({
     tutorial_worker_pool_id: 'docker-compose/generic-worker',
@@ -164,8 +163,7 @@ const uiConfig = [
   { type: '!env', var: 'PORT' },
   { type: '!env', var: 'APPLICATION_NAME' },
   { type: '!env', var: 'TASKCLUSTER_ROOT_URL' },
-  { type: '!env', var: 'GRAPHQL_SUBSCRIPTION_ENDPOINT' },
-  { type: '!env', var: 'GRAPHQL_ENDPOINT' },
+  { type: '!env', var: 'SUBSCRIPTION_ENDPOINT' },
   { type: '!env', var: 'UI_LOGIN_STRATEGY_NAMES' },
   { type: '!env:string', var: 'BANNER_MESSAGE', optional: true },
   { type: '!env:json', var: 'SITE_SPECIFIC', optional: true },

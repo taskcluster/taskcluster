@@ -71,13 +71,12 @@ You can optionally specify the port on which the development server serves with
 PORT=9000
 ```
 
-### GraphQL Endpoints
+### Subscription Endpoints
 
 If you are not running the web service on your local machine, you will also need to set
 
 ```bash
-GRAPHQL_SUBSCRIPTION_ENDPOINT=https://mydomain.com/subscription
-GRAPHQL_ENDPOINT=https://mydomain.com/graphql
+SUBSCRIPTION_ENDPOINT=https://mydomain.com/subscription
 ```
 
 The Taskcluster team has a series of [best practices](../dev-docs/best-practices/ui.md) for the UI which may help
@@ -143,9 +142,7 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 
 ## Necessary Practices
 
-1. For views showing secret, user-linked data or are using `client.fetchMore` to load more data
-on page load, graphql queries of that view must include the `fetchPolicy: 'network-only'` option to ensure
-data reflects the user's permissions and is up-to-date when a user logs in/out.
+1. For views showing secret, user-linked data or are using `client.fetchMore` to load more data on page load.
 
 ## Table of Contents
 

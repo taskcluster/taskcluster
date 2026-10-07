@@ -134,8 +134,6 @@ export const MIMETYPE_ICONS = [
   [FileMusicIcon, [/^audio\//]],
   [FileIcon, [/.*/]],
 ];
-// Before doing a mutation on a task, be sure to
-// remove parent fields added by the GraphQL gateway.
 export const TASK_ADDED_FIELDS = [
   'taskId',
   'decisionTask',

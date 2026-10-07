@@ -11,7 +11,7 @@ const getEventsWsUrl = endpointPath => {
   // own endpoint under it ('raw' or 'named'). Resolves against the current
   // origin when relative (dev: proxied by Vite) and is used as-is when absolute
   // (deployed: 'https://host/subscription').
-  const base = window.env?.GRAPHQL_SUBSCRIPTION_ENDPOINT || '/subscription';
+  const base = window.env?.SUBSCRIPTION_ENDPOINT || '/subscription';
   const url = new URL(
     `${base.replace(/\/$/, '')}/${endpointPath}`,
     window.location.href
@@ -55,8 +55,8 @@ const NO_RECONNECT_CLOSE_CODES = new Set([
 ]);
 
 // The server authenticates on the connection_init frame rather than the HTTP
-// upgrade. The token is the same shape the HTTP GraphQL link sends in its
-// Authorization header; an anonymous user sends a bare connection_init and is
+// upgrade. The token is being sent in Authorization header.
+// An anonymous user sends a bare connection_init and is
 // checked against the anonymous role's scopes.
 const connectionInitFrame = credentials =>
   credentials

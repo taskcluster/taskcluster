@@ -66,8 +66,7 @@ export default class ViewDenylist extends Component {
       previousPage,
     } = this.props;
     const { searchTerm } = this;
-    // The service has no server-side search, so the term refines the page in
-    // hand -- the same thing the GraphQL layer used to do.
+    // The service has no server-side search, so the term refines the page in hand
     const addresses = searchTerm
       ? items.filter(({ notificationAddress }) =>
           notificationAddress.toLowerCase().includes(searchTerm.toLowerCase())

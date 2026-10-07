@@ -38,7 +38,7 @@ import Button from '../Button';
 export default class DenylistForm extends Component {
   static propTypes = {
     /**
-     * A GraphQL address response. Not needed when adding
+     * An address response. Not needed when adding
      * a new address.
      */
     address,

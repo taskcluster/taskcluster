@@ -60,9 +60,9 @@ const useStyles = makeStyles(theme => ({
 /**
  * A paginated table over a plain array of items.
  *
- * The REST counterpart to ConnectionDataTable: continuation tokens only ever
- * point forwards, so the caller owns the page and hands over one page at a
- * time. This component just reports which direction was clicked.
+ * Continuation tokens only ever point forwards,
+ * so the caller owns the page and hands over one page at a time.
+ * This component just reports which direction was clicked.
  */
 export default function PaginatedDataTable({
   items,

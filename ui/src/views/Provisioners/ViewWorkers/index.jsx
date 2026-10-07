@@ -129,10 +129,8 @@ export default class ViewWorkers extends Component {
     }
   };
 
-  // Replaces the GraphQL resolver that decorated each worker's latestTask
-  // with its run status. The REST worker's `latestTask` only carries
-  // `{ taskId, runId }`, so the run's state/started/resolved is fetched per
-  // worker here.
+  // The worker's `latestTask` only carries `{ taskId, runId }`,
+  // so the run's state/started/resolved is fetched per worker here.
   fetchLatestTaskRuns = async () => {
     const workers = this.props.items;
     const requestId = ++this.latestTaskRunsRequestId;

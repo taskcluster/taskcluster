@@ -44,7 +44,7 @@ export default class WorkerTable extends Component {
   };
 
   static propTypes = {
-    /** A GraphQL worker response. */
+    /** A worker response. */
     worker,
   };
 
