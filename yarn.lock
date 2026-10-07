@@ -7635,14 +7635,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^4.3.1":
-  version: 4.3.1
-  resolution: "js-yaml@npm:4.3.1"
+"js-yaml@npm:^5.4.2":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
-    js-yaml: bin/js-yaml.js
-  checksum: 10c0/13c500ca322e0c3f8c81686e6ecda96d2ea37b45247a420c17c7db36932d6965cc27391abc2d1a104501600e7f0d947a5f8b7be6db619c4fefa87901b3512807
+    js-yaml: bin/js-yaml.mjs
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
@@ -11045,7 +11045,7 @@ __metadata:
     inquirer: "npm:^14.2.2"
     is-uuid: "npm:^1.0.2"
     iterall: "npm:^1.2.2"
-    js-yaml: "npm:^4.3.1"
+    js-yaml: "npm:^5.4.2"
     json-e: "npm:^4.8.4"
     json-parameterization: "npm:^2.0.1"
     json-stable-stringify: "npm:^1.3.0"
