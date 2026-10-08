@@ -449,14 +449,16 @@ builder.declare(
 
     // Reset accessToken
     const accessToken = slugid.v4() + slugid.v4();
-    const [client] = await this.db.fns.update_client(
+    const [client] = await this.db.fns.update_client_2(
       clientId,
       null, // description
       this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
       null, // expires
       null, // disabled
       null, // scopes
-      null // delete_on_expiration
+      null, // delete_on_expiration
+      null, // expected_scopes
+      null // expected_last_modified
     );
     if (!client) {
       return res.reportError('ResourceNotFound', 'Client not found', {});
@@ -506,6 +508,10 @@ builder.declare(
       'satisfy all scopes being added to the client in the update operation.',
       "If no scopes are given in the request, the client's scopes remain",
       'unchanged',
+      '',
+      'If the client is modified by another request while this one is being',
+      'processed, the update is not applied and this end-point will return `409`',
+      'reporting `RequestConflict`. The caller can retry the request.',
     ].join('\n'),
   },
   async function (req, res) {
@@ -527,7 +533,7 @@ builder.declare(
     }
 
     // Load client
-    const [client] = await this.db.fns.get_client(req.params.clientId);
+    const [client] = await this.db.fns.get_client(clientId);
     if (!client) {
       return res.reportError('ResourceNotFound', 'Client not found', {});
     }
@@ -539,16 +545,27 @@ builder.declare(
     // Check scopes
     await req.authorize({ clientId, scopesAdded });
 
-    // Update client
-    const [updated] = await this.db.fns.update_client(
-      clientId,
-      input.description,
-      null, // encrypted_access_token
-      new Date(input.expires),
-      null, // disabled
-      input.scopes ? JSON.stringify(input.scopes) : null,
-      !!input.deleteOnExpiration
-    );
+    // Update client, but only if it is unchanged since we authorized against it
+    let updated;
+    try {
+      [updated] = await this.db.fns.update_client_2(
+        clientId,
+        input.description,
+        null, // encrypted_access_token
+        new Date(input.expires),
+        null, // disabled
+        input.scopes ? JSON.stringify(input.scopes) : null,
+        !!input.deleteOnExpiration,
+        JSON.stringify(client.scopes),
+        client.last_modified
+      );
+    } catch (err) {
+      // P0004 means the client was modified since we read it - caller can retry
+      if (err.code === 'P0004') {
+        return res.reportError('RequestConflict', 'Client was modified concurrently.', {});
+      }
+      throw err;
+    }
     if (!updated) {
       return res.reportError('ResourceNotFound', 'Client not found', {});
     }
@@ -612,14 +629,16 @@ builder.declare(
     await req.authorize({ clientId });
 
     // Update client
-    const [client] = await this.db.fns.update_client(
+    const [client] = await this.db.fns.update_client_2(
       clientId,
       null, // description
       null, // encrypted_access_token
       null, // expires
       false,
       null, // scopes
-      null // delete on expiration
+      null, // delete_on_expiration
+      null, // expected_scopes
+      null // expected_last_modified
     );
     if (!client) {
       return res.reportError('ResourceNotFound', 'Client not found', {});
@@ -682,14 +701,16 @@ builder.declare(
     await req.authorize({ clientId });
 
     // Update client
-    const [client] = await this.db.fns.update_client(
+    const [client] = await this.db.fns.update_client_2(
       clientId,
       null, // description
       null, // encrypted_access_token
       null, // expires
       true,
       null, // scopes
-      null // delete on expiration
+      null, // delete_on_expiration
+      null, // expected_scopes
+      null // expected_last_modified
     );
     if (!client) {
       return res.reportError('ResourceNotFound', 'Client not found', {});

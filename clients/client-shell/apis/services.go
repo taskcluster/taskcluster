@@ -135,7 +135,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "updateClient",
 				Title:       "Update Client",
-				Description: "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged",
+				Description: "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged\n\nIf the client is modified by another request while this one is being\nprocessed, the update is not applied and this end-point will return `409`\nreporting `RequestConflict`. The caller can retry the request.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/clients/<clientId>",

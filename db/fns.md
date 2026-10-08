@@ -12,7 +12,7 @@
    * [`insert_auth_audit_history`](#insert_auth_audit_history)
    * [`modify_roles`](#modify_roles)
    * [`purge_audit_history`](#purge_audit_history)
-   * [`update_client`](#update_client)
+   * [`update_client_2`](#update_client_2)
    * [`update_client_last_used`](#update_client_last_used)
  * [github functions](#github)
    * [`create_github_build_pr`](#create_github_build_pr)
@@ -227,7 +227,7 @@
 * [`insert_auth_audit_history`](#insert_auth_audit_history)
 * [`modify_roles`](#modify_roles)
 * [`purge_audit_history`](#purge_audit_history)
-* [`update_client`](#update_client)
+* [`update_client_2`](#update_client_2)
 * [`update_client_last_used`](#update_client_last_used)
 
 ### create_client
@@ -633,7 +633,7 @@ end
 
 </details>
 
-### update_client
+### update_client_2
 
 * *Mode*: write
 * *Arguments*:
@@ -644,6 +644,8 @@ end
   * `disabled_in boolean`
   * `scopes_in jsonb`
   * `delete_on_expiration_in boolean`
+  * `expected_scopes_in jsonb`
+  * `expected_last_modified_in timestamptz`
 * *Returns*: `table`
   * `   client_id text`
   * `  description text`
@@ -656,12 +658,17 @@ end
   * `  last_date_used timestamptz`
   * `  last_rotated timestamptz`
   * `  delete_on_expiration boolean `
-* *Last defined on version*: 41
+* *Last defined on version*: 131
 
 Update an existing client, returning the updated client or, if no such client
-exists, an empty set.  This does not implement optimistic concurrency: any non-null
-arguments to this function will overwrite existing values.  The last_modified
-column is updated automatically, as is last_rotated if the access token is set.
+exists, an empty set.  Any non-null arguments to this function will overwrite
+existing values.  If `expected_scopes_in` is not null, the write only happens if
+the client's current `scopes` equal it; likewise for `expected_last_modified_in` and
+`last_modified` (compared at millisecond precision, as that is what clients can
+read back).  If the client exists but does not match, this raises an exception
+with code P0004 and nothing is written.  With both null, this is unconditional.
+The last_modified column is updated automatically, as is last_rotated if the
+access token is set.
 
 <details><summary>Function Body</summary>
 
@@ -676,10 +683,15 @@ begin
     delete_on_expiration = coalesce(delete_on_expiration_in, clients.delete_on_expiration),
     last_modified = now(),
     last_rotated = case when encrypted_access_token_in is null then clients.last_rotated else now() end
-  where clients.client_id = client_id_in;
+  where clients.client_id = client_id_in
+    and (expected_scopes_in is null or clients.scopes = expected_scopes_in)
+    and (expected_last_modified_in is null
+         or date_trunc('milliseconds', clients.last_modified) = date_trunc('milliseconds', expected_last_modified_in));
 
   if found then
     return query select * from get_client(client_id_in);
+  elsif exists (select 1 from clients where clients.client_id = client_id_in) then
+    raise exception 'client was modified concurrently' using errcode = 'P0004';
   end if;
 end
 ```
@@ -708,6 +720,10 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `update_client(client_id_in text, description_in text, encrypted_access_token_in jsonb, expires_in timestamptz, disabled_in boolean, scopes_in jsonb, delete_on_expiration_in boolean)` (compatibility guaranteed until v115.0.0)
 
 ## github
 

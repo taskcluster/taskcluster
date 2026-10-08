@@ -179,7 +179,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('create the same client but it is disabled', async db => {
       await db.fns.create_client(baseClient(db));
-      await db.fns.update_client({
+      await db.deprecatedFns.update_client({
         client_id_in: 'some-client',
         description_in: null,
         encrypted_access_token_in: null,
@@ -265,7 +265,7 @@ suite(testing.suiteName(), () => {
       // wait long enough for the last-modified to change
       await testing.sleep(10);
 
-      await db.fns.update_client('some-client', null, null, null, null, null, null);
+      await db.deprecatedFns.update_client('some-client', null, null, null, null, null, null);
 
       const [client2] = await db.fns.get_client('some-client');
       assert.deepEqual(client2.client_id, 'some-client');
@@ -279,6 +279,55 @@ suite(testing.suiteName(), () => {
       // last modified was updated, but not last_rotated
       assert.notDeepEqual(client1.last_modified, client2.last_modified);
       assert.deepEqual(client1.last_rotated, client2.last_rotated);
+    });
+
+    helper.dbTest('update_client_2 only writes if the client is unmodified', async db => {
+      await db.fns.create_client(
+        'some-client',
+        'Some client...',
+        db.encrypt({ value: Buffer.from('sekrit', 'utf8') }),
+        new Date(),
+        false,
+        JSON.stringify(['scope1', 'scope2']),
+        false
+      );
+      const [client] = await db.fns.get_client('some-client');
+      const update = (scopes, expectedScopes, expectedLastModified) =>
+        db.fns.update_client_2(
+          'some-client',
+          null,
+          null,
+          null,
+          null,
+          JSON.stringify(scopes),
+          null,
+          JSON.stringify(expectedScopes),
+          expectedLastModified
+        );
+
+      const [updated] = await update(['scope1'], client.scopes, client.last_modified);
+      assert.deepEqual(updated.scopes, ['scope1']);
+
+      // stale scopes and stale last_modified are both rejected, and nothing is written
+      for (const args of [
+        [['scope1', 'scope2'], client.scopes, updated.last_modified],
+        [['scope1', 'scope2'], updated.scopes, client.last_modified],
+      ]) {
+        await assert.rejects(
+          () => update(...args),
+          err => err.code === 'P0004'
+        );
+      }
+      const [after] = await db.fns.get_client('some-client');
+      assert.deepEqual(after.scopes, ['scope1']);
+
+      // null expectations mean an unconditional update
+      const [forced] = await db.fns.update_client_2('some-client', 'forced', null, null, null, null, null, null, null);
+      assert.deepEqual(forced.description, 'forced');
+
+      // a missing client returns empty results
+      const rows = await db.fns.update_client_2('no-such-client', null, null, null, null, null, null, '[]', new Date());
+      assert.deepEqual(rows, []);
     });
 
     helper.dbTest('update a client, changing everything', async db => {
@@ -298,7 +347,7 @@ suite(testing.suiteName(), () => {
       await testing.sleep(10);
 
       const expires2 = new Date();
-      const [updated] = await db.fns.update_client(
+      const [updated] = await db.deprecatedFns.update_client(
         'some-client',
         'updated',
         db.encrypt({ value: Buffer.from('UPDATED', 'utf8') }),

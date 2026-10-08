@@ -346,6 +346,10 @@ impl Auth {
     /// satisfy all scopes being added to the client in the update operation.
     /// If no scopes are given in the request, the client's scopes remain
     /// unchanged
+    ///
+    /// If the client is modified by another request while this one is being
+    /// processed, the update is not applied and this end-point will return `409`
+    /// reporting `RequestConflict`. The caller can retry the request.
     pub async fn updateClient(&self, clientId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::updateClient_details(clientId);
