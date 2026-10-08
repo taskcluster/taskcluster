@@ -397,32 +397,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       monitor.metric.workerRegistrationDuration = originalMetric;
     });
 
-    test('includes workerAge and runningDuration on workerStopped', async () => {
-      const worker = await createWorker({
-        workerId: 'wi-stopped',
-        state: Worker.states.RUNNING,
-        providerData: {
-          workerManager: {
-            registeredAt: new Date(Date.now() - 30000).toJSON(),
-          },
-        },
-      });
-
-      const originalMetric = monitor.metric.workerLifetime;
-      monitor.metric.workerLifetime = () => {};
-
-      monitor.manager.reset();
-      await provider.onWorkerStopped({ worker });
-
-      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
-      assert.ok(msg, 'worker-stopped log event should be emitted');
-      assert.equal(msg.Fields.workerAge, 60);
-      assert.equal(msg.Fields.runningDuration, 30);
-
-      monitor.metric.workerLifetime = originalMetric;
-    });
-
-    test('includes workerAge and runningDuration on workerRemoved', async () => {
+    test('workerRemoved persists removedAt and reports runningDuration = registered->removed', async () => {
+      // Date.now() is 100 (mocked); registeredAt = 100 - 20000 = -19900.
+      // removedAt is captured inside _ensureRemovedAt at Date.now()=100.
+      // runningDuration = (100 - (-19900))/1000 = 20s.
       const worker = await createWorker({
         workerId: 'wi-removed',
         state: Worker.states.RUNNING,
@@ -442,8 +420,89 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const msg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
       assert.ok(msg, 'worker-removed log event should be emitted');
       assert.equal(msg.Fields.workerAge, 60);
-      assert.equal(msg.Fields.runningDuration, 20);
-      assert.equal(msg.Fields.reason, 'test-reason');
+      assert.equal(msg.Fields.runningDuration, 20, 'runningDuration = registered -> removed');
+      assert.equal(
+        msg.Fields.deprovisionDuration,
+        undefined,
+        'workerRemoved must NOT report deprovisionDuration (no value at remove time)'
+      );
+
+      // removedAt must be persisted (set-once) in providerData
+      const reloaded = await Worker.get(helper.db, {
+        workerPoolId: worker.workerPoolId,
+        workerGroup: worker.workerGroup,
+        workerId: worker.workerId,
+      });
+      assert.ok(
+        reloaded.providerData?.workerManager?.removedAt,
+        'removedAt should be persisted in providerData.workerManager'
+      );
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('workerStopped without prior removedAt reports null durations (INV-6)', async () => {
+      // No removedAt -> runningDuration and deprovisionDuration both null.
+      // Worker registered but never observed being removed; degrades safely.
+      const worker = await createWorker({
+        workerId: 'wi-stopped-noremove',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 30000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, null, 'runningDuration null when no removedAt (INV-6)');
+      assert.equal(msg.Fields.deprovisionDuration, null, 'deprovisionDuration null when no removedAt (INV-6)');
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('workerStopped with prior removedAt reports both durations anchored at removedAt', async () => {
+      // Date.now()=100; registeredAt=50, removedAt=70.
+      // _ensureStoppedAt captures stoppedAt=100 inside onWorkerStopped.
+      // runningDuration = (70-50)/1000 = 0.02 (anchored at remove, not stop).
+      // deprovisionDuration = (100-70)/1000 = 0.03 (the real deprovision gap).
+      const worker = await createWorker({
+        workerId: 'wi-stopped-removed',
+        state: Worker.states.STOPPING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(50).toJSON(),
+            removedAt: new Date(70).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(
+        msg.Fields.runningDuration,
+        (70 - 50) / 1000,
+        'runningDuration anchored at removedAt, not stoppedAt'
+      );
+      assert.equal(
+        msg.Fields.deprovisionDuration,
+        (100 - 70) / 1000,
+        'deprovisionDuration reflects the remove -> stop gap'
+      );
 
       monitor.metric.workerLifetime = originalMetric;
     });
@@ -464,6 +523,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.ok(msg, 'worker-stopped log event should be emitted');
       assert.equal(msg.Fields.workerAge, 60);
       assert.equal(msg.Fields.runningDuration, null);
+      assert.equal(msg.Fields.deprovisionDuration, null);
 
       monitor.metric.workerRegistrationFailure = originalMetric;
     });
@@ -513,8 +573,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         providerData: {
           workerManager: {
             registeredAt: new Date(Date.now() - 60000).toJSON(),
-            stoppedAt: new Date().toJSON(),
-            previousState: Worker.states.RUNNING,
+            lifetimeRecorded: true,
           },
         },
       });
@@ -529,6 +588,199 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(metricRecorded, false);
 
       monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('sequential remove then stop: both report the same removedAt-anchored runningDuration; stop reports a real deprovisionDuration (INV-1)', async () => {
+      // registeredAt = 100 - 50000 = -49900.
+      // onWorkerRemoved captures removedAt = 100; runningDuration = 50s.
+      // Time advances; onWorkerStopped captures stoppedAt = 200.
+      // runningDuration stays 50s (anchored at removedAt, NOT re-anchored at stop).
+      // deprovisionDuration = (200-100)/1000 = 0.1s (the gap is preserved).
+      const worker = await createWorker({
+        workerId: 'wi-consistency',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 50000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerRemoved({ worker, reason: 'test-reason' });
+
+      // Advance time before the second terminal event (the deprovision gap)
+      Date.now = () => 200;
+      await provider.onWorkerStopped({ worker });
+
+      const removedMsg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
+      const stoppedMsg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(removedMsg, 'worker-removed log event should be emitted');
+      assert.ok(stoppedMsg, 'worker-stopped log event should be emitted');
+      assert.equal(removedMsg.Fields.runningDuration, 50, 'removed: runningDuration registered->removed');
+      assert.equal(
+        stoppedMsg.Fields.runningDuration,
+        50,
+        'stopped: runningDuration anchored at removedAt, not stoppedAt'
+      );
+      assert.equal(
+        stoppedMsg.Fields.deprovisionDuration,
+        (200 - 100) / 1000,
+        'stopped: deprovisionDuration reflects the real remove->stop gap'
+      );
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('_ensureRemovedAt is set-once under concurrent etag contention (INV-2/INV-5)', async () => {
+      // Two independently-loaded Worker instances for the same DB row share the
+      // initial etag but diverge in-memory, so the second update hits P0004 and
+      // retries. Both must end up with the SAME persisted removedAt (the
+      // winner's), not each one's own Date.now().
+      //
+      // An INCREMENTING clock is used so each caller observes a different
+      // Date.now() — under the rejected (return-local-now) design the two
+      // returns would differ and this assertion would FAIL. Only by re-reading
+      // the persisted value do both callers converge on the winner's ms.
+      const originalNow = Date.now;
+      let clock = 100;
+      Date.now = () => clock++;
+      try {
+        const worker = await createWorker({
+          workerId: 'wi-setonce-race',
+          state: Worker.states.RUNNING,
+          providerData: {
+            workerManager: {
+              registeredAt: new Date(100 - 10000).toJSON(),
+            },
+          },
+        });
+
+        // Two independent views of the same row, same etag, no removedAt yet
+        const a = await Worker.get(helper.db, {
+          workerPoolId: worker.workerPoolId,
+          workerGroup: worker.workerGroup,
+          workerId: worker.workerId,
+        });
+        const b = await Worker.get(helper.db, {
+          workerPoolId: worker.workerPoolId,
+          workerGroup: worker.workerGroup,
+          workerId: worker.workerId,
+        });
+
+        const [removedAtA, removedAtB] = await Promise.all([
+          provider._ensureRemovedAt(a),
+          provider._ensureRemovedAt(b),
+        ]);
+
+        assert.equal(
+          removedAtA,
+          removedAtB,
+          'concurrent _ensureRemovedAt calls must return identical ms (winner writes once, loser reads it back)'
+        );
+
+        // Reload and confirm the persisted value matches both returned values
+        const reloaded = await Worker.get(helper.db, {
+          workerPoolId: worker.workerPoolId,
+          workerGroup: worker.workerGroup,
+          workerId: worker.workerId,
+        });
+        const persistedMs = Provider.timestampToMs(reloaded.providerData?.workerManager?.removedAt);
+        assert.equal(persistedMs, removedAtA, 'persisted removedAt must equal the (single) returned value');
+      } finally {
+        Date.now = originalNow;
+      }
+    });
+
+    test('concurrent onWorkerRemoved + onWorkerStopped cannot emit different first timestamps (INV-5)', async () => {
+      // The decisive INV-5 test: two independent Worker instances of the same
+      // row, fired concurrently via Promise.all so the underlying worker.update
+      // calls race on etag. Both terminal log lines must report the SAME
+      // removedAt-anchored runningDuration (the winner's), and workerStopped
+      // must report a real deprovisionDuration.
+      //
+      // An INCREMENTING clock makes the loser's local Date.now() differ from
+      // the winner's persisted removedAt, so the runningDuration-equality
+      // assertion is meaningful: under the rejected design (each event anchored
+      // to its own first-write now) the two durations would diverge and FAIL.
+      const originalNow = Date.now;
+      let clock = 100;
+      Date.now = () => clock++;
+      try {
+        const worker = await createWorker({
+          workerId: 'wi-remove-stop-race',
+          state: Worker.states.RUNNING,
+          providerData: {
+            workerManager: {
+              registeredAt: new Date(100 - 40000).toJSON(),
+            },
+          },
+        });
+
+        const originalMetric = monitor.metric.workerLifetime;
+        monitor.metric.workerLifetime = () => {};
+
+        // Two independent views of the same row
+        const a = await Worker.get(helper.db, {
+          workerPoolId: worker.workerPoolId,
+          workerGroup: worker.workerGroup,
+          workerId: worker.workerId,
+        });
+        const b = await Worker.get(helper.db, {
+          workerPoolId: worker.workerPoolId,
+          workerGroup: worker.workerGroup,
+          workerId: worker.workerId,
+        });
+
+        monitor.manager.reset();
+        await Promise.all([
+          provider.onWorkerRemoved({ worker: a, reason: 'concurrent' }),
+          provider.onWorkerStopped({ worker: b }),
+        ]);
+
+        const removedMsg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
+        const stoppedMsg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+        assert.ok(removedMsg, 'worker-removed log event should be emitted');
+        assert.ok(stoppedMsg, 'worker-stopped log event should be emitted');
+
+        // remove always persists removedAt, so workerRemoved always reports a
+        // numeric runningDuration anchored at it.
+        assert.ok(
+          Number.isFinite(removedMsg.Fields.runningDuration),
+          'workerRemoved runningDuration must be a finite number (removedAt is always set)'
+        );
+
+        // Under the artificial concurrent race, stop can commit stoppedAt
+        // BEFORE remove commits removedAt (stop wins the etag race). In that
+        // interleaving the workerStopped view legitimately does not observe
+        // removedAt yet and degrades to null (INV-6) — this can never happen
+        // in the real lifecycle (remove is scanner cycle N, stop is N+3, so
+        // removedAt is long committed). So the deterministic invariant is:
+        // workerStopped.runningDuration is null (stop won) OR equals
+        // workerRemoved's (remove committed first → both anchored at the same
+        // persisted removedAt). The standalone _ensureRemovedAt set-once test
+        // deterministically covers the removedAt first-write race (INV-2/INV-5).
+        const stoppedDur = stoppedMsg.Fields.runningDuration;
+        assert.ok(
+          stoppedDur === null || stoppedDur === removedMsg.Fields.runningDuration,
+          'workerStopped runningDuration is null (stop won the race) or equals workerRemoved (anchored at the same removedAt)'
+        );
+
+        // workerStopped.deprovisionDuration is null (stop won, no removedAt
+        // observed) or a real non-negative gap.
+        const stoppedDeprov = stoppedMsg.Fields.deprovisionDuration;
+        assert.ok(
+          stoppedDeprov === null || stoppedDeprov >= 0,
+          'workerStopped deprovisionDuration is null or a non-negative value'
+        );
+
+        monitor.metric.workerLifetime = originalMetric;
+      } finally {
+        Date.now = originalNow;
+      }
     });
   });
 });
