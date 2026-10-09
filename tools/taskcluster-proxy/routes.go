@@ -165,8 +165,6 @@ func (routes *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Requ
 // RootHandler is the HTTP Handler for / endpoint
 func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	routes.setHeaders(res)
-	routes.lock.RLock()
-	defer routes.lock.RUnlock()
 
 	targetPath, err := routes.services.ConvertPath(req.URL)
 
@@ -185,8 +183,6 @@ var apiPath = regexp.MustCompile("^/api/(?P<service>[^/]*)/(?P<apiVersion>[^/]*)
 // APIHandler is the HTTP Handler for /api endpoint
 func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
 	routes.setHeaders(res)
-	routes.lock.RLock()
-	defer routes.lock.RUnlock()
 
 	rawPath := req.URL.EscapedPath()
 
@@ -256,7 +252,10 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 		maps.Copy(proxyreq.Header, req.Header)
 
 		// Refresh Authorization header with each call...
-		err = routes.Credentials.SignRequest(proxyreq)
+		routes.lock.RLock()
+		creds := *routes.Credentials
+		routes.lock.RUnlock()
+		err = creds.SignRequest(proxyreq)
 		if err != nil {
 			return nil, nil, err
 		}
