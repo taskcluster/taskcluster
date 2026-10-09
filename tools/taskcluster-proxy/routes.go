@@ -36,11 +36,25 @@ type CredentialsUpdate struct {
 	Certificate string `json:"certificate"`
 }
 
-var httpClient = &http.Client{
-	// do not follow redirects, and instead pass them back to the caller
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	},
+var httpClient = newHTTPClient(30*time.Second, 15*time.Second)
+
+// newHTTPClient returns the client used for upstream requests. An HTTP/2
+// connection that receives nothing for sendPingTimeout is sent a PING, and is
+// closed if the PING isn't answered within pingTimeout, so that requests
+// stuck on a dead connection fail and get retried on a new one.
+func newHTTPClient(sendPingTimeout, pingTimeout time.Duration) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.HTTP2 = &http.HTTP2Config{
+		SendPingTimeout: sendPingTimeout,
+		PingTimeout:     pingTimeout,
+	}
+	return &http.Client{
+		Transport: transport,
+		// do not follow redirects, and instead pass them back to the caller
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 }
 
 // NewRoutes creates a new Routes instance.
@@ -119,7 +133,12 @@ func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	bewitURL, err := routes.SignedURL(urlString, urlObject.Query(), time.Hour*1)
+	routes.lock.RLock()
+	client := routes.Client
+	creds := *routes.Credentials
+	routes.lock.RUnlock()
+	client.Credentials = &creds
+	bewitURL, err := client.SignedURL(urlString, urlObject.Query(), time.Hour*1)
 
 	if err != nil {
 		res.WriteHeader(500)
@@ -165,8 +184,6 @@ func (routes *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Requ
 // RootHandler is the HTTP Handler for / endpoint
 func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	routes.setHeaders(res)
-	routes.lock.RLock()
-	defer routes.lock.RUnlock()
 
 	targetPath, err := routes.services.ConvertPath(req.URL)
 
@@ -185,8 +202,6 @@ var apiPath = regexp.MustCompile("^/api/(?P<service>[^/]*)/(?P<apiVersion>[^/]*)
 // APIHandler is the HTTP Handler for /api endpoint
 func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
 	routes.setHeaders(res)
-	routes.lock.RLock()
-	defer routes.lock.RUnlock()
 
 	rawPath := req.URL.EscapedPath()
 
@@ -249,19 +264,26 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	// have exponential backoff in case of intermittent failures (e.g. network
 	// blips or HTTP 5xx errors)
 	httpCall := func() (*http.Response, error, error) {
-		proxyreq, err := http.NewRequest(req.Method, targetPath.String(), bytes.NewReader(body))
+		proxyreq, err := http.NewRequestWithContext(req.Context(), req.Method, targetPath.String(), bytes.NewReader(body))
 		if err != nil {
 			return nil, nil, fmt.Errorf("error constructing request: %s", err)
 		}
 		maps.Copy(proxyreq.Header, req.Header)
 
 		// Refresh Authorization header with each call...
-		err = routes.Credentials.SignRequest(proxyreq)
+		routes.lock.RLock()
+		creds := *routes.Credentials
+		routes.lock.RUnlock()
+		err = creds.SignRequest(proxyreq)
 		if err != nil {
 			return nil, nil, err
 		}
 		var resp *http.Response
 		resp, err = httpClient.Do(proxyreq)
+		if err != nil && req.Context().Err() != nil {
+			// The client went away, retrying is pointless.
+			return nil, nil, err
+		}
 		return resp, err, nil
 	}
 
