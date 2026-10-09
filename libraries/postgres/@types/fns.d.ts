@@ -5577,16 +5577,6 @@ type WorkerManagerGetWorker3Fn = {
   worker_id_in: string;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string}>>;
 };
-type WorkerManagerGetWorkerManagerLaunchConfigFn = {
- (
-   worker_pool_id_in: string,
-   launch_config_id_in: string
- ): Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
- (params: {
-  worker_pool_id_in: string;
-  launch_config_id_in: string;
- }): Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
-};
 /** @deprecated */
 type WorkerManagerGetWorkerManagerWorkersDeprecatedFn = {
  (
@@ -5765,6 +5755,16 @@ type WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn = {
   page_size_in?: number | null;
   page_offset_in?: number | null;
  }): Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
+};
+type WorkerManagerGetWorkerPoolLaunchConfigFn = {
+ (
+   worker_pool_id_in: string,
+   launch_config_id_in: string
+ ): Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
+ (params: {
+  worker_pool_id_in: string;
+  launch_config_id_in: string;
+ }): Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
 };
 type WorkerManagerGetWorkerPoolLaunchConfigStatsFn = {
  (
@@ -6550,7 +6550,6 @@ export interface DbFunctions {
   get_task_queue_wm_2: WorkerManagerGetTaskQueueWm2Fn;
   get_task_queues_wm: WorkerManagerGetTaskQueuesWmFn;
   get_worker_3: WorkerManagerGetWorker3Fn;
-  get_worker_manager_launch_config: WorkerManagerGetWorkerManagerLaunchConfigFn;
   get_worker_manager_workers2: WorkerManagerGetWorkerManagerWorkers2Fn;
   get_worker_pool_counts_and_capacity: WorkerManagerGetWorkerPoolCountsAndCapacityFn;
   get_worker_pool_counts_and_capacity_lc: WorkerManagerGetWorkerPoolCountsAndCapacityLcFn;
@@ -6562,6 +6561,7 @@ export interface DbFunctions {
   get_worker_pool_error_titles: WorkerManagerGetWorkerPoolErrorTitlesFn;
   get_worker_pool_error_worker_pools: WorkerManagerGetWorkerPoolErrorWorkerPoolsFn;
   get_worker_pool_errors_for_worker_pool2: WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn;
+  get_worker_pool_launch_config: WorkerManagerGetWorkerPoolLaunchConfigFn;
   get_worker_pool_launch_config_stats: WorkerManagerGetWorkerPoolLaunchConfigStatsFn;
   get_worker_pool_launch_configs: WorkerManagerGetWorkerPoolLaunchConfigsFn;
   get_worker_pool_with_launch_configs: WorkerManagerGetWorkerPoolWithLaunchConfigsFn;

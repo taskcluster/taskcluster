@@ -1317,7 +1317,7 @@ builder.declare(
     }
 
     if (worker.launchConfigId) {
-      const [lc] = await this.db.fns.get_worker_manager_launch_config(workerPoolId, worker.launchConfigId);
+      const [lc] = await this.db.fns.get_worker_pool_launch_config(workerPoolId, worker.launchConfigId);
       if (lc?.is_archived) {
         return res.reportError('InputError', 'Launch config was archived.', {});
       }

@@ -1,7 +1,7 @@
 version: 132
 description: get launch config by id
 methods:
-  get_worker_manager_launch_config:
+  get_worker_pool_launch_config:
     description: |-
       Retrieve single launch config for a given worker pool by id.
       Returns an empty set if there is no such launch config.

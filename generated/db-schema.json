@@ -8118,7 +8118,7 @@
     {
       "description": "get launch config by id",
       "methods": {
-        "get_worker_manager_launch_config": {
+        "get_worker_pool_launch_config": {
           "args": "worker_pool_id_in text, launch_config_id_in text",
           "body": "begin\n  return query\n    select\n      wplc.launch_config_id,\n      wplc.worker_pool_id,\n      wplc.is_archived,\n      wplc.configuration,\n      wplc.created,\n      wplc.last_modified\n    from worker_pool_launch_configs wplc\n    where\n      wplc.worker_pool_id = worker_pool_id_in and\n      wplc.launch_config_id = launch_config_id_in;\nend",
           "deprecated": false,
