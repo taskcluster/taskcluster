@@ -245,7 +245,7 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	// have exponential backoff in case of intermittent failures (e.g. network
 	// blips or HTTP 5xx errors)
 	httpCall := func() (*http.Response, error, error) {
-		proxyreq, err := http.NewRequest(req.Method, targetPath.String(), bytes.NewReader(body))
+		proxyreq, err := http.NewRequestWithContext(req.Context(), req.Method, targetPath.String(), bytes.NewReader(body))
 		if err != nil {
 			return nil, nil, fmt.Errorf("error constructing request: %s", err)
 		}
@@ -261,6 +261,10 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 		}
 		var resp *http.Response
 		resp, err = httpClient.Do(proxyreq)
+		if err != nil && req.Context().Err() != nil {
+			// The client went away, retrying is pointless.
+			return nil, nil, err
+		}
 		return resp, err, nil
 	}
 

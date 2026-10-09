@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -74,5 +75,39 @@ func TestCredentialsUpdateNotBlockedByPendingRequest(t *testing.T) {
 	res.Body.Close()
 	if res.StatusCode != 200 {
 		t.Fatalf("credentials update returned %d", res.StatusCode)
+	}
+}
+
+func TestUpstreamRequestCancelledWhenClientDisconnects(t *testing.T) {
+	upstream, started, release := hungUpstream(t)
+	routes := testRoutes(upstream.URL)
+	handled := make(chan struct{})
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		routes.ServeHTTP(w, r)
+		close(handled)
+	}))
+	defer upstream.Close()
+	defer close(release)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	req, err := http.NewRequestWithContext(ctx, "GET", proxy.URL+"/api/queue/v1/ping", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	go func() {
+		res, err := http.DefaultClient.Do(req)
+		if err == nil {
+			res.Body.Close()
+		}
+	}()
+	<-started
+	cancel()
+
+	select {
+	case <-handled:
+		proxy.Close()
+	case <-time.After(5 * time.Second):
+		// Don't close the proxy: Close would wait for the stuck handler.
+		t.Fatal("proxy was still handling the request 5s after its client disconnected")
 	}
 }
