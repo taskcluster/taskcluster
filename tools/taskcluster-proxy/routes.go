@@ -133,7 +133,12 @@ func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	bewitURL, err := routes.SignedURL(urlString, urlObject.Query(), time.Hour*1)
+	routes.lock.RLock()
+	client := routes.Client
+	creds := *routes.Credentials
+	routes.lock.RUnlock()
+	client.Credentials = &creds
+	bewitURL, err := client.SignedURL(urlString, urlObject.Query(), time.Hour*1)
 
 	if err != nil {
 		res.WriteHeader(500)

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -201,4 +202,31 @@ func TestRequestRetriedWhenUpstreamConnectionGoesDead(t *testing.T) {
 
 	listener.freeze()
 	get("after the upstream connection went dead")
+}
+
+func TestBewitConcurrentWithCredentialsUpdate(t *testing.T) {
+	routes := testRoutes("https://tc.example.com")
+	body := []byte(`{"clientId":"new-client","accessToken":"new-token","certificate":""}`)
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for range 100 {
+			req := httptest.NewRequest("PUT", "/credentials", bytes.NewReader(body))
+			routes.ServeHTTP(httptest.NewRecorder(), req)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for range 100 {
+			req := httptest.NewRequest("POST", "/bewit", strings.NewReader("https://tc.example.com/api/queue/v1/ping"))
+			res := httptest.NewRecorder()
+			routes.ServeHTTP(res, req)
+			if res.Code != 303 {
+				t.Errorf("bewit returned %d", res.Code)
+			}
+		}
+	}()
+	wg.Wait()
 }
