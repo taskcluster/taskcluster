@@ -1281,6 +1281,7 @@ builder.declare(
       'on that instance to use. The credentials will not live longer the',
       '`registrationTimeout` for that worker. The endpoint will update `terminateAfter`',
       'for the worker so that worker-manager does not terminate the instance.',
+      'In case when launch config is no longer active, reregistration would be refused.',
     ].join('\n'),
   },
   async function (req, res) {
@@ -1313,6 +1314,13 @@ builder.declare(
 
     if (worker.expires < new Date()) {
       return res.reportError('InputError', `Worker ${workerGroup}/${workerId} has expired`, {});
+    }
+
+    if (worker.launchConfigId) {
+      const [lc] = await this.db.fns.get_worker_manager_launch_config(workerPoolId, worker.launchConfigId);
+      if (lc?.is_archived) {
+        return res.reportError('InputError', 'Launch config was archived.', {});
+      }
     }
 
     // defaults to 96 hours if reregistrationTimeout is not defined

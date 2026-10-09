@@ -371,6 +371,7 @@ class WorkerManager(AsyncBaseClient):
         on that instance to use. The credentials will not live longer the
         `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
         for the worker so that worker-manager does not terminate the instance.
+        In case when launch config is no longer active, reregistration would be refused.
 
         This method is ``experimental``
         """

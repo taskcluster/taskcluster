@@ -776,6 +776,7 @@ impl WorkerManager {
     /// on that instance to use. The credentials will not live longer the
     /// `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
     /// for the worker so that worker-manager does not terminate the instance.
+    /// In case when launch config is no longer active, reregistration would be refused.
     pub async fn reregisterWorker(&self, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::reregisterWorker_details();

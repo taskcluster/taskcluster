@@ -192,6 +192,7 @@
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_3`](#get_worker_3)
+   * [`get_worker_manager_launch_config`](#get_worker_manager_launch_config)
    * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
    * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
    * [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
@@ -7194,6 +7195,7 @@ end
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_3`](#get_worker_3)
+* [`get_worker_manager_launch_config`](#get_worker_manager_launch_config)
 * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
 * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
 * [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
@@ -7993,6 +7995,45 @@ begin
     workers.worker_pool_id = worker_pool_id_in and
     workers.worker_group = worker_group_in and
     workers.worker_id = worker_id_in;
+end
+```
+
+</details>
+
+### get_worker_manager_launch_config
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `launch_config_id_in text`
+* *Returns*: `table`
+  * `launch_config_id text`
+  * `worker_pool_id text`
+  * `is_archived boolean`
+  * `configuration jsonb`
+  * `created timestamp with time zone`
+  * `last_modified timestamp with time zone`
+* *Last defined on version*: 132
+
+Retrieve single launch config for a given worker pool by id.
+Returns an empty set if there is no such launch config.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+    select
+      wplc.launch_config_id,
+      wplc.worker_pool_id,
+      wplc.is_archived,
+      wplc.configuration,
+      wplc.created,
+      wplc.last_modified
+    from worker_pool_launch_configs wplc
+    where
+      wplc.worker_pool_id = worker_pool_id_in and
+      wplc.launch_config_id = launch_config_id_in;
 end
 ```
 
