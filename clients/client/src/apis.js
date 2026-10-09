@@ -171,7 +171,7 @@ export default {
             "clientId"
           ],
           "category": "Clients",
-          "description": "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged",
+          "description": "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged\n\nIf the client is modified by another request while this one is being\nprocessed, the update is not applied and this end-point will return `409`\nreporting `RequestConflict`. The caller can retry the request.",
           "input": "v1/create-client-request.json#",
           "method": "post",
           "name": "updateClient",

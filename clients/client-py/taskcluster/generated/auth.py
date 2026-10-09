@@ -164,6 +164,10 @@ class Auth(BaseClient):
         If no scopes are given in the request, the client's scopes remain
         unchanged
 
+        If the client is modified by another request while this one is being
+        processed, the update is not applied and this end-point will return `409`
+        reporting `RequestConflict`. The caller can retry the request.
+
         This method is ``stable``
         """
 

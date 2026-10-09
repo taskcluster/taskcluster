@@ -1,0 +1,65 @@
+version: 131
+description: Add `update_client_2` with optimistic concurrency
+methods:
+  update_client:
+    deprecated: true
+
+  update_client_2:
+    description: |-
+      Update an existing client, returning the updated client or, if no such client
+      exists, an empty set.  Any non-null arguments to this function will overwrite
+      existing values.  If `expected_scopes_in` is not null, the write only happens if
+      the client's current `scopes` equal it; likewise for `expected_last_modified_in` and
+      `last_modified` (compared at millisecond precision, as that is what clients can
+      read back).  If the client exists but does not match, this raises an exception
+      with code P0004 and nothing is written.  With both null, this is unconditional.
+      The last_modified column is updated automatically, as is last_rotated if the
+      access token is set.
+    mode: write
+    serviceName: auth
+    args: |-
+      client_id_in text,
+      description_in text,
+      encrypted_access_token_in jsonb,
+      expires_in timestamptz,
+      disabled_in boolean,
+      scopes_in jsonb,
+      delete_on_expiration_in boolean,
+      expected_scopes_in jsonb,
+      expected_last_modified_in timestamptz
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        update clients set
+          description = coalesce(description_in, clients.description),
+          encrypted_access_token = coalesce(encrypted_access_token_in, clients.encrypted_access_token),
+          expires = coalesce(expires_in, clients.expires),
+          disabled = coalesce(disabled_in, clients.disabled),
+          scopes = coalesce(scopes_in, clients.scopes),
+          delete_on_expiration = coalesce(delete_on_expiration_in, clients.delete_on_expiration),
+          last_modified = now(),
+          last_rotated = case when encrypted_access_token_in is null then clients.last_rotated else now() end
+        where clients.client_id = client_id_in
+          and (expected_scopes_in is null or clients.scopes = expected_scopes_in)
+          and (expected_last_modified_in is null
+               or date_trunc('milliseconds', clients.last_modified) = date_trunc('milliseconds', expected_last_modified_in));
+
+        if found then
+          return query select * from get_client(client_id_in);
+        elsif exists (select 1 from clients where clients.client_id = client_id_in) then
+          raise exception 'client was modified concurrently' using errcode = 'P0004';
+        end if;
+      end

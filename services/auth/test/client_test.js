@@ -359,6 +359,51 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     assume(client2.expandedScopes).contains('scope3');
   });
 
+  test('auth.updateClient (does not re-grant scopes revoked concurrently)', async () => {
+    await createTestClient();
+
+    // simulate an administrator narrowing the client between our read and write
+    const origGetClient = helper.db.fns.get_client;
+    let raced = false;
+    helper.db.fns.get_client = async (...args) => {
+      const rows = await origGetClient(...args);
+      if (!raced) {
+        raced = true;
+        await helper.db.fns.update_client_2(
+          CLIENT_ID,
+          null,
+          null,
+          null,
+          null,
+          JSON.stringify(['scope2']),
+          null,
+          null,
+          null
+        );
+      }
+      return rows;
+    };
+    try {
+      // the caller can update the client, but holds none of its scopes; replaying
+      // the old scopes looks like a no-op against the stale row but would re-grant them
+      helper.setupScopes(`auth:update-client:${CLIENT_ID}`);
+      await assert.rejects(
+        () =>
+          helper.apiClient.updateClient(CLIENT_ID, {
+            description: 'racy',
+            expires: new Date(),
+            scopes: ['scope1', 'myapi:*'],
+          }),
+        err => err.code === 'RequestConflict'
+      );
+    } finally {
+      helper.db.fns.get_client = origGetClient;
+    }
+    helper.setupScopes();
+    const client = await helper.apiClient.client(CLIENT_ID);
+    assume(client.scopes).deeply.equals(['scope2']);
+  });
+
   test('update client adding a **-scope', async () => {
     try {
       await helper.apiClient.updateClient(CLIENT_ID, {

@@ -100,14 +100,16 @@ export const syncStaticClients = async (db, clients = []) => {
       needsUpdate = true;
     }
     if (needsUpdate) {
-      await db.fns.update_client(
+      await db.fns.update_client_2(
         row.client_id,
         target.description + descriptionSuffix,
         db.encrypt({ value: Buffer.from(target.accessToken, 'utf8') }),
         null, // expires
         null, // disabled
         JSON.stringify(target.scopes),
-        null // delete_on_expiration
+        null, // delete_on_expiration
+        null, // expected_scopes
+        null // expected_last_modified
       );
     }
 

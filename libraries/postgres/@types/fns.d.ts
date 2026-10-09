@@ -284,7 +284,8 @@ type AuthRolesEntitiesScanDeprecatedFn = {
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
 };
-type AuthUpdateClientFn = {
+/** @deprecated */
+type AuthUpdateClientDeprecatedFn = {
  (
    client_id_in: string,
    description_in: string,
@@ -302,6 +303,30 @@ type AuthUpdateClientFn = {
   disabled_in: boolean;
   scopes_in: JsonB;
   delete_on_expiration_in: boolean;
+ }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
+};
+type AuthUpdateClient2Fn = {
+ (
+   client_id_in: string,
+   description_in: string,
+   encrypted_access_token_in: JsonB | null,
+   expires_in: Date,
+   disabled_in: boolean,
+   scopes_in: JsonB | null,
+   delete_on_expiration_in: boolean,
+   expected_scopes_in: JsonB | null,
+   expected_last_modified_in: Date | null
+ ): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
+ (params: {
+  client_id_in: string;
+  description_in: string;
+  encrypted_access_token_in?: JsonB | null;
+  expires_in: Date;
+  disabled_in: boolean;
+  scopes_in?: JsonB | null;
+  delete_on_expiration_in: boolean;
+  expected_scopes_in?: JsonB | null;
+  expected_last_modified_in?: Date | null;
  }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 };
 type AuthUpdateClientLastUsedFn = {
@@ -6325,7 +6350,7 @@ export interface DbFunctions {
   insert_auth_audit_history: AuthInsertAuthAuditHistoryFn;
   modify_roles: AuthModifyRolesFn;
   purge_audit_history: AuthPurgeAuditHistoryFn;
-  update_client: AuthUpdateClientFn;
+  update_client_2: AuthUpdateClient2Fn;
   update_client_last_used: AuthUpdateClientLastUsedFn;
 
   // Github
@@ -6554,6 +6579,7 @@ export interface DeprecatedDbFunctions {
   roles_entities_modify: AuthRolesEntitiesModifyDeprecatedFn;
   roles_entities_remove: AuthRolesEntitiesRemoveDeprecatedFn;
   roles_entities_scan: AuthRolesEntitiesScanDeprecatedFn;
+  update_client: AuthUpdateClientDeprecatedFn;
 
   // Github
   create_github_build: GithubCreateGithubBuildDeprecatedFn;
