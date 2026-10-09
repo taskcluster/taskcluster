@@ -371,6 +371,9 @@ class WorkerManager(AsyncBaseClient):
         on that instance to use. The credentials will not live longer the
         `registrationTimeout` for that worker. The endpoint will update `terminateAfter`
         for the worker so that worker-manager does not terminate the instance.
+        If the worker's launch config has been archived, reregistration is refused. Since the worker
+        then fails to renew its credentials, any tasks it is still running may be aborted rather than
+        drained. Quarantined workers are not exempt from this check.
 
         This method is ``experimental``
         """

@@ -2286,6 +2286,43 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       }, /Could not generate credentials for this secret/);
     });
 
+    suite('launch config', () => {
+      const registerAndReregister = async launchConfigId => {
+        await createWorker({ launchConfigId });
+        const { secret } = await helper.workerManager.registerWorker({ ...defaultRegisterWorker });
+        return helper.workerManager.reregisterWorker({ workerPoolId, workerGroup, workerId, secret });
+      };
+
+      const createLaunchConfig = (launchConfigId, isArchived) =>
+        helper.db.fns.create_worker_pool_launch_config(
+          launchConfigId,
+          workerPoolId,
+          isArchived,
+          {},
+          new Date(),
+          new Date()
+        );
+
+      test('succeeds when launch config is active', async () => {
+        await createWorkerPool({});
+        await createLaunchConfig('lc1', false);
+        const res = await registerAndReregister('lc1');
+        assert(res.credentials);
+      });
+
+      test('refused when launch config is archived', async () => {
+        await createWorkerPool({});
+        await createLaunchConfig('lc1', true);
+        await assert.rejects(() => registerAndReregister('lc1'), /is archived; worker should terminate/);
+      });
+
+      test('not refused when launch config row does not exist', async () => {
+        await createWorkerPool({});
+        const res = await registerAndReregister('missing');
+        assert(res.credentials);
+      });
+    });
+
     test('throws when secret is not defined', async () => {
       await createWorkerPool({});
       await createWorker({

@@ -2522,7 +2522,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "reregisterWorker",
 				Title:       "Reregister a Worker",
-				Description: "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
+				Description: "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.\nIf the worker's launch config has been archived, reregistration is refused. Since the worker\nthen fails to renew its credentials, any tasks it is still running may be aborted rather than\ndrained. Quarantined workers are not exempt from this check.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/worker/reregister",

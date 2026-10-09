@@ -1,0 +1,26 @@
+version: 132
+description: get launch config by id
+methods:
+  get_worker_pool_launch_config:
+    description: |-
+      Retrieve single launch config for a given worker pool by id.
+      Returns an empty set if there is no such launch config.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, launch_config_id_in text
+    returns: table(launch_config_id text, worker_pool_id text, is_archived boolean, configuration jsonb, created timestamp with time zone, last_modified timestamp with time zone)
+    body: |-
+      begin
+        return query
+          select
+            wplc.launch_config_id,
+            wplc.worker_pool_id,
+            wplc.is_archived,
+            wplc.configuration,
+            wplc.created,
+            wplc.last_modified
+          from worker_pool_launch_configs wplc
+          where
+            wplc.worker_pool_id = worker_pool_id_in and
+            wplc.launch_config_id = launch_config_id_in;
+      end

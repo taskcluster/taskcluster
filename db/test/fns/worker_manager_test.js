@@ -1740,6 +1740,24 @@ suite(testing.suiteName(), () => {
       assert.equal(res5.archived_launch_configs.length, 2);
     });
 
+    helper.dbTest('get_worker_pool_launch_config', async db => {
+      const wpId = 'w/i3';
+      await db.fns.create_worker_pool_launch_config('lc1', wpId, false, { config: '1' }, fromNow('0s'), fromNow('0s'));
+      await db.fns.create_worker_pool_launch_config('lc2', wpId, true, { config: '2' }, fromNow('0s'), fromNow('0s'));
+
+      const [active] = await db.fns.get_worker_pool_launch_config(wpId, 'lc1');
+      assert.equal(active.launch_config_id, 'lc1');
+      assert.equal(active.is_archived, false);
+      assert.deepEqual(active.configuration, { config: '1' });
+
+      const [archived] = await db.fns.get_worker_pool_launch_config(wpId, 'lc2');
+      assert.equal(archived.is_archived, true);
+
+      // unknown launch config, or known id in a different pool
+      assert.equal((await db.fns.get_worker_pool_launch_config(wpId, 'nope')).length, 0);
+      assert.equal((await db.fns.get_worker_pool_launch_config('other/pool', 'lc1')).length, 0);
+    });
+
     helper.dbTest('expire_worker_pool_launch_configs', async db => {
       // make sure all previous launch configs are expired
       await db.fns.expire_worker_pool_launch_configs();

@@ -8114,6 +8114,21 @@
         }
       },
       "version": 131
+    },
+    {
+      "description": "get launch config by id",
+      "methods": {
+        "get_worker_pool_launch_config": {
+          "args": "worker_pool_id_in text, launch_config_id_in text",
+          "body": "begin\n  return query\n    select\n      wplc.launch_config_id,\n      wplc.worker_pool_id,\n      wplc.is_archived,\n      wplc.configuration,\n      wplc.created,\n      wplc.last_modified\n    from worker_pool_launch_configs wplc\n    where\n      wplc.worker_pool_id = worker_pool_id_in and\n      wplc.launch_config_id = launch_config_id_in;\nend",
+          "deprecated": false,
+          "description": "Retrieve single launch config for a given worker pool by id.\nReturns an empty set if there is no such launch config.",
+          "mode": "read",
+          "returns": "table(launch_config_id text, worker_pool_id text, is_archived boolean, configuration jsonb, created timestamp with time zone, last_modified timestamp with time zone)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 132
     }
   ]
 }

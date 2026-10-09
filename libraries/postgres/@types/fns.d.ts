@@ -5756,6 +5756,16 @@ type WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn = {
   page_offset_in?: number | null;
  }): Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
 };
+type WorkerManagerGetWorkerPoolLaunchConfigFn = {
+ (
+   worker_pool_id_in: string,
+   launch_config_id_in: string
+ ): Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
+ (params: {
+  worker_pool_id_in: string;
+  launch_config_id_in: string;
+ }): Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
+};
 type WorkerManagerGetWorkerPoolLaunchConfigStatsFn = {
  (
    worker_pool_id_in: string
@@ -6551,6 +6561,7 @@ export interface DbFunctions {
   get_worker_pool_error_titles: WorkerManagerGetWorkerPoolErrorTitlesFn;
   get_worker_pool_error_worker_pools: WorkerManagerGetWorkerPoolErrorWorkerPoolsFn;
   get_worker_pool_errors_for_worker_pool2: WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn;
+  get_worker_pool_launch_config: WorkerManagerGetWorkerPoolLaunchConfigFn;
   get_worker_pool_launch_config_stats: WorkerManagerGetWorkerPoolLaunchConfigStatsFn;
   get_worker_pool_launch_configs: WorkerManagerGetWorkerPoolLaunchConfigsFn;
   get_worker_pool_with_launch_configs: WorkerManagerGetWorkerPoolWithLaunchConfigsFn;
