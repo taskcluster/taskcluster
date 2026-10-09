@@ -19,6 +19,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
 	"github.com/taskcluster/taskcluster/v113/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v113/internal/scopes"
 )
 
 type Queue struct {
@@ -85,7 +86,7 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequ
 					Task:   j.Task,
 					Status: j.Status,
 					Credentials: tcqueue.TaskCredentials{
-						ClientID:    "test-task-client-id",
+						ClientID:    testTaskClientPrefix + taskId,
 						AccessToken: "test-task-access-token",
 					},
 				},
@@ -779,6 +780,54 @@ func (queue *Queue) FakeErrorArtifact(taskId string, runId string, name string, 
 }
 
 ///////////////////////////////////
+
+// testTaskClientPrefix marks credentials issued to a claimed task. The rest of
+// the client id is the taskId. Other clients may read any artifact.
+const testTaskClientPrefix = "test-task/"
+
+// authorizeArtifactRead applies queue:get-artifact. Callers also receive the
+// anonymous role's public-artifact scope, as the auth service does.
+func (queue *Queue) authorizeArtifactRead(clientID, name string) error {
+	taskID, isTask := strings.CutPrefix(clientID, testTaskClientPrefix)
+	if !isTask {
+		return nil
+	}
+	queue.mu.RLock()
+	defer queue.mu.RUnlock()
+	task, ok := queue.tasks[taskID]
+	if !ok {
+		return artifactReadForbidden(name)
+	}
+	given := scopes.Given(append(append([]string{}, task.Task.Scopes...), "queue:get-artifact:public/*"))
+	satisfied, err := given.Satisfies(scopes.Required{{"queue:get-artifact:" + name}}, nil)
+	if err != nil || !satisfied {
+		return artifactReadForbidden(name)
+	}
+	return nil
+}
+
+func artifactReadForbidden(name string) error {
+	return &tcclient.APICallException{
+		CallSummary: &tcclient.CallSummary{
+			HTTPResponseBody: "Insufficient scopes, missing queue:get-artifact:" + name,
+		},
+		RootCause: httpbackoff.BadHttpResponseCode{
+			HttpResponseCode: 403,
+		},
+	}
+}
+
+func hawkClientID(r *http.Request) string {
+	_, after, ok := strings.Cut(r.Header.Get("Authorization"), `id="`)
+	if !ok {
+		return ""
+	}
+	id, _, ok := strings.Cut(after, `"`)
+	if !ok {
+		return ""
+	}
+	return id
+}
 
 func (queue *Queue) ensureRunning(taskId, runId string) error {
 	queue.mu.RLock()

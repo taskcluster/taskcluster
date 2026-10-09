@@ -51,7 +51,12 @@ func (sf *ServiceFactory) Index(creds *tcclient.Credentials, rootURL string) tc.
 }
 
 func (sf *ServiceFactory) Queue(creds *tcclient.Credentials, rootURL string) tc.Queue {
-	return sf.queue
+	// nil keeps the shared worker client. Task calls pass claimWork credentials
+	// so artifact reads can be checked against that task's scopes.
+	if creds == nil {
+		return sf.queue
+	}
+	return tcqueue.New(creds, rootURL)
 }
 
 func (sf *ServiceFactory) Secrets(creds *tcclient.Credentials, rootURL string) tc.Secrets {

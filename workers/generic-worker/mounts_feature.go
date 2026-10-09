@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
+	"github.com/taskcluster/taskcluster/v113/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v113/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v113/internal/scopes"
 	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/fileutil"
@@ -515,15 +517,17 @@ func (uc *URLContent) RequiredScopes() []string {
 	return []string{}
 }
 
-// The Queue enforces required scopes for artifacts, so we do
-// not need to consider anything
+// A fresh download is checked by the Queue. A cache hit is checked by
+// authorizeCachedArtifact. queue:get-artifact:<name> is not declared here:
+// public artifacts are allowed through the anonymous role, which is not in
+// the task's scope list.
 func (ac *ArtifactContent) RequiredScopes() []string {
 	return []string{}
 }
 
-// The Index enforces required scopes for artifacts, so we do
-// not need to consider anything
-func (ac *IndexedContent) RequiredScopes() []string {
+// Same as ArtifactContent. FindTask checks the index scope when the cache
+// key is resolved. The Queue still checks queue:get-artifact for the bytes.
+func (ic *IndexedContent) RequiredScopes() []string {
 	return []string{}
 }
 
@@ -1199,7 +1203,67 @@ func (f *FileMount) Unmount(taskMount *TaskMount) error {
 	return nil
 }
 
-// ensureCached returns a file containing the given content
+// authorizeCachedArtifact asks the queue whether this task may read a cached
+// artifact. Download does that itself, cache hits and shared downloads do not.
+// entry is already retained by taskMount and is released on failure.
+func authorizeCachedArtifact(fsContent FSContent, taskMount *TaskMount, cacheKey string, entry *Cache) error {
+	reject := func(err error) error {
+		cacheMutex.Lock()
+		taskMount.releaseFileCache(entry)
+		cacheMutex.Unlock()
+		return err
+	}
+
+	var taskID, name string
+	switch c := fsContent.(type) {
+	case *ArtifactContent:
+		taskID, name = c.TaskID, c.Artifact
+	case *IndexedContent:
+		rest, ok := strings.CutPrefix(cacheKey, "artifact:")
+		if ok {
+			taskID, name, ok = strings.Cut(rest, ":")
+		}
+		if !ok || taskID == "" || name != c.Artifact {
+			return reject(fmt.Errorf("invalid artifact cache key %q", cacheKey))
+		}
+	default:
+		return nil
+	}
+
+	taskMount.task.queueMux.RLock()
+	queue := taskMount.task.Queue
+	taskMount.task.queueMux.RUnlock()
+	if _, err := queue.LatestArtifact(taskID, name); err != nil {
+		return reject(fmt.Errorf("cannot reuse cached copy of task %s artifact %s: queue did not confirm this task may download it: %w", taskID, name, err))
+	}
+	return nil
+}
+
+// isCallerRejected reports whether err is an HTTP 401 or 403 from the queue
+// or from fetching the artifact bytes. That failure belongs to the task that
+// won the download. Another task has different credentials and may still be
+// allowed to fetch it.
+func isCallerRejected(err error) bool {
+	for err != nil {
+		switch e := err.(type) {
+		case *tcclient.APICallException:
+			err = e.RootCause
+		case tcqueue.HTTPRetryError:
+			err = e.Err
+		case httpbackoff.BadHttpResponseCode:
+			return e.HttpResponseCode == 401 || e.HttpResponseCode == 403
+		case *httpbackoff.BadHttpResponseCode:
+			return e.HttpResponseCode == 401 || e.HttpResponseCode == 403
+		default:
+			err = errors.Unwrap(err)
+		}
+	}
+	return false
+}
+
+// ensureCached returns a file containing the given content.
+// A task that shared another task's download retries when that download was
+// rejected for the caller. Its own 401 or 403 is final.
 func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha256 string, err error) {
 	cacheKey, err := fsContent.UniqueKey(taskMount)
 	if err != nil {
@@ -1218,8 +1282,14 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 			cacheMutex.Unlock()
 			panic(fmt.Errorf("file in cache, but not on filesystem: %v", *cachedEntry))
 		}
-		cachedEntry.Hits++
 		taskMount.retainFileCache(cachedEntry)
+		cacheMutex.Unlock()
+
+		if authErr := authorizeCachedArtifact(fsContent, taskMount, cacheKey, cachedEntry); authErr != nil {
+			return "", "", authErr
+		}
+		cacheMutex.Lock()
+		cachedEntry.Hits++
 		cacheMutex.Unlock()
 
 		// validate SHA256 in case of either tampering or new content at url...
@@ -1270,9 +1340,14 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 	}
 	// retained is the entry this task holds a reference to, and is the only
 	// entry it may release. The closure below only runs in the goroutine that
-	// wins the singleflight, so it is not shared between tasks.
+	// wins the singleflight, so it is not shared between tasks. downloaded is
+	// set there only when that call fetches the bytes, so other tasks sharing
+	// the result authorize themselves.
 	var retained *Cache
+	winner := false
+	downloaded := false
 	val, dlErr, _ := fileCacheDownloads.Do(cacheKey, func() (any, error) {
+		winner = true
 		// Re-check cache: another goroutine may have completed the download
 		// while we were waiting for the singleflight lock.
 		cacheMutex.Lock()
@@ -1288,6 +1363,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 		if err != nil {
 			return nil, err
 		}
+		downloaded = true
 		cacheMutex.Lock()
 		entry := taskMount.newFileCache(fileCaches, cacheKey, f, s)
 		retained = entry
@@ -1295,6 +1371,10 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 		return downloadResult{entry: entry, file: f, sha256: s}, nil
 	})
 	if dlErr != nil {
+		if !winner && isCallerRejected(dlErr) {
+			taskMount.Infof("Shared download of %v was rejected for the downloading task (%v). Retrying with this task's credentials", fsContent, dlErr)
+			return ensureCached(fsContent, taskMount)
+		}
 		err = dlErr
 		taskMount.Errorf("Could not fetch from %v into file %v due to %v", fsContent, file, err)
 		return
@@ -1314,6 +1394,12 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 			return ensureCached(fsContent, taskMount)
 		}
 		retained = dl.entry
+	}
+
+	if !downloaded {
+		if authErr := authorizeCachedArtifact(fsContent, taskMount, cacheKey, retained); authErr != nil {
+			return "", "", authErr
+		}
 	}
 
 	if requiredSHA256 == "" {
