@@ -36,11 +36,25 @@ type CredentialsUpdate struct {
 	Certificate string `json:"certificate"`
 }
 
-var httpClient = &http.Client{
-	// do not follow redirects, and instead pass them back to the caller
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	},
+var httpClient = newHTTPClient(30*time.Second, 15*time.Second)
+
+// newHTTPClient returns the client used for upstream requests. An HTTP/2
+// connection that receives nothing for sendPingTimeout is sent a PING, and is
+// closed if the PING isn't answered within pingTimeout, so that requests
+// stuck on a dead connection fail and get retried on a new one.
+func newHTTPClient(sendPingTimeout, pingTimeout time.Duration) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.HTTP2 = &http.HTTP2Config{
+		SendPingTimeout: sendPingTimeout,
+		PingTimeout:     pingTimeout,
+	}
+	return &http.Client{
+		Transport: transport,
+		// do not follow redirects, and instead pass them back to the caller
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 }
 
 // NewRoutes creates a new Routes instance.

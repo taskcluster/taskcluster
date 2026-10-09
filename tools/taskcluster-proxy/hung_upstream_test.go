@@ -3,8 +3,12 @@ package main
 import (
 	"bytes"
 	"context"
+	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -110,4 +114,91 @@ func TestUpstreamRequestCancelledWhenClientDisconnects(t *testing.T) {
 		// Don't close the proxy: Close would wait for the stuck handler.
 		t.Fatal("proxy was still handling the request 5s after its client disconnected")
 	}
+}
+
+// blackHoleListener hands out connections that can be frozen: once frozen,
+// everything received is discarded, like a connection whose packets no
+// longer reach their destination.
+type blackHoleListener struct {
+	net.Listener
+	mu    sync.Mutex
+	conns []*blackHoleConn
+}
+
+type blackHoleConn struct {
+	net.Conn
+	frozen atomic.Bool
+}
+
+func (l *blackHoleListener) Accept() (net.Conn, error) {
+	c, err := l.Listener.Accept()
+	if err != nil {
+		return nil, err
+	}
+	conn := &blackHoleConn{Conn: c}
+	l.mu.Lock()
+	l.conns = append(l.conns, conn)
+	l.mu.Unlock()
+	return conn, nil
+}
+
+// freeze black-holes every connection accepted so far.
+func (l *blackHoleListener) freeze() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	for _, c := range l.conns {
+		c.frozen.Store(true)
+	}
+}
+
+func (c *blackHoleConn) Read(b []byte) (int, error) {
+	for {
+		n, err := c.Conn.Read(b)
+		if err != nil || !c.frozen.Load() {
+			return n, err
+		}
+	}
+}
+
+func TestRequestRetriedWhenUpstreamConnectionGoesDead(t *testing.T) {
+	var sawHTTP2 atomic.Bool
+	upstream := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 {
+			sawHTTP2.Store(true)
+		}
+		_, _ = io.WriteString(w, "{}")
+	}))
+	listener := &blackHoleListener{Listener: upstream.Listener}
+	upstream.Listener = listener
+	upstream.EnableHTTP2 = true
+	upstream.StartTLS()
+	defer upstream.Close()
+
+	savedClient := httpClient
+	httpClient = newHTTPClient(100*time.Millisecond, 100*time.Millisecond)
+	httpClient.Transport.(*http.Transport).TLSClientConfig = upstream.Client().Transport.(*http.Transport).TLSClientConfig
+	defer func() { httpClient = savedClient }()
+
+	proxy := newTestProxy(t, upstream.URL)
+	defer proxy.Close()
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	get := func(when string) {
+		res, err := client.Get(proxy.URL + "/api/queue/v1/ping")
+		if err != nil {
+			t.Fatalf("request %s failed: %v", when, err)
+		}
+		res.Body.Close()
+		if res.StatusCode != 200 {
+			t.Fatalf("request %s returned %d", when, res.StatusCode)
+		}
+	}
+
+	get("before the upstream connection went dead")
+	if !sawHTTP2.Load() {
+		t.Fatal("the proxy didn't use HTTP/2 for the upstream request")
+	}
+
+	listener.freeze()
+	get("after the upstream connection went dead")
 }
