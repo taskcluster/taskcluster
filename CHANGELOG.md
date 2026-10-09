@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v113.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [bug 2070518](http://bugzil.la/2070518)
+Reregister worker refuses to renew credentials for workers whose launch config has been archived.
+This can happen when the worker pool definition changes or the worker pool is deleted.
+Such workers fail to renew their credentials, so tasks they are still running may be aborted rather than drained.
+
+### USERS
+
+▶ [minor] [bug 2072155](http://bugzil.la/2072155)
+`auth.updateClient` now fails with `RequestConflict` if the client was modified between being read and written, instead of silently overwriting concurrent changes.
+
+▶ [minor]
+Generic Worker now downloads the content of a task's file and read-only directory mounts in parallel (up to 8 at a time) before mounting them, rather than one after another. Mounts are still mounted sequentially in the order they are listed in the payload. Content of preloaded writable directory caches is still only downloaded if no existing cache can be reused.
+
+▶ [patch] [bug 2076126](http://bugzil.la/2076126)
+Generic worker now confirms with the queue that a task may download an artifact before mounting a copy from its download cache. Each cached artifact mount makes one extra queue request.
+
 ## v113.0.0
 
 ### DEPLOYERS
