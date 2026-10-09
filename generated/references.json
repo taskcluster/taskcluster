@@ -20333,7 +20333,7 @@
           "args": [
           ],
           "category": "Worker Interface",
-          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.\nIn case when launch config is no longer active, reregistration would be refused.",
+          "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.\nIf the worker's launch config has been archived, reregistration is refused. Since the worker\nthen fails to renew its credentials, any tasks it is still running may be aborted rather than\ndrained. Quarantined workers are not exempt from this check.",
           "input": "v1/reregister-worker-request.json#",
           "method": "post",
           "name": "reregisterWorker",

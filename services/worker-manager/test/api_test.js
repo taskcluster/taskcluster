@@ -2313,7 +2313,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       test('refused when launch config is archived', async () => {
         await createWorkerPool({});
         await createLaunchConfig('lc1', true);
-        await assert.rejects(() => registerAndReregister('lc1'), /Launch config was archived/);
+        await assert.rejects(() => registerAndReregister('lc1'), /is archived; worker should terminate/);
       });
 
       test('not refused when launch config row does not exist', async () => {

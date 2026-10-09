@@ -57,7 +57,9 @@ in `registerWorker` (in the case of a newly registered worker) or `reregisterWor
 The expiration time of the new credentials comes from the worker pool configuration via `reregistrationTimeout`
 which gets set when calling [`workerManager.registerWorker`](/docs/reference/core/worker-manager/api#registerWorker).
 The default behavior, when `reregistrationTimeout` is omitted, is to extend the credentials by 96 hours.
-If worker's launch config is no longer active (updated worker pool definition or deletion), reregistration would be refused.
+If the worker's launch config has been archived (the worker pool definition was updated or the pool was deleted), reregistration is refused.
+The worker then fails to renew its credentials, so tasks it is still running may be aborted rather than drained.
+Quarantined workers are not exempt from this check.
 
 ## Queue Inactivity Timeout
 

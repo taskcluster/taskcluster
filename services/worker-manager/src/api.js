@@ -1281,7 +1281,9 @@ builder.declare(
       'on that instance to use. The credentials will not live longer the',
       '`registrationTimeout` for that worker. The endpoint will update `terminateAfter`',
       'for the worker so that worker-manager does not terminate the instance.',
-      'In case when launch config is no longer active, reregistration would be refused.',
+      "If the worker's launch config has been archived, reregistration is refused. Since the worker",
+      'then fails to renew its credentials, any tasks it is still running may be aborted rather than',
+      'drained. Quarantined workers are not exempt from this check.',
     ].join('\n'),
   },
   async function (req, res) {
@@ -1319,7 +1321,11 @@ builder.declare(
     if (worker.launchConfigId) {
       const [lc] = await this.db.fns.get_worker_pool_launch_config(workerPoolId, worker.launchConfigId);
       if (lc?.is_archived) {
-        return res.reportError('InputError', 'Launch config was archived.', {});
+        return res.reportError(
+          'InputError',
+          `Launch config ${worker.launchConfigId} of worker pool ${workerPoolId} is archived; worker should terminate`,
+          {}
+        );
       }
     }
 
