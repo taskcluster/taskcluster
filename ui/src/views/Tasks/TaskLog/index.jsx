@@ -10,15 +10,22 @@ import Link from '../../../utils/Link';
 import Helmet from '../../../components/Helmet';
 import Search from '../../../components/Search';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Spinner from '../../../components/Spinner';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
 import {
   decodeArtifactName,
   getRawArtifactName,
 } from '../../../utils/artifactNames';
 import { withAuth } from '../../../utils/Auth';
+import {
+  invalidateAnonymousScopes,
+  isPublicArtifact,
+  withAnonymousScopes,
+} from '../../../utils/anonymousScopes';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
 @withAuth
+@withAnonymousScopes
 @withTaskclusterClient
 @withStyles(theme => ({
   fab: {
@@ -38,6 +45,8 @@ export default class TaskLog extends Component {
   state = {
     task: null,
     status: null,
+    // set when the unsigned URL of a public log fails to load
+    forceSign: false,
   };
 
   // Guards against out-of-order responses when the task ID changes while a
@@ -49,6 +58,10 @@ export default class TaskLog extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (prevProps.match.url !== this.props.match.url) {
+      this.setState({ forceSign: false });
+    }
+
     if (prevProps.match.params.taskId !== this.props.match.params.taskId) {
       this.setState({ task: null, status: null });
       this.load();
@@ -91,9 +104,8 @@ export default class TaskLog extends Component {
     return this.state.status?.runs[this.props.match.params.runId];
   }
 
-  getLogUrl() {
+  getLogName() {
     const {
-      user,
       match: {
         params: { taskId, runId, name: artifactName },
       },
@@ -101,10 +113,43 @@ export default class TaskLog extends Component {
     } = this.props;
     const artifactPath = `/tasks/${taskId}/runs/${runId}/logs/${stream ? 'live/' : ''}`;
     const rawArtifactName = getRawArtifactName(artifactPath, artifactName);
-    const name = decodeArtifactName(rawArtifactName);
 
-    return getArtifactUrl({ user, taskId, runId, name });
+    return decodeArtifactName(rawArtifactName);
   }
+
+  getLogUrl() {
+    const {
+      user,
+      anonymousScopes,
+      match: {
+        params: { taskId, runId },
+      },
+    } = this.props;
+    const name = this.getLogName();
+
+    return getArtifactUrl({
+      user,
+      anonymousScopes: this.state.forceSign ? null : anonymousScopes,
+      taskId,
+      runId,
+      name,
+    });
+  }
+
+  handleLogError = error => {
+    const { user, anonymousScopes } = this.props;
+
+    // retry once with a signed URL; if that fails too, Log shows the error
+    if (
+      [401, 403].includes(error.status) &&
+      !this.state.forceSign &&
+      user?.credentials &&
+      isPublicArtifact(anonymousScopes, this.getLogName())
+    ) {
+      invalidateAnonymousScopes();
+      this.setState({ forceSign: true });
+    }
+  };
 
   goToLog() {
     // as log url contains bewit, the link could expire
@@ -115,7 +160,7 @@ export default class TaskLog extends Component {
   }
 
   render() {
-    const { classes, match, stream } = this.props;
+    const { classes, match, stream, anonymousScopesLoaded } = this.props;
     const { task } = this.state;
     const url = this.getLogUrl();
     const run = this.getCurrentRun();
@@ -138,32 +183,37 @@ export default class TaskLog extends Component {
           />
         }>
         <Helmet state={run?.state} />
-        <Log
-          url={url}
-          stream={stream}
-          actions={
-            <Fragment>
-              <Link
-                to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+        {!anonymousScopesLoaded ? (
+          <Spinner loading />
+        ) : (
+          <Log
+            url={url}
+            stream={stream}
+            onError={this.handleLogError}
+            actions={
+              <Fragment>
+                <Link
+                  to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+                  <Button
+                    spanProps={{ className: classes.fab }}
+                    tooltipProps={{ title: 'View Task' }}
+                    variant="circular"
+                    color="secondary">
+                    <ArrowLeftIcon />
+                  </Button>
+                </Link>
                 <Button
-                  spanProps={{ className: classes.fab }}
-                  tooltipProps={{ title: 'View Task' }}
+                  onClick={() => this.goToLog()}
+                  spanProps={{ className: classes.rawLog }}
+                  tooltipProps={{ title: 'Raw Log' }}
                   variant="circular"
                   color="secondary">
-                  <ArrowLeftIcon />
+                  <OpenInNewIcon size={20} />
                 </Button>
-              </Link>
-              <Button
-                onClick={() => this.goToLog()}
-                spanProps={{ className: classes.rawLog }}
-                tooltipProps={{ title: 'Raw Log' }}
-                variant="circular"
-                color="secondary">
-                <OpenInNewIcon size={20} />
-              </Button>
-            </Fragment>
-          }
-        />
+              </Fragment>
+            }
+          />
+        )}
       </Dashboard>
     );
   }

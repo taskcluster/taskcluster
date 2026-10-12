@@ -3,6 +3,7 @@ import { render, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { TaskclusterClientContext } from '../../../utils/TaskclusterClient';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
+import { resolveLatestArtifactUrl } from '../../../utils/getArtifactUrl';
 import db from '../../../utils/db';
 import {
   ARTIFACTS_PAGE_SIZE,
@@ -24,9 +25,9 @@ vi.mock('../../../utils/db', () => ({
 }));
 
 vi.mock('../../../utils/getArtifactUrl', () => ({
-  getLatestArtifactUrl: vi.fn(
-    () => 'https://tc.example.com/api/queue/v1/actions.json'
-  ),
+  resolveLatestArtifactUrl: vi
+    .fn()
+    .mockResolvedValue('https://tc.example.com/api/queue/v1/actions.json'),
 }));
 
 const taskId = 'bI8bvUB2SDmpHVqTUOFCWw';
@@ -182,6 +183,12 @@ describe('ViewTask page', () => {
     });
     expect(global.fetch).toHaveBeenCalledWith(
       'https://tc.example.com/api/queue/v1/actions.json'
+    );
+    expect(resolveLatestArtifactUrl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: taskGroupId,
+        name: 'public/actions.json',
+      })
     );
     // no actions.json, so no decision task lookup either
     expect(queue.task).toHaveBeenCalledTimes(1);

@@ -24,18 +24,30 @@ import { findArtifactFromTaskUrl } from '../../utils/getArtifactUrl';
 import getIconFromMime from '../../utils/getIconFromMime';
 import formatBytes from '../../utils/formatBytes';
 import { withAuth } from '../../utils/Auth';
+import { withAnonymousScopes } from '../../utils/anonymousScopes';
 
-const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
+const buildArtifactUrl = ({
+  user,
+  anonymousScopes,
+  namespace,
+  name,
+  contentType,
+}) => {
   const icon = getIconFromMime(contentType);
 
   return {
     icon,
     name,
-    url: findArtifactFromTaskUrl({ user, namespace, name }),
+    url: findArtifactFromTaskUrl({ user, anonymousScopes, namespace, name }),
     // refresh the URL (with a fresh expiration time) on a click, and open it
     // in a new window
     handleArtifactClick(ev) {
-      const url = findArtifactFromTaskUrl({ user, namespace, name });
+      const url = findArtifactFromTaskUrl({
+        user,
+        anonymousScopes,
+        namespace,
+        name,
+      });
 
       if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
         return;
@@ -48,6 +60,7 @@ const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
 };
 
 @withAuth
+@withAnonymousScopes
 @withStyles(theme => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
@@ -103,6 +116,7 @@ export default class IndexedEntry extends Component {
     const {
       indexedTask: { taskId, namespace },
       user,
+      anonymousScopes,
     } = this.props;
 
     if (!taskId || !artifacts.length) {
@@ -114,6 +128,7 @@ export default class IndexedEntry extends Component {
       // Build the URLs here so that they'll be updated when people login
       ...buildArtifactUrl({
         user,
+        anonymousScopes,
         name: artifact.name,
         contentType: artifact.contentType,
         namespace,

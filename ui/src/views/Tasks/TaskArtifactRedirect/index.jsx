@@ -4,6 +4,7 @@ import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import { withAuth } from '../../../utils/Auth';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
+import { getAnonymousScopes } from '../../../utils/anonymousScopes';
 import {
   decodeArtifactName,
   getRawArtifactName,
@@ -15,7 +16,7 @@ export default class TaskArtifactRedirect extends Component {
     redirect: false,
   };
 
-  getRedirectUrl() {
+  getRedirectUrl(anonymousScopes) {
     const {
       match: {
         params: { artifactName, taskId, runId },
@@ -27,14 +28,15 @@ export default class TaskArtifactRedirect extends Component {
 
     return getArtifactUrl({
       user,
+      anonymousScopes,
       taskId,
       runId,
       name: decodeArtifactName(rawArtifactName),
     });
   }
 
-  componentDidMount() {
-    const url = this.getRedirectUrl();
+  async componentDidMount() {
+    const url = this.getRedirectUrl(await getAnonymousScopes());
 
     window.location = url;
 

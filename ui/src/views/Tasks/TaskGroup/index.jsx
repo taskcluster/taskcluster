@@ -37,7 +37,7 @@ import {
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { getClient } from '../../../utils/client';
-import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
+import { resolveLatestArtifactUrl } from '../../../utils/getArtifactUrl';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
 import submitTaskAction from '../submitTaskAction';
 import notify from '../../../utils/notify';
@@ -398,7 +398,8 @@ export default class TaskGroup extends Component {
     try {
       // client-web refuses to follow the artifact endpoint's redirect, so
       // resolve the URL and fetch the (public) artifact directly.
-      const url = getLatestArtifactUrl({
+      const url = await resolveLatestArtifactUrl({
+        getCredentials: this.context.getCredentials,
         taskId: taskGroupId,
         name: 'public/actions.json',
       });
