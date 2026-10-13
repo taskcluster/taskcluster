@@ -32,9 +32,7 @@ const taskDef = JSON.stringify({
 });
 
 describe('submitTaskAction', () => {
-  const user = {
-    credentials: { clientId: 'test', accessToken: 'secret' },
-  };
+  const getCredentials = vi.fn();
   const mockCreateTask = vi.fn().mockResolvedValue({});
   const mockExpandScopes = vi.fn();
   const mockTriggerHook = vi.fn();
@@ -83,7 +81,7 @@ describe('submitTaskAction', () => {
       taskActions: task.taskActions,
       form: '{}',
       action,
-      user,
+      getCredentials,
     });
 
     // Queue.createTask should be called directly
@@ -124,12 +122,12 @@ describe('submitTaskAction', () => {
       },
       form: '{}',
       action,
-      user,
+      getCredentials,
     });
 
     expect(getClient).toHaveBeenCalledWith(
       expect.objectContaining({
-        user,
+        getCredentials,
         authorizedScopes: scopes,
       })
     );
@@ -163,14 +161,14 @@ describe('submitTaskAction', () => {
       taskActions: { variables: {}, actions: [hookAction], version: 1 },
       form: '{}',
       action: hookAction,
-      user,
+      getCredentials,
     });
 
-    expect(getClient).toHaveBeenCalledWith({ Class: Auth, user });
+    expect(getClient).toHaveBeenCalledWith({ Class: Auth, getCredentials });
     expect(mockExpandScopes).toHaveBeenCalledWith({
       scopes: hookTask.scopes,
     });
-    expect(getClient).toHaveBeenCalledWith({ Class: Hooks, user });
+    expect(getClient).toHaveBeenCalledWith({ Class: Hooks, getCredentials });
     expect(mockTriggerHook).toHaveBeenCalledWith('project-releng', 'release', {
       taskId: 'abc123',
     });
@@ -189,7 +187,7 @@ describe('submitTaskAction', () => {
         taskActions: { variables: {}, actions: [hookAction], version: 1 },
         form: '{}',
         action: hookAction,
-        user,
+        getCredentials,
       })
     ).rejects.toThrow(
       "decision task's scopes do not satisfy in-tree:hook-action:project-releng/release"

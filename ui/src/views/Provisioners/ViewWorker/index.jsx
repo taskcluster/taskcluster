@@ -229,14 +229,19 @@ export default class ViewWorker extends Component {
 
   handleTerminateDeleteClick = async () => {
     const { workerPoolId, workerGroup, workerId } = this.state;
-    const { user } = this.props;
+    const { getCredentials } = this.props;
 
     this.setState({
       terminateDialogError: null,
     });
 
     try {
-      await removeWorker({ workerPoolId, workerGroup, workerId, user });
+      await removeWorker({
+        workerPoolId,
+        workerGroup,
+        workerId,
+        getCredentials,
+      });
       this.setState({
         terminateDialogOpen: false,
       });

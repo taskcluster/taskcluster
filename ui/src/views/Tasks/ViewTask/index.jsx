@@ -163,7 +163,6 @@ const selectedRunId = ({ match, statusResource }) => {
     // resolve the URL and fetch the (public) artifact directly.
     const response = await fetch(
       getLatestArtifactUrl({
-        user: props.user,
         taskId: taskGroupId,
         name: 'public/actions.json',
       })
@@ -428,7 +427,8 @@ export default class ViewTask extends Component {
     async () => {
       this.preRunningAction();
 
-      const { user, match, taskResource, actionsResource } = this.props;
+      const { getCredentials, match, taskResource, actionsResource } =
+        this.props;
       const { taskActions, decisionTask } = actionsResource.data;
       const { formInputs } = this.state;
       const { actionData } = this.getTaskActionsData();
@@ -444,7 +444,7 @@ export default class ViewTask extends Component {
         taskActions,
         form: formInputs,
         action,
-        user,
+        getCredentials,
       });
 
       return taskId;
@@ -933,6 +933,7 @@ export default class ViewTask extends Component {
       description,
       match,
       user,
+      getCredentials,
       taskResource,
       statusResource,
       dependentsResource,
@@ -1034,6 +1035,7 @@ export default class ViewTask extends Component {
                   task={task}
                   status={status}
                   user={user}
+                  getCredentials={getCredentials}
                   dependents={dependentsResource.items}
                   dependentsLoading={dependentsResource.loading}
                   page={dependentsResource.page}
@@ -1215,7 +1217,7 @@ export default class ViewTask extends Component {
                   changeTaskPriority({
                     taskId,
                     priority,
-                    user,
+                    getCredentials,
                   })
                 }
                 onClose={this.handleChangePriorityClose}

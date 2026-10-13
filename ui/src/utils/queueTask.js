@@ -1,8 +1,8 @@
 import { Queue } from '@taskcluster/client-web';
 import { getClient } from './client';
 
-const fetchMultiple = async (fn, prop, taskIds, user) => {
-  const queue = getClient({ Class: Queue, user });
+const fetchMultiple = async (fn, prop, taskIds, getCredentials) => {
+  const queue = getClient({ Class: Queue, getCredentials });
   const chunkSize = 500;
   const chunks = Math.ceil(taskIds.length / chunkSize);
   const promises = Array.from({ length: chunks }).map(async (_, i) => {
@@ -16,10 +16,10 @@ const fetchMultiple = async (fn, prop, taskIds, user) => {
   return allChunkResults.flat();
 };
 
-export const getTaskStatuses = async ({ taskIds, user }) => {
-  return fetchMultiple('statuses', 'statuses', taskIds, user);
+export const getTaskStatuses = async ({ taskIds, getCredentials }) => {
+  return fetchMultiple('statuses', 'statuses', taskIds, getCredentials);
 };
 
-export const getTaskDefinitions = async ({ taskIds, user }) => {
-  return fetchMultiple('tasks', 'tasks', taskIds, user);
+export const getTaskDefinitions = async ({ taskIds, getCredentials }) => {
+  return fetchMultiple('tasks', 'tasks', taskIds, getCredentials);
 };

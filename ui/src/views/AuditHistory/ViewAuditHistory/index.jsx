@@ -48,13 +48,13 @@ export default class ViewAuditHistory extends Component {
 
   loadAuditHistory = async () => {
     const { entityType, entityId } = this.props.match.params;
-    const { user } = this.props;
+    const { getCredentials } = this.props;
 
     try {
       const response = await getAuditHistory(
         decodeURIComponent(entityId),
         entityType,
-        user,
+        getCredentials,
         {
           limit: '999',
         }

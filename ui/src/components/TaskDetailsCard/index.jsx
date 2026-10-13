@@ -116,6 +116,7 @@ export default class TaskDetailsCard extends Component {
     dependentsLoading: bool,
     ...pagination,
     user: object,
+    getCredentials: func,
     /** Called to open the change-priority dialog; makes the priority clickable. */
     onChangePriority: func,
   };
@@ -152,18 +153,18 @@ export default class TaskDetailsCard extends Component {
   }
 
   async fetchDependentTasks() {
-    const { task, user } = this.props;
+    const { getCredentials, task } = this.props;
 
     this.setState({ loading: true });
 
     if (task?.dependencies?.length > 0) {
       const definitions = await getTaskDefinitions({
         taskIds: task.dependencies,
-        user,
+        getCredentials,
       });
       const statuses = await getTaskStatuses({
         taskIds: task.dependencies,
-        user,
+        getCredentials,
       });
       // merge back everything into { taskId, status, metadata }
       const dependentTasks = task.dependencies.map(taskId => {

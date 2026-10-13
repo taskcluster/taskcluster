@@ -48,12 +48,12 @@ export default class ViewClientAuditHistory extends Component {
 
   loadAuditHistory = async () => {
     const { clientId } = this.props.match.params;
-    const { user } = this.props;
+    const { getCredentials } = this.props;
 
     try {
       const response = await getClientAuditHistory(
         decodeURIComponent(clientId),
-        user,
+        getCredentials,
         {
           limit: '999',
         }
