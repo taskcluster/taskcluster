@@ -1,0 +1,17 @@
+---
+# Every publish task depends on this, so nothing is published until every
+# release-build task has succeeded.
+loader: taskgraph.loader.transform:loader
+
+kind-dependencies:
+  - release-build
+
+transforms:
+  - src.transforms.release:transforms
+  - src.transforms.release:depend_on_all
+  - taskgraph.transforms.task
+
+tasks:
+  builds:
+    description: All release builds have succeeded
+    worker-type: succeed
