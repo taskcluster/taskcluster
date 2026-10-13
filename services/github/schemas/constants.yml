@@ -3,8 +3,10 @@
 # all common identifiers. It's not personal, it's just that without these
 # limitation, the identifiers won't be useful as routing keys in RabbitMQ
 # topic exchanges. Specifically, the length limitation and the fact that
-# identifiers can't contain dots `.` is critical.
-github-identifier-pattern:     "^([a-zA-Z0-9-_%]*)$"
+# GitHub service automatically sanitizes identifiers by replacing any dots `.` with another
+# character, so dots are allowed but transformed.
+
+github-identifier-pattern:     "^([a-zA-Z0-9-_.%]*)$"
 github-identifier-min-length:  1
 github-identifier-max-length:  100
 github-guid-pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
