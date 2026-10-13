@@ -92,6 +92,29 @@ export const gitCurrentBranch = async ({ dir }) => {
 };
 
 /**
+ * Check out a ref, or detach HEAD at the current commit
+ *
+ * - dir -- repository directory
+ * - ref -- branch name or sha to check out (ignored if detach is true)
+ * - detach -- if true, run `git checkout --detach` (stay on the same commit)
+ */
+export const gitCheckout = async ({ dir, ref, detach }) => {
+  const opts = { cwd: dir };
+  await exec('git', ['checkout', ...(detach ? ['--detach'] : [ref])], opts);
+};
+
+/**
+ * Discard all changes to tracked files (`git reset --hard`).  Only call this
+ * when the caller has proven the tree held nothing worth keeping.
+ *
+ * - dir -- repository directory
+ */
+export const gitResetHard = async ({ dir }) => {
+  const opts = { cwd: dir };
+  await exec('git', ['reset', '--hard'], opts);
+};
+
+/**
  * Stage files in git (git add)
  *
  * - dir -- directory to commit in
