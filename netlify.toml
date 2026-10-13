@@ -9,7 +9,7 @@
 
 [build.environment]
   YARN_FLAGS = "--immutable"
-  NODE_VERSION = "24.20.0"
+  NODE_VERSION = "24.21.0"
   APPLICATION_NAME = "Taskcluster"
   SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
   UI_LOGIN_STRATEGY_NAMES = ""
