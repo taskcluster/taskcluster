@@ -1,20 +1,20 @@
 import path from 'node:path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-export default ({ tasks, cmdOptions }) => {
+export default ({ tasks }) => {
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
-      const goreleaserCmd = ['go', 'tool', 'goreleaser', 'release', '--clean'];
-
-      if (cmdOptions.staging || !cmdOptions.push) {
-        // --snapshot will generate an unversioned snapshot release,
-        // skipping all validations and without publishing any artifacts
-        goreleaserCmd.push('--snapshot');
-      }
+      // Local builds never publish anything (no Homebrew tap push, no release);
+      // the release graph's taskcluster/scripts/release/build-binaries.sh builds
+      // the release binaries. goreleaser's cask pipe publishes whenever publish
+      // is not skipped, even with `release.disable: true`, so always pass
+      // --snapshot. It also skips goreleaser's tag and dirty-tree checks, so
+      // `--push` works on any commit.
+      const goreleaserCmd = ['go', 'tool', 'goreleaser', 'release', '--clean', '--snapshot'];
 
       await execCommand({
         dir: REPO_ROOT,

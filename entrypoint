@@ -72,7 +72,6 @@ script/test) shift; exec yarn run test "${@}";;
 script/build) shift; exec yarn run build "${@}";;
 script/release) shift; exec yarn run release "${@}";;
 script/staging-release) shift; exec yarn run staging-release "${@}";;
-script/release:publish) shift; exec yarn run release:publish "${@}";;
 script/release:step) shift; exec yarn run release:step "${@}";;
 script/generate) shift; exec yarn run generate "${@}";;
 script/upgrade:node) shift; exec yarn run upgrade:node "${@}";;

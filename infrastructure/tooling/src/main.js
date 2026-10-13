@@ -84,23 +84,6 @@ program
   );
 
 program
-  .command('release:publish')
-  .description('publish a release based on Git tag')
-  .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
-  .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
-  .option('--staging <head-ref>', 'Staging run; head-ref is of the form refs/heads/staging-release/vX.Y.Z')
-  .option('--logs-dir <logs-dir>', 'A directory to put debug logs. default <base-dir>/logs')
-  .on('--help', () => {
-    console.log(['', 'This command expects to run in automation in response to a push to CI.'].join('\n'));
-  })
-  .action(
-    actFn(async ({ options }) => {
-      const { publish } = await import('./build/index.js');
-      run(publish, options);
-    })
-  );
-
-program
   .command('release:step')
   .description('run one step of the release graph (in automation only)')
   .requiredOption('--step <step>', 'the step to run, e.g. push-image')

@@ -29,28 +29,27 @@ jobs:
 
       - name: Download and publish NPM tarballs
         run: |
+          set -euo pipefail
           VERSION="${RELEASE_TAG#v}"
 
-          PACKAGES=("taskcluster-client-${VERSION}.tgz" "taskcluster-client-web-${VERSION}.tgz")
-
-          for PACKAGE in "${PACKAGES[@]}"; do
-            FOUND=""
-            # Retry loop: assets may still be uploading when the release event fires
-            for ATTEMPT in 1 2 3 4 5; do
-              FOUND=$(gh release view "$RELEASE_TAG" --repo taskcluster/taskcluster --json assets --jq ".assets[] | select(.name == \"${PACKAGE}\") | .name" 2>/dev/null || true)
-              if [ -n "$FOUND" ]; then
-                break
-              fi
-              echo "Attempt ${ATTEMPT}: ${PACKAGE} not found yet, waiting 30s..."
-              sleep 30
-            done
-
-            if [ -z "$FOUND" ]; then
-              echo "ERROR: ${PACKAGE} not found after 5 attempts"
+          # The release graph publishes the GitHub release only after every asset is uploaded,
+          # so all tarballs must already be attached when this workflow runs.
+          for NAME in @taskcluster/client @taskcluster/client-web; do
+            # npm refuses to republish a version, so a re-run after a partial publish
+            # skips the packages that made it and publishes the rest.
+            if [ "$(npm view "${NAME}@${VERSION}" version 2>/dev/null || true)" = "$VERSION" ]; then
+              echo "${NAME}@${VERSION} is already on npm, skipping"
+              continue
+            fi
+            PACKAGE="taskcluster-${NAME#@taskcluster/}-${VERSION}.tgz"
+            if ! gh release download "$RELEASE_TAG" --repo taskcluster/taskcluster --pattern "$PACKAGE"; then
+              echo "ERROR: ${PACKAGE} is not attached to release ${RELEASE_TAG}"
               exit 1
             fi
-
-            gh release download "$RELEASE_TAG" --repo taskcluster/taskcluster --pattern "$PACKAGE"
+            if [ ! -f "$PACKAGE" ]; then
+              echo "ERROR: ${PACKAGE} was not downloaded from release ${RELEASE_TAG}"
+              exit 1
+            fi
 
             npm publish "$PACKAGE" --provenance --access public
           done
