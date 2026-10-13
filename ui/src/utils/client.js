@@ -1,14 +1,25 @@
 import { Auth, Queue, WorkerManager } from '@taskcluster/client-web';
 
-export const getClient = ({ Class, credentialAgent, user, ...options }) => {
-  if (credentialAgent && user) {
-    throw new Error('Specify either credentialAgent or user, not both');
+export const getClient = ({
+  Class,
+  credentialAgent,
+  getCredentials,
+  user,
+  ...options
+}) => {
+  if ([credentialAgent, getCredentials, user].filter(Boolean).length > 1) {
+    throw new Error(
+      'Specify only one of credentialAgent, getCredentials or user'
+    );
   }
+
+  const resolvedCredentialAgent =
+    credentialAgent || (getCredentials ? { getCredentials } : null);
 
   return new Class({
     rootUrl: window.env.TASKCLUSTER_ROOT_URL,
-    ...(credentialAgent
-      ? { credentialAgent }
+    ...(resolvedCredentialAgent
+      ? { credentialAgent: resolvedCredentialAgent }
       : { credentials: user?.credentials }),
     ...options,
   });
@@ -18,11 +29,11 @@ export const removeWorker = async ({
   workerPoolId,
   workerGroup,
   workerId,
-  user,
+  getCredentials,
 }) => {
   const wm = getClient({
     Class: WorkerManager,
-    user,
+    getCredentials,
     authorizedScopes: [
       `worker-manager:remove-worker:${workerPoolId}/${workerGroup}/${workerId}`,
     ],
@@ -31,8 +42,12 @@ export const removeWorker = async ({
   await wm.removeWorker(workerPoolId, workerGroup, workerId);
 };
 
-export const changeTaskPriority = async ({ taskId, priority, user }) => {
-  const queue = getClient({ Class: Queue, user });
+export const changeTaskPriority = async ({
+  taskId,
+  priority,
+  getCredentials,
+}) => {
+  const queue = getClient({ Class: Queue, getCredentials });
 
   await queue.changeTaskPriority(taskId, { newPriority: priority });
 };
@@ -40,21 +55,21 @@ export const changeTaskPriority = async ({ taskId, priority, user }) => {
 export const changeTaskGroupPriority = async ({
   taskGroupId,
   priority,
-  user,
+  getCredentials,
 }) => {
-  const queue = getClient({ Class: Queue, user });
+  const queue = getClient({ Class: Queue, getCredentials });
 
   await queue.changeTaskGroupPriority(taskGroupId, { newPriority: priority });
 };
 export const getAuditHistory = async (
   entityId,
   entityType,
-  user,
+  getCredentials,
   { limit }
 ) => {
   const auth = getClient({
     Class: Auth,
-    user,
+    getCredentials,
     authorizedScopes: [`auth:audit-history:${entityType}`],
   });
 
@@ -63,10 +78,14 @@ export const getAuditHistory = async (
   });
 };
 
-export const getClientAuditHistory = async (clientId, user, { limit }) => {
+export const getClientAuditHistory = async (
+  clientId,
+  getCredentials,
+  { limit }
+) => {
   const auth = getClient({
     Class: Auth,
-    user,
+    getCredentials,
     authorizedScopes: [`auth:client-audit-history:${clientId}`],
   });
 

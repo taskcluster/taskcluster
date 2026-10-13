@@ -79,7 +79,14 @@ export default class App extends Component {
       this.setState({ theme: theme.lightTheme });
     }
 
-    const user = await this.authController.getUser();
+    let user;
+
+    try {
+      user = await this.authController.getUser();
+    } catch {
+      // renewal failed temporarily, keep the stored session
+      user = this.authController.user;
+    }
 
     this.setState({
       auth: {

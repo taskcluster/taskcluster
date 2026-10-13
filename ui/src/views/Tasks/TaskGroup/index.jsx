@@ -309,7 +309,11 @@ export default class TaskGroup extends Component {
   }
 
   queue(options = {}) {
-    return getClient({ Class: Queue, user: this.context.user, ...options });
+    return getClient({
+      Class: Queue,
+      getCredentials: this.context.getCredentials,
+      ...options,
+    });
   }
 
   // True when an async result for the given group should still be applied.
@@ -395,7 +399,6 @@ export default class TaskGroup extends Component {
       // client-web refuses to follow the artifact endpoint's redirect, so
       // resolve the URL and fetch the (public) artifact directly.
       const url = getLatestArtifactUrl({
-        user: this.context.user,
         taskId: taskGroupId,
         name: 'public/actions.json',
       });
@@ -780,7 +783,7 @@ export default class TaskGroup extends Component {
         taskActions,
         form,
         action,
-        user: this.context.user,
+        getCredentials: this.context.getCredentials,
       });
 
       return taskId;

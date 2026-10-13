@@ -22,7 +22,6 @@ export default class AuthController {
     this.user = null;
     this.initialized = false;
     this.renewalPromise = null;
-    this.renewalTimer = null;
 
     window.addEventListener('storage', ({ storageArea, key }) => {
       if (storageArea === localStorage && key === AUTH_STORE) {
@@ -129,10 +128,17 @@ export default class AuthController {
         })
       );
     } catch (e) {
-      this.setUser(null);
-
       // biome-ignore lint/suspicious/noConsole: show auth renewal failure in the logs
       console.error('Could not renew login:', e);
+
+      // only a 401 means the session is gone, other failures may be temporary
+      if (e.status === 401) {
+        this.setUser(null);
+
+        return;
+      }
+
+      throw e;
     }
   }
 
@@ -149,7 +155,12 @@ export default class AuthController {
     });
 
     if (!response.ok) {
-      throw new Error(`Could not fetch credentials: ${response.status}`);
+      const error = new Error(
+        `Could not fetch credentials: ${response.status}`
+      );
+
+      error.status = response.status;
+      throw error;
     }
 
     return response.json();

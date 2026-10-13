@@ -10,7 +10,7 @@ import validateActionsJson from '../../utils/validateActionsJson';
 import ajv from '../../utils/ajv';
 import { getClient } from '../../utils/client';
 
-export default async ({ task, form, action, user, taskActions }) => {
+export default async ({ task, form, action, getCredentials, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
   // We need to source scopes from somewhere. Typically these come from the
   // task we're given, which is either a regular decision task or an action
@@ -57,7 +57,7 @@ export default async ({ task, form, action, user, taskActions }) => {
     const newTask = jsone(action.task, context);
     const queue = getClient({
       Class: Queue,
-      user,
+      getCredentials,
       // Call the queue with the decision task's scopes,
       // as directed by the action spec
       authorizedScopes: taskGroup.scopes || [],
@@ -73,7 +73,7 @@ export default async ({ task, form, action, user, taskActions }) => {
   const { hookId, hookGroupId } = action;
   // verify that the decision task has
   // the appropriate in-tree:action-hook:.. scope
-  const auth = getClient({ Class: Auth, user });
+  const auth = getClient({ Class: Auth, getCredentials });
   const { scopes: expandedScopes } = await auth.expandScopes({
     scopes: taskGroup.scopes || [],
   });
@@ -85,7 +85,7 @@ export default async ({ task, form, action, user, taskActions }) => {
     );
   }
 
-  const hooks = getClient({ Class: Hooks, user });
+  const hooks = getClient({ Class: Hooks, getCredentials });
   const { status } = await hooks.triggerHook(hookGroupId, hookId, hookPayload);
 
   return status.taskId;

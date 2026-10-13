@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { arrayOf, bool, object, string } from 'prop-types';
+import { arrayOf, bool, func, object, string } from 'prop-types';
 import { parse, stringify } from 'qs';
 import { withRouter } from 'react-router-dom';
 import { formatDistanceStrict, parseISO } from 'date-fns';
@@ -50,6 +50,7 @@ export default class WorkersTable extends Component {
     workerType: string.isRequired,
     /** Provisioner identifier */
     provisionerId: string.isRequired,
+    getCredentials: func,
     ...pagination,
   };
 
@@ -118,14 +119,19 @@ export default class WorkersTable extends Component {
 
   handleDeleteClick = async () => {
     const { workerPoolId, workerGroup, workerId } = this.state;
-    const { user } = this.props;
+    const { getCredentials } = this.props;
 
     this.setState({
       error: null,
     });
 
     try {
-      await removeWorker({ workerPoolId, workerGroup, workerId, user });
+      await removeWorker({
+        workerPoolId,
+        workerGroup,
+        workerId,
+        getCredentials,
+      });
       this.setState({
         open: false,
       });
