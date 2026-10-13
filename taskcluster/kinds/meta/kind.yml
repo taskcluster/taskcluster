@@ -45,6 +45,12 @@ tasks:
             git --no-pager diff;
             exit 1;
         fi
+  tooling-tests:
+    description: infrastructure/tooling unit tests
+    run:
+      command: >-
+        corepack yarn --immutable &> /dev/null &&
+        corepack yarn test:tooling
   build:
     description: taskcluster build dry-run
     run:

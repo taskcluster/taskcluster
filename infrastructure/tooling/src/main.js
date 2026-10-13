@@ -101,6 +101,18 @@ program
   );
 
 program
+  .command('release:step')
+  .description('run one step of the release graph (in automation only)')
+  .requiredOption('--step <step>', 'the step to run, e.g. push-image')
+  .option('--name <name>', 'step argument, e.g. the image name for push-image')
+  .action(
+    actFn(async ({ options }) => {
+      const { runStep } = await import('./release-publish/index.js');
+      run(runStep, options);
+    })
+  );
+
+program
   .command('generate')
   .option('--target <generator>', 'Run a specific generator, rather than all of them')
   .action(
