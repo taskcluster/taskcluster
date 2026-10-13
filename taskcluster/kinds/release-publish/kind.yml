@@ -1,0 +1,121 @@
+---
+# Pushes release-build artifacts to registries. Each task is idempotent: rerun a
+# failed one (Rerun, not Retrigger) and the rest of the graph continues.
+loader: taskgraph.loader.transform:loader
+
+kind-dependencies:
+  - release-build
+  - release-gate
+
+transforms:
+  - src.transforms.release:transforms
+  - src.transforms.release:toolchain
+  - src.transforms.release:secret
+  - src.transforms:add_task_env
+  - src.transforms:parameterize_mounts
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
+  - src.transforms.release:pin_mount_sha256
+
+task-defaults:
+  worker-type: release
+  worker:
+    max-run-time: 3600
+  run:
+    using: bare
+
+tasks:
+  push-image-monoimage:
+    description: Push the monoimage to Docker Hub
+    release-toolchains: [node]
+    yarn-install: true
+    worker:
+      max-run-time: 7200
+    dependencies:
+      gate: release-gate-builds
+      build: release-build-image-monoimage
+    run:
+      command: yarn release:step --step push-image --name monoimage
+  push-image-monoimage-devel:
+    description: Push the devel monoimage to Docker Hub
+    release-toolchains: [node]
+    yarn-install: true
+    worker:
+      max-run-time: 7200
+    dependencies:
+      gate: release-gate-builds
+      build: release-build-image-monoimage-devel
+    run:
+      command: yarn release:step --step push-image --name monoimage-devel
+  push-image-generic-worker:
+    description: Push the generic-worker image to Docker Hub
+    release-toolchains: [node]
+    yarn-install: true
+    dependencies:
+      gate: release-gate-builds
+      build: release-build-image-generic-worker
+    run:
+      command: yarn release:step --step push-image --name generic-worker
+  push-image-livelog:
+    description: Push the livelog image to Docker Hub
+    release-toolchains: [node]
+    yarn-install: true
+    dependencies:
+      gate: release-gate-builds
+      build: release-build-image-livelog
+    run:
+      command: yarn release:step --step push-image --name livelog
+  push-image-taskcluster-proxy:
+    description: Push the taskcluster-proxy image to Docker Hub
+    release-toolchains: [node]
+    yarn-install: true
+    dependencies:
+      gate: release-gate-builds
+      build: release-build-image-taskcluster-proxy
+    run:
+      command: yarn release:step --step push-image --name taskcluster-proxy
+  push-image-websocktunnel:
+    description: Push the websocktunnel image to Docker Hub
+    release-toolchains: [node]
+    yarn-install: true
+    dependencies:
+      gate: release-gate-builds
+      build: release-build-image-websocktunnel
+    run:
+      command: yarn release:step --step push-image --name websocktunnel
+  github-release-draft:
+    description: Create or update the draft GitHub release and upload its assets
+    release-toolchains: [node]
+    yarn-install: true
+    dependencies:
+      gate: release-gate-builds
+      generic-worker: release-build-binaries-generic-worker
+      worker-runner: release-build-binaries-worker-runner
+      livelog: release-build-binaries-livelog
+      taskcluster-proxy: release-build-binaries-taskcluster-proxy
+      client-shell: release-build-binaries-client-shell
+      npm-client: release-build-npm-client
+      npm-client-web: release-build-npm-client-web
+    worker:
+      artifacts:
+        - type: directory
+          path: taskcluster/release-out
+          name: public/build
+    run:
+      command: yarn release:step --step github-release-draft
+  pypi:
+    # publish-pypi.sh runs `uv build` and `uv publish`; the uv toolchain mounts
+    # the version in .uv-version.
+    release-toolchains: [uv]
+    description: Publish the Python client to PyPI
+    dependencies:
+      gate: release-gate-builds
+    run:
+      command: taskcluster/scripts/release/publish-pypi.sh
+  crates:
+    release-toolchains: [rust]
+    description: Publish the Rust client crates to crates.io
+    dependencies:
+      gate: release-gate-builds
+    run:
+      command: taskcluster/scripts/release/publish-crates.sh

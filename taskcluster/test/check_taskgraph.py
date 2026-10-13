@@ -242,6 +242,184 @@ def check_cron_graph(tasks):
         raise RuntimeError("Invalid cron task graph:\n- " + "\n- ".join(errors))
 
 
+RELEASE_PARAMETERS = "release-tag.yml"
+STAGING_PARAMETERS = "staging-release.yml"
+
+RELEASE_BUILD_NAMES = {
+    "image-monoimage",
+    "image-monoimage-devel",
+    "image-generic-worker",
+    "image-livelog",
+    "image-taskcluster-proxy",
+    "image-websocktunnel",
+    "binaries-generic-worker",
+    "binaries-worker-runner",
+    "binaries-livelog",
+    "binaries-taskcluster-proxy",
+    "binaries-client-shell",
+    "npm-client",
+    "npm-client-web",
+}
+
+
+def release_kind_tasks(tasks, kind):
+    return {label: task for label, task in tasks.items() if task.get("kind") == kind}
+
+
+def check_release_build(tasks, graph_name, staging):
+    errors = []
+    builds = release_kind_tasks(tasks, "release-build")
+    expected = {f"release-build-{name}" for name in RELEASE_BUILD_NAMES}
+    if missing := sorted(expected - set(builds)):
+        errors.append("missing release builds: " + ", ".join(missing))
+    for label, task in builds.items():
+        definition = task["task"]
+        scopes = [scope_text(scope) for scope in definition.get("scopes", [])]
+        if secret := [s for s in scopes if s.startswith("secrets:")]:
+            errors.append(f"{label} must not have secret scopes: {secret}")
+        if definition.get("workerType") != "release":
+            errors.append(f"{label} must run on the release pool")
+        env = definition.get("payload", {}).get("env", {})
+        if env.get("RELEASE_VERSION") != "113.2.0":
+            errors.append(f"{label} has RELEASE_VERSION {env.get('RELEASE_VERSION')!r}")
+        if (env.get("STAGING") == "1") != staging:
+            errors.append(f"{label} has STAGING={env.get('STAGING')!r}")
+    devel = builds.get("release-build-image-monoimage-devel", {})
+    if "release-build-image-monoimage" not in devel.get("dependencies", {}).values():
+        errors.append("image-monoimage-devel must depend on image-monoimage")
+    if errors:
+        raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
+
+
+MALFORMED_RELEASE_PARAMETERS = "release-tag-malformed.yml"
+MAIN_PUSH_PARAMETERS = "main-repo-main-push.yml"
+
+IMAGES = ["monoimage", "monoimage-devel", "generic-worker", "livelog", "taskcluster-proxy", "websocktunnel"]
+RELEASE_PUBLISH_LABELS = {f"release-publish-push-image-{i}" for i in IMAGES} | {
+    "release-publish-github-release-draft",
+    "release-publish-pypi",
+    "release-publish-crates",
+}
+RELEASE_FINALIZE_LABELS = {
+    "release-finalize-github-release-publish",
+    "release-finalize-publish-homebrew",
+}
+RELEASE_KINDS = ("release-build", "release-gate", "release-publish", "release-finalize", "release-notify")
+
+
+def ancestors(tasks, label, seen=None):
+    seen = set() if seen is None else seen
+    for dep in tasks[label].get("dependencies", {}).values():
+        if dep not in seen:
+            seen.add(dep)
+            ancestors(tasks, dep, seen)
+    return seen
+
+
+def check_release_pipeline(tasks, graph_name, staging):
+    errors = []
+    labels = set(tasks)
+    homebrew_label = "release-finalize-publish-homebrew"
+    finalize = RELEASE_FINALIZE_LABELS - {homebrew_label} if staging else RELEASE_FINALIZE_LABELS
+    expected = RELEASE_PUBLISH_LABELS | finalize | {"release-gate-builds", "release-notify-email"}
+    if missing := sorted(expected - labels):
+        errors.append("missing release tasks: " + ", ".join(missing))
+    if staging and homebrew_label in labels:
+        errors.append("staging graph must not update the Homebrew tap")
+    if old := sorted(label for label in labels if tasks[label].get("kind") == "release"):
+        errors.append("old single-task release kind is still present: " + ", ".join(old))
+
+    builds = {label for label in labels if tasks[label].get("kind") == "release-build"}
+    gate_deps = set(tasks.get("release-gate-builds", {}).get("dependencies", {}).values())
+    if gate_deps != builds:
+        errors.append(
+            f"release-gate-builds must depend on exactly the builds; extra/missing: {sorted(gate_deps ^ builds)}"
+        )
+
+    secret = "secrets:get:project/taskcluster/" + ("staging-release" if staging else "release")
+    for label in sorted(labels & (RELEASE_PUBLISH_LABELS | finalize)):
+        if "release-gate-builds" not in ancestors(tasks, label):
+            errors.append(f"{label} can run before release-gate-builds")
+        scopes = [scope_text(s) for s in tasks[label]["task"].get("scopes", [])]
+        if secret not in scopes:
+            errors.append(f"{label} lacks {secret}")
+        env = tasks[label]["task"].get("payload", {}).get("env", {})
+        if (env.get("STAGING") == "1") != staging:
+            errors.append(f"{label} has STAGING={env.get('STAGING')!r}")
+
+    if not staging:
+        homebrew = set(tasks.get("release-finalize-publish-homebrew", {}).get("dependencies", {}).values())
+        if "release-finalize-github-release-publish" not in homebrew:
+            errors.append("publish-homebrew must depend on github-release-publish")
+    gh_publish = "release-finalize-github-release-publish"
+    waits_for = ancestors(tasks, gh_publish) if gh_publish in tasks else set()
+    if missing := sorted(RELEASE_PUBLISH_LABELS - waits_for):
+        errors.append("github-release-publish does not wait for: " + ", ".join(missing))
+
+    notify = tasks.get("release-notify-email", {})
+    notify_needs = finalize
+    if missing := sorted(notify_needs - set(notify.get("dependencies", {}).values())):
+        errors.append("release-notify-email does not wait for: " + ", ".join(missing))
+    if not staging and not any(
+        r.startswith("notify.email.") for r in notify.get("task", {}).get("routes", [])
+    ):
+        errors.append("release-notify-email has no notify.email route")
+
+    for label in labels:
+        if tasks[label].get("kind") not in RELEASE_KINDS:
+            continue
+        definition = tasks[label]["task"]
+        routes = definition.get("routes", [])
+        if staging:
+            # The staging-releases project has no notify scopes.
+            if email := [r for r in routes if r.startswith("notify.email.")]:
+                errors.append(f"{label} has email routes in staging: {email}")
+        elif definition.get("provisionerId") != "built-in":
+            for state in ("on-failed", "on-exception"):
+                if not any(r.startswith("notify.email.") and r.endswith(state) for r in routes):
+                    errors.append(f"{label} does not email {state}")
+        if definition.get("deadline", {}).get("relative-datestamp") != "4 days":
+            errors.append(f"{label} deadline is {definition.get('deadline')!r}, expected 4 days")
+        if definition.get("requires", "all-completed") != "all-completed":
+            errors.append(f"{label} must require all-completed")
+
+    if errors:
+        raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
+
+
+SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+def check_release_mount_hashes(tasks, graph_name):
+    """Every toolchain a release task downloads is pinned by sha256, which
+    generic-worker verifies before extracting it."""
+    errors = []
+    for label, task in sorted(tasks.items()):
+        if task.get("kind") not in RELEASE_KINDS:
+            continue
+        for mount in task["task"].get("payload", {}).get("mounts", []):
+            content = mount.get("content", {})
+            if "url" in content and not SHA256.fullmatch(str(content.get("sha256", ""))):
+                errors.append(f"{label} mounts {content['url']} without a sha256")
+    if errors:
+        raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
+
+
+def check_no_release_tasks(tasks, graph_name):
+    if release := sorted(label for label, t in tasks.items() if t.get("kind", "").startswith("release")):
+        raise RuntimeError(f"{graph_name} graph contains release tasks: " + ", ".join(release))
+
+
+def check_malformed_release_ref(version):
+    try:
+        generate_target_graph(PARAMETERS_DIR / MALFORMED_RELEASE_PARAMETERS, version)
+    except subprocess.CalledProcessError as err:
+        if "release tags must be of the form vX.Y.Z" not in (err.stderr or ""):
+            raise RuntimeError(f"malformed release ref failed for the wrong reason:\n{err.stderr}")
+        return
+    raise RuntimeError("malformed release ref refs/tags/vfoo generated a graph")
+
+
 def main():
     task_reference_scope = {"task-reference": "secrets:get:<dependency>"}
     if not production_is_secret_scope(task_reference_scope):
@@ -259,6 +437,7 @@ def main():
         if CRON_LABEL in tasks:
             raise RuntimeError(f"{graph_name} graph schedules the cron job {CRON_LABEL}")
         check_no_test_skip(tasks, graph_name)
+        check_no_release_tasks(tasks, graph_name)
         if trusted:
             check_trusted_graph(tasks, graph_name)
             print("Trusted task graph includes generic-worker CI")
@@ -270,6 +449,24 @@ def main():
     print(f"Generated cron task graph with {len(tasks)} tasks")
     check_cron_graph(tasks)
     print("Cron task graph selects only the attested-document job")
+
+    for parameter_file, graph_name, staging in (
+        (RELEASE_PARAMETERS, "release", False),
+        (STAGING_PARAMETERS, "staging release", True),
+    ):
+        tasks = generate_target_graph(PARAMETERS_DIR / parameter_file, version)
+        print(f"Generated {graph_name} task graph with {len(tasks)} tasks")
+        check_release_build(tasks, graph_name, staging)
+        print(f"{graph_name} graph has the expected build tasks")
+        check_release_pipeline(tasks, graph_name, staging)
+        print(f"{graph_name} graph has the expected gated release pipeline")
+        check_release_mount_hashes(tasks, graph_name)
+        print(f"{graph_name} graph pins every toolchain download by sha256")
+
+    tasks = generate_target_graph(PARAMETERS_DIR / MAIN_PUSH_PARAMETERS, version)
+    check_no_release_tasks(tasks, "main push")
+    check_malformed_release_ref(version)
+    print("Non-release graphs contain no release tasks; malformed release refs are rejected")
 
 
 if __name__ == "__main__":
