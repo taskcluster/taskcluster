@@ -3,6 +3,7 @@ import { render, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { getClient } from '../../../utils/client';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
+import { resolveLatestArtifactUrl } from '../../../utils/getArtifactUrl';
 import { AuthContext } from '../../../utils/Auth';
 import TaskGroup from './index';
 
@@ -29,9 +30,9 @@ vi.mock('../../../utils/db', () => ({
 }));
 
 vi.mock('../../../utils/getArtifactUrl', () => ({
-  getLatestArtifactUrl: vi.fn(
-    () => 'https://tc.example.com/api/queue/v1/actions.json'
-  ),
+  resolveLatestArtifactUrl: vi
+    .fn()
+    .mockResolvedValue('https://tc.example.com/api/queue/v1/actions.json'),
 }));
 
 const taskGroupId = 'aI8bvUB2SDmpHVqTUOFCWw';
@@ -121,6 +122,12 @@ describe('TaskGroup page', () => {
     expect(queue.listTaskGroup).toHaveBeenCalledWith(taskGroupId, {
       limit: 20,
     });
+    expect(resolveLatestArtifactUrl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: taskGroupId,
+        name: 'public/actions.json',
+      })
+    );
     expect(subscribeToNamedEvents).toHaveBeenCalledWith(
       expect.objectContaining({
         service: 'queue',

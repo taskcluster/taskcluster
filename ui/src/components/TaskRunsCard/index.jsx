@@ -34,6 +34,7 @@ import getIconFromMime from '../../utils/getIconFromMime';
 import { ARTIFACTS_PAGE_SIZE, ARTIFACTS_SHOW_MAX } from '../../utils/constants';
 import { artifact, pagination, runs } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
+import { withAnonymousScopes } from '../../utils/anonymousScopes';
 import { getArtifactUrl } from '../../utils/getArtifactUrl';
 import { buildLogViewerUrl } from '../../utils/artifactNames';
 import formatBytes from '../../utils/formatBytes';
@@ -45,6 +46,7 @@ const DOTS_VARIANT_LIMIT = 5;
 
 @withRouter
 @withAuth
+@withAnonymousScopes
 @withStyles(
   theme => ({
     headline: {
@@ -193,7 +195,7 @@ export default class TaskRunsCard extends Component {
 
   getArtifactInfo = ({ name, contentType }) => {
     const { runId } = this.getCurrentRun();
-    const { taskId, user } = this.props;
+    const { taskId, user, anonymousScopes } = this.props;
     const logViewerUrl =
       contentType.startsWith('text/plain') && name.endsWith('.log')
         ? buildLogViewerUrl({
@@ -206,7 +208,7 @@ export default class TaskRunsCard extends Component {
     const isLogFile = Boolean(logViewerUrl);
     const icon = getIconFromMime(contentType);
     let handleArtifactClick;
-    let url = getArtifactUrl({ user, taskId, runId, name });
+    let url = getArtifactUrl({ user, anonymousScopes, taskId, runId, name });
 
     // if this looks like a logfile, send the user to the logfile viewer
     if (isLogFile) {
@@ -218,7 +220,13 @@ export default class TaskRunsCard extends Component {
       // refresh the artifact URL (with a fresh expiration time) on click and
       // navigate to it manually in a new window
       handleArtifactClick = ev => {
-        const url = getArtifactUrl({ user, taskId, runId, name });
+        const url = getArtifactUrl({
+          user,
+          anonymousScopes,
+          taskId,
+          runId,
+          name,
+        });
 
         if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
           return;

@@ -13,6 +13,10 @@ vi.mock('@material-ui/core/styles', async importOriginal => ({
 vi.mock('../../../utils/TaskclusterClient', () => ({
   withTaskclusterClient: Component => Component,
 }));
+vi.mock('../../../utils/anonymousScopes', async importOriginal => ({
+  ...(await importOriginal()),
+  withAnonymousScopes: Component => Component,
+}));
 // Dashboard renders null under jsdom (withWidth needs matchMedia); expose the
 // title so the REST-loaded task name can be asserted
 vi.mock('../../../components/Dashboard', () => ({
@@ -113,6 +117,7 @@ describe('task details', () => {
       <MemoryRouter>
         <TaskLog
           classes={{}}
+          anonymousScopesLoaded
           match={{
             params: { taskId, runId: '1', name: 'public/logs/live.log' },
           }}

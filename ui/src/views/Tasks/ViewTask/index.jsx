@@ -52,7 +52,7 @@ import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
 import Link from '../../../utils/Link';
 import { changeTaskPriority } from '../../../utils/client';
-import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
+import { resolveLatestArtifactUrl } from '../../../utils/getArtifactUrl';
 import { AuthContext, withAuth } from '../../../utils/Auth';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import withResource from '../../../hocs/withResource';
@@ -162,7 +162,8 @@ const selectedRunId = ({ match, statusResource }) => {
     // client-web refuses to follow the artifact endpoint's redirect, so
     // resolve the URL and fetch the (public) artifact directly.
     const response = await fetch(
-      getLatestArtifactUrl({
+      await resolveLatestArtifactUrl({
+        getCredentials: props.getCredentials,
         taskId: taskGroupId,
         name: 'public/actions.json',
       })
