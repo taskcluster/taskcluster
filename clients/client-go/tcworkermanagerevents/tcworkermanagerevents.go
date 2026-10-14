@@ -209,7 +209,7 @@ func (binding WorkerStopped) ExchangeName() string {
 }
 
 func (binding WorkerStopped) NewPayloadObject() any {
-	return new(WorkerPulseMessage)
+	return new(WorkerStoppedPulseMessage)
 }
 
 // Whenever a worker is removed, a message is posted to this exchange.

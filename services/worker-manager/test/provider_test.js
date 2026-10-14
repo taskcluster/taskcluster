@@ -440,6 +440,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       monitor.metric.workerLifetime = originalMetric;
     });
 
+    test('includes reason on workerStopped log and pulse message', async () => {
+      const worker = await createWorker({
+        workerId: 'wi-stopped-reason',
+        state: Worker.states.RUNNING,
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker, reason: 'instance TERMINATED' });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.equal(msg.Fields.reason, 'instance TERMINATED');
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === 'wi-stopped-reason' && m.payload.reason === 'instance TERMINATED'
+      );
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('omits reason on workerStopped pulse message when not given', async () => {
+      const worker = await createWorker({
+        workerId: 'wi-stopped-no-reason',
+        state: Worker.states.RUNNING,
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      await provider.onWorkerStopped({ worker });
+
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === 'wi-stopped-no-reason' && !('reason' in m.payload)
+      );
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
     test('includes workerAge and runningDuration on workerRemoved', async () => {
       const worker = await createWorker({
         workerId: 'wi-removed',

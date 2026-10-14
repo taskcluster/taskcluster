@@ -545,7 +545,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.strictEqual(w.state, Worker.states.STOPPED);
       });
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === worker.workerId && m.payload.reason === 'instance stopped'
+      );
     });
 
     test('pending/running,/shutting-down/stopping instances - should not reject', async () => {
@@ -600,6 +603,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
       helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.reason === 'instance not found');
     });
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async () => {
@@ -619,7 +623,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.strictEqual(w.state, Worker.states.STOPPED);
       });
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === worker.workerId && m.payload.reason === 'instance terminated'
+      );
     });
 
     test('remove unregistered workers', async () => {

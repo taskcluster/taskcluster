@@ -2591,7 +2591,7 @@ export class AzureProvider extends Provider {
       // change to stopped
       monitor.debug(`setting state to STOPPED`);
       // triggering event before updating worker state to know current state
-      await this.onWorkerStopped({ worker });
+      await this.onWorkerStopped({ worker, reason: `azure teardown: ${teardownMode}` });
       await worker.update(this.db, worker => {
         const now = new Date();
         worker.lastModified = now;

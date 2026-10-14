@@ -434,7 +434,7 @@ class WorkerManagerEvents(AsyncBaseClient):
                     "name": "reserved",
                 },
             ],
-            "schema": "v1/pulse-worker-message.json#",
+            "schema": "v1/pulse-worker-stopped-message.json#",
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
