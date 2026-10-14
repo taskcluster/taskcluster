@@ -1049,12 +1049,14 @@ export class AzureProvider extends Provider {
       });
     }
 
+    const operationErrorCode = failingOperations.find(op => op.statusMessage?.error?.code)?.statusMessage.error.code;
     await this.reportError({
       workerPool,
       kind: 'arm-deployment-error',
       title: 'ARM Deployment Error',
       description,
       extra: {
+        code: deployment.properties?.error?.code ?? operationErrorCode,
         workerId: worker.workerId,
         workerGroup: worker.workerGroup,
         deploymentName: worker.providerData.deployment.name,

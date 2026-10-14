@@ -1671,6 +1671,11 @@
       "additionalProperties": false,
       "description": "The message that is emitted when worker pools are created/changed/deleted.",
       "properties": {
+        "errorCode": {
+          "description": "Provider-specific error code, when the provider reports one",
+          "title": "Error code",
+          "type": "string"
+        },
         "errorId": {
           "$ref": "worker-pool-error.json#/properties/errorId"
         },

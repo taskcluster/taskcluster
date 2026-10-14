@@ -3289,6 +3289,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(reportedError.description.includes('At least one resource deployment operation failed'));
         assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
         assert.equal(reportedError.extra.operations.length, 1);
+        assert.equal(reportedError.extra.code, 'DeploymentFailed');
         assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'DeploymentFailed');
         assert.equal(reportedError.extra.operations[0].statusMessage.error.details[0].code, 'NotSupported');
         assert.equal(reportedError.extra.operations[0].statusMessage.error.details[1].code, 'AnotherNestedError');
@@ -3317,6 +3318,54 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       } finally {
         provider.monitor._metric.azureArmDeploymentError = originalMetric;
       }
+    });
+
+    test('reports the deployment error code when ARM deployment fails without failing operations', async () => {
+      const existingWorkerPool = await WorkerPool.get(helper.db, workerPoolId);
+      if (!existingWorkerPool) {
+        await makeWorkerPool();
+      }
+
+      const deploymentName = 'deploy-error-code';
+      await worker.update(helper.db, worker => {
+        worker.providerData = {
+          ...worker.providerData,
+          deploymentMethod: 'arm-template',
+          deployment: {
+            name: deploymentName,
+            operation: 'op/deployment',
+            id: false,
+          },
+          provisioningComplete: false,
+        };
+      });
+
+      await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
+        parameters: {
+          vmName: { value: worker.providerData.vm.name },
+        },
+      });
+      fake.deploymentsClient.deployments.setFakeDeploymentState('rgrp', deploymentName, 'Failed', {
+        code: 'DeploymentFailed',
+        message: 'Deployment failed',
+      });
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, []);
+
+      await setState({ state: 'requested' });
+
+      await provider.checkWorker({ worker });
+
+      const [error] = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
+      assert.equal(error.kind, 'arm-deployment-error');
+      assert.equal(error.description, 'Deployment failed');
+      assert.equal(error.extra.code, 'DeploymentFailed');
+      assert.deepEqual(await helper.db.fns.get_worker_pool_error_codes(workerPoolId), [
+        { code: 'DeploymentFailed', count: 1 },
+      ]);
+      helper.assertPulseMessage(
+        'worker-pool-error',
+        m => m.payload.workerId === worker.workerId && m.payload.errorCode === 'DeploymentFailed'
+      );
     });
   });
 

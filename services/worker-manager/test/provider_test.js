@@ -264,6 +264,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(helper.notify.emails.length, 1);
     });
 
+    test('worker-pool-error falls back to extra.code when extra.errorCode is absent', async () => {
+      const workerPool = await createWP();
+
+      await provider.reportError({
+        workerPool,
+        kind: 'something-error',
+        title: 'And Error about Something',
+        description: 'WHO KNOWS',
+        notify: helper.notify,
+        WorkerPoolError: WorkerPoolError,
+        extra: {
+          code: 'SOME_AZURE_CODE',
+        },
+      });
+
+      helper.assertPulseMessage('worker-pool-error', m => m.payload.errorCode === 'SOME_AZURE_CODE');
+    });
+
     test('report errors (w/ email and extraInfo)', async () => {
       const workerPool = await createWP({ emailOnError: true });
 

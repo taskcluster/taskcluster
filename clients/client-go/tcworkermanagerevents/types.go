@@ -184,6 +184,9 @@ type (
 	// The message that is emitted when worker pools are created/changed/deleted.
 	WorkerTypePulseMessage1 struct {
 
+		// Provider-specific error code, when the provider reports one
+		ErrorCode string `json:"errorCode,omitempty"`
+
 		// An arbitary unique identifier for this error
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
