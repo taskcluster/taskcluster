@@ -482,6 +482,7 @@ export class Provider {
         timestamp: new Date().toJSON(),
         workerId: extra?.workerId,
         workerGroup: extra?.workerGroup,
+        errorCode: (extra?.errorCode ?? extra?.code)?.toString(),
         launchConfigId,
       });
 

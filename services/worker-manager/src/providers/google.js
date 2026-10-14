@@ -588,7 +588,9 @@ export class GoogleProvider extends Provider {
           title: 'Operation Error',
           description: err.message,
           extra: {
-            code: err.code,
+            errorCode: err.code,
+            workerId: worker?.workerId,
+            workerGroup: worker?.workerGroup,
           },
           launchConfigId: worker?.launchConfigId ?? undefined,
         });

@@ -13,6 +13,10 @@ properties:
   errorId: {$ref: "worker-pool-error.json#/properties/errorId"}
   kind: {$ref: "worker-pool-error.json#/properties/kind"}
   title: {$ref: "worker-pool-error.json#/properties/title"}
+  errorCode:
+    title: Error code
+    description: Provider-specific error code, when the provider reports one
+    type: string
   timestamp:
     title: Event timestamp
     description: Date and time when this event occurred
