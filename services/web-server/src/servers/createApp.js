@@ -10,7 +10,6 @@ import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
 import generateCredentials from '../utils/generateCredentials.js';
-import regenerateSession from '../utils/regenerateSession.js';
 import WebServerError from '../utils/WebServerError.js';
 import { traceMiddleware } from '@taskcluster/lib-app';
 
@@ -141,8 +140,6 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
         identity: req.user.identity,
         monitor,
       });
-
-      await regenerateSession(req);
 
       return res.status(200).json(credsResponse);
     } catch (err) {
