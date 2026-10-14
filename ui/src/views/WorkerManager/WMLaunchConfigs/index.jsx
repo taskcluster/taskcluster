@@ -278,52 +278,42 @@ export default class WMLaunchConfigs extends Component {
   );
 
   /**
-   * Sorts the enriched launch configs based on sort criteria
+   * Sorts the enriched launch configs based on sort criteria.
+   *
+   * Not memoized: the enriched rows change when the worker pool stats arrive
+   * after the launch configs, while their ids stay the same. A cache keyed on
+   * ids kept returning the rows sorted before the stats loaded (all counts 0)
+   * until the sort order changed.
    */
-  sortLaunchConfigs = memoize(
-    (launchConfigs, sortBy, sortDirection) => {
-      if (!launchConfigs || !sortBy) {
-        return launchConfigs;
+  sortLaunchConfigs = (launchConfigs, sortBy, sortDirection) => {
+    if (!launchConfigs || !sortBy) {
+      return launchConfigs;
+    }
+
+    return [...launchConfigs].sort((a, b) => {
+      let firstValue;
+      let secondValue;
+
+      // Handle nested properties for workerStats
+      if (sortBy.includes('.')) {
+        const [parent, child] = sortBy.split('.');
+
+        firstValue = a[parent]?.[child];
+        secondValue = b[parent]?.[child];
+      } else {
+        const sortByProperty = camelCase(sortBy);
+
+        firstValue = a[sortByProperty];
+        secondValue = b[sortByProperty];
       }
 
-      return [...launchConfigs].sort((a, b) => {
-        let firstValue;
-        let secondValue;
+      if (sortDirection === 'desc') {
+        return sort(secondValue, firstValue);
+      }
 
-        // Handle nested properties for workerStats
-        if (sortBy.includes('.')) {
-          const [parent, child] = sortBy.split('.');
-
-          firstValue = a[parent]?.[child];
-          secondValue = b[parent]?.[child];
-        } else {
-          const sortByProperty = camelCase(sortBy);
-
-          firstValue = a[sortByProperty];
-          secondValue = b[sortByProperty];
-        }
-
-        if (sortDirection === 'desc') {
-          return sort(secondValue, firstValue);
-        }
-
-        return sort(firstValue, secondValue);
-      });
-    },
-    {
-      serializer: ([launchConfigs, sortBy, sortDirection]) => {
-        if (!launchConfigs) {
-          return `empty-${sortBy}-${sortDirection}`;
-        }
-
-        const ids = launchConfigs
-          .map(launchConfig => launchConfig.launchConfigId)
-          .sort();
-
-        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-      },
-    }
-  );
+      return sort(firstValue, secondValue);
+    });
+  };
 
   handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
