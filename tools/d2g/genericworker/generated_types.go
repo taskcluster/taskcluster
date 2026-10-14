@@ -521,6 +521,38 @@ type (
 	// Taskcluster Task definition.
 	GenericWorkerPayload struct {
 
+		// When the worker aborts this task, task processes are first sent `SIGTERM`
+		// and given up to this many seconds to exit, before being killed with
+		// `SIGKILL`. This lets a task (e.g. a test harness) record that it was
+		// aborted, and flush any logs, before it is killed.
+		//
+		// A task is aborted when `maxRunTime` is exceeded, when the worker is
+		// shutting down without time to finish tasks (e.g. spot instance
+		// termination, or expiring worker credentials), or when the resource
+		// monitor detects sustained memory pressure. Task cancellation is not
+		// affected: cancelled tasks are always killed immediately.
+		//
+		// `SIGTERM` is sent to the whole process group of the running command.
+		// Processes that have moved to a different process group or session
+		// (for example processes running inside a docker container) are not
+		// signalled. The task is still resolved as aborted, regardless of the
+		// exit code of the command.
+		//
+		// The grace period is in addition to `maxRunTime`. When the worker is
+		// shutting down, the cloud provider may terminate the instance before the
+		// grace period expires (typically ~30 seconds notice on GCP and Azure,
+		// ~2 minutes on AWS), and artifacts still need to be uploaded after task
+		// processes have exited, so keep this value small.
+		//
+		// A value of `0` (the default) kills task processes immediately.
+		//
+		// Since: generic-worker 113.2.0
+		//
+		// Default:    0
+		// Mininum:    0
+		// Maximum:    60
+		AbortGracePeriod int64 `json:"abortGracePeriod,omitempty"`
+
 		// Artifacts to be published.
 		//
 		// Since: generic-worker 1.0.0
@@ -1146,6 +1178,15 @@ func JSONSchema() string {
       "additionalProperties": false,
       "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskcluster Task definition.",
       "properties": {
+        "abortGracePeriod": {
+          "default": 0,
+          "description": "When the worker aborts this task, task processes are first sent ` + "`" + `SIGTERM` + "`" + `\nand given up to this many seconds to exit, before being killed with\n` + "`" + `SIGKILL` + "`" + `. This lets a task (e.g. a test harness) record that it was\naborted, and flush any logs, before it is killed.\n\nA task is aborted when ` + "`" + `maxRunTime` + "`" + ` is exceeded, when the worker is\nshutting down without time to finish tasks (e.g. spot instance\ntermination, or expiring worker credentials), or when the resource\nmonitor detects sustained memory pressure. Task cancellation is not\naffected: cancelled tasks are always killed immediately.\n\n` + "`" + `SIGTERM` + "`" + ` is sent to the whole process group of the running command.\nProcesses that have moved to a different process group or session\n(for example processes running inside a docker container) are not\nsignalled. The task is still resolved as aborted, regardless of the\nexit code of the command.\n\nThe grace period is in addition to ` + "`" + `maxRunTime` + "`" + `. When the worker is\nshutting down, the cloud provider may terminate the instance before the\ngrace period expires (typically ~30 seconds notice on GCP and Azure,\n~2 minutes on AWS), and artifacts still need to be uploaded after task\nprocesses have exited, so keep this value small.\n\nA value of ` + "`" + `0` + "`" + ` (the default) kills task processes immediately.\n\nSince: generic-worker 113.2.0",
+          "maximum": 60,
+          "minimum": 0,
+          "multipleOf": 1,
+          "title": "Abort grace period in seconds",
+          "type": "integer"
+        },
         "artifacts": {
           "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
           "items": {

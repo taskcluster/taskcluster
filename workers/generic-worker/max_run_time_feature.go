@@ -51,6 +51,11 @@ func (mrttf *MaxRunTimeTaskFeature) Start() *CommandExecutionError {
 	if mrttf.task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
 		return MalformedPayloadError(fmt.Errorf("task's maxRunTime of %d exceeded allowed maximum of %d", mrttf.task.Payload.MaxRunTime, config.MaxTaskRunTime))
 	}
+	// Applies to all task abortions, not just when max run time is exceeded.
+	// Set here, rather than read from the payload when the task is aborted,
+	// since the task may be aborted from another go routine before the
+	// payload has been validated.
+	mrttf.task.StatusManager.SetAbortGracePeriod(time.Second * time.Duration(mrttf.task.Payload.AbortGracePeriod))
 	mrttf.timer = time.AfterFunc(
 		time.Second*time.Duration(mrttf.task.Payload.MaxRunTime),
 		func() {

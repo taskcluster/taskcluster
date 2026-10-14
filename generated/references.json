@@ -10607,6 +10607,15 @@
       },
       "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
       "properties": {
+        "abortGracePeriod": {
+          "default": 0,
+          "description": "On POSIX platforms, when the worker aborts a task, task processes are\nfirst sent `SIGTERM` and given up to this many seconds to exit, before\nbeing killed.\n\nThis is not currently supported on Windows: the value is accepted, but\ntask processes are always killed immediately (`taskkill /f /t`), since\nconsole control events cannot be reliably delivered from the worker\nto task processes running in a different session.\n\nSince: generic-worker 113.2.0",
+          "maximum": 60,
+          "minimum": 0,
+          "multipleOf": 1,
+          "title": "Abort grace period in seconds",
+          "type": "integer"
+        },
         "artifacts": {
           "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
           "items": {
@@ -11155,6 +11164,15 @@
           "additionalProperties": false,
           "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
           "properties": {
+            "abortGracePeriod": {
+              "default": 0,
+              "description": "When the worker aborts this task, task processes are first sent `SIGTERM`\nand given up to this many seconds to exit, before being killed with\n`SIGKILL`. This lets a task (e.g. a test harness) record that it was\naborted, and flush any logs, before it is killed.\n\nA task is aborted when `maxRunTime` is exceeded, when the worker is\nshutting down without time to finish tasks (e.g. spot instance\ntermination, or expiring worker credentials), or when the resource\nmonitor detects sustained memory pressure. Task cancellation is not\naffected: cancelled tasks are always killed immediately.\n\n`SIGTERM` is sent to the whole process group of the running command.\nProcesses that have moved to a different process group or session\n(for example processes running inside a docker container) are not\nsignalled. The task is still resolved as aborted, regardless of the\nexit code of the command.\n\nThe grace period is in addition to `maxRunTime`. When the worker is\nshutting down, the cloud provider may terminate the instance before the\ngrace period expires (typically ~30 seconds notice on GCP and Azure,\n~2 minutes on AWS), and artifacts still need to be uploaded after task\nprocesses have exited, so keep this value small.\n\nA value of `0` (the default) kills task processes immediately.\n\nSince: generic-worker 113.2.0",
+              "maximum": 60,
+              "minimum": 0,
+              "multipleOf": 1,
+              "title": "Abort grace period in seconds",
+              "type": "integer"
+            },
             "artifacts": {
               "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
               "items": {
@@ -11983,6 +12001,15 @@
           "additionalProperties": false,
           "description": "This schema defines the structure of the `payload` property referred to in a\nTaskcluster Task definition.",
           "properties": {
+            "abortGracePeriod": {
+              "default": 0,
+              "description": "When the worker aborts this task, task processes are first sent `SIGTERM`\nand given up to this many seconds to exit, before being killed with\n`SIGKILL`. This lets a task (e.g. a test harness) record that it was\naborted, and flush any logs, before it is killed.\n\nA task is aborted when `maxRunTime` is exceeded, when the worker is\nshutting down without time to finish tasks (e.g. spot instance\ntermination, or expiring worker credentials), or when the resource\nmonitor detects sustained memory pressure. Task cancellation is not\naffected: cancelled tasks are always killed immediately.\n\n`SIGTERM` is sent to the whole process group of the running command.\nProcesses that have moved to a different process group or session\n(for example processes running inside a docker container) are not\nsignalled. The task is still resolved as aborted, regardless of the\nexit code of the command.\n\nThe grace period is in addition to `maxRunTime`. When the worker is\nshutting down, the cloud provider may terminate the instance before the\ngrace period expires (typically ~30 seconds notice on GCP and Azure,\n~2 minutes on AWS), and artifacts still need to be uploaded after task\nprocesses have exited, so keep this value small.\n\nA value of `0` (the default) kills task processes immediately.\n\nSince: generic-worker 113.2.0",
+              "maximum": 60,
+              "minimum": 0,
+              "multipleOf": 1,
+              "title": "Abort grace period in seconds",
+              "type": "integer"
+            },
             "artifacts": {
               "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
               "items": {

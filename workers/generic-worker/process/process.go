@@ -94,6 +94,7 @@ func (c *Command) Execute() *Result {
 	go func() {
 		waitErr := c.Wait()
 		exitErr <- waitErr
+		close(c.waited)
 	}()
 
 	select {
@@ -109,6 +110,24 @@ func (c *Command) Execute() *Result {
 			c.result.UserTime = c.ProcessState.UserTime()
 			c.result.KernelTime = c.ProcessState.SystemTime()
 			c.result.SetExitCode()
+		}
+		c.mutex.RLock()
+		terminating := c.terminating
+		c.mutex.RUnlock()
+		if terminating {
+			// The process exited after Terminate() asked it to, but other
+			// processes in its process group may still be running. Wait until
+			// they have exited, or have been killed.
+			<-c.abort
+			exitStatus := "exit status 0"
+			if err != nil {
+				exitStatus = err.Error()
+			}
+			c.mutex.Lock()
+			c.result.SystemError = fmt.Errorf("process aborted (exited after SIGTERM: %v)", exitStatus)
+			c.result.Aborted = true
+			c.result.SetExitCode()
+			c.mutex.Unlock()
 		}
 	case <-c.abort:
 		c.mutex.Lock()

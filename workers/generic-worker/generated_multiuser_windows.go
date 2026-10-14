@@ -337,6 +337,22 @@ type (
 	// Taskcluster Task definition.
 	GenericWorkerPayload struct {
 
+		// On POSIX platforms, when the worker aborts a task, task processes are
+		// first sent `SIGTERM` and given up to this many seconds to exit, before
+		// being killed.
+		//
+		// This is not currently supported on Windows: the value is accepted, but
+		// task processes are always killed immediately (`taskkill /f /t`), since
+		// console control events cannot be reliably delivered from the worker
+		// to task processes running in a different session.
+		//
+		// Since: generic-worker 113.2.0
+		//
+		// Default:    0
+		// Mininum:    0
+		// Maximum:    60
+		AbortGracePeriod int64 `json:"abortGracePeriod,omitempty"`
+
 		// Artifacts to be published.
 		//
 		// Since: generic-worker 1.0.0
@@ -918,6 +934,15 @@ func JSONSchema() string {
   },
   "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskcluster Task definition.",
   "properties": {
+    "abortGracePeriod": {
+      "default": 0,
+      "description": "On POSIX platforms, when the worker aborts a task, task processes are\nfirst sent ` + "`" + `SIGTERM` + "`" + ` and given up to this many seconds to exit, before\nbeing killed.\n\nThis is not currently supported on Windows: the value is accepted, but\ntask processes are always killed immediately (` + "`" + `taskkill /f /t` + "`" + `), since\nconsole control events cannot be reliably delivered from the worker\nto task processes running in a different session.\n\nSince: generic-worker 113.2.0",
+      "maximum": 60,
+      "minimum": 0,
+      "multipleOf": 1,
+      "title": "Abort grace period in seconds",
+      "type": "integer"
+    },
     "artifacts": {
       "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
       "items": {

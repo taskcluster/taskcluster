@@ -104,8 +104,9 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 	}
 
 	return &Command{
-		Cmd:   cmd,
-		abort: make(chan struct{}),
+		Cmd:    cmd,
+		abort:  make(chan struct{}),
+		waited: make(chan struct{}),
 	}, nil
 }
 
@@ -145,6 +146,17 @@ func (c *Command) Kill() (killOutput string, err error) {
 	defer log.Printf("taskkill.exe command has completed for PID %v", c.Process.Pid)
 	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed
 	return host.CombinedOutput("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t")
+}
+
+// GracefulTerminationSupported is true when Terminate() gives task processes
+// a chance to exit before killing them.
+const GracefulTerminationSupported = false
+
+// Terminate is equivalent to Kill() on Windows: console control events cannot
+// be reliably delivered from the worker to task processes running in a
+// different session, so task processes are always killed immediately.
+func (c *Command) Terminate(grace time.Duration, beforeKill func()) (killOutput string, err error) {
+	return c.Kill()
 }
 
 func (pd *PlatformData) RefreshLoginSession(user, pass string, winstaAccess bool) {
