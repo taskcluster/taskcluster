@@ -5013,7 +5013,7 @@ export default {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/pulse-worker-message.json#",
+          "schema": "v1/pulse-worker-stopped-message.json#",
           "title": "Worker Stopped Messages",
           "type": "topic-exchange"
         },

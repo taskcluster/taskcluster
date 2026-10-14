@@ -411,6 +411,7 @@ export class GoogleProvider extends Provider {
     const monitor = this.workerMonitor({ worker });
 
     let state;
+    let stoppedReason;
     try {
       const { data } = await this._enqueue('get', () =>
         this.compute.instances.get(
@@ -449,6 +450,7 @@ export class GoogleProvider extends Provider {
           })
         );
         state = states.STOPPED;
+        stoppedReason = `instance ${status}`;
       }
     } catch (err) {
       if (err.code !== 404) {
@@ -472,12 +474,13 @@ export class GoogleProvider extends Provider {
         }
       }
       state = states.STOPPED;
+      stoppedReason = 'instance not found';
     }
     monitor.debug(`setting state to ${state}`);
     const now = new Date();
     if (state === states.STOPPED) {
       // trigger before changing worker.state
-      await this.onWorkerStopped({ worker });
+      await this.onWorkerStopped({ worker, reason: stoppedReason });
     }
     await worker.update(this.db, worker => {
       if (state !== undefined) {

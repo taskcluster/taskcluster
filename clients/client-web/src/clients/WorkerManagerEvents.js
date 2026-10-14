@@ -55,7 +55,7 @@ export default class WorkerManagerEvents extends Client {
   // to this exchange. This means that instance was
   // either terminated or stopped gracefully.
   workerStopped(pattern) {
-    const entry = {"exchange":"worker-stopped","name":"workerStopped","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"};
+    const entry = {"exchange":"worker-stopped","name":"workerStopped","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-stopped-message.json#","type":"topic-exchange"};
 
     return this.normalizePattern(entry, pattern);
   }

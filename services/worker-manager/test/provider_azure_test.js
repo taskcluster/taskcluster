@@ -2499,7 +2499,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     // Builds a STOPPING ARM worker whose tracked nic/ip/disks match a cascading
     // VM. Pass `cascade: false` for a worker with no cascade field (slow walk),
     // or override providerData keys (e.g. nic/ip/disks/cascade) directly.
-    const makeStoppingWorker = async ({ cascade, ...pd } = {}) => {
+    const makeStoppingWorker = async ({ cascade, state = 'stopping', ...pd } = {}) => {
       const providerData = {
         ...baseProviderData,
         deploymentMethod: 'arm-template',
@@ -2517,12 +2517,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         workerGroup,
         workerId: 'cascade-vm',
         providerId,
+        launchConfigId: 'lc1',
         created: taskcluster.fromNow('0 seconds'),
         lastModified: taskcluster.fromNow('0 seconds'),
         lastChecked: taskcluster.fromNow('0 seconds'),
         capacity: 1,
         expires: taskcluster.fromNow('1 hour'),
-        state: 'stopping',
+        state,
         providerData,
       });
       await worker.create(helper.db);
@@ -2568,7 +2569,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         'a fast teardown log should be emitted'
       );
       assert.deepEqual(provider.errors[workerPoolId], []);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === reloaded.workerId && m.payload.reason === 'azure teardown: fast'
+      );
+    });
+
+    test('worker-stopped reports the reason stored by removeWorker', async () => {
+      const worker = await makeStoppingWorker({ state: 'running' });
+      await provider.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+      await provider.deprovisionResources({ worker, monitor });
+
+      const [reloaded] = await helper.getWorkers();
+      assert.equal(reloaded.state, 'stopped');
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === reloaded.workerId && m.payload.reason === 'terminateAfter time exceeded'
+      );
     });
 
     test('cascade absent - slow walk (regression guard)', async () => {
