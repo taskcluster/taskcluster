@@ -109,16 +109,24 @@ func (c *Command) Kill() (killOutput string, err error) {
 // the command as aborted.
 //
 // If grace is not positive, or the process hasn't been started yet, or has
-// already exited, Terminate is equivalent to Kill(). Kill() may be called at
-// any time, including during the grace period.
+// already exited, Terminate is equivalent to Kill(). Calling Terminate again
+// while the process group is terminating has no effect. Kill() may be called
+// at any time, including during the grace period.
 func (c *Command) Terminate(grace time.Duration, beforeKill func()) (killOutput string, err error) {
 	if grace <= 0 {
 		return c.Kill()
 	}
 	c.mutex.Lock()
+	if c.terminating {
+		// already terminating, possibly with the process having exited
+		// already, while other processes in its process group are still
+		// shutting down
+		c.mutex.Unlock()
+		return "", nil
+	}
 	select {
 	case <-c.abort:
-		// already killed, or terminated
+		// already killed
 		c.mutex.Unlock()
 		return "", nil
 	case <-c.waited:
@@ -127,10 +135,6 @@ func (c *Command) Terminate(grace time.Duration, beforeKill func()) (killOutput 
 		c.mutex.Unlock()
 		return c.Kill()
 	default:
-	}
-	if c.terminating {
-		c.mutex.Unlock()
-		return "", nil
 	}
 	pid := c.pidLocked()
 	if pid == 0 {
@@ -187,6 +191,12 @@ func (c *Command) awaitTermination(pgid int, grace time.Duration, beforeKill fun
 			return
 		case <-ticker.C:
 		}
+	}
+	select {
+	case <-c.abort:
+		// killed while waiting
+		return
+	default:
 	}
 	log.Printf("Process tree with parent PID %v exited after SIGTERM", pgid)
 	c.abortOnce.Do(func() { close(c.abort) })

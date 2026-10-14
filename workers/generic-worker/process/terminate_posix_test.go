@@ -160,6 +160,14 @@ while true; do sleep 1; done`)
 	tt.waitForOutput("child ready")
 	pid := tt.pid()
 	tt.terminate(30 * time.Second)
+	// Terminating again once the shell has exited, while the child process is
+	// still running, should have no effect.
+	select {
+	case <-tt.cmd.waited:
+	case <-time.After(20 * time.Second):
+		t.Fatalf("shell did not exit on SIGTERM, output:\n%v", tt.output())
+	}
+	tt.terminate(30 * time.Second)
 	r, _ := tt.waitForResult(20 * time.Second)
 	if !r.Aborted {
 		t.Fatalf("expected command to be reported as aborted, got: %v", r)
