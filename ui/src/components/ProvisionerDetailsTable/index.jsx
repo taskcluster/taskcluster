@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { arrayOf } from 'prop-types';
+import { arrayOf, object } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,6 +24,8 @@ import sort from '../../utils/sort';
 import Markdown from '../Markdown';
 import { provisioner } from '../../utils/prop-types';
 
+const COUNT_COLUMNS = ['pendingTasks', 'claimedTasks', 'workerTypeCount'];
+
 @withRouter
 @withStyles(theme => ({
   infoButton: {
@@ -47,6 +49,11 @@ import { provisioner } from '../../utils/prop-types';
 export default class ProvisionerDetailsTable extends Component {
   static propTypes = {
     provisioners: arrayOf(provisioner).isRequired,
+    /**
+     * Totals by provisionerId. undefined means the counts are still loading,
+     * null that they failed.
+     */
+    counts: object,
   };
 
   state = {
@@ -59,9 +66,16 @@ export default class ProvisionerDetailsTable extends Component {
       return provisioners;
     }
 
+    const sortValue = provisioner =>
+      COUNT_COLUMNS.includes(sortBy)
+        ? this.getCount(provisioner, sortBy)
+        : provisioner[sortBy];
+
     return [...provisioners].sort((a, b) => {
-      const firstElement = sortDirection === 'desc' ? b[sortBy] : a[sortBy];
-      const secondElement = sortDirection === 'desc' ? a[sortBy] : b[sortBy];
+      const firstElement =
+        sortDirection === 'desc' ? sortValue(b) : sortValue(a);
+      const secondElement =
+        sortDirection === 'desc' ? sortValue(a) : sortValue(b);
 
       return sort(firstElement, secondElement);
     });
@@ -90,6 +104,25 @@ export default class ProvisionerDetailsTable extends Component {
     this.setState({
       drawerOpen: false,
     });
+  };
+
+  getCount = (provisioner, key) => {
+    const { counts } = this.props;
+
+    if (!counts) {
+      return counts;
+    }
+
+    const totals = counts[provisioner.provisionerId];
+
+    // A provisioner with no unexpired task queues has nothing to count.
+    return totals ? totals[key] : 0;
+  };
+
+  renderCount = (provisioner, key) => {
+    const count = this.getCount(provisioner, key);
+
+    return count === undefined ? '' : (count ?? 'n/a');
   };
 
   renderTableRow = provisioner => {
@@ -123,6 +156,9 @@ export default class ProvisionerDetailsTable extends Component {
         <TableCell>
           <StatusLabel state={provisioner.stability} />
         </TableCell>
+        {COUNT_COLUMNS.map(key => (
+          <TableCell key={key}>{this.renderCount(provisioner, key)}</TableCell>
+        ))}
       </TableRow>
     );
   };
@@ -166,6 +202,9 @@ export default class ProvisionerDetailsTable extends Component {
       { label: 'Last Active', id: 'lastDateActive', type: 'string' },
       { label: 'Expires', id: 'expires', type: 'string' },
       { label: 'Stability', id: 'stability', type: 'string' },
+      { label: 'Pending Tasks', id: 'pendingTasks', type: 'number' },
+      { label: 'Claimed Tasks', id: 'claimedTasks', type: 'number' },
+      { label: 'Worker Types', id: 'workerTypeCount', type: 'number' },
     ];
 
     const sortedProvisioners = this.sortProvisioners(
