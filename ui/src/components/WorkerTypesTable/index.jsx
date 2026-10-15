@@ -80,6 +80,9 @@ export default class WorkerTypesTable extends Component {
     this.setState({ drawerOpen: false, drawerWorkerType: null });
   };
 
+  // undefined means the counts are still loading, null that they failed.
+  renderCount = count => (count === undefined ? '' : (count ?? 'n/a'));
+
   render() {
     const {
       classes,
@@ -108,6 +111,7 @@ export default class WorkerTypesTable extends Component {
       'Stability',
       'Last Date Active',
       'Pending Tasks',
+      'Claimed Tasks',
     ];
 
     return (
@@ -150,11 +154,17 @@ export default class WorkerTypesTable extends Component {
                 textToCopy={workerType.lastDateActive}
                 text={<DateDistance from={workerType.lastDateActive} />}
               />
-              <TableCell>
-                {workerType.pendingTasks === null
-                  ? 'n/a'
-                  : workerType.pendingTasks}
-              </TableCell>
+              {['pending', 'claimed'].map(kind => (
+                <TableCell key={kind}>
+                  <Link
+                    to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}/${kind}-tasks`}>
+                    <TableCellItem button>
+                      {this.renderCount(workerType[`${kind}Tasks`])}
+                      <LinkIcon size={iconSize} />
+                    </TableCellItem>
+                  </Link>
+                </TableCell>
+              ))}
             </TableRow>
           )}
         />
