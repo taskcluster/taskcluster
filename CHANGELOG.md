@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v113.1.2
+
+### USERS
+
+▶ [patch] [bug 2081758](http://bugzil.la/2081758)
+Fixed users being logged out when multiple tabs renewed Taskcluster credentials at the same time. Session IDs are no longer rotated on every credentials refresh.
+
 ## v113.1.1
 
 ### GENERAL
