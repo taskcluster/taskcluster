@@ -66,10 +66,17 @@ export default class ProvisionerDetailsTable extends Component {
       return provisioners;
     }
 
-    const sortValue = provisioner =>
-      COUNT_COLUMNS.includes(sortBy)
-        ? this.getCount(provisioner, sortBy)
-        : provisioner[sortBy];
+    // Loading and failed counts sort below real counts. Not -Infinity,
+    // since -Infinity - -Infinity is NaN.
+    const sortValue = provisioner => {
+      if (!COUNT_COLUMNS.includes(sortBy)) {
+        return provisioner[sortBy];
+      }
+
+      const count = this.getCount(provisioner, sortBy);
+
+      return typeof count === 'number' ? count : -1;
+    };
 
     return [...provisioners].sort((a, b) => {
       const firstElement =

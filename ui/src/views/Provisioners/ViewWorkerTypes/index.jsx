@@ -100,10 +100,6 @@ export default class ViewWorkerTypes extends Component {
 
     this.setState({ counts: {}, countsError: null });
 
-    if (!keys.length) {
-      return;
-    }
-
     try {
       const counts = await fetchTaskQueueCounts(this.queue, keys);
 

@@ -34,7 +34,6 @@ export default class ViewProvisioners extends Component {
       return;
     }
 
-    // The table is already visible; counts fill in afterwards.
     this.loadCounts();
   }
 
