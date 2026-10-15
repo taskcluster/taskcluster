@@ -484,10 +484,10 @@ export default class WMLaunchConfigs extends Component {
       { label: 'Weight / Initial', id: 'dynamicWeight' },
       { label: 'Capacity / Max', id: 'currentCapacity' },
       { label: 'Location', id: 'location' },
-      { label: 'Requested', id: 'workerStats.requested' },
-      { label: 'Running', id: 'workerStats.running' },
-      { label: 'Stopping', id: 'workerStats.stopping' },
-      { label: 'Stopped', id: 'workerStats.stopped' },
+      { label: 'Requested', id: 'workerStats.requestedCount' },
+      { label: 'Running', id: 'workerStats.runningCount' },
+      { label: 'Stopping', id: 'workerStats.stoppingCount' },
+      { label: 'Stopped', id: 'workerStats.stoppedCount' },
       { label: 'Errors', id: 'totalErrors' },
       { label: 'Created', id: 'created' },
       { label: 'Modified', id: 'lastModified' },
@@ -601,14 +601,10 @@ export default class WMLaunchConfigs extends Component {
                 hasPreviousPage={hasPreviousPage}
                 onNextPage={nextPage}
                 onPreviousPage={previousPage}
-                headers={headers.map(header => header.label)}
+                headers={headers}
                 sortByHeader={sortBy}
                 sortDirection={sortDirection}
-                onHeaderClick={header =>
-                  this.handleHeaderClick(
-                    headers[headers.findIndex(h => h.label === header)].id
-                  )
-                }
+                onHeaderClick={this.handleHeaderClick}
                 renderRow={row =>
                   this.renderRow(row, workerPoolId, includeArchived, workerPool)
                 }
