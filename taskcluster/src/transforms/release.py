@@ -49,6 +49,26 @@ def select_release_tasks(config, tasks):
         yield task
 
 
+@transforms.add
+def add_artifact_mounts(config, tasks):
+    """Mount build artifacts for generic-worker to download before the task
+    runs: `mount-artifacts` maps a dependency key to artifact names, and each
+    artifact is mounted at release-artifacts/<basename> in the task directory."""
+    for task in tasks:
+        mounts = [
+            {
+                "file": f"release-artifacts/{name.rsplit('/', 1)[-1]}",
+                "content": {"artifact": name, "task-id": {"task-reference": f"<{dep}>"}},
+            }
+            for dep, names in task.pop("mount-artifacts", {}).items()
+            for name in names
+        ]
+        if mounts:
+            worker = task.setdefault("worker", {})
+            worker["mounts"] = worker.get("mounts", []) + mounts
+        yield task
+
+
 toolchain = TransformSequence()
 
 

@@ -24,26 +24,31 @@ const onRateLimit = (retryAfter, options, _octokit, retryCount) => {
   return again;
 };
 
+// Where generic-worker puts the artifacts a task mounts (`mount-artifacts` in the release
+// kinds): release-artifacts/ in the task directory, which contains the checkout.
+const ARTIFACTS_DIR = path.join(path.dirname(REPO_ROOT), 'release-artifacts');
+
 // step name -> async ({ ctx, creds, octokit, workDir, fetchArtifacts, name }) => outcome string
 const STEPS = {};
 
-STEPS['push-image'] = async ({ ctx, creds, workDir, fetchArtifacts, name }) => {
+STEPS['push-image'] = async ({ ctx, creds, name }) => {
   if (!name) {
     throw new Error('push-image requires --name');
   }
-  await fetchArtifacts('public/build/');
   if (!ctx.staging) {
-    return pushImage({ ctx, creds, dir: workDir, name });
+    return pushImage({ ctx, creds, dir: ARTIFACTS_DIR, name });
   }
   // staging: exercise the real push path against a throwaway local registry
   const stop = await startScratchRegistry();
   try {
-    return await pushImage({ ctx, creds, dir: workDir, name, registry: 'localhost:5000', tlsVerify: false });
+    return await pushImage({ ctx, creds, dir: ARTIFACTS_DIR, name, registry: 'localhost:5000', tlsVerify: false });
   } finally {
     await stop();
   }
 };
 
+// The draft uploads every asset the builds produced, whose names are not known when the
+// graph is generated, so it lists and downloads its dependencies' artifacts itself.
 STEPS['github-release-draft'] = async ({ ctx, octokit, workDir, fetchArtifacts }) => {
   const files = await fetchArtifacts('public/build/');
   const changelog = ctx.staging
@@ -65,15 +70,13 @@ STEPS['github-release-draft'] = async ({ ctx, octokit, workDir, fetchArtifacts }
   return outcome;
 };
 
-STEPS['github-release-publish'] = async ({ ctx, octokit, workDir, fetchArtifacts }) => {
-  await fetchArtifacts('public/build/');
-  const expected = JSON.parse(fs.readFileSync(path.join(workDir, 'expected-assets.json'), 'utf8'));
+STEPS['github-release-publish'] = async ({ ctx, octokit }) => {
+  const expected = JSON.parse(fs.readFileSync(path.join(ARTIFACTS_DIR, 'expected-assets.json'), 'utf8'));
   return publishRelease({ ctx, octokit, expected });
 };
 
-STEPS['publish-homebrew'] = async ({ ctx, octokit, workDir, fetchArtifacts }) => {
-  await fetchArtifacts('public/homebrew/');
-  const cask = fs.readFileSync(path.join(workDir, 'taskcluster.rb'), 'utf8');
+STEPS['publish-homebrew'] = async ({ ctx, octokit }) => {
+  const cask = fs.readFileSync(path.join(ARTIFACTS_DIR, 'taskcluster.rb'), 'utf8');
   return publishHomebrew({ ctx, octokit, cask });
 };
 

@@ -13,7 +13,8 @@ const defaultDownload = async ({ queue, taskId, name, file }) => {
 
 /**
  * Download every artifact under `prefix` from each of this task's dependencies into destDir.
- * Release tasks use this instead of fetches, because `bare` tasks (src/job.py) don't use run-task.
+ * Only github-release-draft uses this: its asset names are not known when the graph is generated.
+ * Other release steps mount their inputs (`mount-artifacts` in the release kinds).
  */
 export const fetchDependencyArtifacts = async ({ queue, taskId, prefix, destDir, download = defaultDownload }) => {
   const { dependencies } = await queue.task(taskId);

@@ -410,6 +410,44 @@ def check_release_mount_hashes(tasks, graph_name):
         raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
 
 
+def mounted_artifacts(task):
+    """(producing task label, artifact name) for each artifact mounted into a task."""
+    deps = task.get("dependencies", {})
+    result = set()
+    for mount in task["task"].get("payload", {}).get("mounts", []):
+        content = mount.get("content", {})
+        ref = content.get("taskId", {})
+        if "artifact" in content and isinstance(ref, dict) and "task-reference" in ref:
+            result.add((deps.get(ref["task-reference"].strip("<>")), content["artifact"]))
+    return result
+
+
+def check_release_artifact_mounts(tasks, graph_name, staging):
+    """Publish steps mount exactly what their builds produced."""
+    errors = []
+    expected = {
+        f"release-publish-push-image-{image}": {
+            (f"release-build-image-{image}", f"public/build/{image}.{suffix}")
+            for suffix in ("tar.gz", "digest", "tag")
+        }
+        for image in IMAGES
+    }
+    expected["release-finalize-github-release-publish"] = {
+        ("release-publish-github-release-draft", "public/build/expected-assets.json")
+    }
+    if not staging:
+        expected["release-finalize-publish-homebrew"] = {
+            ("release-build-binaries-client-shell", "public/homebrew/taskcluster.rb")
+        }
+    for label, want in sorted(expected.items()):
+        if label not in tasks:
+            errors.append(f"missing {label}")
+        elif (got := mounted_artifacts(tasks[label])) != want:
+            errors.append(f"{label} mounts {sorted(got)}, expected {sorted(want)}")
+    if errors:
+        raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
+
+
 def check_no_release_tasks(tasks, graph_name):
     if release := sorted(label for label, t in tasks.items() if t.get("kind", "").startswith("release")):
         raise RuntimeError(f"{graph_name} graph contains release tasks: " + ", ".join(release))
@@ -466,6 +504,7 @@ def main():
         check_release_pipeline(tasks, graph_name, staging)
         print(f"{graph_name} graph has the expected gated release pipeline")
         check_release_mount_hashes(tasks, graph_name)
+        check_release_artifact_mounts(tasks, graph_name, staging)
         print(f"{graph_name} graph pins every toolchain download by sha256")
 
     tasks = generate_target_graph(PARAMETERS_DIR / MAIN_PUSH_PARAMETERS, version)

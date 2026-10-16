@@ -41,6 +41,8 @@ tasks:
       push-image-websocktunnel: release-publish-push-image-websocktunnel
       pypi: release-publish-pypi
       crates: release-publish-crates
+    mount-artifacts:
+      draft: [public/build/expected-assets.json]
     run:
       command: yarn release:step --step github-release-publish
   publish-homebrew:
@@ -49,5 +51,7 @@ tasks:
     dependencies:
       release: release-finalize-github-release-publish
       client-shell: release-build-binaries-client-shell
+    mount-artifacts:
+      client-shell: [public/homebrew/taskcluster.rb]
     run:
       command: yarn release:step --step publish-homebrew

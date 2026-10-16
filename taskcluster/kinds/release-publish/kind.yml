@@ -34,6 +34,11 @@ tasks:
     dependencies:
       gate: release-gate-builds
       build: release-build-image-monoimage
+    mount-artifacts:
+      build:
+        - public/build/monoimage.tar.gz
+        - public/build/monoimage.digest
+        - public/build/monoimage.tag
     run:
       command: yarn release:step --step push-image --name monoimage
   push-image-monoimage-devel:
@@ -45,6 +50,11 @@ tasks:
     dependencies:
       gate: release-gate-builds
       build: release-build-image-monoimage-devel
+    mount-artifacts:
+      build:
+        - public/build/monoimage-devel.tar.gz
+        - public/build/monoimage-devel.digest
+        - public/build/monoimage-devel.tag
     run:
       command: yarn release:step --step push-image --name monoimage-devel
   push-image-generic-worker:
@@ -54,6 +64,11 @@ tasks:
     dependencies:
       gate: release-gate-builds
       build: release-build-image-generic-worker
+    mount-artifacts:
+      build:
+        - public/build/generic-worker.tar.gz
+        - public/build/generic-worker.digest
+        - public/build/generic-worker.tag
     run:
       command: yarn release:step --step push-image --name generic-worker
   push-image-livelog:
@@ -63,6 +78,11 @@ tasks:
     dependencies:
       gate: release-gate-builds
       build: release-build-image-livelog
+    mount-artifacts:
+      build:
+        - public/build/livelog.tar.gz
+        - public/build/livelog.digest
+        - public/build/livelog.tag
     run:
       command: yarn release:step --step push-image --name livelog
   push-image-taskcluster-proxy:
@@ -72,6 +92,11 @@ tasks:
     dependencies:
       gate: release-gate-builds
       build: release-build-image-taskcluster-proxy
+    mount-artifacts:
+      build:
+        - public/build/taskcluster-proxy.tar.gz
+        - public/build/taskcluster-proxy.digest
+        - public/build/taskcluster-proxy.tag
     run:
       command: yarn release:step --step push-image --name taskcluster-proxy
   push-image-websocktunnel:
@@ -81,6 +106,11 @@ tasks:
     dependencies:
       gate: release-gate-builds
       build: release-build-image-websocktunnel
+    mount-artifacts:
+      build:
+        - public/build/websocktunnel.tar.gz
+        - public/build/websocktunnel.digest
+        - public/build/websocktunnel.tag
     run:
       command: yarn release:step --step push-image --name websocktunnel
   github-release-draft:
