@@ -260,6 +260,7 @@ RELEASE_BUILD_NAMES = {
     "npm-client",
     "npm-client-web",
     "python-client",
+    "rust-client",
 }
 
 

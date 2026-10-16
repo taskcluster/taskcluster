@@ -116,3 +116,8 @@ tasks:
     description: Build the Python client sdist and wheel for PyPI
     run:
       command: taskcluster/scripts/release/build-binaries.sh python-client
+  rust-client:
+    release-toolchains: [rust]
+    description: Package and build the Rust client crates for crates.io
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh rust-client

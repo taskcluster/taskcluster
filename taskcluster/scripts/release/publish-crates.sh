@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Publish the Rust client crates to crates.io (a dry run when STAGING=1).
 # Reruns are safe: crates whose version crates.io already has are skipped.
+# --no-verify is safe: release-build-rust-client already built the packaged crates.
 # Run from the repository root.
 set -euo pipefail
 

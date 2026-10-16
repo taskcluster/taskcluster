@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build one set of release binaries, npm tarballs or Python packages into release-out/.
+# Build one set of release binaries, npm tarballs, Python packages or Rust crates into release-out/.
 # Run from the repository root.
 set -euo pipefail
 
@@ -52,6 +52,14 @@ case "$target" in
       exit 1
     fi
     tar -czf "$out/python-client-dist.tar.gz" -C "$dist" "$sdist" "${wheels[0]##*/}"
+    ;;
+  rust-client)
+    # Package the crates and build each one from its packaged files, before the
+    # release gate; publish-crates.sh then publishes with --no-verify. One
+    # multi-package run, so the dependent crates resolve taskcluster@RELEASE_VERSION
+    # from the local package rather than crates.io.
+    (cd clients/client-rust && cargo package --locked -p taskcluster -p taskcluster-download -p taskcluster-upload)
+    mv clients/client-rust/target/package/*.crate "$out/"
     ;;
   *)
     echo "unknown target $target" >&2

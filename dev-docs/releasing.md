@@ -17,7 +17,7 @@ task graph that CI generates when the `vX.Y.Z` tag is pushed.
 
 The graph has five stages, defined in `taskcluster/kinds/release-*`:
 
-1. **release-build**: builds every Docker image, binary, npm tarball and Python package as task artifacts.
+1. **release-build**: builds every Docker image, binary, npm tarball, Python package and Rust crate as task artifacts.
    These tasks have no access to publishing credentials.
 2. **release-gate**: waits for every build.
 3. **release-publish**: pushes images to Docker Hub, uploads assets to a *draft* GitHub
