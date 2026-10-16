@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v113.1.3
+
+### USERS
+
+▶ [patch]
+The provisioners and worker types pages now show pending and claimed task counts.
+
+▶ [patch] [#9271](https://github.com/taskcluster/taskcluster/issues/9271)
+UI: the worker pool Launch Configs page now shows worker counts and capacity as soon as the stats load, instead of only after the table is re-sorted. The Requested, Running, Stopping and Stopped columns can be sorted too, and the column the table is sorted by is marked.
+
+### OTHER
+
+▶ Additional change not described here: [#7022](https://github.com/taskcluster/taskcluster/issues/7022).
+
 ## v113.1.2
 
 ### USERS
