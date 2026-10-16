@@ -2567,7 +2567,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         'a fast teardown log should be emitted'
       );
       assert.deepEqual(provider.errors[workerPoolId], []);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === reloaded.workerId && m.payload.reason === 'azure teardown: fast'
+      );
     });
 
     test('cascade absent - slow walk (regression guard)', async () => {

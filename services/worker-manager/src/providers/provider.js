@@ -192,17 +192,19 @@ export class Provider {
   /**
    * @param {Object} options
    * @param {import('../data.js').Worker} options.worker
+   * @param {String} [options.reason]
    */
-  async onWorkerStopped({ worker }) {
+  async onWorkerStopped({ worker, reason }) {
     const now = Date.now();
     const created = worker.created?.getTime?.();
     const lifecycle = Provider.getWorkerManagerData(worker);
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
     const extraLog = {
+      reason,
       workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
       runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
     };
-    return this._onWorkerEvent({ worker, event: 'workerStopped', extraLog });
+    return this._onWorkerEvent({ worker, event: 'workerStopped', extraLog, extraPublish: { reason } });
   }
 
   /**
@@ -482,6 +484,7 @@ export class Provider {
         timestamp: new Date().toJSON(),
         workerId: extra?.workerId,
         workerGroup: extra?.workerGroup,
+        errorCode: (extra?.errorCode ?? extra?.code)?.toString(),
         launchConfigId,
       });
 

@@ -377,7 +377,7 @@ export class AwsProvider extends Provider {
                 })
               )
             );
-            await this.onWorkerStopped({ worker });
+            await this.onWorkerStopped({ worker, reason: `instance ${is.InstanceState.Name}` });
             state = Worker.states.STOPPED;
             break;
 
@@ -402,7 +402,7 @@ export class AwsProvider extends Provider {
         throw e;
       }
       monitor.debug('instance status not found');
-      await this.onWorkerStopped({ worker });
+      await this.onWorkerStopped({ worker, reason: 'instance not found' });
       state = Worker.states.STOPPED;
     }
 

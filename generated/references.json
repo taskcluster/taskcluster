@@ -1584,6 +1584,56 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/pulse-worker-stopped-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "The message that is emitted when workers have stopped.",
+      "properties": {
+        "capacity": {
+          "$ref": "worker-full.json#/properties/capacity"
+        },
+        "launchConfigId": {
+          "$ref": "worker-full.json#/properties/launchConfigId"
+        },
+        "providerId": {
+          "$ref": "worker-pool-full.json#/properties/providerId"
+        },
+        "reason": {
+          "description": "The reason the worker was seen as stopped, when the provider can tell.\nFor example, the state the instance was found in, or that the instance\nno longer exists.\n",
+          "title": "Reason",
+          "type": "string"
+        },
+        "timestamp": {
+          "description": "Date and time when this event occurred",
+          "format": "date-time",
+          "title": "Event timestamp",
+          "type": "string"
+        },
+        "workerGroup": {
+          "$ref": "worker-full.json#/properties/workerGroup"
+        },
+        "workerId": {
+          "$ref": "worker-full.json#/properties/workerId"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "providerId",
+        "workerId",
+        "workerGroup",
+        "capacity",
+        "timestamp"
+      ],
+      "title": "Worker Stopped Pulse Message",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/pulse-worker-stopped-message.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/pulse-worker-removed-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -1671,6 +1721,11 @@
       "additionalProperties": false,
       "description": "The message that is emitted when worker pools are created/changed/deleted.",
       "properties": {
+        "errorCode": {
+          "description": "Provider-specific error code, when the provider reports one",
+          "title": "Error code",
+          "type": "string"
+        },
         "errorId": {
           "$ref": "worker-pool-error.json#/properties/errorId"
         },
@@ -19278,6 +19333,7 @@
           "description": "A worker has been marked as stopped",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
+            "reason": "The reason this worker is considered stopped, when the provider can tell",
             "runningDuration": "Time in seconds since worker registered (null if never registered)",
             "workerAge": "Total time in seconds since worker was created",
             "workerId": "The worker that was stopped",
@@ -19287,7 +19343,7 @@
           "name": "workerStopped",
           "title": "Worker Stopped",
           "type": "worker-stopped",
-          "version": 2
+          "version": 3
         }
       ]
     },
@@ -19649,7 +19705,7 @@
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/pulse-worker-message.json#",
+          "schema": "v1/pulse-worker-stopped-message.json#",
           "title": "Worker Stopped Messages",
           "type": "topic-exchange"
         },

@@ -497,6 +497,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
+      helper.assertPulseMessage('worker-pool-error', m => m.payload.errorCode === '400');
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 0); // nothing created
     });
@@ -633,6 +634,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(worker.state, Worker.states.STOPPED);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
       helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.reason === 'instance TERMINATED');
     });
 
     test('for a stopped instance', async () => {
@@ -641,7 +643,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'STOPPED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === workerId && m.payload.reason === 'instance STOPPED'
+      );
     });
 
     test('for a nonexistent instance', async () => {
@@ -649,7 +654,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       let worker = await suiteMakeWorker({ state: 'requested' });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === workerId && m.payload.reason === 'instance not found'
+      );
     });
 
     test('for a nonexistent instance with a running operation', async () => {
@@ -667,7 +675,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         zone: 'us-east1-a',
         status: 'DONE',
         error: {
-          errors: [{ message: 'uhoh' }],
+          errors: [{ message: 'uhoh', code: 'ZONE_RESOURCE_POOL_EXHAUSTED' }],
         },
       });
       let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation }, launchConfigId: 'lc1' });
@@ -678,6 +686,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(errors[0].description, 'uhoh');
       assert.equal(errors[0].title, 'Operation Error');
       assert.equal(errors[0].launch_config_id, 'lc1');
+      assert.equal(errors[0].extra.errorCode, 'ZONE_RESOURCE_POOL_EXHAUSTED');
+      helper.assertPulseMessage(
+        'worker-pool-error',
+        m =>
+          m.payload.workerId === workerId &&
+          m.payload.workerGroup === worker.workerGroup &&
+          m.payload.errorCode === 'ZONE_RESOURCE_POOL_EXHAUSTED'
+      );
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
       helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === 'lc1');
     });

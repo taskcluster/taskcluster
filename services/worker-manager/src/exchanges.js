@@ -182,7 +182,7 @@ exchanges.declare({
     'to this exchange. This means that instance was',
     'either terminated or stopped gracefully.',
   ].join('\n'),
-  schema: 'pulse-worker-message.yml',
+  schema: 'pulse-worker-stopped-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey({ hasWorker: true }),
   routingKeyBuilder: commonRoutingKeyBuilder,
