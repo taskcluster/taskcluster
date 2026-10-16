@@ -110,3 +110,9 @@ tasks:
     description: Pack @taskcluster/client-web for npm
     run:
       command: taskcluster/scripts/release/build-binaries.sh npm-client-web
+  python-client:
+    # The uv toolchain mounts the version in .uv-version.
+    release-toolchains: [uv]
+    description: Build the Python client sdist and wheel for PyPI
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh python-client

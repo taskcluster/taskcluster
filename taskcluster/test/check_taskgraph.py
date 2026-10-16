@@ -259,6 +259,7 @@ RELEASE_BUILD_NAMES = {
     "binaries-client-shell",
     "npm-client",
     "npm-client-web",
+    "python-client",
 }
 
 
@@ -287,6 +288,9 @@ def check_release_build(tasks, graph_name, staging):
     devel = builds.get("release-build-image-monoimage-devel", {})
     if "release-build-image-monoimage" not in devel.get("dependencies", {}).values():
         errors.append("image-monoimage-devel must depend on image-monoimage")
+    pypi = tasks.get("release-publish-pypi", {})
+    if "release-build-python-client" not in pypi.get("dependencies", {}).values():
+        errors.append("release-publish-pypi must publish what release-build-python-client built")
     if errors:
         raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
 

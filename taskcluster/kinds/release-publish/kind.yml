@@ -104,12 +104,20 @@ tasks:
     run:
       command: yarn release:step --step github-release-draft
   pypi:
-    # publish-pypi.sh runs `uv build` and `uv publish`; the uv toolchain mounts
-    # the version in .uv-version.
+    # publish-pypi.sh runs `uv publish` on the packages built by
+    # release-build-python-client.
     release-toolchains: [uv]
     description: Publish the Python client to PyPI
     dependencies:
       gate: release-gate-builds
+      build: release-build-python-client
+    worker:
+      mounts:
+        - directory: python-client-dist
+          format: tar.gz
+          content:
+            artifact: public/build/python-client-dist.tar.gz
+            task-id: {task-reference: "<build>"}
     run:
       command: taskcluster/scripts/release/publish-pypi.sh
   crates:

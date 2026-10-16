@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build one set of release binaries or npm tarballs into release-out/.
+# Build one set of release binaries, npm tarballs or Python packages into release-out/.
 # Run from the repository root.
 set -euo pipefail
 
@@ -34,6 +34,24 @@ case "$target" in
     ;;
   npm-client-web)
     (cd clients/client-web && yarn install && mv "$(npm pack | tail -1)" "$out/")
+    ;;
+  python-client)
+    # Built here, before the release gate, so a broken build cannot leave the
+    # release half published; publish-pypi.sh uploads exactly these files.
+    : "${RELEASE_VERSION:?}"
+    dist="$(mktemp -d)"
+    trap 'rm -rf "$dist"' EXIT
+    (cd clients/client-py && uv build --out-dir "$dist")
+    # Exactly the sdist and one wheel for RELEASE_VERSION; anything else usually
+    # means pyproject.toml's version doesn't match the release version.
+    sdist="taskcluster-${RELEASE_VERSION}.tar.gz"
+    wheels=("$dist"/taskcluster-"${RELEASE_VERSION}"-*.whl)
+    built=("$dist"/*)
+    if [ ! -f "$dist/$sdist" ] || [ "${#wheels[@]}" -ne 1 ] || [ ! -f "${wheels[0]}" ] || [ "${#built[@]}" -ne 2 ]; then
+      echo "built files [${built[*]}] do not match expected [$sdist, taskcluster-${RELEASE_VERSION}-*.whl]" >&2
+      exit 1
+    fi
+    tar -czf "$out/python-client-dist.tar.gz" -C "$dist" "$sdist" "${wheels[0]##*/}"
     ;;
   *)
     echo "unknown target $target" >&2

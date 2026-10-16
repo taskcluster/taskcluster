@@ -1,29 +1,24 @@
 #!/usr/bin/env bash
-# Build the Python client and upload it to PyPI (a dry run when STAGING=1).
-# Reruns are safe: files PyPI already has are not uploaded again. (--check-url
-# alone only skips byte-identical files, and a rebuild is not byte-identical.)
+# Upload the Python client built by release-build-python-client to PyPI (a dry
+# run when STAGING=1). The task mounts those packages in ../python-client-dist.
+# Reruns are safe: files PyPI already has are not uploaded again.
 # Run from the repository root.
 set -euo pipefail
 
 : "${RELEASE_VERSION:?}"
 secret="$(pwd)/taskcluster/scripts/release/release-secret.sh"
+dist="$(cd .. && pwd)/python-client-dist"
 
-cd clients/client-py
-rm -rf release-dist
-uv build --out-dir release-dist
-
-# Exactly the sdist and one wheel for RELEASE_VERSION; anything else usually
-# means pyproject.toml's version doesn't match the release version.
-sdist="release-dist/taskcluster-${RELEASE_VERSION}.tar.gz"
-wheels=(release-dist/taskcluster-"${RELEASE_VERSION}"-*.whl)
-built=(release-dist/*)
-if [ ! -f "$sdist" ] || [ "${#wheels[@]}" -ne 1 ] || [ ! -f "${wheels[0]}" ] || [ "${#built[@]}" -ne 2 ]; then
-  echo "built files [${built[*]}] do not match expected [$sdist, release-dist/taskcluster-${RELEASE_VERSION}-*.whl]" >&2
+# build-binaries.sh python-client checked these are the only two files.
+sdist="$dist/taskcluster-${RELEASE_VERSION}.tar.gz"
+wheels=("$dist"/taskcluster-"${RELEASE_VERSION}"-*.whl)
+if [ ! -f "$sdist" ] || [ "${#wheels[@]}" -ne 1 ] || [ ! -f "${wheels[0]}" ]; then
+  echo "$dist does not contain the sdist and wheel for $RELEASE_VERSION" >&2
   exit 1
 fi
 
 if [ "${STAGING:-}" = 1 ]; then
-  echo "built $sdist ${wheels[0]}"
+  echo "would upload $sdist ${wheels[0]}"
   echo "publish-pypi: dry-run"
   exit 0
 fi
