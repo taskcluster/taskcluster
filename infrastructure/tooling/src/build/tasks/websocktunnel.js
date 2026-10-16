@@ -39,16 +39,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       fs.writeFileSync(path.join(contextDir, 'version.json'), requirements['docker-flow-version']);
 
-      // this simple Dockerfile just packages the binary into a Docker image
-      const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(
-        dockerfile,
-        [
-          'FROM scratch',
-          'COPY websocktunnel /websocktunnel',
-          'COPY version.json /app/version.json',
-          'ENTRYPOINT ["/websocktunnel"]',
-        ].join('\n')
+      // the checked-in Dockerfile (also used by the release graph) packages the binary into an image
+      fs.copyFileSync(
+        path.join(REPO_ROOT, 'infrastructure', 'docker', 'websocktunnel', 'Dockerfile'),
+        path.join(contextDir, 'Dockerfile')
       );
       const command = ['docker', 'build', '--no-cache', '--progress', 'plain', '--tag', tag, contextDir];
       await execCommand({
@@ -59,7 +53,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
 
-      if (cmdOptions.staging || !cmdOptions.push) {
+      if (!cmdOptions.push) {
         return provides;
       }
 

@@ -1,0 +1,27 @@
+---
+loader: taskgraph.loader.transform:loader
+
+kind-dependencies:
+  - release-publish
+  - release-finalize
+
+transforms:
+  - src.transforms.release:transforms
+  - src.transforms.release:depend_on_all
+  - taskgraph.transforms.task
+
+tasks:
+  email:
+    description: Report the release outcome by email
+    worker-type: succeed
+    routes:
+      - notify.email.taskcluster-notifications@mozilla.com.on-resolved
+    extra:
+      notify:
+        email:
+          subject: Taskcluster Release Status
+          content: >-
+            Sent when every release task has completed. Failures are emailed by
+            the failing task as they happen; if this email reports an exception,
+            the release hit its 4-day deadline and must be redone as described in
+            dev-docs/releasing.md.

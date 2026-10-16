@@ -88,5 +88,7 @@ __pycache__
 docker-compose.override.yml
 
 dist/
+# release task artifact directory (taskcluster/scripts/release, yarn release:step)
+/release-out/
 .DS_Store
 .worktrees/

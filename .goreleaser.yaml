@@ -60,10 +60,6 @@ homebrew_casks:
       owner: taskcluster
       name: homebrew-tap
 
-      # Optionally a token can be provided, if it differs from the token
-      # provided to GoReleaser
-      token: "{{ .Env.GH_TOKEN }}"
-
     # The project name and current git tag are used in the format string.
     commit_msg_template: "Brew cask update for taskcluster version {{ .Tag }}"
 

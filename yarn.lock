@@ -11100,7 +11100,6 @@ __metadata:
     uuid: "npm:^14.0.2"
     walk: "npm:^2.3.9"
     ws: "npm:^7.5.11"
-    zen-observable: "npm:^0.10.0"
     zurvan: "npm:^0.8.0"
   languageName: unknown
   linkType: soft
@@ -11811,13 +11810,6 @@ __metadata:
   version: 2.1.1
   resolution: "yoctocolors@npm:2.1.1"
   checksum: 10c0/85903f7fa96f1c70badee94789fade709f9d83dab2ec92753d612d84fcea6d34c772337a9f8914c6bed2f5fc03a428ac5d893e76fab636da5f1236ab725486d0
-  languageName: node
-  linkType: hard
-
-"zen-observable@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "zen-observable@npm:0.10.0"
-  checksum: 10c0/f97e97bfaa1dbe0033761d4860368120c1b69ee12dd1fa649c902f3f740c6cac3470a07e3dd00e2d41598dd9f17a97c80f69652b851ba1a73802f30748eb4260
   languageName: node
   linkType: hard
 

@@ -1,9 +1,8 @@
-meta:
-  - &uv_version 0.12.8
-
 loader: taskgraph.loader.transform:loader
 
 transforms:
+  # Fills {uv_version} in args from .uv-version; must precede docker_image.
+  - src.transforms:docker_image_uv_version
   - taskgraph.transforms.docker_image:transforms
   - taskgraph.transforms.cached_tasks:transforms
   - taskgraph.transforms.task:transforms
@@ -12,9 +11,9 @@ tasks:
   browser-test: {}
   ci:
     args:
-      UV_VERSION: *uv_version
+      UV_VERSION: "{uv_version}"
   rabbit-test: {}
   python:
     args:
       PYTHON_VERSIONS: "3.14 3.13 3.12 3.11 3.10 3.9"
-      UV_VERSION: *uv_version
+      UV_VERSION: "{uv_version}"

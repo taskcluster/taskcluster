@@ -2,27 +2,17 @@ import path from 'node:path';
 import os from 'node:os';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
-import taskcluster from '@taskcluster/client';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 import { generateTasks } from './tasks/index.js';
 import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils/index.js';
 
-class Base {
+class Build {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
     this.baseDir = cmdOptions.baseDir || '/tmp/taskcluster-builder-build';
     this.logsDir = cmdOptions.logsDir || path.join(this.baseDir, 'logs');
   }
-
-  // credentials for the tasks
-  async credentials() {} // implemented in subclasses
-
-  // taskgraph targets
-  async target() {} // implemented in subclasses
-
-  // Return {'release-version', 'release-revision'}
-  async versionInfo() {} // implemented in subclasses
 
   async run() {
     if (!this.cmdOptions.cache) {
@@ -33,7 +23,6 @@ class Base {
     await rimraf(this.logsDir);
     await mkdirp(this.logsDir);
 
-    // get the subclass-specific data
     const credentials = await this.credentials();
     const target = this.target();
     const versionInfo = await this.versionInfo();
@@ -74,9 +63,7 @@ class Base {
       }
     }
   }
-}
 
-class Build extends Base {
   async credentials() {
     return {
       // it's OK for these to be undefined when running locally; docker will
@@ -140,105 +127,7 @@ class Build extends Base {
   }
 }
 
-class Publish extends Base {
-  constructor(cmdOptions) {
-    super({
-      ...cmdOptions,
-      // always build from scratch
-      cache: false,
-      // to be safe, set push=false for staging runs
-      push: !cmdOptions.staging,
-      // always push to the "official" Taskcluster repo on publish
-      dockerRepo: 'taskcluster/taskcluster',
-      dockerRepoGenericWorker: 'taskcluster/generic-worker',
-    });
-  }
-
-  async credentials() {
-    // try loading the secret into process.env
-    if (process.env.TASKCLUSTER_PROXY_URL) {
-      const secretName = `project/taskcluster/${this.cmdOptions.staging ? 'staging-' : ''}release`;
-      console.log(`loading secrets from taskcluster secret ${secretName} via taskcluster-proxy`);
-      const secrets = new taskcluster.Secrets({ rootUrl: process.env.TASKCLUSTER_PROXY_URL });
-      const { secret } = await secrets.get(secretName);
-
-      for (const [name, value] of Object.entries(secret)) {
-        console.log(`..found value for ${name}`);
-        process.env[name] = value;
-      }
-    }
-
-    const expectedVars = [];
-    expectedVars.push('GH_TOKEN');
-    if (!this.cmdOptions.staging) {
-      expectedVars.push('CRATESIO_TOKEN');
-      expectedVars.push('PYPI_USERNAME');
-      expectedVars.push('PYPI_PASSWORD');
-      expectedVars.push('DOCKER_USERNAME');
-      expectedVars.push('DOCKER_PASSWORD');
-    }
-
-    expectedVars.forEach(e => {
-      if (!process.env[e]) {
-        //throw new Error(`$${e} is required`);
-      }
-    });
-
-    return {
-      ghToken: process.env.GH_TOKEN,
-      cratesioToken: process.env.CRATESIO_TOKEN,
-      pypiUsername: process.env.PYPI_USERNAME,
-      pypiPassword: process.env.PYPI_PASSWORD,
-      dockerUsername: process.env.DOCKER_USERNAME,
-      dockerPassword: process.env.DOCKER_PASSWORD,
-    };
-  }
-
-  async versionInfo() {
-    if (this.cmdOptions.staging) {
-      // for staging releases, we get the version from the staging-release/*
-      // branch name, and use a fake revision
-      const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(this.cmdOptions.staging);
-      if (!match) {
-        throw new Error(
-          `Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${this.cmdOptions.staging}`
-        );
-      }
-      const version = match[1];
-
-      return {
-        'release-version': version,
-        'release-revision': '9999999999999999999999999999999999999999',
-      };
-    } else {
-      const { gitDescription, revision } = await gitDescribe({
-        dir: REPO_ROOT,
-      });
-
-      if (!gitDescription.match(/^v\d+\.\d+\.\d+$/)) {
-        throw new Error(
-          `Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`
-        );
-      }
-
-      return {
-        'release-version': gitDescription.slice(1),
-        'release-revision': revision,
-      };
-    }
-  }
-
-  target() {
-    return ['target-publish'];
-  }
-}
-
 export const build = async options => {
   const build = new Build(options);
   await build.run();
-};
-
-export const publish = async options => {
-  const publish = new Publish(options);
-  await publish.run();
 };

@@ -5,49 +5,6 @@ import assert from 'node:assert';
 const exec = util.promisify(execFile);
 
 /**
- * Perform a git clone
- *
- * - dir -- directory to clone to
- * - url -- repo#ref URL to clone
- * - utils -- taskgraph utils (waitFor, etc.)
- *
- * Returns:
- * {
- *   exactRev: ..,     // the exact revision checked out
- *   changed: ..,      // true if the repo was cloned or the revision changed
- * }
- */
-export const gitClone = async ({ dir, url }) => {
-  const [repo, ref = 'main'] = url.split('#');
-  const opts = { cwd: dir };
-
-  if (fs.existsSync(dir)) {
-    const existingRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout.split(/\s+/)[0];
-    const remoteRev = (await exec('git', ['ls-remote', repo, ref])).stdout.split(/\s+/)[0];
-
-    if (!remoteRev) {
-      throw new Error(`${url} does not exist!`);
-    }
-
-    if (existingRev === remoteRev) {
-      return { exactRev: existingRev, changed: false };
-    }
-  }
-
-  // We _could_ try to manipulate the repo that already exists by
-  // fetching and checking out, but it can get into weird states easily.
-  // This is doubly true when we do things like set depth=1 etc.
-  //
-  // Instead, we just blow it away and clone. This is lightweight since we
-  // do use that depth=1 anyway.
-  await exec('rm', ['-rf', dir]);
-  const cloneArgs = ['clone', repo, dir, '--depth=1'].concat(ref === 'HEAD' ? [] : ['-b', ref]);
-  await exec('git', cloneArgs);
-  const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout;
-  return { exactRev: exactRev.split(/\s+/)[0], changed: true };
-};
-
-/**
  * Fetch a ref from a remote repository
  *
  * - dir: repository directory
@@ -132,6 +89,29 @@ export const gitCurrentBranch = async ({ dir }) => {
   return {
     ref: revParse.stdout.trim(),
   };
+};
+
+/**
+ * Check out a ref, or detach HEAD at the current commit
+ *
+ * - dir -- repository directory
+ * - ref -- branch name or sha to check out (ignored if detach is true)
+ * - detach -- if true, run `git checkout --detach` (stay on the same commit)
+ */
+export const gitCheckout = async ({ dir, ref, detach }) => {
+  const opts = { cwd: dir };
+  await exec('git', ['checkout', ...(detach ? ['--detach'] : [ref])], opts);
+};
+
+/**
+ * Discard all changes to tracked files (`git reset --hard`).  Only call this
+ * when the caller has proven the tree held nothing worth keeping.
+ *
+ * - dir -- repository directory
+ */
+export const gitResetHard = async ({ dir }) => {
+  const opts = { cwd: dir };
+  await exec('git', ['reset', '--hard'], opts);
 };
 
 /**

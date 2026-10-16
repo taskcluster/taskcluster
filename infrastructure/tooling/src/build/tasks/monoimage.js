@@ -1,5 +1,6 @@
 import appRootDir from 'app-root-dir';
 
+import fs from 'node:fs';
 import {
   dockerPull,
   dockerImageExists,
@@ -7,7 +8,6 @@ import {
   ensureTask,
   dockerPush,
   execCommand,
-  writeRepoFile,
   REPO_ROOT,
 } from '../../utils/index.js';
 
@@ -152,20 +152,25 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       await rimraf(dockerDir);
       await mkdirp(dockerDir);
 
-      await writeRepoFile(
-        'temp/devel-image/Dockerfile',
-        [
-          `FROM ${requirements['monoimage-docker-image']}`,
-          'USER root',
-          'RUN npm install --global nodemon',
-          'USER 1000',
-          'RUN yarn install && yarn cache clean --all',
-        ].join('\n')
+      // the checked-in Dockerfile (also used by the release graph) builds on top of the monoimage
+      fs.copyFileSync(
+        path.join(REPO_ROOT, 'infrastructure', 'docker', 'monoimage-devel', 'Dockerfile'),
+        path.join(dockerDir, 'Dockerfile')
       );
 
       try {
         await execCommand({
-          command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
+          command: [
+            'docker',
+            'build',
+            '--progress',
+            'plain',
+            '--build-arg',
+            `BASE=${requirements['monoimage-docker-image']}`,
+            '--tag',
+            tag,
+            '.',
+          ],
           dir: dockerDir,
           logfile: path.join(logsDir, 'monoimage-devel-docker-build.log'),
           utils,

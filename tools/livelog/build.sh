@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 outdir="./"
 
 if ! test -z "$1"; then

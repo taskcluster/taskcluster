@@ -51,22 +51,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       fs.writeFileSync(path.join(contextDir, 'version.json'), requirements['docker-flow-version']);
 
-      // this simple Dockerfile just packages the binary into a Docker image
-      const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(
-        dockerfile,
-        [
-          // get the latest ca-certificates from Alpine
-          'FROM alpine:3 AS certs',
-          'RUN apk add --no-cache ca-certificates',
-          // start over in an empty image and just copy the certs in
-          'FROM scratch',
-          'EXPOSE 80',
-          'COPY version.json /app/version.json',
-          'COPY taskcluster-proxy /taskcluster-proxy',
-          'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
-          'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
-        ].join('\n')
+      // the checked-in Dockerfile (also used by the release graph) packages the binary into an image
+      fs.copyFileSync(
+        path.join(REPO_ROOT, 'infrastructure', 'docker', 'taskcluster-proxy', 'Dockerfile'),
+        path.join(contextDir, 'Dockerfile')
       );
       const command = ['docker', 'build', '--no-cache', '--progress', 'plain', '--tag', tag, contextDir];
       await execCommand({
@@ -77,7 +65,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
 
-      if (cmdOptions.staging || !cmdOptions.push) {
+      if (!cmdOptions.push) {
         return provides;
       }
 
