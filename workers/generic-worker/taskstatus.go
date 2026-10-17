@@ -47,6 +47,9 @@ type TaskStatusManager struct {
 	// callback functions to call when status changes
 	statusChangeListeners map[*TaskStatusChangeListener]bool
 	abortException        *CommandExecutionError
+	// how long task processes are given to exit after being asked to, when
+	// the task is aborted, before they are killed
+	abortGracePeriod time.Duration
 	// closed when reclaim go routine should stop reclaiming
 	stopReclaiming chan<- struct{}
 	// closed when reclaim loop exits
@@ -206,13 +209,29 @@ func (tsm *TaskStatusManager) TakenUntil() tcclient.Time {
 	return tsm.takenUntil
 }
 
+// SetAbortGracePeriod sets how long task processes are given to exit, after
+// being asked to, when the task is aborted (see Abort), before they are
+// killed.
+func (tsm *TaskStatusManager) SetAbortGracePeriod(gracePeriod time.Duration) {
+	tsm.Lock()
+	defer tsm.Unlock()
+	tsm.abortGracePeriod = gracePeriod
+}
+
 func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
-			task.Errorf("Aborting task...")
-			task.kill()
+			// Task processes may take up to abortGracePeriod to exit, so keep
+			// the reason the task was first aborted for.
+			if tsm.abortException != nil {
+				log.Printf("Task %v is already being aborted (%v), so ignoring request to abort it again (%v)", task.TaskID, tsm.abortException, cee)
+				return nil
+			}
+			// Set before terminating the task processes, so that a command
+			// exiting during the grace period is reported as aborted.
 			tsm.abortException = cee
+			task.terminate(tsm.abortGracePeriod)
 			return nil
 		},
 		claimed,

@@ -77,6 +77,24 @@ properties:
       Since: generic-worker 0.0.1
     multipleOf: 1
     minimum: 1
+  abortGracePeriod:
+    type: integer
+    title: Abort grace period in seconds
+    description: |-
+      On POSIX platforms, when the worker aborts a task, task processes are
+      first sent `SIGTERM` and given up to this many seconds to exit, before
+      being killed.
+
+      This is not currently supported on Windows: the value is accepted, but
+      task processes are always killed immediately (`taskkill /f /t`), since
+      console control events cannot be reliably delivered from the worker
+      to task processes running in a different session.
+
+      Since: generic-worker 113.2.0
+    default: 0
+    multipleOf: 1
+    minimum: 0
+    maximum: 60
   artifacts:
     type: array
     title: Artifacts to be published

@@ -167,6 +167,22 @@ func TestMaxTaskRunTime(t *testing.T) {
 	}
 }
 
+func TestAbortGracePeriodTooLarge(t *testing.T) {
+	setup(t)
+	td := testTask(t)
+	payload := GenericWorkerPayload{
+		Command:          returnExitCode(0),
+		MaxRunTime:       30,
+		AbortGracePeriod: 61,
+	}
+	defaults.SetDefaults(&payload)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "abortGracePeriod") {
+		t.Fatalf("Log does't include expected text: %v", logtext)
+	}
+}
+
 // If artifact expires with task deadline, we should not get a Malformed Payload
 func TestArtifactExpiresWithDeadline(t *testing.T) {
 	setup(t)

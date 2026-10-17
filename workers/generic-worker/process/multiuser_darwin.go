@@ -39,6 +39,12 @@ type (
 		// sometimes does not return promptly.
 		abort     chan struct{}
 		abortOnce sync.Once
+		// waited channel is closed once cmd.Wait() has returned, inside
+		// Execute().
+		waited chan struct{}
+		// terminating is set when Terminate() has asked the process to exit
+		// (SIGTERM), and is waiting for it to exit before killing it.
+		terminating bool
 		// Once command has run, Result is updated (similar to cmd.ProcessState)
 		result *Result
 		conn   net.Conn
