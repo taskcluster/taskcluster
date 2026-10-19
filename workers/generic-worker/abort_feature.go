@@ -64,6 +64,7 @@ func (atf *AbortTaskFeature) Start() *CommandExecutionError {
 					Reason:     workerShutdown,
 					TaskStatus: aborted,
 				},
+				0,
 			)
 		}
 	})

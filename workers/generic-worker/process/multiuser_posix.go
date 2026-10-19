@@ -77,8 +77,9 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, platf
 	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
 	cmd.SysProcAttr.Setpgid = true
 	return &Command{
-		Cmd:   cmd,
-		abort: make(chan struct{}),
+		Cmd:    cmd,
+		abort:  make(chan struct{}),
+		waited: make(chan struct{}),
 	}, nil
 }
 

@@ -34,6 +34,12 @@ const (
 	intermittentTask    TaskUpdateReason = "intermittent-task"
 )
 
+// abortGracePeriod is how long task processes are given to exit after SIGTERM,
+// before they are killed, when a task is aborted because it exceeded its
+// maxRunTime or because of sustained memory pressure. It matches the default
+// timeout of `docker stop`.
+var abortGracePeriod = 10 * time.Second
+
 type TaskStatusChangeListener struct {
 	Name     string
 	Callback func(ts TaskStatus)
@@ -206,13 +212,29 @@ func (tsm *TaskStatusManager) TakenUntil() tcclient.Time {
 	return tsm.takenUntil
 }
 
-func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
+// Abort aborts the task. Task processes are sent SIGTERM, and killed if they
+// are still running after gracePeriod, or killed straight away if gracePeriod
+// is 0.
+//
+// If the task is already being aborted, it keeps the reason it was first
+// aborted for, but if gracePeriod is 0, task processes are killed without
+// waiting for the rest of the grace period.
+func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError, gracePeriod time.Duration) error {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
-			task.Errorf("Aborting task...")
-			task.kill()
+			if tsm.abortException != nil {
+				log.Printf("Task %v is already being aborted (%v), so not changing the abort reason to %v", task.TaskID, tsm.abortException, cee)
+				if gracePeriod <= 0 {
+					task.Errorf("Killing task processes: %v", cee.Cause)
+					task.kill()
+				}
+				return nil
+			}
+			// Set before terminating the task processes, so that a command
+			// exiting during the grace period is reported as aborted.
 			tsm.abortException = cee
+			task.terminate(gracePeriod)
 			return nil
 		},
 		claimed,

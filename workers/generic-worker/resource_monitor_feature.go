@@ -63,6 +63,7 @@ func (r *ResourceMonitorTask) Start() *CommandExecutionError {
 						),
 						TaskStatus: failed,
 					},
+					abortGracePeriod,
 				)
 				if err != nil {
 					r.task.Warnf("Error when aborting task: %v", err)
