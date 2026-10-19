@@ -3563,7 +3563,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => err instanceof TransientApiError && /Signature validation error/.test(err.message)
           );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
@@ -3587,6 +3587,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           restoreIntermediatesInStore();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
           helper.assertNoPulseMessage('worker-running');
+        });
+
+        test('certificate download returns 404', async () => {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          const workerIdentityProof = { document: azureSignatures[0].document };
+
+          const notFoundServer = http.createServer((_req, res) => {
+            res.writeHead(404);
+            res.end();
+          });
+          await new Promise(resolve => notFoundServer.listen(0, '127.0.0.1', resolve));
+          const notFoundUrl = `http://127.0.0.1:${notFoundServer.address().port}`;
+
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
+          provider.downloadBinaryResponse = async () =>
+            got(notFoundUrl, { responseType: 'buffer', resolveBodyOnly: true, retry: { limit: 0 } });
+
+          removeIntermediatesFromStore();
+
+          // a permanent HTTP error should not make the worker retry
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            err => !(err instanceof TransientApiError) && /Signature validation error/.test(err.message)
+          );
+          const log0 = monitor.manager.messages[0].Fields;
+          assert.equal(log0.message, 'Error downloading intermediate certificate');
+          assert.equal(log0.error, `HTTPError: Response code 404 (Not Found); location=${intermediateCertUrl}`);
+
+          // Restore test fixture
+          await new Promise(resolve => notFoundServer.close(resolve));
+          restoreIntermediatesInStore();
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
         test('download is not binary cert', async () => {

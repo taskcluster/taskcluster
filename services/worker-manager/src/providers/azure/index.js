@@ -1262,7 +1262,7 @@ export class AzureProvider extends Provider {
     if (issuer === null) {
       const authorityAccessInfo = getAuthorityAccessInfo(crt);
       let method, location;
-      let downloadFailed = false;
+      let retryableDownloadError = false;
       for (let i = 0; i < authorityAccessInfo.length; i++) {
         method = authorityAccessInfo[i].method;
         location = authorityAccessInfo[i].location;
@@ -1280,7 +1280,11 @@ export class AzureProvider extends Provider {
           try {
             raw_data = await this.downloadBinaryResponse(location);
           } catch (err) {
-            downloadFailed = true;
+            // network errors and timeouts have no response; 5xx and 429 may also clear up
+            const statusCode = err.response?.statusCode;
+            if (!statusCode || statusCode >= 500 || statusCode === 429) {
+              retryableDownloadError = true;
+            }
             this.monitor.log.registrationErrorWarning({
               message: 'Error downloading intermediate certificate',
               error: `${err.toString()}; location=${location}`,
@@ -1347,7 +1351,7 @@ export class AzureProvider extends Provider {
           document,
         });
         // a failed download may be temporary, so let the worker retry
-        throw downloadFailed ? new TransientApiError('Signature validation error') : error();
+        throw retryableDownloadError ? new TransientApiError('Signature validation error') : error();
       }
     }
 
