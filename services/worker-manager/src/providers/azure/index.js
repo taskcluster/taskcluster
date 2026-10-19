@@ -8,7 +8,7 @@ import net from 'node:net';
 import { rootCertificates } from 'node:tls';
 import { WorkerPool, Worker } from '../../data.js';
 import azureApi from './azure-api.js';
-import { ApiError, Provider } from '../provider.js';
+import { ApiError, Provider, TransientApiError } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
 import {
@@ -1262,6 +1262,7 @@ export class AzureProvider extends Provider {
     if (issuer === null) {
       const authorityAccessInfo = getAuthorityAccessInfo(crt);
       let method, location;
+      let downloadFailed = false;
       for (let i = 0; i < authorityAccessInfo.length; i++) {
         method = authorityAccessInfo[i].method;
         location = authorityAccessInfo[i].location;
@@ -1279,6 +1280,7 @@ export class AzureProvider extends Provider {
           try {
             raw_data = await this.downloadBinaryResponse(location);
           } catch (err) {
+            downloadFailed = true;
             this.monitor.log.registrationErrorWarning({
               message: 'Error downloading intermediate certificate',
               error: `${err.toString()}; location=${location}`,
@@ -1344,7 +1346,8 @@ export class AzureProvider extends Provider {
           workerId: worker.workerId,
           document,
         });
-        throw error();
+        // a failed download may be temporary, so let the worker retry
+        throw downloadFailed ? new TransientApiError('Signature validation error') : error();
       }
     }
 

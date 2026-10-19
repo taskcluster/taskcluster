@@ -19,6 +19,7 @@ import http from 'node:http';
 import got from 'got';
 import path from 'node:path';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
+import { TransientApiError } from '../src/providers/provider.js';
 import Debug from 'debug';
 import { loadCertificates } from '../src/providers/azure/azure-ca-certs/index.js';
 
@@ -3514,7 +3515,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => err instanceof TransientApiError && /Signature validation error/.test(err.message)
           );
           // both CA Issuer locations are attempted before giving up
           const log0 = monitor.manager.messages[0].Fields;
@@ -3607,7 +3608,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => !(err instanceof TransientApiError) && /Signature validation error/.test(err.message)
           );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error reading intermediate certificate');
@@ -3646,7 +3647,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => !(err instanceof TransientApiError) && /Signature validation error/.test(err.message)
           );
 
           const log0 = monitor.manager.messages[0];
