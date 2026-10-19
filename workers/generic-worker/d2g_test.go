@@ -13,6 +13,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
 	"github.com/taskcluster/taskcluster/v113/tools/d2g"
 	"github.com/taskcluster/taskcluster/v113/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/host"
 )
 
 func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
@@ -59,6 +60,10 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+		// The container is removed after the task resolution, before the worker moves on
+		if out, err := host.Output("docker", "ps", "-aq", "--filter", "name=^taskcontainer$"); err != nil || strings.TrimSpace(out) != "" {
+			t.Fatalf("task container was not removed: %q, %v", out, err)
+		}
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)

@@ -378,21 +378,6 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 	for _, e := range copyErrs {
 		err.add(e)
 	}
-
-	cmd, e := process.NewCommandNoOutputStreams([]string{
-		"docker",
-		"rm",
-		"--force",
-		dtf.task.D2GInfo.ContainerName,
-	}, taskDir, []string{}, dtf.task.pd)
-	if e != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to remove docker container: %v", e)))
-	}
-	out, e := cmd.CombinedOutput()
-	if e != nil {
-		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
-	}
-
 }
 
 func (ic *ImageCache) loadFromFile(stateFile string) {

@@ -746,6 +746,14 @@ mainLoop:
 							log.Printf("PANIC in task %s goroutine: %v", t.TaskID, r)
 							t.Error(fmt.Sprintf("Internal worker error (panic): %v", r))
 						}
+						// Removing a d2g container can be slow, and nothing before the
+						// task resolution needs it gone, so remove it now that the task
+						// is resolved, but before freeing its slot (issue 9203).
+						if t.D2GInfo != nil {
+							if out, err := host.Output("docker", "rm", "--force", t.D2GInfo.ContainerName); err != nil {
+								log.Printf("could not remove container %s of task %s: %s (output: %s)", t.D2GInfo.ContainerName, t.TaskID, err, out)
+							}
+						}
 						portManager.ReleasePorts(t.TaskID)
 						workerShutdown := errors != nil && errors.WorkerShutdown()
 						taskCompleteChan <- taskCompletionResult{
