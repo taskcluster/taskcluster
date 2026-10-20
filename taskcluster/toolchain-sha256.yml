@@ -7,7 +7,7 @@
 # clients/client-rust/rust-toolchain.toml and .uv-version. Hashes already
 # here are never re-fetched, so fix a wrong one by deleting its line and
 # regenerating. Task generation fails if a toolchain URL has no hash here.
-https://go.dev/dl/go1.27.2.linux-amd64.tar.gz: ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5
+https://go.dev/dl/go1.27.3.linux-amd64.tar.gz: 65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40
 https://static.rust-lang.org/dist/rust-1.98.0-x86_64-unknown-linux-gnu.tar.gz: aa30409afa67bd1ada244cefd82c7980e6a65bc113bb978e934b2413c75e3900
 https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz: 6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff
 https://github.com/astral-sh/uv/releases/download/0.13.1/uv-x86_64-unknown-linux-gnu.tar.gz: eadd9d27c134ab5ac1ffd4473b97a741407f3ea238288f03121fc4deddf90220
