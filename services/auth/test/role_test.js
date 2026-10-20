@@ -586,6 +586,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       });
     });
 
+    test('role expansion is computed from fresh roles, not the cached resolver', async () => {
+      // narrow roleId2 in the DB only, leaving the resolver stale
+      await modifyRoles(helper.db, ({ roles }) => {
+        roles.find(r => r.role_id === roleId2).scopes = [];
+      });
+      await auth
+        .updateRole(roleId, {
+          description: 'test role',
+          scopes: ['scope:sub-role-has:xyz', `assume:${roleId2}`],
+        })
+        .then(
+          () => assert(false, 'Expected an error'),
+          err => assert(err.statusCode === 403)
+        );
+    });
+
     test('role already has a prefix of the new scope', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
