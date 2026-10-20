@@ -13,14 +13,14 @@ properties:
     type:         string
     minLength:    {$const: github-identifier-min-length}
     maxLength:    {$const: github-identifier-max-length}
-    pattern:      {$const: github-identifier-pattern}
+    pattern:      {$const: github-identifier-pattern-organisation}
   repository:
     description: |
       The GitHub `repository` which had an event.
     type:         string
     minLength:    {$const: github-identifier-min-length}
     maxLength:    {$const: github-identifier-max-length}
-    pattern:      {$const: github-identifier-pattern}
+    pattern:      {$const: github-identifier-pattern-repository}
   taskGroupId:
     type: string
     description: The id of the taskGroup that had been created.

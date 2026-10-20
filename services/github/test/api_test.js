@@ -73,6 +73,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       'Unknown',
       2
     );
+    await helper.db.fns.create_github_build_pr(
+      'mozilla',
+      'repo.rs',
+      'z650871208002a13ba35cf232c0e30d2c3d64783',
+      'riizERCQQwi9ZS_WkCSjXQ',
+      'pending',
+      new Date(),
+      new Date(),
+      1,
+      'push',
+      '26370a80-ed65-11e6-8f4c-80082678482d',
+      null
+    );
 
     await helper.db.fns.upsert_github_integration('abc123', 9090);
 
@@ -273,12 +286,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('all builds', async () => {
     const builds = await helper.apiClient.builds();
-    assert.equal(builds.builds.length, 4);
+    assert.equal(builds.builds.length, 5);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
     assert.equal(builds.builds[1].organization, 'abc123');
     assert.equal(builds.builds[2].organization, 'abc123');
     assert.equal(builds.builds[3].organization, 'ghi789');
+    assert.equal(builds.builds[4].organization, 'mozilla');
   });
 
   test('all builds without scopes', async () => {
@@ -302,6 +316,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
     assert.equal(builds.builds[0].repository, 'xyz');
+  });
+
+  test('repo builds with dots in names', async () => {
+    const builds = await helper.apiClient.builds({ organization: 'mozilla', repository: 'repo.rs' });
+    assert.equal(builds.builds.length, 1);
+    assert.equal(builds.builds[0].organization, 'mozilla');
+    assert.equal(builds.builds[0].repository, 'repo.rs');
   });
 
   test('sha builds', async () => {
