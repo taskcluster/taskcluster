@@ -565,6 +565,12 @@ export class Provider {
 export class ApiError extends Error {}
 
 /**
+ * An ApiError caused by a temporary condition (such as an external server being
+ * unreachable), returned to the user as a 503 so that clients retry the call.
+ */
+export class TransientApiError extends ApiError {}
+
+/**
  * Utility function for reportError
  * @param {Object} options
  * @param {Object} options.extra

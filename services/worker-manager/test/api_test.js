@@ -1907,6 +1907,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       );
     });
 
+    test('transient error from prov.registerWorker', async () => {
+      await createWorkerPool({});
+      await createWorker({
+        providerData: { failRegisterTransient: 'try again' },
+      });
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+          }),
+        err => err.statusCode === 503 && err.code === 'ServiceUnavailable'
+      );
+    });
+
     test('sweet success', async () => {
       await createWorkerPool({});
       await createWorker({

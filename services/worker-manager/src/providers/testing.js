@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import { Provider, ApiError } from './provider.js';
+import { Provider, ApiError, TransientApiError } from './provider.js';
 import { Worker } from '../data.js';
 
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */
@@ -52,6 +52,9 @@ export class TestingProvider extends Provider {
 
     if (worker.providerData.failRegister) {
       throw new ApiError(worker.providerData.failRegister);
+    }
+    if (worker.providerData.failRegisterTransient) {
+      throw new TransientApiError(worker.providerData.failRegisterTransient);
     }
     if (worker.providerData.noExpiry) {
       return {};
