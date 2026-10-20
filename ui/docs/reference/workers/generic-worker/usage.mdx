@@ -303,6 +303,14 @@ and reports back results to the queue.
                                             when each task starts. If it cannot free enough
                                             disk space, the worker will shut itself down.
                                             [default: 10240]
+          requiredDockerDiskSpaceMegabytes  When D2G is enabled and no tasks are running, the
+                                            garbage collector will prune unused docker resources
+                                            if fewer than this number of megabytes of disk space
+                                            are available in the docker data-root, which may be
+                                            on a different filesystem than tasksDir. If it is on
+                                            the same filesystem, this should not be lower than
+                                            requiredDiskSpaceMegabytes. If zero,
+                                            requiredDiskSpaceMegabytes is used. [default: 0]
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
                                             user, after the user has been created, the machine

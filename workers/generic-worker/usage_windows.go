@@ -94,3 +94,7 @@ func enableTaskFeatures() string {
 func loopbackDeviceNumbers() string {
 	return ""
 }
+
+func requiredDockerDiskSpace() string {
+	return ""
+}

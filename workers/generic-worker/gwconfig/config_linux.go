@@ -7,12 +7,13 @@ import (
 )
 
 type PublicPlatformConfig struct {
-	D2GConfig                 d2g.Config `json:"d2gConfig"`
-	DisableNativePayloads     bool       `json:"disableNativePayloads"`
-	EnableLoopbackAudio       bool       `json:"enableLoopbackAudio"`
-	EnableLoopbackVideo       bool       `json:"enableLoopbackVideo"`
-	LoopbackAudioDeviceNumber uint8      `json:"loopbackAudioDeviceNumber"`
-	LoopbackVideoDeviceNumber uint8      `json:"loopbackVideoDeviceNumber"`
+	D2GConfig                        d2g.Config `json:"d2gConfig"`
+	DisableNativePayloads            bool       `json:"disableNativePayloads"`
+	EnableLoopbackAudio              bool       `json:"enableLoopbackAudio"`
+	EnableLoopbackVideo              bool       `json:"enableLoopbackVideo"`
+	LoopbackAudioDeviceNumber        uint8      `json:"loopbackAudioDeviceNumber"`
+	LoopbackVideoDeviceNumber        uint8      `json:"loopbackVideoDeviceNumber"`
+	RequiredDockerDiskSpaceMegabytes uint       `json:"requiredDockerDiskSpaceMegabytes"`
 }
 
 func DefaultPublicPlatformConfig() *PublicPlatformConfig {
