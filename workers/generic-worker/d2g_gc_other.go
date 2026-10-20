@@ -9,3 +9,6 @@ func removeD2GCacheFile() error {
 func dockerLowOnSpace() bool {
 	return false
 }
+
+func waitForDockerContainerRemovals() {
+}

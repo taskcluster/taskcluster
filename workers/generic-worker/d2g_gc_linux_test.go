@@ -129,3 +129,37 @@ func TestDockerGarbageCollectionSkippedWhileTasksRunning(t *testing.T) {
 		t.Errorf("Expected no docker calls, got %q", got)
 	}
 }
+
+func TestDockerLowOnSpaceWaitsForContainerRemovals(t *testing.T) {
+	for _, low := range []bool{false, true} {
+		setupFakeDocker(t, "")
+		dockerRootDir = t.TempDir()
+		config.RequiredDiskSpaceMegabytes = 1
+		if low {
+			config.RequiredDiskSpaceMegabytes = unreachableMB
+		}
+		removed := make(chan struct{})
+		dockerContainerRemovals.Go(func() { <-removed })
+		done := make(chan struct{})
+		go func() {
+			dockerLowOnSpace()
+			close(done)
+		}()
+
+		if low {
+			select {
+			case <-done:
+				t.Errorf("Expected dockerLowOnSpace to wait for container removals when low on space")
+			case <-time.After(100 * time.Millisecond):
+			}
+		} else {
+			select {
+			case <-done:
+			case <-time.After(10 * time.Second):
+				t.Errorf("Expected dockerLowOnSpace not to wait for container removals when not low on space")
+			}
+		}
+		close(removed)
+		<-done
+	}
+}

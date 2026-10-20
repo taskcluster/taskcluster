@@ -52,3 +52,23 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
 }
+
+func TestD2GAbortedTaskContainerRemoved(t *testing.T) {
+	skipInDockerIfNoDocker(t)
+	setup(t)
+	payload := dockerworker.DockerWorkerPayload{
+		Command:    []string{"/bin/bash", "-c", "sleep 300"},
+		Image:      json.RawMessage(`"ubuntu:latest"`),
+		MaxRunTime: 5,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	switch runtime.GOOS {
+	case "linux":
+		_ = submitAndAssert(t, td, payload, "failed", "failed")
+		assertTaskContainerRemoved(t)
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}

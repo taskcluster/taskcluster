@@ -53,8 +53,20 @@ func dockerLowOnSpace() bool {
 		return false
 	}
 	if freeSpace < requiredFreeSpace {
+		waitForDockerContainerRemovals()
+		freeSpace, err = freeDiskSpaceBytes(dir)
+		if err != nil {
+			log.Printf("WARNING: could not calculate free disk space in dir %v due to error %#v", dir, err)
+			return false
+		}
+	}
+	if freeSpace < requiredFreeSpace {
 		log.Printf("Only %v bytes available in %v but %v required. Pruning docker resources", freeSpace, dir, requiredFreeSpace)
 		return true
 	}
 	return false
+}
+
+func waitForDockerContainerRemovals() {
+	dockerContainerRemovals.Wait()
 }

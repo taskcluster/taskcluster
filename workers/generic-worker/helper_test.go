@@ -114,6 +114,9 @@ func execute(t *testing.T, expectedExitCode ExitCode) {
 		t.Fatalf("Test setup failure - could not write to file %q: %v", trcPath, err)
 	}
 	exitCode := RunWorker()
+	// Task containers are removed in the background, so wait for that, so
+	// they are cleaned up before the next test.
+	waitForDockerContainerRemovals()
 
 	if exitCode != expectedExitCode {
 		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, expectedExitCode)
