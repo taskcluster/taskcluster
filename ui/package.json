@@ -53,7 +53,7 @@
     "localforage": "^1.7.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "markdown-it": "^14.3.2",
+    "markdown-it": "^14.3.3",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^4.0.1",
     "mdi-react": "^6.2.0",
