@@ -1066,8 +1066,8 @@ builder.declare(
         }
         role = roles[i];
 
-        // Check scopes
-        const formerRoleScopes = this.resolver.resolve(role.scopes);
+        // Check scopes; expand against the fresh roles, not the possibly-stale cached resolver
+        const formerRoleScopes = this.resolver.buildResolver(roles)(role.scopes);
         const scopesAdded = input.scopes.filter(s => !scopeUtils.satisfiesExpression(formerRoleScopes, s));
         await req.authorize({ roleId, scopesAdded });
 
