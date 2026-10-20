@@ -20,13 +20,13 @@ properties:
           type: string
           minLength: {$const: github-identifier-min-length}
           maxLength: {$const: github-identifier-max-length}
-          pattern: {$const: github-identifier-pattern}
+          pattern: {$const: github-identifier-pattern-organisation}
           description: Github organization associated with the build.
         repository:
           type: string
           minLength: {$const: github-identifier-min-length}
           maxLength: {$const: github-identifier-max-length}
-          pattern: {$const: github-identifier-pattern}
+          pattern: {$const: github-identifier-pattern-repository}
           description: Github repository associated with the build.
         sha:
           type: string

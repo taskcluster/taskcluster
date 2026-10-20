@@ -9596,7 +9596,7 @@
           "description": "The GitHub `organization` which had an event.\n",
           "maxLength": 100,
           "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_.%]*)$",
+          "pattern": "^([a-zA-Z0-9-_%]*)$",
           "type": "string"
         },
         "repository": {
@@ -9918,7 +9918,7 @@
           "description": "The GitHub `organization` which had an event.\n",
           "maxLength": 100,
           "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_.%]*)$",
+          "pattern": "^([a-zA-Z0-9-_%]*)$",
           "type": "string"
         },
         "repository": {
@@ -9989,7 +9989,7 @@
           "description": "The GitHub `organization` which had an event.\n",
           "maxLength": 100,
           "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_.%]*)$",
+          "pattern": "^([a-zA-Z0-9-_%]*)$",
           "type": "string"
         },
         "repository": {
@@ -10057,7 +10057,7 @@
           "description": "The GitHub `organization` which had an event.\n",
           "maxLength": 100,
           "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_.%]*)$",
+          "pattern": "^([a-zA-Z0-9-_%]*)$",
           "type": "string"
         },
         "repository": {
@@ -10131,7 +10131,7 @@
           "description": "The GitHub `organization` which had an event.\n",
           "maxLength": 100,
           "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_.%]*)$",
+          "pattern": "^([a-zA-Z0-9-_%]*)$",
           "type": "string"
         },
         "repository": {
@@ -10269,7 +10269,7 @@
                 "description": "Github organization associated with the build.",
                 "maxLength": 100,
                 "minLength": 1,
-                "pattern": "^([a-zA-Z0-9-_.%]*)$",
+                "pattern": "^([a-zA-Z0-9-_%]*)$",
                 "type": "string"
               },
               "pullRequestNumber": {

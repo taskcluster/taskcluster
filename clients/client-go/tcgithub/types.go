@@ -26,7 +26,7 @@ type (
 
 		// Github organization associated with the build.
 		//
-		// Syntax:     ^([a-zA-Z0-9-_.%]*)$
+		// Syntax:     ^([a-zA-Z0-9-_%]*)$
 		// Min length: 1
 		// Max length: 100
 		Organization string `json:"organization"`
