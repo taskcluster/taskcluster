@@ -274,7 +274,7 @@ and reports back results to the queue.
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
                                             disk space, the worker will shut itself down.
-                                            [default: 10240]
+                                            [default: 10240]` + requiredDockerDiskSpace() + `
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
                                             user, after the user has been created, the machine

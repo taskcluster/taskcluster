@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"reflect"
 	"runtime"
 	"strings"
@@ -59,6 +60,7 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+		assertTaskContainerRemoved(t)
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
@@ -1210,5 +1212,18 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 	}
 	if !reflect.DeepEqual(cotCert, expected) {
 		t.Fatalf("Expected vs actual mismatch. Expected: %#v, Actual: %#v, Raw: %s", expected, cotCert, certString)
+	}
+}
+
+// assertTaskContainerRemoved checks that the worker removed the task
+// container, which it does in the background but waits for before exiting.
+func assertTaskContainerRemoved(t *testing.T) {
+	t.Helper()
+	out, err := exec.Command("docker", "ps", "--all", "--quiet", "--filter", "name=^taskcontainer$").Output()
+	if err != nil {
+		t.Fatalf("Could not list docker containers: %v", err)
+	}
+	if len(out) != 0 {
+		t.Fatalf("Expected task container to have been removed, but found %q", out)
 	}
 }

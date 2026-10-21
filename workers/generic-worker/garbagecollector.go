@@ -58,29 +58,14 @@ func (r Resources) Swap(i, j int) {
 // It should be independent of mounts feature, but let's go with it here
 // as currently that is the only feature that uses it.
 func runGarbageCollection(r Resources, tasksRunning bool) error {
-	currentFreeSpace, err := freeDiskSpaceBytes(config.TasksDir)
-	if err != nil {
-		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
-	}
-	requiredFreeSpace := requiredSpaceBytes()
-
-	if currentFreeSpace < requiredFreeSpace {
-		log.Printf("Only %v bytes available in %v but %v required. Garbage collecting", currentFreeSpace, config.TasksDir, requiredFreeSpace)
-	}
-
-	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() && !tasksRunning {
+	if config.D2GEnabled() && !tasksRunning && dockerLowOnSpace() {
 		err := host.Run("docker", "volume", "prune", "--all", "--force")
 		if err != nil {
 			return fmt.Errorf("could not run docker volume prune to garbage collect due to error %#v", err)
 		}
-
-		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
-		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
-		}
 	}
 
-	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() && !tasksRunning {
+	if config.D2GEnabled() && !tasksRunning && dockerLowOnSpace() {
 		err := host.Run("docker", "system", "prune", "--all", "--force")
 		if err != nil {
 			return fmt.Errorf("could not run docker system prune to garbage collect due to error %#v", err)
@@ -90,11 +75,16 @@ func runGarbageCollection(r Resources, tasksRunning bool) error {
 		if err != nil {
 			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 		}
+	}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
-		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
-		}
+	currentFreeSpace, err := freeDiskSpaceBytes(config.TasksDir)
+	if err != nil {
+		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
+	}
+	requiredFreeSpace := requiredSpaceBytes()
+
+	if currentFreeSpace < requiredFreeSpace {
+		log.Printf("Only %v bytes available in %v but %v required. Garbage collecting", currentFreeSpace, config.TasksDir, requiredFreeSpace)
 	}
 
 	for currentFreeSpace < requiredFreeSpace {

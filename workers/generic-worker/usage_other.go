@@ -13,3 +13,7 @@ func d2gConfig() string {
 func loopbackDeviceNumbers() string {
 	return ""
 }
+
+func requiredDockerDiskSpace() string {
+	return ""
+}
