@@ -44,7 +44,7 @@ var (
 
 	// VersionNumber is a formatted string with the version information. This is
 	// filled in by `yarn release`
-	VersionNumber = "113.1.3"
+	VersionNumber = "113.2.0"
 )
 
 var (
