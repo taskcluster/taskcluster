@@ -17,7 +17,6 @@ import (
 
 const (
 	SecAccess      uint32 = windows.FILE_READ_ATTRIBUTES | windows.READ_CONTROL | windows.WRITE_DAC | windows.WRITE_OWNER | windows.SYNCHRONIZE
-	DirAccess      uint32 = SecAccess | windows.FILE_LIST_DIRECTORY
 	traverseAccess uint32 = windows.FILE_READ_ATTRIBUTES | windows.FILE_LIST_DIRECTORY | windows.SYNCHRONIZE
 )
 
@@ -107,9 +106,23 @@ func RefuseIfIrregular(handle windows.Handle, path string) error {
 	return nil
 }
 
+// fileStandardInfo mirrors FILE_STANDARD_INFO, also missing from x/sys/windows
+// https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_standard_info
+type fileStandardInfo struct {
+	AllocationSize int64
+	EndOfFile      int64
+	NumberOfLinks  uint32
+	DeletePending  uint8
+	Directory      uint8
+}
+
+// NumberOfLinks queries FILE_STANDARD_INFO rather than calling
+// GetFileInformationByHandle, which takes several kernel queries (one of them
+// against the volume, for its serial number) to fill fields we don't need, and
+// this is called on every file of a cache.
 func NumberOfLinks(handle windows.Handle) (uint32, error) {
-	var info windows.ByHandleFileInformation
-	if err := windows.GetFileInformationByHandle(handle, &info); err != nil {
+	var info fileStandardInfo
+	if err := windows.GetFileInformationByHandleEx(handle, windows.FileStandardInfo, (*byte)(unsafe.Pointer(&info)), uint32(unsafe.Sizeof(info))); err != nil {
 		return 0, err
 	}
 	return info.NumberOfLinks, nil
@@ -244,38 +257,6 @@ func DeleteChild(parent windows.Handle, name, parentPath string) error {
 	defer func() { _ = windows.CloseHandle(child) }()
 
 	return DeleteSelf(child, filepath.Join(parentPath, name))
-}
-
-func OpenSelf(handle windows.Handle, access uint32) (windows.Handle, error) {
-	empty, err := windows.NewNTUnicodeString("")
-	if err != nil {
-		return windows.InvalidHandle, err
-	}
-	oa := windows.OBJECT_ATTRIBUTES{
-		RootDirectory: handle,
-		ObjectName:    empty,
-		Attributes:    windows.OBJ_CASE_INSENSITIVE,
-	}
-	oa.Length = uint32(unsafe.Sizeof(oa))
-
-	var newHandle windows.Handle
-	var iosb windows.IO_STATUS_BLOCK
-	if err := windows.NtCreateFile(
-		&newHandle,
-		access,
-		&oa,
-		&iosb,
-		nil,
-		0,
-		windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE|windows.FILE_SHARE_DELETE,
-		windows.FILE_OPEN,
-		windows.FILE_OPEN_FOR_BACKUP_INTENT|windows.FILE_SYNCHRONOUS_IO_NONALERT,
-		0,
-		0,
-	); err != nil {
-		return windows.InvalidHandle, err
-	}
-	return newHandle, nil
 }
 
 // Open the volume root by name. This is the only part of a path we can trust to
