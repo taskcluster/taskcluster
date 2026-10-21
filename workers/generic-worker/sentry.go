@@ -1,9 +1,12 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
+	"time"
 
-	raven "github.com/getsentry/raven-go"
+	"github.com/getsentry/sentry-go"
 )
 
 func ReportCrashToSentry(r any) {
@@ -17,15 +20,32 @@ func ReportCrashToSentry(r any) {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)
 		return
 	}
-	client, err := raven.New(res.Dsn.Secret)
+	sendPanicToSentry(res.Dsn.Secret, r, debugInfo, 30*time.Second)
+}
+
+// sendPanicToSentry reports the recovered panic value r to the Sentry project
+// identified by dsn, tagged with tags, waiting at most timeout for delivery.
+// TLS verification uses the system root CA store.
+func sendPanicToSentry(dsn string, r any, tags map[string]string, timeout time.Duration) {
+	client, err := sentry.NewClient(sentry.ClientOptions{
+		Dsn:     dsn,
+		Release: "generic-worker@" + version,
+	})
 	if err != nil {
-		log.Printf("Could not create raven client for reporting to sentry: %v", err)
+		log.Printf("Could not create sentry client: %v", err)
 		return
 	}
-	_, _ = client.CapturePanicAndWait(
-		func() {
-			panic(r)
-		},
-		debugInfo,
-	)
+	// Like raven-go's CapturePanic, always report the panic as an exception
+	// with a stack trace, so that events group consistently
+	panicErr, ok := r.(error)
+	if !ok {
+		panicErr = errors.New(fmt.Sprint(r))
+	}
+	scope := sentry.NewScope()
+	scope.SetTags(tags)
+	hub := sentry.NewHub(client, scope)
+	hub.CaptureException(panicErr)
+	if !hub.Flush(timeout) {
+		log.Println("WARNING: Timed out sending crash report to sentry")
+	}
 }
