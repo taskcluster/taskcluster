@@ -43,7 +43,9 @@ export const findRelease = async ({ octokit, owner, repo, tag }) => {
 };
 
 // Staging reuses the next version number until a real release ships, so a repeat staging
-// run finds the previous run's published release. Only there may it be replaced.
+// run finds the previous run's published release. Only there may it be replaced. This needs
+// immutable releases to stay disabled on staging-releases: an immutable release's tag cannot
+// be deleted, and its tag name cannot be used again even after the release is deleted.
 const mayReplacePublished = ctx => ctx.staging && ctx.owner === 'taskcluster' && ctx.repo === 'staging-releases';
 
 const sha256File = async file => {
@@ -95,8 +97,9 @@ const deletePublishedRelease = async ({ octokit, owner, repo, tag, release, log 
 /**
  * Create (or reuse) the draft release and make its assets match `files`. Safe to
  * rerun: complete assets are kept, and partial ones are replaced. A release that is
- * already published is never modified beyond uploading assets that are absent, except
- * on taskcluster/staging-releases, where it is deleted and drafted afresh.
+ * already published is never modified: it is up-to-date if its assets match `files`,
+ * and an error otherwise. The exception is taskcluster/staging-releases, where it is
+ * deleted and drafted afresh.
  *
  * `commitish` is the commit the tag is created on when the release is published (if
  * the tag does not exist yet); without it GitHub uses the default branch.
@@ -145,7 +148,7 @@ export const draftRelease = async ({ ctx, octokit, dir, files, changelog, commit
     );
     outcome = 'created';
   } else if (!release.draft) {
-    log(`release ${tag} is already published; its existing assets will not be modified`);
+    log(`release ${tag} is already published and will not be modified; checking its assets`);
   }
   const isDraft = Boolean(release.draft);
 
@@ -155,17 +158,27 @@ export const draftRelease = async ({ ctx, octokit, dir, files, changelog, commit
   }
 
   const existing = new Map((await listAssets(octokit, owner, repo, release.id)).map(a => [a.name, a]));
+  if (!isDraft) {
+    // Never touch a published release: taskcluster/taskcluster has immutable releases enabled, so
+    // GitHub would reject the upload anyway. A broken release is fixed by cutting a new version.
+    const problems = assets
+      .filter(({ file, size, sha256 }) => !existing.has(file) || !isComplete(existing.get(file), { size, sha256 }))
+      .map(({ file, size, sha256 }) => {
+        const current = existing.get(file);
+        const found = current ? `has ${describeAsset(current)}` : 'is missing';
+        return `${file} ${found} (expected ${size} bytes in state uploaded with digest sha256:${sha256})`;
+      });
+    if (problems.length) {
+      throw fatal(
+        `published release ${tag} does not match the build artifacts: ${problems.join('; ')}; ` +
+          'refusing to modify a published release'
+      );
+    }
+  }
   for (const { file, size, sha256 } of assets) {
     const current = existing.get(file);
     if (current && isComplete(current, { size, sha256 })) {
       continue;
-    }
-    if (current && !isDraft) {
-      // never touch the assets of a published release
-      throw fatal(
-        `published release ${tag} has asset ${file} (${describeAsset(current)}), ` +
-          `expected ${size} bytes in state uploaded with digest sha256:${sha256}; refusing to modify a published release`
-      );
     }
     if (outcome === 'up-to-date') {
       outcome = 'updated';
@@ -173,15 +186,13 @@ export const draftRelease = async ({ ctx, octokit, dir, files, changelog, commit
     const data = fs.readFileSync(path.join(dir, file));
     await withRetry(
       async () => {
-        if (isDraft) {
-          // A dropped upload leaves an incomplete asset of this name behind ('starter'/'open'), and
-          // a mismatched asset may already be there; either makes the upload fail with
-          // already_exists, so clear it first.
-          const leftovers = (await listAssets(octokit, owner, repo, release.id)).filter(a => a.name === file);
-          for (const leftover of leftovers) {
-            log(`removing incomplete or mismatched asset ${file} (${describeAsset(leftover)}; expected ${size} bytes)`);
-            await deleteAsset(octokit, owner, repo, leftover.id);
-          }
+        // A dropped upload leaves an incomplete asset of this name behind ('starter'/'open'), and
+        // a mismatched asset may already be there; either makes the upload fail with
+        // already_exists, so clear it first.
+        const leftovers = (await listAssets(octokit, owner, repo, release.id)).filter(a => a.name === file);
+        for (const leftover of leftovers) {
+          log(`removing incomplete or mismatched asset ${file} (${describeAsset(leftover)}; expected ${size} bytes)`);
+          await deleteAsset(octokit, owner, repo, leftover.id);
         }
         return octokit.repos.uploadReleaseAsset({
           owner,

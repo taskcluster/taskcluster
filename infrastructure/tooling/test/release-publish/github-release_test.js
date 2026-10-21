@@ -138,6 +138,27 @@ suite('release-publish github-release', () => {
     assert.deepEqual(octokit.calls.deleteAsset, []);
   });
 
+  test("refuses to add a published release's missing assets, naming all of them", async () => {
+    const existing = release({ draft: false });
+    const [a, b] = existing.assets.splice(0, 2);
+    const octokit = fakeOctokit({ releases: [existing] });
+    await assert.rejects(draft(octokit), err => {
+      assert.equal(err.retriable, false);
+      assert.match(err.message, /refusing to modify a published release/);
+      const [ia, ib] = [err.message.indexOf(`${a.name} is missing`), err.message.indexOf(`${b.name} is missing`)];
+      assert.ok(ia !== -1 && ib > ia, `expected ${a.name} then ${b.name} in: ${err.message}`);
+      return true;
+    });
+    assert.deepEqual(octokit.calls.upload, []);
+    assert.deepEqual(octokit.calls.deleteAsset, []);
+  });
+
+  test('a complete published release is up-to-date', async () => {
+    const octokit = fakeOctokit({ releases: [release({ draft: false })] });
+    assert.equal(await draft(octokit), 'up-to-date');
+    assert.deepEqual(octokit.calls.upload, []);
+  });
+
   test('publish refuses when an asset digest differs', async () => {
     const existing = release();
     existing.assets[0] = uploaded(files[0].file, { digest: `sha256:${'0'.repeat(64)}` });
