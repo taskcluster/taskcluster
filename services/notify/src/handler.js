@@ -99,6 +99,11 @@ class Handler {
       message.routes.map(async entry => {
         const route = entry.split('.');
 
+        // skip routes that are not in our namespace
+        if (route[0] !== this.routePrefix) {
+          return;
+        }
+
         // convert from on- syntax to state. e.g. on-exception -> exception
         const decider = _.join(_.slice(route[route.length - 1], 3), '');
         if (!this.shouldNotifyOnDecider(decider, status.state)) {
