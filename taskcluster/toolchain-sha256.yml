@@ -10,4 +10,4 @@
 https://go.dev/dl/go1.27.3.linux-amd64.tar.gz: 65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40
 https://static.rust-lang.org/dist/rust-1.98.0-x86_64-unknown-linux-gnu.tar.gz: aa30409afa67bd1ada244cefd82c7980e6a65bc113bb978e934b2413c75e3900
 https://nodejs.org/dist/v24.22.0/node-v24.22.0-linux-x64.tar.gz: 28ea0a438de9a13bd7891fd758eee6c7819ee8af5442dfd8d45bd65e56d4228c
-https://github.com/astral-sh/uv/releases/download/0.13.1/uv-x86_64-unknown-linux-gnu.tar.gz: eadd9d27c134ab5ac1ffd4473b97a741407f3ea238288f03121fc4deddf90220
+https://github.com/astral-sh/uv/releases/download/0.13.4/uv-x86_64-unknown-linux-gnu.tar.gz: 2b428396f12572d4429cf210ca234dd599a33b3af0958a4d5ed569d63e3f344f
