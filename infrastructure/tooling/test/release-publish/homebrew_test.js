@@ -8,8 +8,7 @@ const DOWNLOADS = `/taskcluster/taskcluster/releases/download/v${VERSION}`;
 const noop = () => {};
 
 const platform = (block, p) => `    ${block} do
-      url "https://github.com/taskcluster/taskcluster/releases/download/v#{version}/taskcluster-${p}.tar.gz",
-        verified: "github.com/taskcluster/taskcluster/"
+      url "https://github.com/taskcluster/taskcluster/releases/download/v#{version}/taskcluster-${p}.tar.gz"
       sha256 "${'0'.repeat(64)}"
     end`;
 
