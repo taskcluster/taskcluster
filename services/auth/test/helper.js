@@ -112,6 +112,8 @@ helper.withSentry = skipping => {
       return;
     }
 
+    helper.sentryOrgs = sentryOrgs;
+
     const cfg = await load('cfg');
 
     const sentryClient = {
@@ -139,6 +141,7 @@ helper.withSentry = skipping => {
               public: 'https://bazbing.net/',
             },
             label: extra.name,
+            rateLimit: extra.rateLimit,
           };
           sentryOrgs[org][project].keys[key.id] = key;
           return key;

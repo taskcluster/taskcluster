@@ -13053,6 +13053,12 @@
             "sentry_organization": {
               "type": "string"
             },
+            "sentry_rate_limit_count": {
+              "type": "number"
+            },
+            "sentry_rate_limit_window": {
+              "type": "number"
+            },
             "sentry_team": {
               "type": "string"
             },

@@ -1,5 +1,5 @@
 import helper from './helper.js';
-import { SentryApiClient } from '../src/sentrymanager.js';
+import makeSentryManager, { SentryApiClient } from '../src/sentrymanager.js';
 import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
@@ -119,6 +119,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       await helper.apiClient.sentryDSN('playground');
     });
 
+    test('sentryDSN creates keys with the default rate limit', async () => {
+      await helper.apiClient.sentryDSN('rate-limited');
+      const cfg = await helper.load('cfg');
+      const keys = Object.values(helper.sentryOrgs[cfg.app.sentry.organization]['rate-limited'].keys);
+      assert.equal(keys.length, 1);
+      assert.deepStrictEqual(keys[0].rateLimit, { count: 30, window: 60 });
+    });
+
     test('purgeExpiredKeys', async () => {
       const sentryManager = await helper.load('sentryManager', helper.overwrites);
 
@@ -135,6 +143,59 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       expired = await sentryManager.purgeExpiredKeys(aWeekFromNow);
       assert(expired > 0, 'Expected at least one key to be expired');
     });
+  });
+
+  suite('SentryManager rate limit configuration', () => {
+    let created;
+    const makeManager = rateLimit =>
+      makeSentryManager({
+        organization: 'org',
+        hostname: 'sentry.example.com',
+        authToken: 'token',
+        initialTeam: 'team',
+        keyPrefix: 'prefix',
+        ...rateLimit,
+        sentryClient: {
+          projects: {
+            keys: async () => [],
+            createKey: async (_org, _project, body) => {
+              created = body;
+              return { id: 'key-one', dsn: { secret: 's', public: 'p' } };
+            },
+          },
+        },
+      });
+
+    setup(() => {
+      created = undefined;
+    });
+
+    test('uses configured rate limit when creating keys', async () => {
+      await makeManager({ rateLimitCount: 10, rateLimitWindow: 120 }).projectDSN('project-one');
+      assert.deepStrictEqual(created.rateLimit, { count: 10, window: 120 });
+    });
+
+    test('defaults the window when only the count is configured', async () => {
+      await makeManager({ rateLimitCount: 100 }).projectDSN('project-one');
+      assert.deepStrictEqual(created.rateLimit, { count: 100, window: 60 });
+    });
+
+    test('defaults the count when only the window is configured', async () => {
+      await makeManager({ rateLimitWindow: 300 }).projectDSN('project-one');
+      assert.deepStrictEqual(created.rateLimit, { count: 30, window: 300 });
+    });
+
+    for (const [desc, rateLimit] of [
+      ['NaN count', { rateLimitCount: NaN }],
+      ['zero count', { rateLimitCount: 0 }],
+      ['negative window', { rateLimitWindow: -1 }],
+      ['fractional window', { rateLimitWindow: 0.5 }],
+      ['window longer than a day', { rateLimitWindow: 86401 }],
+    ]) {
+      test(`rejects ${desc}`, () => {
+        assert.throws(() => makeManager(rateLimit), /Sentry rate limit/);
+      });
+    }
   });
 
   suite('NullSentryManager', () => {
