@@ -71,7 +71,6 @@ homebrew_casks:
 
     url:
       template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-      verified: "github.com/taskcluster/taskcluster/"
 
     # Template of your app's description.
     description: "A Taskcluster client library for the command line"
@@ -89,7 +88,7 @@ homebrew_casks:
     # Remove macOS quarantine attribute since the binary is not notarized.
     hooks:
       post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/taskcluster"]
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/taskcluster"]
           end
