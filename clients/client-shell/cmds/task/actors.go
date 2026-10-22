@@ -205,3 +205,33 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
 	return nil
 }
+
+// runSchedule schedules a given task.
+func runSchedule(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
+
+	q := makeQueue(credentials)
+	taskID := args[0]
+
+	if noop {
+		return displayNoopMsg("Would schedule", credentials, args)
+	}
+
+	if confirm {
+		var confirm = confirmMsg("Will schedule", credentials, args)
+		if !confirm {
+			return nil
+		}
+	}
+
+	c, err := q.ScheduleTask(taskID)
+	if err != nil {
+		log.Error(err)
+		return fmt.Errorf("could not schedule the task %s: %v", taskID, err)
+	}
+
+	run := c.Status.Runs[len(c.Status.Runs)-1]
+	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
+	return nil
+}
