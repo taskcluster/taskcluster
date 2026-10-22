@@ -209,16 +209,13 @@ func TestBewitConcurrentWithCredentialsUpdate(t *testing.T) {
 	body := []byte(`{"clientId":"new-client","accessToken":"new-token","certificate":""}`)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for range 100 {
 			req := httptest.NewRequest("PUT", "/credentials", bytes.NewReader(body))
 			routes.ServeHTTP(httptest.NewRecorder(), req)
 		}
-	}()
-	go func() {
-		defer wg.Done()
+	})
+	wg.Go(func() {
 		for range 100 {
 			req := httptest.NewRequest("POST", "/bewit", strings.NewReader("https://tc.example.com/api/queue/v1/ping"))
 			res := httptest.NewRecorder()
@@ -227,6 +224,6 @@ func TestBewitConcurrentWithCredentialsUpdate(t *testing.T) {
 				t.Errorf("bewit returned %d", res.Code)
 			}
 		}
-	}()
+	})
 	wg.Wait()
 }

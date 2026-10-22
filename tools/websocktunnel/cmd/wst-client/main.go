@@ -148,14 +148,12 @@ func main() {
 				count:  count,
 			}
 			f.notify = func() {
-				defer running.Done()
 				runSet.Remove(f)
 			}
 
 			count++
 			_ = runSet.Add(f)
-			running.Add(1)
-			go f.forward()
+			running.Go(f.forward)
 		}
 	}
 }
@@ -184,20 +182,17 @@ func (f *forwarder) forward() {
 
 	var wg sync.WaitGroup
 
-	wg.Add(2)
 	// outgoing stream (local -> tunnel)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		_, _ = io.Copy(f.stream, f.conn)
 		_ = f.stream.Close()
-	}()
+	})
 
 	// incoming stream (tunnel -> local)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		_, _ = io.Copy(f.conn, f.stream)
 		_ = f.conn.Close()
-	}()
+	})
 	wg.Wait()
 }
 

@@ -551,12 +551,10 @@ func TestDroppedConnections(t *testing.T) {
 
 	// Wait for client and listener go routines to complete before exiting test.
 	var wg sync.WaitGroup
-	wg.Add(2)
 
 	// Listener to process connections in dedicated go routine, passing any
 	// errors back to main go routine via the created error channel.
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for {
 			// Unblocks on receiving data, or on listener.Close()
 			conn, err := listener.Accept()
@@ -584,13 +582,12 @@ func TestDroppedConnections(t *testing.T) {
 				return
 			}
 		}
-	}()
+	})
 
 	// Execute API calls in a dedicated go routine too, to avoid deadlocks
 	// since the main go routine needs to concurrently consume any errors that
 	// may occur.
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		defer func() {
 			err = listener.Close()
 			if err != nil {
@@ -601,7 +598,7 @@ func TestDroppedConnections(t *testing.T) {
 		if err == nil {
 			errChan <- errors.New("Was expecting an error, but did not get one")
 		}
-	}()
+	})
 
 	// In a separate go routine, wait for client and listener to complete and
 	// then close the error channel. This way, the main go routine can consume
