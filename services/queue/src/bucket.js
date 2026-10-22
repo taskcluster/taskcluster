@@ -72,6 +72,12 @@ const Bucket = function (options) {
 // Export Bucket
 export default Bucket;
 
+// URL parsers resolve `.` and `..` path segments, so keys containing one cannot be addressed by URL
+export const isAddressableKey = key => !key.split('/').some(segment => segment === '.' || segment === '..');
+
+// like encodeURI, but also encodes `?` and `#`
+const encodeKey = key => encodeURI(key).replace(/[?#]/g, encodeURIComponent);
+
 /**
  * Create a signed PUT URL
  *
@@ -83,6 +89,7 @@ export default Bucket;
  */
 Bucket.prototype.createPutUrl = function (prefix, options) {
   assert(prefix, 'prefix must be given');
+  assert(isAddressableKey(prefix), 'prefix must not contain `.` or `..` path segments');
   assert(options, 'options must be given');
   assert(options.contentType, 'contentType must be given');
   assert(options.expires, 'expires must be given');
@@ -103,7 +110,7 @@ Bucket.prototype.createPutUrl = function (prefix, options) {
 Bucket.prototype.createGetUrl = async function (prefix, forceS3 = false) {
   assert(prefix, 'prefix must be given');
   if (this.bucketCDN && !forceS3) {
-    return `${this.bucketCDN}/${encodeURI(prefix)}`;
+    return `${this.bucketCDN}/${encodeKey(prefix)}`;
   }
   const command = new GetObjectCommand({
     Bucket: this.bucket,
@@ -112,8 +119,9 @@ Bucket.prototype.createGetUrl = async function (prefix, forceS3 = false) {
   const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
   // Some aws-sdk versions return prefix already in pathname,
   // avoid double prefixing
-  if (!url.pathname.endsWith(prefix)) {
-    url.pathname = path.join(url.pathname, prefix);
+  const encodedKey = encodeKey(prefix);
+  if (!url.pathname.endsWith(encodedKey)) {
+    url.pathname = path.join(url.pathname, encodedKey);
   }
   return url.href;
 };

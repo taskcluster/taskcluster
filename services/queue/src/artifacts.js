@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { artifactUtils } from './utils.js';
+import { isAddressableKey } from './bucket.js';
 import { Task } from './data.js';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
@@ -183,6 +184,10 @@ export const loadArtifactsRoutes = builder => {
       past.setMinutes(past.getMinutes() - 15);
       if (expires.getTime() < past.getTime()) {
         return res.reportError('InputError', 'Expires must be in the future', {});
+      }
+
+      if (!isAddressableKey(name)) {
+        return res.reportError('InputError', 'Artifact name must not contain a `.` or `..` path segment', {});
       }
 
       // Load Task entity

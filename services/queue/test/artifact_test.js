@@ -588,6 +588,32 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       helper.assertNoPulseMessage('artifact-created');
     });
 
+    test('createArtifact rejects names with `.` or `..` path segments', async () => {
+      await makeAndClaimTask();
+
+      const expires = taskcluster.fromNowJSON('1 day');
+      const payloads = [
+        { storageType: 's3', expires, contentType: 'application/json' },
+        { storageType: 'reference', expires, contentType: 'text/html', url: 'https://google.com' },
+      ];
+      for (const payload of payloads) {
+        for (const name of ['public/../../x', 'public/x/..', '../public/x', 'public/./x']) {
+          await assert.rejects(
+            () => helper.queue.createArtifact(taskId, 0, name, payload),
+            err => err.code === 'InputError'
+          );
+        }
+      }
+
+      // dots are otherwise allowed, and other encodings of `..` are just part of the name
+      const allowed = ['public/final_draft..doc', 'public/...archive.zip', 'public/..x/y../a..b/.../z'];
+      for (const name of [...allowed, 'public/%2e%2e/x', 'public/..\\x']) {
+        await helper.queue.createArtifact(taskId, 0, name, payloads[0]);
+        const { url } = await helper.queue.artifact(taskId, 0, name);
+        assert(decodeURIComponent(new URL(url).pathname).endsWith(`/${taskId}/0/${name}`));
+      }
+    });
+
     test('Object artifact visible only after finish', async () => {
       const name = 'my/object';
       await makeAndClaimTask();
