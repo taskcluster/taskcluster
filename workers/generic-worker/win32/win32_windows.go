@@ -692,7 +692,7 @@ func DumpTokenInfo(token syscall.Token) {
 	}
 	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount)
 	for i := range tokenGroups.GroupCount {
-		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
+		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Add(unsafe.Pointer(&tokenGroups.Groups[0]), uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
 		groupSid := groups[i].Sid.String()
 		account, domain, accType, err := groups[i].Sid.LookupAccount("")
 		if err != nil {
@@ -791,14 +791,14 @@ func CreateProfile(
 // CMDExeEscape escapes cmd.exe metacharacters
 // See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
 func CMDExeEscape(text string) string {
-	cmdEscaped := ""
+	var cmdEscaped strings.Builder
 	for _, c := range text {
 		if strings.ContainsRune(`()%!^"<>&|`, c) {
-			cmdEscaped += "^"
+			cmdEscaped.WriteString("^")
 		}
-		cmdEscaped += string(c)
+		cmdEscaped.WriteString(string(c))
 	}
-	return cmdEscaped
+	return cmdEscaped.String()
 }
 
 func VerSetConditionMask(lConditionMask uint64, typeBitMask uint32, conditionMask uint8) uint64 {

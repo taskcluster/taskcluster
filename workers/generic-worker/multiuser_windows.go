@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -81,8 +82,9 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := fileutil.AbsFrom(taskDir, commandName+"_wrapper.bat")
 	script := fileutil.AbsFrom(taskDir, commandName+".bat")
-	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
-	contents += "@echo off\r\n"
+	var contents strings.Builder
+	contents.WriteString(":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n")
+	contents.WriteString("@echo off\r\n")
 
 	setEnvVarCommand := func(name, value string) string {
 		return "set " + name + "=" + win32.CMDExeEscape(value) + "\r\n"
@@ -100,33 +102,31 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// directory
 	if index == 0 {
 		envVars := map[string]string{}
-		for k, v := range task.Payload.Env {
-			envVars[k] = v
-		}
+		maps.Copy(envVars, task.Payload.Env)
 		for envVar, envValue := range envVars {
 			// log.Printf("Setting env var: %v=%v", envVar, envValue)
-			contents += setEnvVarCommand(envVar, envValue)
+			contents.WriteString(setEnvVarCommand(envVar, envValue))
 		}
-		contents += setEnvVarCommand("TASK_ID", task.TaskID)
-		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
-		contents += setEnvVarCommand("TASK_WORKDIR", taskDir)
-		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
-		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
+		contents.WriteString(setEnvVarCommand("TASK_ID", task.TaskID))
+		contents.WriteString(setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID))))
+		contents.WriteString(setEnvVarCommand("TASK_WORKDIR", taskDir))
+		contents.WriteString(setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID))
+		contents.WriteString(setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL))
 		// Note: TASK_USER_CREDENTIALS is set via platformSpecificActions() in
 		// RunTaskAsCurrentUserTask.Start() and comes through task.Payload.Env
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
 			// ending, i.e. no string escaping required!
-			contents += setEnvVarCommand("TASKCLUSTER_WORKER_LOCATION", config.WorkerLocation)
+			contents.WriteString(setEnvVarCommand("TASKCLUSTER_WORKER_LOCATION", config.WorkerLocation))
 		}
 		if config.InstanceType != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
 			// ending, i.e. no string escaping required!
-			contents += setEnvVarCommand("TASKCLUSTER_INSTANCE_TYPE", config.InstanceType)
+			contents.WriteString(setEnvVarCommand("TASKCLUSTER_INSTANCE_TYPE", config.InstanceType))
 		}
-		contents += "cd \"" + taskDir + "\"" + "\r\n"
+		contents.WriteString("cd \"" + taskDir + "\"" + "\r\n")
 
 		// Otherwise get the env from the previous command
 	} else {
@@ -138,7 +138,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		scanner := bufio.NewScanner(envFile)
 		for scanner.Scan() {
 			nameAndValue := strings.SplitN(scanner.Text(), "=", 2)
-			contents += setEnvVarCommand(nameAndValue[0], nameAndValue[1])
+			contents.WriteString(setEnvVarCommand(nameAndValue[0], nameAndValue[1]))
 		}
 		if err := scanner.Err(); err != nil {
 			panic(err)
@@ -148,14 +148,14 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		if err != nil {
 			panic(fmt.Errorf("could not read directory location from file %v\n%v", dir, err))
 		}
-		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
+		dirString, _, _ := strings.Cut(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n")
 
-		contents += "cd \"" + dirString + "\"\r\n"
+		contents.WriteString("cd \"" + dirString + "\"\r\n")
 	}
 
 	// see http://blogs.msdn.com/b/oldnewthing/archive/2008/09/26/8965755.aspx
 	// need to explicitly unset as we rely on it later
-	contents += "set errorlevel=\r\n"
+	contents.WriteString("set errorlevel=\r\n")
 
 	// now make sure output is enabled again
 
@@ -165,25 +165,25 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// old version that WROTE TO A FILE:
 	//      contents += "call " + script + " > " + absLogFile + " 2>&1" + "\r\n"
 	// ******************************
-	contents += "call " + script + " 2>&1" + "\r\n"
-	contents += "@echo off" + "\r\n"
+	contents.WriteString("call " + script + " 2>&1" + "\r\n")
+	contents.WriteString("@echo off" + "\r\n")
 
 	// store exit code
-	contents += "set tcexitcode=%errorlevel%\r\n"
+	contents.WriteString("set tcexitcode=%errorlevel%\r\n")
 
 	// now store env for next command, unless this is the last command
 	if index != len(task.Payload.Command)-1 {
-		contents += "set > " + env + "\r\n"
-		contents += "cd > " + dir + "\r\n"
+		contents.WriteString("set > " + env + "\r\n")
+		contents.WriteString("cd > " + dir + "\r\n")
 	}
 
 	// exit with stored exit code
-	contents += "exit /b %tcexitcode%\r\n"
+	contents.WriteString("exit /b %tcexitcode%\r\n")
 
 	// now generate the .bat script that runs all of this
 	err := safefs.WriteFile(
 		wrapper,
-		[]byte(contents),
+		[]byte(contents.String()),
 		0755, // note this is mostly ignored on windows
 	)
 	if err != nil {
@@ -240,14 +240,14 @@ func install(arguments map[string]any) (err error) {
 	case arguments["service"]:
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
-		extraOpts := ""
+		var extraOpts strings.Builder
 		for k := range arguments {
 			if strings.HasPrefix(k, "--configure-for-") {
-				extraOpts += " " + k
+				extraOpts.WriteString(" " + k)
 			}
 		}
 		dir := filepath.Dir(exePath)
-		return deployService(configFile, nssm, serviceName, exePath, dir, extraOpts)
+		return deployService(configFile, nssm, serviceName, exePath, dir, extraOpts.String())
 	}
 	log.Fatal("Unknown install target - only 'service' is allowed")
 	return nil
@@ -588,7 +588,7 @@ func convertNilToEmptyString(val any) string {
 	return val.(string)
 }
 
-func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo interface{}, ctx context.Context) (*interactive.ConPty, error) {
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo any, ctx context.Context) (*interactive.ConPty, error) {
 	envVars := []string{}
 	for k, v := range task.Payload.Env {
 		envVars = append(envVars, k+"="+win32.CMDExeEscape(v))
@@ -596,6 +596,6 @@ func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo interface{}, c
 	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, task.TaskDir(), envVars, windows.Token(task.pd.CommandAccessToken))
 }
 
-func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo interface{}, ctx context.Context) (*exec.Cmd, error) {
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo any, ctx context.Context) (*exec.Cmd, error) {
 	return nil, nil
 }
