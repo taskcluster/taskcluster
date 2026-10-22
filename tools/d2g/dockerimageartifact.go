@@ -37,7 +37,3 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 	}
 	return []genericworker.FileMount{fm}, nil
 }
-
-func (dia *DockerImageArtifact) String() string {
-	return "__D2G_IMAGE_ID__"
-}
