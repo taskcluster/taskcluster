@@ -56,7 +56,7 @@ func (mrttf *MaxRunTimeTaskFeature) Start() *CommandExecutionError {
 		func() {
 			// ignore any error the Abort function returns - we are in the
 			// wrong go routine to properly handle it
-			err := mrttf.task.StatusManager.Abort(Failure(fmt.Errorf("task aborted - max run time exceeded")))
+			err := mrttf.task.StatusManager.Abort(Failure(fmt.Errorf("task aborted - max run time exceeded")), abortGracePeriod)
 			if err != nil {
 				mrttf.task.Warnf("Error when aborting task: %v", err)
 			}

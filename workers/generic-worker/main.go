@@ -1158,7 +1158,40 @@ func (task *TaskRun) resolve(e *ExecutionErrors) *CommandExecutionError {
 
 func (task *TaskRun) kill() {
 	for _, command := range task.Commands {
+		if command == nil {
+			continue
+		}
 		output, err := command.Kill()
+		if len(output) > 0 {
+			task.Info(string(output))
+		}
+		if err != nil {
+			log.Printf("WARNING: %v", err)
+			task.Warnf("%v", err)
+		}
+	}
+}
+
+// terminate aborts the task commands. If gracePeriod is positive, task
+// processes are first sent SIGTERM, and only killed if they are still running
+// after gracePeriod has elapsed. Otherwise, or on Windows, they are killed
+// immediately.
+func (task *TaskRun) terminate(gracePeriod time.Duration) {
+	if !process.GracefulTerminationSupported {
+		gracePeriod = 0
+	}
+	if gracePeriod > 0 {
+		task.Errorf("Aborting task... sending SIGTERM to task processes, waiting up to %v for them to exit before killing them", gracePeriod)
+	} else {
+		task.Errorf("Aborting task...")
+	}
+	for _, command := range task.Commands {
+		if command == nil {
+			continue
+		}
+		output, err := command.Terminate(gracePeriod, func() {
+			task.Errorf("Task processes still running %v after SIGTERM - killing them", gracePeriod)
+		})
 		if len(output) > 0 {
 			task.Info(string(output))
 		}
