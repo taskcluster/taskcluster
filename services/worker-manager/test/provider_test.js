@@ -264,6 +264,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(helper.notify.emails.length, 1);
     });
 
+    test('worker-pool-error falls back to extra.code when extra.errorCode is absent', async () => {
+      const workerPool = await createWP();
+
+      await provider.reportError({
+        workerPool,
+        kind: 'something-error',
+        title: 'And Error about Something',
+        description: 'WHO KNOWS',
+        notify: helper.notify,
+        WorkerPoolError: WorkerPoolError,
+        extra: {
+          code: 'SOME_AZURE_CODE',
+        },
+      });
+
+      helper.assertPulseMessage('worker-pool-error', m => m.payload.errorCode === 'SOME_AZURE_CODE');
+    });
+
     test('report errors (w/ email and extraInfo)', async () => {
       const workerPool = await createWP({ emailOnError: true });
 
@@ -418,6 +436,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.ok(msg, 'worker-stopped log event should be emitted');
       assert.equal(msg.Fields.workerAge, 60);
       assert.equal(msg.Fields.runningDuration, 30);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('includes reason on workerStopped log and pulse message', async () => {
+      const worker = await createWorker({
+        workerId: 'wi-stopped-reason',
+        state: Worker.states.RUNNING,
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker, reason: 'instance TERMINATED' });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.equal(msg.Fields.reason, 'instance TERMINATED');
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === 'wi-stopped-reason' && m.payload.reason === 'instance TERMINATED'
+      );
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('omits reason on workerStopped pulse message when not given', async () => {
+      const worker = await createWorker({
+        workerId: 'wi-stopped-no-reason',
+        state: Worker.states.RUNNING,
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      await provider.onWorkerStopped({ worker });
+
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === 'wi-stopped-no-reason' && !('reason' in m.payload)
+      );
 
       monitor.metric.workerLifetime = originalMetric;
     });

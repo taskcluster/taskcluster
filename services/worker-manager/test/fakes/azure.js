@@ -382,7 +382,7 @@ export class DeploymentManager extends ResourceManager {
     if (deployment) {
       deployment.properties.provisioningState = state;
       if (error) {
-        deployment.properties.error = { message: error };
+        deployment.properties.error = typeof error === 'string' ? { message: error } : error;
       }
     }
   }
