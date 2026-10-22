@@ -31,20 +31,18 @@ func copyAndFlush(w *threadSafeWriteFlusher, r io.Reader, interval time.Duration
 	// close this channel when copying is complete
 	done := make(chan struct{})
 	var wg sync.WaitGroup
-	wg.Add(1)
 	// start routine which flushes at regular intervals
-	go func() {
+	wg.Go(func() {
 		for {
 			select {
 			case <-time.After(interval):
 				w.Flush()
 			case <-done:
-				wg.Done()
 				// copy has completed
 				return
 			}
 		}
-	}()
+	})
 
 	n, err := io.Copy(w, r)
 	close(done)

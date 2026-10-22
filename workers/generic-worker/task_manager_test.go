@@ -87,14 +87,12 @@ func TestTaskManagerConcurrentAccess(t *testing.T) {
 	var wg sync.WaitGroup
 	// Spawn 50 goroutines adding tasks
 	for i := range 50 {
-		wg.Add(1)
-		go func(id int) {
-			defer wg.Done()
-			task := &TaskRun{TaskID: fmt.Sprintf("task-%d", id)}
+		wg.Go(func() {
+			task := &TaskRun{TaskID: fmt.Sprintf("task-%d", i)}
 			tm.AddTask(task)
 			time.Sleep(time.Millisecond)
 			tm.RemoveTask(task.TaskID)
-		}(i)
+		})
 	}
 	wg.Wait()
 

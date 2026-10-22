@@ -111,7 +111,6 @@ func TestMultiplePost(t *testing.T) {
 		msg := []byte("message to be sent in a post request")
 		buffer := new(bytes.Buffer)
 		_, _ = buffer.Write(msg)
-		defer wg.Done()
 
 		req, err := http.NewRequest(http.MethodPost, "", wrapStream{buffer})
 		if err != nil {
@@ -142,8 +141,7 @@ func TestMultiplePost(t *testing.T) {
 	}
 
 	for range 50 {
-		wg.Add(1)
-		go sendAndWait()
+		wg.Go(sendAndWait)
 	}
 	wg.Wait()
 }
