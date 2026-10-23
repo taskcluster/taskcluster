@@ -371,6 +371,100 @@ func TestGrantFullControl(t *testing.T) {
 		assertNoWorld(t, later)
 		assertGranted(t, later, taskUser, "SYSTEM", "Administrators")
 	})
+
+	t.Run("grants every level of a nested tree", func(t *testing.T) {
+		cache := filepath.Join(base, "deep")
+		var paths []string
+		dir := cache
+		for _, name := range []string{"a", "b", "c"} {
+			dir = filepath.Join(dir, name)
+			if err := os.MkdirAll(dir, 0o700); err != nil {
+				t.Fatal(err)
+			}
+			for _, f := range []string{"one.txt", "two.txt"} {
+				file := filepath.Join(dir, f)
+				if err := os.WriteFile(file, []byte(f), 0o600); err != nil {
+					t.Fatal(err)
+				}
+				paths = append(paths, file)
+			}
+			paths = append(paths, dir)
+		}
+
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		for _, p := range append(paths, cache) {
+			if got := ownerOf(t, p); got != taskUser {
+				t.Errorf("%q owner = %q, want %q", p, got, taskUser)
+			}
+		}
+	})
+
+	// Each task has its own user, so if a grant merged into the existing DACL
+	// instead of replacing it, every task would leave one more ACE on every
+	// node of a cache and grants would get slower forever (#9280).
+	t.Run("drops ACEs left by a previous task user", func(t *testing.T) {
+		cache := filepath.Join(base, "previoususer")
+		nested := filepath.Join(cache, "nested", "file.txt")
+		if err := os.MkdirAll(filepath.Dir(nested), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(nested, []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		paths := []string{cache, filepath.Dir(nested), nested}
+		// Stand in for the previous task user with BUILTIN\Backup Operators
+		for _, p := range paths {
+			if err := host.Run("icacls", p, "/grant", "*S-1-5-32-551:F"); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+
+		taskSID, _, _, err := windows.LookupSID("", taskUser)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, p := range paths {
+			sd := readSD(t, p)
+			owner, _, err := sd.Owner()
+			if err != nil {
+				t.Fatalf("could not read owner of %q: %v", p, err)
+			}
+			if !owner.Equals(taskSID) {
+				t.Errorf("%s is owned by %s, want %s", p, owner, taskSID)
+			}
+			// Only directories should hand their ACEs down
+			wantFlags := uint8(0)
+			if p != nested {
+				wantFlags = windows.OBJECT_INHERIT_ACE | windows.CONTAINER_INHERIT_ACE
+			}
+			dacl, _, err := sd.DACL()
+			if err != nil {
+				t.Fatalf("could not read DACL of %q: %v", p, err)
+			}
+			if dacl.AceCount != 3 {
+				t.Errorf("%s has %d ACEs, want 3: %s", p, dacl.AceCount, sd.String())
+			}
+			for i := uint16(0); i < dacl.AceCount; i++ {
+				var ace *windows.ACCESS_ALLOWED_ACE
+				if err := windows.GetAce(dacl, uint32(i), &ace); err != nil {
+					t.Fatalf("GetAce: %v", err)
+				}
+				sid := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
+				if !sid.Equals(taskSID) && !sid.IsWellKnown(windows.WinBuiltinAdministratorsSid) && !sid.IsWellKnown(windows.WinLocalSystemSid) {
+					t.Errorf("%s kept an ACE for %s", p, sid)
+				}
+				if ace.Header.AceFlags != wantFlags {
+					t.Errorf("%s has an ACE for %s with flags %#x, want %#x", p, sid, ace.Header.AceFlags, wantFlags)
+				}
+			}
+		}
+	})
 }
 
 func TestProtectWorkerDir(t *testing.T) {

@@ -660,3 +660,41 @@ func TestOpenPathPinned(t *testing.T) {
 		}
 	})
 }
+
+func TestNumberOfLinks(t *testing.T) {
+	base := t.TempDir()
+	file := write(t, filepath.Join(base, "file.txt"), "ours")
+	dir := mkdir(t, filepath.Join(base, "sub"))
+
+	check := func(t *testing.T, path string, want uint32) {
+		t.Helper()
+		h, err := OpenPathPinned(path, SecAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		links, err := NumberOfLinks(h)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if links != want {
+			t.Errorf("%q has %v links, want %v", path, links, want)
+		}
+		// Must agree with what GetFileInformationByHandle reports
+		var info windows.ByHandleFileInformation
+		if err := windows.GetFileInformationByHandle(h, &info); err != nil {
+			t.Fatal(err)
+		}
+		if links != info.NumberOfLinks {
+			t.Errorf("%q has %v links but GetFileInformationByHandle says %v", path, links, info.NumberOfLinks)
+		}
+	}
+
+	check(t, file, 1)
+	check(t, dir, 1)
+	hardlink(t, file, filepath.Join(base, "link1"))
+	check(t, file, 2)
+	hardlink(t, file, filepath.Join(base, "link2"))
+	check(t, file, 3)
+}
