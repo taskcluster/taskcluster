@@ -12,6 +12,7 @@ import {
   SetQueueAttributesCommand,
 } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
+import { WebAPIPlatformError } from '@slack/web-api';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import builder from '../src/api.js';
@@ -307,9 +308,19 @@ helper.withFakeMatrix = skipping => {
   });
 };
 
-helper.withFakeSlack = skipping => {
-  const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
+// Mimics the platform errors the Slack client throws when the API answers `ok: false`
+const fakeSlackSend = () =>
+  sinon.fake(({ channel }) => {
+    if (channel.includes('invalid')) {
+      throw new WebAPIPlatformError({ ok: false, error: 'channel_not_found' });
+    }
+    if (channel.includes('broken')) {
+      throw new WebAPIPlatformError({ ok: false, error: 'internal_error' });
+    }
+    return { ok: true };
+  });
 
+helper.withFakeSlack = skipping => {
   suiteSetup('withFakeSlack', async () => {
     if (skipping()) {
       return;
