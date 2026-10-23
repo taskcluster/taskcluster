@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"path/filepath"
 	"reflect"
 	"sync"
 
@@ -14,6 +15,11 @@ import (
 )
 
 type (
+	PreloadedDirectoryCache struct {
+		CacheName string `json:"cacheName"`
+		Location  string `json:"location"`
+	}
+
 	// Generic Worker config
 	Config struct {
 		PrivateConfig
@@ -27,6 +33,9 @@ type (
 	PublicConfig struct {
 		PublicEngineConfig
 		PublicPlatformConfig
+
+		PreloadedDirectoryCaches []PreloadedDirectoryCache `json:"preloadedDirectoryCaches,omitempty"`
+
 		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
@@ -145,6 +154,11 @@ func (c *Config) Validate() error {
 
 	if c.Capacity == 0 {
 		return fmt.Errorf("capacity must be at least 1 (got 0)")
+	}
+	for _, seed := range c.PreloadedDirectoryCaches {
+		if seed.CacheName == "" || !filepath.IsAbs(seed.Location) {
+			return fmt.Errorf("preloadedDirectoryCaches requires a cacheName and an absolute location")
+		}
 	}
 
 	// Validate port configuration for concurrent task execution
