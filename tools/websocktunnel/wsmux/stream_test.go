@@ -34,8 +34,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	var wg sync.WaitGroup
 	logger := genLogger()
 
-	sender := func(i int) {
-		defer wg.Done()
+	sender := func() {
 		str, err := session.Open()
 		id := str.(*stream).id
 		if err != nil {
@@ -66,9 +65,8 @@ func TestManyStreamEchoLarge(t *testing.T) {
 		}
 	}
 
-	for i := range maxTestStreams {
-		wg.Add(1)
-		go sender(i)
+	for range maxTestStreams {
+		wg.Go(sender)
 	}
 
 	wg.Wait()
@@ -275,10 +273,8 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 
 	final := new(bytes.Buffer)
 	var wg sync.WaitGroup
-	wg.Add(2)
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		_, err := str.Write(buf)
 		if err != nil {
 			panic(err)
@@ -287,15 +283,14 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-	}()
+	})
 
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		_, err := io.Copy(final, str)
 		if err != nil {
 			panic(err)
 		}
-	}()
+	})
 
 	wg.Wait()
 

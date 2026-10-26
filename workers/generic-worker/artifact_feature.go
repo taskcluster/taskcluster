@@ -177,7 +177,6 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 	artifactsChan := make(chan []artifacts.TaskArtifact, len(task.Payload.Artifacts))
 
 	processArtifact := func(artifact Artifact) {
-		defer wg.Done()
 		payloadArtifacts := make([]artifacts.TaskArtifact, 0)
 
 		basePath := artifact.Path
@@ -252,8 +251,7 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 	}
 
 	for _, artifact := range task.Payload.Artifacts {
-		wg.Add(1)
-		go processArtifact(artifact)
+		wg.Go(func() { processArtifact(artifact) })
 	}
 
 	go func() {

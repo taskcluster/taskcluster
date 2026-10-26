@@ -60,11 +60,15 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 			return wsconn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(5*time.Second))
 		})
 
-		// send keepalives every 10s
+		// send keepalives every 10s, until the handler returns
 		ticker := time.NewTicker(10 * time.Second)
 		go func() {
 			for {
-				<-ticker.C
+				select {
+				case <-r.Context().Done():
+					return
+				case <-ticker.C:
+				}
 
 				writeLock.Lock()
 				err := wsconn.WriteControl(websocket.PingMessage, nil, time.Now().Add(5*time.Second))
@@ -86,9 +90,8 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 		// when any piece fails and completing this function when both directions
 		// are closed
 		var wg sync.WaitGroup
-		wg.Add(2)
 
-		go func() {
+		wg.Go(func() {
 			defer kill()
 			for {
 				messageType, payload, err := wsconn.ReadMessage()
@@ -109,9 +112,9 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 					return
 				}
 			}
-		}()
+		})
 
-		go func() {
+		wg.Go(func() {
 			defer kill()
 			buf := make([]byte, 1024*512)
 			for {
@@ -128,7 +131,7 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 					return
 				}
 			}
-		}()
+		})
 
 		wg.Wait()
 	}

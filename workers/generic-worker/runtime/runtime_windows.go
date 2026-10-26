@@ -159,7 +159,7 @@ func ListUserAccounts() (usernames []string, err error) {
 	if err != nil {
 		return
 	}
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		trimmedLine := strings.TrimSpace(line)
 		usernames = append(usernames, trimmedLine)
 	}

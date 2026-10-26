@@ -19,11 +19,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 64 * 1024,
 }
 
-func echoFunc(b *testing.B, server *Session, wg *sync.WaitGroup) {
+func echoFunc(b *testing.B, server *Session) {
 	b.Helper()
-	if wg != nil {
-		defer wg.Done()
-	}
 	hash := sha256.New()
 	str, err := server.Accept()
 	if err != nil {
@@ -44,11 +41,8 @@ func echoFunc(b *testing.B, server *Session, wg *sync.WaitGroup) {
 	}
 }
 
-func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
+func echoClientFunc(b *testing.B, client *Session) {
 	b.Helper()
-	if wg != nil {
-		defer wg.Done()
-	}
 	hash := sha256.New()
 	str, err := client.Open()
 	if err != nil {
@@ -97,7 +91,7 @@ func genTransferHandler(b *testing.B) http.Handler {
 		}
 
 		server := Server(conn, Config{StreamBufferSize: 4 * 1024})
-		echoFunc(b, server, nil)
+		echoFunc(b, server)
 
 	}
 	return http.HandlerFunc(tr)
@@ -121,8 +115,7 @@ func genMultiTransferHandler(b *testing.B) http.Handler {
 
 		wg := new(sync.WaitGroup)
 		for range maxTransferStreams {
-			wg.Add(1)
-			go echoFunc(b, server, wg)
+			wg.Go(func() { echoFunc(b, server) })
 		}
 		wg.Wait()
 	})
@@ -138,7 +131,7 @@ func BenchmarkTransfer(b *testing.B) {
 		b.Fatal(err)
 	}
 	client := Client(conn, Config{StreamBufferSize: 4 * 1024})
-	echoClientFunc(b, client, nil)
+	echoClientFunc(b, client)
 }
 
 // test transfer over multiple streams
@@ -153,8 +146,7 @@ func BenchmarkMultiTransfer(b *testing.B) {
 	client := Client(conn, Config{StreamBufferSize: 4 * 1024})
 	wg := new(sync.WaitGroup)
 	for range maxTransferStreams {
-		wg.Add(1)
-		go echoClientFunc(b, client, wg)
+		wg.Go(func() { echoClientFunc(b, client) })
 	}
 	wg.Wait()
 }

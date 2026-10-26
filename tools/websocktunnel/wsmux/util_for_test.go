@@ -144,9 +144,7 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 	session := Server(conn, Config{Log: genLogger()})
 
 	var wg sync.WaitGroup
-	acceptor := func(i int) {
-		defer wg.Done()
-
+	acceptor := func() {
 		str, err := session.Accept()
 		if err != nil {
 			panic(err)
@@ -169,9 +167,8 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 		}
 	}
 
-	for i := range maxTestStreams {
-		wg.Add(1)
-		go acceptor(i)
+	for range maxTestStreams {
+		wg.Go(acceptor)
 	}
 
 	wg.Wait()
