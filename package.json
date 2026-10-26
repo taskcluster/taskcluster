@@ -52,7 +52,7 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^2.1.1",
     "amqplib": "^2.2.0",
-    "body-parser": "2.3.0",
+    "body-parser": "2.4.0",
     "bottleneck": "^2.15.3",
     "chalk": "^6.0.1",
     "compression": "^1.8.2",
