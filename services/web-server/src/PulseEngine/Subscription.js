@@ -1,10 +1,11 @@
 export default class Subscription {
-  constructor({ subscriptionId, handleMessage, handleError, monitor, subscriptions }) {
+  constructor({ subscriptionId, handleMessage, handleError, monitor, subscriptions, requestReconcile }) {
     this.subscriptionId = subscriptionId;
     this.handleMessage = handleMessage;
     this.handleError = handleError;
     this.monitor = monitor;
     this.subscriptions = subscriptions;
+    this.requestReconcile = requestReconcile;
 
     // the identifier for the active consumer, if any (used to cancel it)
     this.consumerTag = null;
@@ -37,6 +38,19 @@ export default class Subscription {
   async reconcile(client, connection) {
     const { subscriptionId, listening, unsubscribed } = this;
     const queueName = client.fullObjectName('queue', subscriptionId);
+
+    // unsubscribed before (re)listening: just release the channel
+    if (!listening && unsubscribed) {
+      if (this.channel) {
+        try {
+          await this.channel.close();
+        } catch {
+          // ignored (e.g., the channel's connection is already gone)
+        }
+        this.channel = null;
+      }
+      return;
+    }
 
     if (!this.channel || connection !== this.connection) {
       this.connection = connection;
@@ -96,9 +110,12 @@ export default class Subscription {
 
         const { consumerTag } = await channel.consume(queueName, (amqpMsg, _err) => {
           // "If the consumer is cancelled by RabbitMQ, the message callback will be invoked with null."
-          // This is most likely due to the queue being deleted, so we just report it to the user.
+          // This is most likely due to the queue being deleted, so re-create it and consume again.
           if (!amqpMsg) {
-            handleError(`Consumer cancelled by RabbitMQ`);
+            this.monitor.warning('Pulse consumer cancelled by RabbitMQ; resubscribing', { subscriptionId });
+            this.consumerTag = null;
+            this.listening = false;
+            this.requestReconcile();
             return;
           }
           const message = {

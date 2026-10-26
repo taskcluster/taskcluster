@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import PulseIterator from '../src/PulseEngine/PulseIterator.js';
+import Subscription from '../src/PulseEngine/Subscription.js';
 import testing from '@taskcluster/lib-testing';
 
 // load for side-effects
@@ -142,6 +143,73 @@ suite(testing.suiteName(), () => {
           throw err;
         }
       }
+    });
+  });
+
+  suite('Subscription', () => {
+    // a Subscription wired to a fake channel that records consumers and closes
+    const makeSubscription = ({ requestReconcile = () => {} } = {}) => {
+      const fakes = { consumers: [], closes: 0, errors: [] };
+      const channel = {
+        on() {},
+        assertQueue: async () => {},
+        bindQueue: async () => {},
+        close: async () => {
+          fakes.closes++;
+        },
+        consume: async (_queueName, onMessage) => {
+          fakes.consumers.push(onMessage);
+          return { consumerTag: `tag${fakes.consumers.length}` };
+        },
+      };
+      fakes.connection = { amqp: { createChannel: async () => channel } };
+      fakes.client = { fullObjectName: (kind, name) => `${kind}/${name}` };
+      fakes.sub = new Subscription({
+        subscriptionId: 'subid',
+        handleMessage: async () => {},
+        handleError: err => fakes.errors.push(err),
+        monitor: { log: { bindPulseSubscription() {} }, warning() {} },
+        subscriptions: [{ exchange: 'exchange/foo', pattern: '#' }],
+        requestReconcile: () => requestReconcile(fakes),
+      });
+
+      return fakes;
+    };
+
+    test('resubscribes when RabbitMQ cancels the consumer', async () => {
+      const { sub, client, connection, consumers, errors } = makeSubscription({
+        requestReconcile: ({ sub, client, connection }) => sub.reconcile(client, connection),
+      });
+
+      await sub.reconcile(client, connection);
+      assert.equal(consumers.length, 1);
+
+      // amqplib calls the consumer with null when RabbitMQ cancels it
+      consumers[0](null);
+      await beat();
+
+      assert.equal(consumers.length, 2, 'should have consumed again');
+      assert.equal(sub.consumerTag, 'tag2');
+      assert.equal(sub.listening, true);
+      assert.deepEqual(errors, []);
+    });
+
+    test('closes the channel when unsubscribed before resubscribing', async () => {
+      const fakes = makeSubscription();
+      const { sub, client, connection, consumers } = fakes;
+
+      await sub.reconcile(client, connection);
+      const closesBefore = fakes.closes;
+
+      // cancelled, then unsubscribed before the requested reconcile runs
+      consumers[0](null);
+      sub.unsubscribe();
+      await sub.reconcile(client, connection);
+
+      assert.equal(fakes.closes, closesBefore + 1, 'should have closed the channel');
+      assert.equal(sub.channel, null);
+      assert.equal(consumers.length, 1, 'should not have consumed again');
+      assert.equal(sub.garbage, true);
     });
   });
 });

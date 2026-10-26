@@ -222,6 +222,11 @@ export default class SubscriptionConnection {
       this.monitor.log.websocketConnected({ clientId: this.clientId });
       await this.send({ type: FRAME_TYPES.CONNECTION_ACK });
     } catch (err) {
+      // the client disconnected during the scope check
+      if (this.ws.readyState !== this.ws.OPEN) {
+        return;
+      }
+
       // An invalid or expired credential is a client problem
       // tell the client explicitly (with a close code it recognizes) so
       // it can resubscribe with fresh credentials or stop, rather than
@@ -272,7 +277,9 @@ export default class SubscriptionConnection {
       message =>
         // the returned promise drives the engine's AMQP ack/nack
         this.send({ type: FRAME_TYPES.DATA, subscriptionId, message }).catch(err => {
-          this.monitor.reportError(err);
+          if (this.ws.readyState === this.ws.OPEN) {
+            this.monitor.reportError(err);
+          }
 
           // The socket cannot receive further messages, so drop the
           // subscription and close, rather than letting the rejected delivery
