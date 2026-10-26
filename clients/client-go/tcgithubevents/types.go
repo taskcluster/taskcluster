@@ -46,7 +46,7 @@ type (
 
 		// The GitHub `repository` which had an event.
 		//
-		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Syntax:     ^([a-zA-Z0-9-_.%]*)$
 		// Min length: 1
 		// Max length: 100
 		Repository string `json:"repository"`
@@ -94,7 +94,7 @@ type (
 
 		// The GitHub `repository` which had an event.
 		//
-		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Syntax:     ^([a-zA-Z0-9-_.%]*)$
 		// Min length: 1
 		// Max length: 100
 		Repository string `json:"repository"`
@@ -145,7 +145,7 @@ type (
 
 		// The GitHub `repository` which had an event.
 		//
-		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Syntax:     ^([a-zA-Z0-9-_.%]*)$
 		// Min length: 1
 		// Max length: 100
 		Repository string `json:"repository"`
@@ -196,7 +196,7 @@ type (
 
 		// The GitHub `repository` which had an event.
 		//
-		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Syntax:     ^([a-zA-Z0-9-_.%]*)$
 		// Min length: 1
 		// Max length: 100
 		Repository string `json:"repository"`
@@ -225,7 +225,7 @@ type (
 
 		// The GitHub `repository` which had an event.
 		//
-		// Syntax:     ^([a-zA-Z0-9-_%]*)$
+		// Syntax:     ^([a-zA-Z0-9-_.%]*)$
 		// Min length: 1
 		// Max length: 100
 		Repository string `json:"repository"`

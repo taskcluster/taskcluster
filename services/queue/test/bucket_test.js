@@ -152,3 +152,41 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert.equal(url, `${customEndpoint}/${cfg.app.publicArtifactBucket}/testX`);
   });
 });
+
+suite(testing.suiteName(), () => {
+  const makeBucket = options =>
+    new Bucket({
+      bucket: 'test-bucket',
+      awsOptions: { accessKeyId: 'fake', secretAccessKey: 'fake', ...options?.awsOptions },
+      bucketCDN: options?.bucketCDN,
+      monitor: {},
+    });
+  const pathStyle = { awsOptions: { endpoint: 'http://taskcluster', s3ForcePathStyle: true } };
+
+  test('keys are encoded as data in GET URLs', async () => {
+    const key = 'a/%2e%2e/b\\..\\c d?e#f';
+    assert.equal(
+      await makeBucket(pathStyle).createGetUrl(key),
+      'http://taskcluster/test-bucket/a/%252e%252e/b%5C..%5Cc%20d%3Fe%23f'
+    );
+    assert.equal(
+      await makeBucket({ bucketCDN: 'https://example.com' }).createGetUrl(key),
+      'https://example.com/a/%252e%252e/b%5C..%5Cc%20d%3Fe%23f'
+    );
+    const signed = await makeBucket(pathStyle).createSignedGetUrl(key, { expires: 60 });
+    assert.equal(new URL(signed).pathname, '/test-bucket/a/%252e%252e/b%5C..%5Cc%20d%3Fe%23f');
+  });
+
+  test('PUT URLs refuse keys with `.` or `..` path segments', async () => {
+    const bucket = makeBucket(pathStyle);
+    for (const key of ['a/../../b', '../b', 'a/..', '..', 'a/./b', './b', '.']) {
+      assert.throws(() => bucket.createPutUrl(key, { contentType: 'text/plain', expires: 60 }), /path segments/);
+    }
+  });
+
+  test('dots that are not a whole segment are kept in GET URLs', async () => {
+    for (const bucket of [makeBucket(pathStyle), makeBucket({ bucketCDN: 'https://example.com' })]) {
+      assert((await bucket.createGetUrl('a/..b/c../.../d')).endsWith('/a/..b/c../.../d'));
+    }
+  });
+});

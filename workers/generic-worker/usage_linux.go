@@ -44,3 +44,15 @@ func loopbackDeviceNumbers() string {
                                             between 0 and 255. This setting may be used to change it.
                                             [default: 0]`
 }
+
+func requiredDockerDiskSpace() string {
+	return `
+          requiredDockerDiskSpaceMegabytes  When D2G is enabled and no tasks are running, the
+                                            garbage collector will prune unused docker resources
+                                            if fewer than this number of megabytes of disk space
+                                            are available in the docker data-root, which may be
+                                            on a different filesystem than tasksDir. If it is on
+                                            the same filesystem, this should not be lower than
+                                            requiredDiskSpaceMegabytes. If zero,
+                                            requiredDiskSpaceMegabytes is used. [default: 0]`
+}

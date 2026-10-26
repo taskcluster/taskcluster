@@ -20,6 +20,14 @@ release, uses `gvm` to install it, and updates the pinned `golangci-lint`
 version when the Go version changes. Both scripts add a changelog snippet for
 the version bump.
 
+Release tasks download pinned Go, Rust, Node.js, and uv archives and verify
+their sha256. After any of those versions changes (by script or by hand), run
+`yarn generate`: it updates `taskcluster/toolchain-sha256.yml`, fetching the
+official checksum for any new version and dropping stale entries. For a Rust or
+uv bump, edit the version (`clients/client-rust/rust-toolchain.toml` or
+`.uv-version`), then run `yarn generate`. Release task generation (and the
+`taskgraph-security` CI check) fails until the table is up to date.
+
 These commands require `nvm` and `gvm` to be installed locally. The shell
 wrappers load those tools, switch to the target runtime version, and then
 delegate the repository updates to `infrastructure/tooling`.
@@ -91,8 +99,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version: `gvm install go1.27.2`
-* Use the new go version (--default to set permanently): `gvm use go1.27.2`
+* Install the new go version: `gvm install go1.27.3`
+* Use the new go version (--default to set permanently): `gvm use go1.27.3`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.

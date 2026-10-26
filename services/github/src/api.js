@@ -453,7 +453,7 @@ builder.declare(
     query: {
       ...paginateResults.query,
       organization: /^([a-zA-Z0-9-_%]*)$/,
-      repository: /^([a-zA-Z0-9-_%]*)$/,
+      repository: /^([a-zA-Z0-9-_.%]*)$/,
       sha: /./,
       pullRequest: /^([0-9]*)$/,
     },

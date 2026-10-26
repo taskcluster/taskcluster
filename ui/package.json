@@ -1,10 +1,10 @@
 {
   "name": "@taskcluster/ui",
-  "version": "113.1.1",
+  "version": "113.2.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "24.21.0"
+    "node": "24.22.1"
   },
   "packageManager": "yarn@4.18.1",
   "scripts": {
@@ -53,7 +53,7 @@
     "localforage": "^1.7.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "markdown-it": "^14.3.0",
+    "markdown-it": "^14.3.3",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^4.0.1",
     "mdi-react": "^6.2.0",
@@ -97,7 +97,7 @@
     "jsdom": "^29.0.0",
     "rehype-prism-plus": "^2.0.2",
     "typescript": "^5.8.3",
-    "vite": "^8.2.2",
+    "vite": "^8.2.4",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^5.0.2"
   },

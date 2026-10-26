@@ -1,7 +1,7 @@
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import slug from 'slugid';
 import assert from 'node:assert';
-import { ApiError, Provider } from './providers/provider.js';
+import { ApiError, Provider, TransientApiError } from './providers/provider.js';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
@@ -1215,6 +1215,9 @@ builder.declare(
     } catch (err) {
       if (!(err instanceof ApiError)) {
         throw err;
+      }
+      if (err instanceof TransientApiError) {
+        return res.reportError('ServiceUnavailable', err.message, {});
       }
       return res.reportError('InputError', err.message, {});
     }

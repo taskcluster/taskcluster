@@ -8,7 +8,7 @@ import net from 'node:net';
 import { rootCertificates } from 'node:tls';
 import { WorkerPool, Worker } from '../../data.js';
 import azureApi from './azure-api.js';
-import { ApiError, Provider } from '../provider.js';
+import { ApiError, Provider, TransientApiError } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
 import {
@@ -1049,12 +1049,14 @@ export class AzureProvider extends Provider {
       });
     }
 
+    const operationErrorCode = failingOperations.find(op => op.statusMessage?.error?.code)?.statusMessage.error.code;
     await this.reportError({
       workerPool,
       kind: 'arm-deployment-error',
       title: 'ARM Deployment Error',
       description,
       extra: {
+        code: deployment.properties?.error?.code ?? operationErrorCode,
         workerId: worker.workerId,
         workerGroup: worker.workerGroup,
         deploymentName: worker.providerData.deployment.name,
@@ -1262,6 +1264,7 @@ export class AzureProvider extends Provider {
     if (issuer === null) {
       const authorityAccessInfo = getAuthorityAccessInfo(crt);
       let method, location;
+      let retryableDownloadError = false;
       for (let i = 0; i < authorityAccessInfo.length; i++) {
         method = authorityAccessInfo[i].method;
         location = authorityAccessInfo[i].location;
@@ -1279,6 +1282,11 @@ export class AzureProvider extends Provider {
           try {
             raw_data = await this.downloadBinaryResponse(location);
           } catch (err) {
+            // network errors and timeouts have no response; 5xx and 429 may also clear up
+            const statusCode = err.response?.statusCode;
+            if (!statusCode || statusCode >= 500 || statusCode === 429) {
+              retryableDownloadError = true;
+            }
             this.monitor.log.registrationErrorWarning({
               message: 'Error downloading intermediate certificate',
               error: `${err.toString()}; location=${location}`,
@@ -1344,7 +1352,8 @@ export class AzureProvider extends Provider {
           workerId: worker.workerId,
           document,
         });
-        throw error();
+        // a failed download may be temporary, so let the worker retry
+        throw retryableDownloadError ? new TransientApiError('Signature validation error') : error();
       }
     }
 
@@ -2591,7 +2600,8 @@ export class AzureProvider extends Provider {
       // change to stopped
       monitor.debug(`setting state to STOPPED`);
       // triggering event before updating worker state to know current state
-      await this.onWorkerStopped({ worker });
+      const stoppedReason = worker.providerData.reasonRemoved ?? `azure teardown: ${teardownMode}`;
+      await this.onWorkerStopped({ worker, reason: stoppedReason });
       await worker.update(this.db, worker => {
         const now = new Date();
         worker.lastModified = now;

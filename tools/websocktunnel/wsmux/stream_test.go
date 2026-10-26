@@ -145,8 +145,8 @@ func TestReadDeadlineReset(t *testing.T) {
 	_ = str.SetReadDeadline(start.Add(1500 * time.Millisecond))
 	select {
 	case <-short.C:
-	case <-errChan:
-		t.Fatal("deadline did not reset")
+	case err := <-errChan:
+		t.Fatalf("deadline did not reset: %v", err)
 	}
 	select {
 	case err := <-errChan:
@@ -226,8 +226,8 @@ func TestWriteDeadlineReset(t *testing.T) {
 	_ = str.SetWriteDeadline(start.Add(1500 * time.Millisecond))
 	select {
 	case <-short.C:
-	case <-errChan:
-		t.Fatal("write deadline was not reset")
+	case err := <-errChan:
+		t.Fatalf("write deadline was not reset: %v", err)
 	}
 	select {
 	case err := <-errChan:

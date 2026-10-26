@@ -133,6 +133,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
   });
 
+  test('pulse ignores routes outside the route prefix', async () => {
+    const route = 'test-notify.pulse.notify-test-prefixed.on-transition';
+    const foreignRoute = 'garbage.pulse.notify-test-foreign.on-transition';
+    helper.queue.addTask(baseStatus.taskId, makeTask([route, foreignRoute]));
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route, foreignRoute],
+    });
+    helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test-prefixed');
+    helper.assertNoPulseMessage('notification', m => m.CCs[0] === 'route.notify-test-foreign');
+  });
+
   test('pulse denylisted', async () => {
     const route = 'test-notify.pulse.notify-test-denied.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));

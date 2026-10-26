@@ -19,6 +19,7 @@ import http from 'node:http';
 import got from 'got';
 import path from 'node:path';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
+import { TransientApiError } from '../src/providers/provider.js';
 import Debug from 'debug';
 import { loadCertificates } from '../src/providers/azure/azure-ca-certs/index.js';
 
@@ -2498,7 +2499,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     // Builds a STOPPING ARM worker whose tracked nic/ip/disks match a cascading
     // VM. Pass `cascade: false` for a worker with no cascade field (slow walk),
     // or override providerData keys (e.g. nic/ip/disks/cascade) directly.
-    const makeStoppingWorker = async ({ cascade, ...pd } = {}) => {
+    const makeStoppingWorker = async ({ cascade, state = 'stopping', ...pd } = {}) => {
       const providerData = {
         ...baseProviderData,
         deploymentMethod: 'arm-template',
@@ -2516,12 +2517,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         workerGroup,
         workerId: 'cascade-vm',
         providerId,
+        launchConfigId: 'lc1',
         created: taskcluster.fromNow('0 seconds'),
         lastModified: taskcluster.fromNow('0 seconds'),
         lastChecked: taskcluster.fromNow('0 seconds'),
         capacity: 1,
         expires: taskcluster.fromNow('1 hour'),
-        state: 'stopping',
+        state,
         providerData,
       });
       await worker.create(helper.db);
@@ -2567,7 +2569,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         'a fast teardown log should be emitted'
       );
       assert.deepEqual(provider.errors[workerPoolId], []);
-      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === reloaded.workerId && m.payload.reason === 'azure teardown: fast'
+      );
+    });
+
+    test('worker-stopped reports the reason stored by removeWorker', async () => {
+      const worker = await makeStoppingWorker({ state: 'running' });
+      await provider.removeWorker({ worker, reason: 'terminateAfter time exceeded' });
+      await provider.deprovisionResources({ worker, monitor });
+
+      const [reloaded] = await helper.getWorkers();
+      assert.equal(reloaded.state, 'stopped');
+      helper.assertPulseMessage(
+        'worker-stopped',
+        m => m.payload.workerId === reloaded.workerId && m.payload.reason === 'terminateAfter time exceeded'
+      );
     });
 
     test('cascade absent - slow walk (regression guard)', async () => {
@@ -3288,6 +3306,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(reportedError.description.includes('At least one resource deployment operation failed'));
         assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
         assert.equal(reportedError.extra.operations.length, 1);
+        assert.equal(reportedError.extra.code, 'DeploymentFailed');
         assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'DeploymentFailed');
         assert.equal(reportedError.extra.operations[0].statusMessage.error.details[0].code, 'NotSupported');
         assert.equal(reportedError.extra.operations[0].statusMessage.error.details[1].code, 'AnotherNestedError');
@@ -3316,6 +3335,54 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       } finally {
         provider.monitor._metric.azureArmDeploymentError = originalMetric;
       }
+    });
+
+    test('reports the deployment error code when ARM deployment fails without failing operations', async () => {
+      const existingWorkerPool = await WorkerPool.get(helper.db, workerPoolId);
+      if (!existingWorkerPool) {
+        await makeWorkerPool();
+      }
+
+      const deploymentName = 'deploy-error-code';
+      await worker.update(helper.db, worker => {
+        worker.providerData = {
+          ...worker.providerData,
+          deploymentMethod: 'arm-template',
+          deployment: {
+            name: deploymentName,
+            operation: 'op/deployment',
+            id: false,
+          },
+          provisioningComplete: false,
+        };
+      });
+
+      await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
+        parameters: {
+          vmName: { value: worker.providerData.vm.name },
+        },
+      });
+      fake.deploymentsClient.deployments.setFakeDeploymentState('rgrp', deploymentName, 'Failed', {
+        code: 'DeploymentFailed',
+        message: 'Deployment failed',
+      });
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, []);
+
+      await setState({ state: 'requested' });
+
+      await provider.checkWorker({ worker });
+
+      const [error] = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
+      assert.equal(error.kind, 'arm-deployment-error');
+      assert.equal(error.description, 'Deployment failed');
+      assert.equal(error.extra.code, 'DeploymentFailed');
+      assert.deepEqual(await helper.db.fns.get_worker_pool_error_codes(workerPoolId), [
+        { code: 'DeploymentFailed', count: 1 },
+      ]);
+      helper.assertPulseMessage(
+        'worker-pool-error',
+        m => m.payload.workerId === worker.workerId && m.payload.errorCode === 'DeploymentFailed'
+      );
     });
   });
 
@@ -3514,7 +3581,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => err instanceof TransientApiError && /Signature validation error/.test(err.message)
           );
           // both CA Issuer locations are attempted before giving up
           const log0 = monitor.manager.messages[0].Fields;
@@ -3562,7 +3629,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => err instanceof TransientApiError && /Signature validation error/.test(err.message)
           );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
@@ -3588,6 +3655,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           helper.assertNoPulseMessage('worker-running');
         });
 
+        test('certificate download returns 404', async () => {
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+          });
+          await worker.create(helper.db);
+          const workerIdentityProof = { document: azureSignatures[0].document };
+
+          const notFoundServer = http.createServer((_req, res) => {
+            res.writeHead(404);
+            res.end();
+          });
+          await new Promise(resolve => notFoundServer.listen(0, '127.0.0.1', resolve));
+          const notFoundUrl = `http://127.0.0.1:${notFoundServer.address().port}`;
+
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
+          provider.downloadBinaryResponse = async () =>
+            got(notFoundUrl, { responseType: 'buffer', resolveBodyOnly: true, retry: { limit: 0 } });
+
+          removeIntermediatesFromStore();
+
+          // a permanent HTTP error should not make the worker retry
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            err => !(err instanceof TransientApiError) && /Signature validation error/.test(err.message)
+          );
+          const log0 = monitor.manager.messages[0].Fields;
+          assert.equal(log0.message, 'Error downloading intermediate certificate');
+          assert.equal(log0.error, `HTTPError: Response code 404 (Not Found); location=${intermediateCertUrl}`);
+
+          // Restore test fixture
+          await new Promise(resolve => notFoundServer.close(resolve));
+          restoreIntermediatesInStore();
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
+        });
+
         test('download is not binary cert', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
@@ -3607,7 +3710,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => !(err instanceof TransientApiError) && /Signature validation error/.test(err.message)
           );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error reading intermediate certificate');
@@ -3646,7 +3749,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           await assert.rejects(
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-            /Signature validation error/
+            err => !(err instanceof TransientApiError) && /Signature validation error/.test(err.message)
           );
 
           const log0 = monitor.manager.messages[0];

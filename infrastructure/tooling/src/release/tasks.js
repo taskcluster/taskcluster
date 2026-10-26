@@ -81,6 +81,11 @@ export default ({ tasks, cmdOptions }) => {
     provides: ['repo-up-to-date'],
     locks: ['git'],
     run: async (_requirements, utils) => {
+      // staging releases run from feature branches, so they are not expected to match main
+      if (cmdOptions.staging) {
+        return utils.skip({});
+      }
+
       const { revision: localRevision } = await gitDescribe({ dir: REPO_ROOT, utils });
       const { revision: remoteRevision } = await gitRemoteRev({
         dir: REPO_ROOT,
@@ -422,14 +427,16 @@ export default ({ tasks, cmdOptions }) => {
 
   ensureTask(tasks, {
     title: 'Push Staging Release',
-    requires: ['release-version'],
+    requires: ['release-version', 'updates-committed'],
     provides: ['target-staging-release'],
     run: async (requirements, utils) => {
       const version = requirements['release-version'];
       await gitPush({
         dir: REPO_ROOT,
         remote: 'git@github.com:taskcluster/staging-releases',
-        refs: [`HEAD:staging-release/v${version}`],
+        // HEAD is the detached version-bump commit, so git can't infer that the
+        // destination is a branch; spell out the full ref.
+        refs: [`HEAD:refs/heads/staging-release/v${version}`],
         force: true,
         utils,
       });

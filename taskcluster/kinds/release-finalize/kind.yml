@@ -1,0 +1,57 @@
+---
+# Makes the GitHub release public (which triggers npm publishing) only after
+# Docker Hub, PyPI and crates.io have the release. Staging
+# releases publish on taskcluster/staging-releases but never touch the Homebrew tap.
+loader: taskgraph.loader.transform:loader
+
+kind-dependencies:
+  - release-build
+  - release-publish
+
+transforms:
+  - src.transforms.release:transforms
+  - src.transforms.release:toolchain
+  - src.transforms.release:secret
+  - src.transforms:add_task_env
+  - src.transforms:parameterize_mounts
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
+  - src.transforms.release:pin_mount_sha256
+
+task-defaults:
+  # Finalize steps run `yarn release:step`: node plus the monorepo install.
+  release-toolchains: [node]
+  yarn-install: true
+  worker-type: release
+  worker:
+    max-run-time: 3600
+  run:
+    using: bare
+
+tasks:
+  github-release-publish:
+    description: Publish the GitHub release (also triggers npm publishing)
+    dependencies:
+      draft: release-publish-github-release-draft
+      push-image-monoimage: release-publish-push-image-monoimage
+      push-image-monoimage-devel: release-publish-push-image-monoimage-devel
+      push-image-generic-worker: release-publish-push-image-generic-worker
+      push-image-livelog: release-publish-push-image-livelog
+      push-image-taskcluster-proxy: release-publish-push-image-taskcluster-proxy
+      push-image-websocktunnel: release-publish-push-image-websocktunnel
+      pypi: release-publish-pypi
+      crates: release-publish-crates
+    mount-artifacts:
+      draft: [public/build/expected-assets.json]
+    run:
+      command: yarn release:step --step github-release-publish
+  publish-homebrew:
+    description: Update the Homebrew tap once the release assets are public
+    release-only: true
+    dependencies:
+      release: release-finalize-github-release-publish
+      client-shell: release-build-binaries-client-shell
+    mount-artifacts:
+      client-shell: [public/homebrew/taskcluster.rb]
+    run:
+      command: yarn release:step --step publish-homebrew

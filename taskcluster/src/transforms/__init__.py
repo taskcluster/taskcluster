@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import tomllib
 
 from taskgraph.transforms.base import TransformSequence
@@ -27,12 +28,34 @@ def _dependency_versions():
         go_version = goversion.read().strip()
     with open('.golangci-lint-version', 'r') as golangcilintversion:
         golangci_lint_version = golangcilintversion.read().strip()
-    return (node_version, go_version, golangci_lint_version, rust_version, pg_version)
+    with open('.uv-version', 'r') as uvversion:
+        uv_version = uvversion.read().strip()
+    if not re.fullmatch(r"\d+\.\d+\.\d+", uv_version):
+        raise ValueError(f".uv-version must contain a version like X.Y.Z; got {uv_version!r}")
+    return (node_version, go_version, golangci_lint_version, rust_version, pg_version, uv_version)
+
+
+def docker_image_uv_version(config, tasks):
+    """Fill `{uv_version}` in docker-image build args from .uv-version.
+    Must run before taskgraph's docker_image transform, which hashes the args."""
+    _, _, _, _, _, uv_version = _dependency_versions()
+    for task in tasks:
+        args = task.get("args")
+        if args:
+            task["args"] = {
+                key: (
+                    value.replace("{uv_version}", uv_version)
+                    if isinstance(value, str) and "{uv_version}" in value
+                    else value
+                )
+                for key, value in args.items()
+            }
+        yield task
 
 
 @transforms.add
 def taskcluster_image_versions(config, tasks):
-    node_version, go_version, _, rust_version, pg_version = _dependency_versions()
+    node_version, go_version, _, rust_version, pg_version, _ = _dependency_versions()
     for task in tasks:
         image = task["worker"]["docker-image"]
         if isinstance(image, str):
@@ -48,7 +71,7 @@ def taskcluster_image_versions(config, tasks):
 
 @transforms.add
 def add_task_env(config, tasks):
-    node_version, go_version, golangci_lint_version, rust_version, pg_version = _dependency_versions()
+    node_version, go_version, golangci_lint_version, rust_version, pg_version, _ = _dependency_versions()
     for task in tasks:
         env = task["worker"].setdefault("env", {})
 
@@ -140,7 +163,7 @@ if configure_task not in task_transforms._transforms:
 
 @transforms.add
 def parameterize_mounts(config, tasks):
-    node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
+    node_version, go_version, golangci_lint_version, rust_version, _, uv_version = _dependency_versions()
     for task in tasks:
         mounts = task.get("worker", {}).get("mounts")
         if mounts:
@@ -151,19 +174,21 @@ def parameterize_mounts(config, tasks):
                                 go_version=go_version,
                                 golangci_lint_version=golangci_lint_version,
                                 rust_version=rust_version,
-                                node_version=node_version)
+                                node_version=node_version,
+                                uv_version=uv_version)
                 if mount.get("directory"):
                     mount["directory"] = mount["directory"].format(
                             go_version=go_version,
                             golangci_lint_version=golangci_lint_version,
                             rust_version=rust_version,
-                            node_version=node_version)
+                            node_version=node_version,
+                            uv_version=uv_version)
         yield task
 
 
 @transforms.add
 def parameterize_artifacts(config, tasks):
-    node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
+    node_version, go_version, golangci_lint_version, rust_version, _, _ = _dependency_versions()
     for task in tasks:
         artifacts = task.get("worker", {}).get("artifacts")
         if artifacts:

@@ -17,6 +17,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v113/internal/scopes"
 	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/process"
 	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/safefs"
 )
@@ -33,12 +34,17 @@ import (
 //     across the read or write to that single shared file, never across
 //     a docker invocation, so it doesn't bottleneck unrelated loads.
 //
+//   - dockerContainerRemovals tracks the removal of finished tasks'
+//     containers, which runs in the background since it can take
+//     minutes, so tasks resolve without waiting for it.
+//
 // Lock ordering (when both are held): d2gCacheMutex outside cacheMutex
 // (cacheMutex is defined in mounts_feature.go and acquired by
 // garbageCollection → removeD2GCacheFile → d2gCacheMutex).
 var (
-	d2gCacheMutex sync.Mutex
-	d2gImageLoads singleflight.Group
+	d2gCacheMutex           sync.Mutex
+	d2gImageLoads           singleflight.Group
+	dockerContainerRemovals sync.WaitGroup
 )
 
 type (
@@ -344,6 +350,23 @@ func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image,
 
 func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 	taskDir := dtf.task.TaskDir()
+	// If the task was aborted, e.g. because the worker is shutting down,
+	// killing the `docker run` client leaves the container running. Stop it
+	// before copying artifacts, so it doesn't keep competing for resources
+	// while the worker tries to resolve the task.
+	cmd, e := process.NewCommandNoOutputStreams([]string{
+		"docker",
+		"stop",
+		"--timeout",
+		"0",
+		dtf.task.D2GInfo.ContainerName,
+	}, taskDir, []string{}, dtf.task.pd)
+	if e != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to stop docker container: %v", e)))
+	} else if out, e := cmd.CombinedOutput(); e != nil {
+		dtf.task.Warnf("%v", formatCommandError("[d2g] could not stop docker container", e, out))
+	}
+
 	// Copy artifacts from the stopped container in parallel since
 	// each docker cp reads from an independent path and destinations
 	// are unique (artifact0, artifact1, ...). Limit to 10 concurrent
@@ -379,20 +402,11 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(e)
 	}
 
-	cmd, e := process.NewCommandNoOutputStreams([]string{
-		"docker",
-		"rm",
-		"--force",
-		dtf.task.D2GInfo.ContainerName,
-	}, taskDir, []string{}, dtf.task.pd)
-	if e != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to remove docker container: %v", e)))
-	}
-	out, e := cmd.CombinedOutput()
-	if e != nil {
-		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
-	}
-
+	dockerContainerRemovals.Go(func() {
+		if e := host.Run("docker", "rm", "--force", "--volumes", dtf.task.D2GInfo.ContainerName); e != nil {
+			log.Printf("WARNING: could not remove docker container %v: %v", dtf.task.D2GInfo.ContainerName, e)
+		}
+	})
 }
 
 func (ic *ImageCache) loadFromFile(stateFile string) {

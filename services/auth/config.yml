@@ -26,6 +26,10 @@ defaults:
       authToken:                !env:secret:optional SENTRY_AUTH_TOKEN
       initialTeam:              !env:optional SENTRY_TEAM
       keyPrefix:                !env:optional SENTRY_KEY_PREFIX
+      # Rate limit applied to each generated key: at most rateLimitCount events
+      # per rateLimitWindow seconds (defaults to 30 events / 60 seconds)
+      rateLimitCount:           !env:number:optional SENTRY_RATE_LIMIT_COUNT
+      rateLimitWindow:          !env:number:optional SENTRY_RATE_LIMIT_WINDOW
 
     # Delay before expiring sentry keys, this should be negative!
     sentryExpirationDelay:      '- 15 minutes'

@@ -1,0 +1,123 @@
+---
+# Builds every release artifact. No task in this kind may hold secrets; see
+# kinds/release-publish for the tasks that push these artifacts.
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - src.transforms.release:transforms
+  - src.transforms.release:toolchain
+  - src.transforms:add_task_env
+  - src.transforms:parameterize_mounts
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
+  - src.transforms.release:pin_mount_sha256
+
+task-defaults:
+  worker-type: release
+  worker:
+    max-run-time: 3600
+    artifacts:
+      - type: directory
+        path: taskcluster/release-out
+        name: public/build
+  run:
+    using: bare
+
+# Each task lists only the toolchains it needs (release-toolchains: subset of
+# go, rust, node, uv); see add_toolchain in src/transforms/release.py. The Docker
+# images that build in a multi-stage Dockerfile need none. No build runs the
+# monorepo `yarn --immutable`.
+tasks:
+  image-monoimage:
+    description: Build the Taskcluster monoimage
+    worker:
+      max-run-time: 7200
+    run:
+      command: taskcluster/scripts/release/build-image.sh monoimage
+  image-monoimage-devel:
+    description: Build the Taskcluster devel image on top of the monoimage
+    dependencies:
+      image-monoimage: release-build-image-monoimage
+    worker:
+      max-run-time: 7200
+      mounts:
+        - file: monoimage.tar.gz
+          content:
+            artifact: public/build/monoimage.tar.gz
+            task-id: {task-reference: "<image-monoimage>"}
+    run:
+      command: taskcluster/scripts/release/build-image.sh monoimage-devel
+  image-generic-worker:
+    description: Build the generic-worker Docker image
+    worker:
+      max-run-time: 7200
+    run:
+      command: taskcluster/scripts/release/build-image.sh generic-worker
+  image-livelog:
+    release-toolchains: [go]
+    description: Build the livelog Docker image
+    run:
+      command: taskcluster/scripts/release/build-image.sh livelog
+  image-taskcluster-proxy:
+    release-toolchains: [go]
+    description: Build the taskcluster-proxy Docker image
+    run:
+      command: taskcluster/scripts/release/build-image.sh taskcluster-proxy
+  image-websocktunnel:
+    release-toolchains: [go]
+    description: Build the websocktunnel Docker image
+    run:
+      command: taskcluster/scripts/release/build-image.sh websocktunnel
+  binaries-generic-worker:
+    release-toolchains: [go]
+    description: Build generic-worker release binaries
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh generic-worker
+  binaries-worker-runner:
+    release-toolchains: [go]
+    description: Build worker-runner release binaries
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh worker-runner
+  binaries-livelog:
+    release-toolchains: [go]
+    description: Build livelog release binaries
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh livelog
+  binaries-taskcluster-proxy:
+    release-toolchains: [go]
+    description: Build taskcluster-proxy release binaries
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh taskcluster-proxy
+  binaries-client-shell:
+    release-toolchains: [go]
+    description: Build the taskcluster CLI and its Homebrew cask
+    worker:
+      # Appended to the task-defaults public/build artifact (lists merge).
+      artifacts:
+        - type: file
+          path: taskcluster/dist/homebrew/Casks/taskcluster.rb
+          name: public/homebrew/taskcluster.rb
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh client-shell
+  npm-client:
+    release-toolchains: [node]
+    description: Pack @taskcluster/client for npm
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh npm-client
+  npm-client-web:
+    # build-binaries.sh runs its own yarn install in clients/client-web.
+    release-toolchains: [node]
+    description: Pack @taskcluster/client-web for npm
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh npm-client-web
+  python-client:
+    # The uv toolchain mounts the version in .uv-version.
+    release-toolchains: [uv]
+    description: Build the Python client sdist and wheel for PyPI
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh python-client
+  rust-client:
+    release-toolchains: [rust]
+    description: Package and build the Rust client crates for crates.io
+    run:
+      command: taskcluster/scripts/release/build-binaries.sh rust-client

@@ -3,6 +3,103 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v113.2.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v24.22.0.
+
+▶ [patch]
+Upgrades to Node.js v24.22.1 [SECURITY].
+
+▶ [patch]
+Upgrades to go1.27.3 and golangci-lint v2.15.0.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.27.3).
+
+▶ [patch]
+Upgrades to uv 0.13.4 [SECURITY].
+
+### DEPLOYERS
+
+▶ [patch] [#8259](https://github.com/taskcluster/taskcluster/issues/8259)
+Development tooling now supports Helm v3 and v4 for rendering k8s
+templates, and the chart now declares `apiVersion: v2`.
+
+▶ [patch] [bug 2071821](http://bugzil.la/2071821)
+The auth service's `updateRole` now checks which scopes are being added against the roles currently in the database, not a possibly stale in-memory copy.
+
+▶ [patch] [bug 2084234](http://bugzil.la/2084234)
+The notify service now ignores task routes outside its configured route prefix (`notify.` by default). Before, such routes could trigger notifications without the `queue:route:notify.*` scope check.
+
+▶ [patch] [#7677](https://github.com/taskcluster/taskcluster/issues/7677)
+Worker Manager's `registerWorker` now returns `503` instead of `400` when an Azure worker's intermediate certificate cannot be downloaded, so that workers retry registration instead of failing.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#9202](https://github.com/taskcluster/taskcluster/issues/9202)
+Generic Worker (Linux, with D2G enabled) now prunes docker resources when the docker data-root (as reported by `docker info`) is low on disk space, rather than when `tasksDir` is. Previously, a docker data-root on a separate filesystem could fill up unchecked, and a low `tasksDir` pruned docker resources even though that freed no space in `tasksDir`. While `docker info` fails (e.g. before the docker daemon has started), free space is measured in `tasksDir` as before, and the lookup is retried every minute.
+
+The new `requiredDockerDiskSpaceMegabytes` config setting sets the free space required in the docker data-root. It defaults to `0`, which means `requiredDiskSpaceMegabytes` is used, so nothing changes when the docker data-root shares a filesystem with `tasksDir`. In that case, don't set it lower than `requiredDiskSpaceMegabytes`. If your docker data-root is on a separate filesystem smaller than `requiredDiskSpaceMegabytes`, set it to a value that filesystem can satisfy, otherwise docker resources will be pruned whenever the worker is idle.
+
+▶ [patch] [#9203](https://github.com/taskcluster/taskcluster/issues/9203)
+Generic Worker (Linux, with D2G enabled) no longer waits for `docker rm` before resolving a task. The task's container is stopped when the task finishes and removed in the background, since removing it can take minutes. Since this no longer delays the task, the container's anonymous volumes are removed with it again. Before pruning docker resources, the garbage collector waits for pending removals, since they may free enough space.
+
+▶ [patch]
+Generic Worker now reports crashes to Sentry with the maintained `github.com/getsentry/sentry-go` SDK, replacing the archived `raven-go` [SECURITY]. `raven-go` verified TLS against a CA bundle vendored in 2021, which still trusts the compromised emSign ECC Root CA - G3. Crash reports now use the system root CA store.
+
+### USERS
+
+▶ [patch] [#7776](https://github.com/taskcluster/taskcluster/issues/7776)
+The GitHub service now accepts `.` in repository names, fixing 500 errors from `github.builds()` for repositories like `foo.rs`.
+
+▶ [patch]
+The Rust client's lockfile now uses `webpki-root-certs` 1.0.10, which removes the compromised emSign ECC Root CA - G3 root [SECURITY]. Applications that depend on the `taskcluster` crate should also run `cargo update -p webpki-root-certs` to pick up the fix in their own lockfiles.
+
+### DEVELOPERS
+
+▶ [patch]
+The release tooling no longer uploads missing assets to a GitHub release that is already published. If a published release's assets don't match the build artifacts, it stops with an error that lists every asset that differs. This prepares for turning on GitHub immutable releases for `taskcluster/taskcluster`. `taskcluster/staging-releases` must keep immutable releases disabled, because staging deletes and recreates releases that use the same tag.
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump markdown-it from 14.3.2 to 14.3.3 in /ui (00ae714e67)
+* build(deps): bump certifi in /clients/client-py (6ca3435573)
+* build(deps-dev): bump vite from 8.2.2 to 8.2.4 in /ui (d0c73f3821)
+* build(deps-dev): bump vite from 8.3.1 to 8.3.3 in /clients/client-web (d36a4f5290)
+* build(deps): bump sanitize-html from 2.17.7 to 2.18.0 (540963aa8e)
+* build(deps): bump follow-redirects from 1.16.0 to 1.16.1 (ec829b6a13)
+* build(deps): bump follow-redirects in /clients/client-test (dba48620fe)
+* build(deps): bump follow-redirects in /clients/client (003aee8e0c)
+* build(deps): bump markdown-it from 14.3.0 to 14.3.2 in /ui (ec2d2e9ad2)
+
+</details>
+
+## v113.1.3
+
+### USERS
+
+▶ [patch]
+The provisioners and worker types pages now show pending and claimed task counts.
+
+▶ [patch] [#9271](https://github.com/taskcluster/taskcluster/issues/9271)
+UI: the worker pool Launch Configs page now shows worker counts and capacity as soon as the stats load, instead of only after the table is re-sorted. The Requested, Running, Stopping and Stopped columns can be sorted too, and the column the table is sorted by is marked.
+
+### OTHER
+
+▶ Additional change not described here: [#7022](https://github.com/taskcluster/taskcluster/issues/7022).
+
+## v113.1.2
+
+### USERS
+
+▶ [patch] [bug 2081758](http://bugzil.la/2081758)
+Fixed users being logged out when multiple tabs renewed Taskcluster credentials at the same time. Session IDs are no longer rotated on every credentials refresh.
+
 ## v113.1.1
 
 ### GENERAL

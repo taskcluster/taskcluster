@@ -136,6 +136,8 @@ class SentryManager {
    *   sentryClient:   Sentry API client instance
    *   initialTeam:    '...',  // Initial team for new projects
    *   keyPrefix:      '...',  // Prefix for keys
+   *   rateLimitCount:  30,    // Max events per window for created keys
+   *   rateLimitWindow: 60,    // Rate limit window, in seconds
    * }
    */
   constructor(options) {
@@ -149,6 +151,17 @@ class SentryManager {
     this._initialTeam = options.initialTeam;
     this._projectDSNCache = {};
     this._keyPrefix = options.keyPrefix;
+    this._rateLimitCount = options.rateLimitCount ?? 30;
+    this._rateLimitWindow = options.rateLimitWindow ?? 60;
+    assert(
+      Number.isInteger(this._rateLimitCount) && this._rateLimitCount > 0,
+      `Sentry rate limit count must be a positive integer, got ${this._rateLimitCount}`
+    );
+    // Sentry rejects windows longer than one day
+    assert(
+      Number.isInteger(this._rateLimitWindow) && this._rateLimitWindow > 0 && this._rateLimitWindow <= 86400,
+      `Sentry rate limit window must be an integer between 1 and 86400 seconds, got ${this._rateLimitWindow}`
+    );
   }
 
   /** Get DSN for a project, create project if needed, create key if needed */
@@ -181,6 +194,7 @@ class SentryManager {
       const expires = taskcluster.fromNow('48 hours');
       const k = await this._sentry.projects.createKey(this._organization, project, {
         name: `${this._keyPrefix} managed (expires-at:${expires.toJSON()})`,
+        rateLimit: { count: this._rateLimitCount, window: this._rateLimitWindow },
       });
       key = {
         id: k.id,
