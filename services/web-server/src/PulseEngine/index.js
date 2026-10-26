@@ -61,6 +61,7 @@ export default class PulseEngine {
         handleError,
         monitor: this.monitor,
         subscriptions,
+        requestReconcile: () => this.reconcileSubscriptions(),
       })
     );
     this.reconcileSubscriptions();

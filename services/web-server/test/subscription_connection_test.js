@@ -96,4 +96,30 @@ suite(testing.suiteName(), () => {
     assert.deepEqual(ws.closes, [{ code: 1011, reason: 'Internal error' }]);
     assert.deepEqual(reportedErrors, [err]);
   });
+
+  test('client closing during the scope check is not reported', async () => {
+    const ws = makeWs();
+    const reportedErrors = [];
+    const connection = new SubscriptionConnection({
+      ws,
+      resolveBindings: () => ({}),
+      pulseEngine: {},
+      authFactory: () => ({
+        currentScopes: async () => {
+          ws.readyState = 3; // CLOSED
+          return { scopes: ['web:read-pulse'] };
+        },
+      }),
+      monitor: makeMonitor(reportedErrors),
+      socketAliveTimeoutMilliSeconds: 10000,
+      connectionInitTimeoutMilliSeconds: 10000,
+    });
+
+    await connection.onMessage(JSON.stringify({ type: 'connection_init' }));
+    connection.teardown(1000);
+
+    assert.deepEqual(ws.frames, []);
+    assert.deepEqual(ws.closes, []);
+    assert.deepEqual(reportedErrors, []);
+  });
 });
