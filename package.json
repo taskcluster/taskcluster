@@ -90,7 +90,7 @@
     "newrelic": "^12.25.0",
     "node-fetch": "^3.3.2",
     "node-forge": "^1.4.0",
-    "nodemailer": "^10.0.12",
+    "nodemailer": "^10.1.4",
     "oauth2orize": "^1.11.0",
     "p-queue": "^9.3.3",
     "p-synchronize": "^1.0.0",
