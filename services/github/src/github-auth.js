@@ -5,7 +5,7 @@ import { retry } from '@octokit/plugin-retry';
 import Bottleneck from 'bottleneck';
 import nodeFetch from 'node-fetch';
 
-const PluggedOctokit = Octokit.plugin(retry, throttling);
+const PluggedOctokit = Octokit.plugin(throttling, retry);
 
 const tokenCache = new Map();
 /**
