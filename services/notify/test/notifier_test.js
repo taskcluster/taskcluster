@@ -41,6 +41,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     const template = 'simple';
 
     assert.ok(await notifier.email({ address, subject, content, link, replyTo, template }));
+    const ses = await helper.load('ses');
+    assert.match(ses.emails.at(-1).data, /^Reply-To: test@taskcluster\.net\r$/m);
     assert.equal(false, await notifier.email({ address, subject, content, link, replyTo, template }));
 
     // denied email
