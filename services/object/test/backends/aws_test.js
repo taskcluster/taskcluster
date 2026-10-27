@@ -18,14 +18,52 @@ import zlib from 'node:zlib';
 const gzip = promisify(zlib.gzip);
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
-  if (mock) {
-    // tests for this backend require real AWS access, and aren't even defined
-    // for the mock case
-    return;
-  }
-
   helper.withDb(mock, skipping);
   helper.withBackends(skipping);
+
+  if (mock) {
+    // Most tests for this backend require real AWS access and aren't defined for the mock
+    // case, but download URLs are built locally, so a fake endpoint is enough to check them.
+    const awsConfig = {
+      backendType: 'aws',
+      accessKeyId: 'fake',
+      secretAccessKey: 'fake',
+      bucket: 'test-bucket',
+      endpoint: 'http://taskcluster',
+      s3ForcePathStyle: true,
+    };
+
+    setup(async () => {
+      await helper.setBackendConfig({
+        backends: {
+          awsPrivate: { ...awsConfig, signGetUrls: true },
+          awsPublic: { ...awsConfig, signGetUrls: false },
+        },
+        backendMap: [],
+      });
+    });
+
+    test('successive simple downloads do not accumulate path segments', async () => {
+      const backends = await helper.load('backends');
+      const backend = backends.get('awsPublic');
+      for (const name of ['baguette', 'croissant', 'coffee']) {
+        assert.deepEqual(await backend.startDownload({ name }, 'simple'), {
+          method: 'simple',
+          url: `http://taskcluster/test-bucket/${name}`,
+        });
+      }
+    });
+
+    test('an unsigned download does not corrupt a later signed URL', async () => {
+      const backends = await helper.load('backends');
+      await backends.get('awsPublic').startDownload({ name: 'baguette' }, 'simple');
+
+      const { url } = await backends.get('awsPrivate').startDownload({ name: 'croissant' }, 'simple');
+      assert.equal(new URL(url).pathname, '/test-bucket/croissant');
+    });
+
+    return;
+  }
 
   let secret, s3;
 
