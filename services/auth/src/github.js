@@ -88,13 +88,18 @@ export const makeGithub = ({ cfg, monitor }) => {
 };
 
 const getAppSlug = (app, monitor) => {
-  app.slug ??= app.octokit.apps.getAuthenticated({ request: { retries: 0 } }).then(
-    ({ data }) => data.slug,
-    err => {
-      app.slug = undefined;
-      monitor.warning(`Failed to fetch the github app slug (status ${err.status}): ${err.message}`);
-    }
-  );
+  if (app.slug === undefined) {
+    const lookup = app.octokit.apps.getAuthenticated({ request: { retries: 0 } }).then(
+      ({ data }) => data.slug,
+      err => {
+        if (app.slug === lookup) {
+          app.slug = undefined;
+        }
+        monitor.warning(`Failed to fetch the github app slug (status ${err.status}): ${err.message}`);
+      }
+    );
+    app.slug = lookup;
+  }
   return app.slug;
 };
 
@@ -197,6 +202,7 @@ export const githubBuilder = builder => {
         }
 
         installationId = installationInfo.data.id;
+        app.slug = Promise.resolve(installationInfo.data.app_slug);
         app.installations.set(owner, installationId);
       }
 
