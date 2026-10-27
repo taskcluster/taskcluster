@@ -5,29 +5,33 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import { marked } from 'marked';
-import Email from 'email-templates';
 import juice from 'juice';
 import nodemailer from 'nodemailer';
+import pug from 'pug';
 import { SendEmailCommand } from '@aws-sdk/client-sesv2';
 
 const __dirname = new URL('.', import.meta.url).pathname;
+const TEMPLATES_ROOT = path.join(__dirname, 'templates');
 
-class CssOnlyJuicedEmail extends Email {
-  async checkAndRender(type, template, locals) {
-    const rendered = await super.checkAndRender(type, template, locals);
-    if (type !== 'html' || !rendered) {
-      return rendered;
-    }
+const TEMPLATES = new Map(
+  ['simple', 'fullscreen'].map(name => [
+    name,
+    {
+      html: pug.compileFile(path.join(TEMPLATES_ROOT, name, 'html.pug')),
+      text: pug.compileFile(path.join(TEMPLATES_ROOT, name, 'text.pug')),
+      subject: pug.compileFile(path.join(TEMPLATES_ROOT, name, 'subject.pug')),
+    },
+  ])
+);
 
-    return juice(rendered, {
-      applyStyleTags: true,
-      removeStyleTags: true,
-      preserveImportant: true,
-    });
-  }
+function renderTemplate(template, locals) {
+  const { html, text, subject } = TEMPLATES.get(template);
+  return {
+    html: juice(html(locals), { applyStyleTags: true, removeStyleTags: true, preserveImportant: true }),
+    text: text(locals),
+    subject: subject(locals).trim(),
+  };
 }
-
-const TEMPLATES_ALLOWLIST = new Set(['simple', 'fullscreen']);
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -45,15 +49,8 @@ class Notifier {
     this._slack = options.slack;
     this.monitor = options.monitor;
 
-    const transport = nodemailer.createTransport({
+    this.transport = nodemailer.createTransport({
       SES: { sesClient: options.ses, SendEmailCommand },
-    });
-    this.emailer = new CssOnlyJuicedEmail({
-      transport,
-      send: true,
-      preview: false,
-      views: { root: path.join(__dirname, 'templates') },
-      juice: false,
     });
   }
 
@@ -72,7 +69,7 @@ class Notifier {
 
   async email({ address, subject, content, link, replyTo, template }) {
     template = template || 'simple';
-    if (!TEMPLATES_ALLOWLIST.has(template)) {
+    if (!TEMPLATES.has(template)) {
       throw new Error(`Unknown email template: ${template}`);
     }
 
@@ -104,14 +101,14 @@ class Notifier {
     });
     formatted = sanitizeHtml(formatted);
 
-    const res = await this.emailer.send({
-      message: {
-        from: this.sender,
-        to: address,
-      },
-      template,
-      locals: { address, subject, content, formatted, link, rateLimit },
-    });
+    const message = {
+      from: this.sender,
+      to: address,
+      replyTo,
+      ...renderTemplate(template, { address, subject, content, formatted, link, rateLimit }),
+    };
+    const res = await this.transport.sendMail(message);
+    res.originalMessage = message;
     this.rateLimit.markEvent(address);
     this.markSent(address, subject, content, link, replyTo);
     this.monitor.log.email({ address });
