@@ -172,8 +172,63 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
           repositories: ['bar'],
           permissions: { contents: 'read' },
         }),
-      err => err.code === 'ResourceNotFound' && err.statusCode === 404
+      err =>
+        err.code === 'ResourceNotFound' && err.statusCode === 404 && err.message.includes('Github app `test-gh-app`')
     );
+  });
+
+  test('The app slug is looked up once and cached', async () => {
+    const getToken = () =>
+      helper.apiClient.githubRepoToken('testapp', 'notinstalled', {
+        repositories: ['bar'],
+        permissions: { contents: 'read' },
+      });
+
+    await Promise.all([
+      assert.rejects(getToken, err => err.message.includes('Github app `test-gh-app`')),
+      assert.rejects(getToken, err => err.message.includes('Github app `test-gh-app`')),
+    ]);
+    await assert.rejects(getToken, err => err.message.includes('Github app `test-gh-app`'));
+    assert.equal(helper.slugLookups, 1);
+  });
+
+  test('A failed slug lookup is retried on the next error', async () => {
+    const getToken = () =>
+      helper.apiClient.githubRepoToken('testapp', 'notinstalled', {
+        repositories: ['bar'],
+        permissions: { contents: 'read' },
+      });
+
+    helper.githubAppLookupFails = true;
+    await assert.rejects(getToken, err => err.message.includes('Application identified by name `testapp`'));
+    helper.githubAppLookupFails = false;
+    await assert.rejects(getToken, err => err.message.includes('Github app `test-gh-app`'));
+    assert.equal(helper.slugLookups, 2);
+  });
+
+  test('App not installed still returns a 404 if the slug lookup fails', async () => {
+    helper.githubAppLookupFails = true;
+    await assert.rejects(
+      () =>
+        helper.apiClient.githubRepoToken('testapp', 'notinstalled', {
+          repositories: ['bar'],
+          permissions: { contents: 'read' },
+        }),
+      err =>
+        err.code === 'ResourceNotFound' &&
+        err.statusCode === 404 &&
+        err.message.includes('Application identified by name `testapp`')
+    );
+
+    const monitor = await helper.load('monitor');
+    assert.equal(
+      monitor.manager.messages.filter(
+        ({ Type, Fields }) =>
+          Type === 'monitor.generic' && Fields.message.startsWith('Failed to fetch the github app slug (status 500)')
+      ).length,
+      1
+    );
+    monitor.manager.reset();
   });
 
   test('Requesting multiple scopes on multiple repos works', async () => {

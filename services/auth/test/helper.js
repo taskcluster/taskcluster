@@ -422,6 +422,14 @@ helper.withGithub = skipping => {
     'Please retry your request again later.';
 
   const fakeOctokit = {
+    getAuthenticated: async () => {
+      helper.slugLookups += 1;
+      if (helper.githubAppLookupFails) {
+        throw githubError(500);
+      }
+      return { data: { slug: 'test-gh-app' } };
+    },
+
     getOrgInstallation: ({ org }) => {
       helper.installationLookups += 1;
       if (org === 'testorg') {
@@ -489,7 +497,7 @@ helper.withGithub = skipping => {
     },
   };
 
-  const app = { octokit: { apps: fakeOctokit }, installations: makeInstallationCache() };
+  const app = { octokit: { apps: fakeOctokit }, installations: makeInstallationCache(), slug: undefined };
 
   suiteSetup('Github credentials', async () => {
     if (skipping()) {
@@ -502,6 +510,9 @@ helper.withGithub = skipping => {
   setup('reset test state', () => {
     helper.installationLookups = 0;
     helper.githubUninstalled = new Set();
+    helper.slugLookups = 0;
+    helper.githubAppLookupFails = false;
+    app.slug = undefined;
     app.installations.clear();
   });
 };

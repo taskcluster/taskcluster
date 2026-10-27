@@ -80,11 +80,34 @@ export const makeGithub = ({ cfg, monitor }) => {
     apps.set(name, {
       octokit: buildOctokitApp(name, appCfg, monitor),
       installations: makeInstallationCache(),
+      slug: undefined,
     });
   }
 
   return apps;
 };
+
+const getAppSlug = (app, monitor) => {
+  app.slug ??= app.octokit.apps.getAuthenticated({ request: { retries: 0 } }).then(
+    ({ data }) => data.slug,
+    err => {
+      app.slug = undefined;
+      monitor.warning(`Failed to fetch the github app slug (status ${err.status}): ${err.message}`);
+    }
+  );
+  return app.slug;
+};
+
+const describeApp = (slug, appName) =>
+  slug ? `Github app \`${slug}\` (identified by \`${appName}\`)` : `Application identified by name \`${appName}\``;
+
+const reportNotInstalled = async (res, app, appName, owner, monitor) => {
+  const slug = await getAppSlug(app, monitor);
+  return res.reportError('ResourceNotFound', `${describeApp(slug, appName)} is not installed on \`${owner}\``);
+};
+
+const reportRateLimited = async (res, app, appName) =>
+  res.reportError('TooManyRequests', `${describeApp(await app.slug, appName)} is currently hitting rate limits`);
 
 export const githubBuilder = builder => {
   builder.declare(
@@ -157,15 +180,9 @@ export const githubBuilder = builder => {
           installationInfo = await getAppInstallationInfo(app.octokit, owner);
         } catch (err) {
           if (err.status === 404) {
-            return res.reportError(
-              'ResourceNotFound',
-              `Application with name \`${appName}\` is not installed on \`${owner}\``
-            );
+            return reportNotInstalled(res, app, appName, owner, this.monitor);
           } else if (isRateLimitError(err)) {
-            return res.reportError(
-              'TooManyRequests',
-              `The application \`${appName}\` is currently hitting rate limits`
-            );
+            return reportRateLimited(res, app, appName);
           }
           throw err;
         }
@@ -195,12 +212,9 @@ export const githubBuilder = builder => {
           return res.reportError('InputError', 'Github rejected the request: {{message}}', { message: err.message });
         } else if (err.status === 404) {
           app.installations.delete(owner);
-          return res.reportError(
-            'ResourceNotFound',
-            `Application with name \`${appName}\` is not installed on \`${owner}\``
-          );
+          return reportNotInstalled(res, app, appName, owner, this.monitor);
         } else if (isRateLimitError(err)) {
-          return res.reportError('TooManyRequests', `The application \`${appName}\` is currently hitting rate limits`);
+          return reportRateLimited(res, app, appName);
         }
         throw err;
       }
