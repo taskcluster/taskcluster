@@ -30,6 +30,10 @@ import {
 } from '../../../utils/constants';
 
 const NOTIFY_KEY = 'interactive-notify';
+// The only shell artifact name generic-worker creates
+// (workers/generic-worker/interactive_feature.go). A task can still overwrite
+// this reference artifact via the queue API, so the target URL is untrusted.
+const SHELL_ARTIFACT_NAME = 'private/generic-worker/shell.html';
 // The queue's REST API reports task states in lowercase; the UI standardizes
 // on the uppercase TASK_STATE values.
 const toUiState = state => {
@@ -198,9 +202,8 @@ export default class InteractiveConnect extends Component {
 
       const taskState = toUiState(status.state);
       const shellArtifact =
-        artifacts.find(artifact => {
-          return artifact.name.endsWith('shell.html');
-        }) ?? null;
+        artifacts.find(artifact => artifact.name === SHELL_ARTIFACT_NAME) ??
+        null;
 
       this.setState(prevState => {
         return {
@@ -236,7 +239,7 @@ export default class InteractiveConnect extends Component {
     const { name } = this.state.shellArtifact;
     const url = getLatestArtifactUrl({ user, taskId, name });
 
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   handleNotificationChange = async ({ target: { checked } }) => {
