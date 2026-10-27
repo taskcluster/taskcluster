@@ -1,4 +1,8 @@
+import { ErrorCode } from '@slack/web-api';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+
+// Slack API errors that mean the caller named a channel the Slack app cannot post to
+const SLACK_CHANNEL_ERRORS = new Set(['channel_not_found', 'not_in_channel', 'is_archived']);
 
 const builder = new APIBuilder({
   title: 'Notification Service',
@@ -148,8 +152,19 @@ builder.declare(
       return res.reportError('DenylistedAddress', `Slack channel ${req.body.channelId} is denylisted`, {});
     }
 
-    const result = await this.notifier.slack(req.body);
-    res.sendStatus(result ? 200 : 204);
+    try {
+      const result = await this.notifier.slack(req.body);
+      res.sendStatus(result ? 200 : 204);
+    } catch (err) {
+      if (err.code === ErrorCode.PlatformError && SLACK_CHANNEL_ERRORS.has(err.data?.error)) {
+        return res.reportError(
+          'InputError',
+          `Slack channel ${req.body.channelId} cannot be posted to (${err.data.error})`,
+          {}
+        );
+      }
+      throw err;
+    }
   }
 );
 
