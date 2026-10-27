@@ -182,8 +182,10 @@ export class AwsBackend extends Backend {
           });
         } else {
           const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
-          url.pathname = path.join(url.pathname, encodeURIComponent(object.name));
-          downloadUrl = url.href;
+          // url is a cached object, copy it before mutating it
+          const objectUrl = new URL(url.href);
+          objectUrl.pathname = path.join(objectUrl.pathname, encodeURIComponent(object.name));
+          downloadUrl = objectUrl.href;
         }
         return { method, url: downloadUrl };
       }
