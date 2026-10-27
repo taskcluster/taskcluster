@@ -308,14 +308,12 @@ helper.withFakeMatrix = skipping => {
   });
 };
 
-// Mimics the platform errors the Slack client throws when the API answers `ok: false`
+// Mimics the platform errors the Slack client throws when the API answers `ok: false`:
+// a channel id of the form `Cerr-<code>` makes the fake fail with that error code
 const fakeSlackSend = () =>
   sinon.fake(({ channel }) => {
-    if (channel.includes('invalid')) {
-      throw new WebAPIPlatformError({ ok: false, error: 'channel_not_found' });
-    }
-    if (channel.includes('broken')) {
-      throw new WebAPIPlatformError({ ok: false, error: 'internal_error' });
+    if (channel.startsWith('Cerr-')) {
+      throw new WebAPIPlatformError({ ok: false, error: channel.slice('Cerr-'.length) });
     }
     return { ok: true };
   });

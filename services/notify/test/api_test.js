@@ -210,25 +210,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     });
   });
 
-  test('slack (channel not found)', async () => {
-    await assert.rejects(helper.apiClient.slack({ channelId: 'Cinvalid', text: 'Does this work?' }), err => {
-      assert.equal(err.code, 'InputError');
-      assert.equal(err.statusCode, 400);
-      return true;
+  for (const error of ['channel_not_found', 'not_in_channel', 'is_archived']) {
+    test(`slack (${error})`, async () => {
+      await assert.rejects(helper.apiClient.slack({ channelId: `Cerr-${error}`, text: 'Does this work?' }), err => {
+        assert.equal(err.code, 'InputError');
+        assert.equal(err.statusCode, 400);
+        return true;
+      });
+      assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
     });
-    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
-  });
+  }
 
-  test('slack (other platform errors stay internal errors)', async () => {
-    await assert.rejects(helper.apiClient.slack({ channelId: 'Cbroken', text: 'Does this work?' }), err => {
-      assert.equal(err.code, 'InternalServerError');
-      assert.equal(err.statusCode, 500);
-      return true;
+  for (const error of ['internal_error', 'ratelimited', 'invalid_auth']) {
+    test(`slack (${error} stays an internal error)`, async () => {
+      await assert.rejects(helper.apiClient.slack({ channelId: `Cerr-${error}`, text: 'Does this work?' }), err => {
+        assert.equal(err.code, 'InternalServerError');
+        assert.equal(err.statusCode, 500);
+        return true;
+      });
+      // the unexpected error is logged, which would otherwise fail the test
+      const monitor = await helper.load('monitor');
+      monitor.manager.reset();
     });
-    // the unexpected error is logged, which would otherwise fail the test
-    const monitor = await helper.load('monitor');
-    monitor.manager.reset();
-  });
+  }
 
   test('slack (denylisted)', async () => {
     await helper.apiClient.addDenylistAddress({ notificationType: 'slack-channel', notificationAddress: 'C123456' });
