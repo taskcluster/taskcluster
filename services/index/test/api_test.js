@@ -614,7 +614,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
-  test('public link to non-public artifact is resolved with anonymous scopes', async () => {
+  test('public link to non-public artifact is refused for anonymous callers', async () => {
     const taskId = helper.makeFakeTask();
     await helper.index.insertTask('my.name.space', {
       taskId: taskId,
@@ -627,7 +627,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     helper.queue.setArtifact(taskId, 'public/exfil', {
       storageType: 's3',
       url: 'https://private-bucket.example.com/private/secret.bin?signed',
-      linkToNonPublic: true,
+      linkTarget: 'private/secret.bin',
     });
 
     helper.setAnonymousScopes(['queue:get-artifact:public/*']);
@@ -642,6 +642,71 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         res.headers.location,
         libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fexfil`)
       );
+    });
+  });
+
+  test("public link to non-public artifact is followed with the caller's scopes", async () => {
+    const taskId = helper.makeFakeTask();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    helper.queue.setArtifact(taskId, 'public/link', {
+      storageType: 's3',
+      url: 'https://private-bucket.example.com/private/secret.bin?signed',
+      linkTarget: 'private/secret.bin',
+    });
+
+    helper.setAnonymousScopes(['queue:get-artifact:public/*']);
+    const get = async () => {
+      const url = helper.index.buildSignedUrl(helper.index.findArtifactFromTask, 'my.name.space', 'public/link');
+      return await request
+        .get(url)
+        .redirects(0)
+        .catch(err => err.response);
+    };
+
+    // a caller who can read the link target is redirected to it
+    helper.scopes('queue:get-artifact:*');
+    let res = await get();
+    assert.equal(res.statusCode, 303);
+    assert.equal(res.headers.location, 'https://private-bucket.example.com/private/secret.bin?signed');
+
+    // a caller who can only read the link itself is not
+    helper.scopes('queue:get-artifact:public/*');
+    res = await get();
+    assert.equal(res.statusCode, 303);
+    assert.equal(
+      res.headers.location,
+      libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Flink`)
+    );
+  });
+
+  test("signed URL for private artifact is limited to the caller's get-artifact scopes", async () => {
+    const taskId = helper.makeFakeTask();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    helper.scopes('queue:get-artifact:not-public/*', 'queue:cancel-task:*');
+    const url = helper.index.buildSignedUrl(helper.index.findArtifactFromTask, 'my.name.space', 'not-public/abc.zip');
+    const res = await request
+      .get(url)
+      .redirects(0)
+      .catch(err => err.response);
+    assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+
+    // bewit is base64url of id, exp, mac and ext joined by backslashes; ext is base64(JSON)
+    const bewit = new URL(res.headers.location).searchParams.get('bewit');
+    const ext = Buffer.from(bewit, 'base64url').toString().split('\\')[3];
+    assert.deepEqual(JSON.parse(Buffer.from(ext, 'base64').toString()), {
+      authorizedScopes: ['queue:get-artifact:not-public/*'],
     });
   });
 

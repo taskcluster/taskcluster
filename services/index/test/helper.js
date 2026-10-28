@@ -197,8 +197,12 @@ const stubbedQueue = () => {
         const key = `${taskId}/${name}`;
         const artifact = artifacts[key];
         assert(artifact, `fake queue has no artifact ${key}`);
-        // anonymous callers can't follow links to non-public artifacts
-        if (artifact.linkToNonPublic && (this._options.authorizedScopes || []).includes('assume:anonymous')) {
+        const scopes = this._options.authorizedScopes;
+        if (
+          artifact.linkTarget &&
+          scopes &&
+          !satisfiesExpression(scopes, `queue:get-artifact:${artifact.linkTarget}`)
+        ) {
           const err = new Error('fake queue: insufficient scopes to follow link');
           err.statusCode = 403;
           throw err;
