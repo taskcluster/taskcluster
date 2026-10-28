@@ -21,7 +21,6 @@ import { withAuth } from '../../../utils/Auth';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import notify from '../../../utils/notify';
 import Link from '../../../utils/Link';
-import fetchAllPages from '../../../utils/fetchAllPages';
 import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
 import {
   INTERACTIVE_TASK_STATUS,
@@ -30,6 +29,10 @@ import {
 } from '../../../utils/constants';
 
 const NOTIFY_KEY = 'interactive-notify';
+// The only shell artifact name generic-worker creates
+// (workers/generic-worker/interactive_feature.go). A task can still overwrite
+// this reference artifact via the queue API, so the target URL is untrusted.
+const SHELL_ARTIFACT_NAME = 'private/generic-worker/shell.html';
 // The queue's REST API reports task states in lowercase; the UI standardizes
 // on the uppercase TASK_STATE values.
 const toUiState = state => {
@@ -55,22 +58,15 @@ const getInteractiveStatus = ({
   return INTERACTIVE_TASK_STATUS.READY;
 };
 
-// List every artifact of the latest run. A task that has not been claimed
-// yet has no runs, which the queue reports as a 404; treat that the same as
-// having no artifacts so the page keeps waiting for the session.
-const fetchLatestArtifacts = async (queue, taskId) => {
+// Fetch the shell artifact of the latest run. A task that has not been claimed
+// yet has no runs, and a running task may not have created the artifact yet
+// The queue reports both as a 404, so the page keeps waiting for the session.
+const fetchShellArtifact = async (queue, taskId) => {
   try {
-    return await fetchAllPages(
-      options => {
-        return queue.listLatestArtifacts(taskId, options);
-      },
-      response => {
-        return response.artifacts;
-      }
-    );
+    return await queue.latestArtifactInfo(taskId, SHELL_ARTIFACT_NAME);
   } catch (err) {
     if (err.statusCode === 404) {
-      return [];
+      return null;
     }
 
     throw err;
@@ -186,10 +182,10 @@ export default class InteractiveConnect extends Component {
     const queue = createTaskclusterClient({ Class: Queue });
 
     try {
-      const [task, { status }, artifacts] = await Promise.all([
+      const [task, { status }, shellArtifact] = await Promise.all([
         queue.task(taskId),
         queue.status(taskId),
-        fetchLatestArtifacts(queue, taskId),
+        fetchShellArtifact(queue, taskId),
       ]);
 
       if (id !== this.requestId) {
@@ -197,10 +193,6 @@ export default class InteractiveConnect extends Component {
       }
 
       const taskState = toUiState(status.state);
-      const shellArtifact =
-        artifacts.find(artifact => {
-          return artifact.name.endsWith('shell.html');
-        }) ?? null;
 
       this.setState(prevState => {
         return {
@@ -236,7 +228,7 @@ export default class InteractiveConnect extends Component {
     const { name } = this.state.shellArtifact;
     const url = getLatestArtifactUrl({ user, taskId, name });
 
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   handleNotificationChange = async ({ target: { checked } }) => {
