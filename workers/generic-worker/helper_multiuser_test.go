@@ -67,8 +67,9 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 			t.Fatalf("Could not create test user: %v", err)
 		}
 		taskContext = &TaskContext{
-			User:    taskUser,
-			TaskDir: testdataDir,
+			User:                 taskUser,
+			TaskDir:              testdataDir,
+			ReservedArtifactsDir: testdataDir,
 		}
 		return
 	}
@@ -80,7 +81,8 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 		t.Fatalf("Could not fetch task user credentials: %v", err)
 	}
 	taskContext = &TaskContext{
-		User:    taskUserCredentials,
-		TaskDir: testdataDir,
+		User:                 taskUserCredentials,
+		TaskDir:              testdataDir,
+		ReservedArtifactsDir: testdataDir,
 	}
 }

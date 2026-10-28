@@ -88,6 +88,10 @@ func (task *TaskRun) TaskDir() string {
 	return task.GetContext().TaskDir
 }
 
+func (task *TaskRun) ReservedArtifactsDir() string {
+	return task.GetContext().ReservedArtifactsDir
+}
+
 // LiveLogPorts returns the PUT and GET ports for livelog.
 // Returns (putPort, getPort, ok) where ok is false if ports weren't allocated.
 func (task *TaskRun) LiveLogPorts() (putPort, getPort uint16, ok bool) {

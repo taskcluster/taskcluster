@@ -311,6 +311,9 @@ and reports back results to the queue.
                                             the same filesystem, this should not be lower than
                                             requiredDiskSpaceMegabytes. If zero,
                                             requiredDiskSpaceMegabytes is used. [default: 0]
+          reservedArtifactsDir              The directory where the worker writes the files it
+                                            uploads as reserved artifacts, such as the task log
+                                            and the chain of trust certificates. [default: "reservedArtifacts"]
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
                                             user, after the user has been created, the machine

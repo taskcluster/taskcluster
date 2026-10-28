@@ -17,8 +17,9 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskContext = &TaskContext{
-		User:    &gwruntime.OSUser{},
-		TaskDir: testdataDir,
+		User:                 &gwruntime.OSUser{},
+		TaskDir:              testdataDir,
+		ReservedArtifactsDir: testdataDir,
 	}
 }
 

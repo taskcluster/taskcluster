@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/taskcluster/taskcluster/v114/internal/scopes"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
 )
 
@@ -50,7 +50,7 @@ func (bltf *BackingLogTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (bltf *BackingLogTaskFeature) Start() *CommandExecutionError {
-	absLogFile := fileutil.AbsFrom(bltf.task.TaskDir(), logPath)
+	absLogFile := filepath.Join(bltf.task.ReservedArtifactsDir(), logFileName)
 	logFileHandle, err := safefs.CreateRW(absLogFile, 0644)
 	if err != nil {
 		return executionError(internalError, errored, err)
@@ -76,11 +76,8 @@ func (bltf *BackingLogTaskFeature) Stop(err *ExecutionErrors) {
 		bltf.task.Error(err.Error())
 	}
 	bltf.task.closeLog(bltf.logHandle)
-	taskDir := bltf.task.TaskDir()
+	logFile := filepath.Join(bltf.task.ReservedArtifactsDir(), logFileName)
 	if bltf.task.Payload.Features.BackingLog {
-		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, fileutil.AbsFrom(taskDir, logPath)))
-	}
-	if config.CleanUpTaskDirs {
-		_ = safefs.Remove(fileutil.AbsFrom(taskDir, logPath))
+		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, logFile))
 	}
 }
