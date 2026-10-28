@@ -10,6 +10,41 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withServers(skipping);
   helper.resetTables();
 
+  test('Listing github apps with no scopes 403s', async () => {
+    helper.setupScopes('none');
+    await assert.rejects(
+      () => helper.apiClient.listGithubApps(),
+      err => err.code === 'InsufficientScopes' && err.statusCode === 403
+    );
+  });
+
+  test('Listing github apps returns the configured apps', async () => {
+    helper.setupScopes('auth:list-github-apps');
+    const resp = await helper.apiClient.listGithubApps();
+    assert.deepEqual(resp, { apps: [{ name: 'testapp', appId: '42', slug: 'test-gh-app' }] });
+  });
+
+  test('Installation lookups refresh the slug', async () => {
+    helper.setupScopes('auth:github-repo-token:testapp/testorg/bar:contents:read', 'auth:list-github-apps');
+    let resp = await helper.apiClient.listGithubApps();
+    assert.equal(resp.apps[0].slug, 'test-gh-app');
+
+    await helper.apiClient.githubRepoToken('testapp', 'testorg', {
+      repositories: ['bar'],
+      permissions: { contents: 'read' },
+    });
+    resp = await helper.apiClient.listGithubApps();
+    assert.equal(resp.apps[0].slug, 'renamed-gh-app');
+    assert.equal(helper.slugLookups, 1);
+  });
+
+  test('Listing github apps omits the slug if it cannot be fetched', async () => {
+    helper.setupScopes('auth:list-github-apps');
+    helper.githubAppLookupFails = true;
+    const resp = await helper.apiClient.listGithubApps();
+    assert.deepEqual(resp, { apps: [{ name: 'testapp', appId: '42' }] });
+  });
+
   test('Getting a repo token with no scopes 403s', async () => {
     helper.setupScopes('none');
     await assert.rejects(

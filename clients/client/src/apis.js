@@ -499,6 +499,22 @@ export default {
         },
         {
           "args": [
+          ],
+          "category": "Github Credentials",
+          "description": "List the github apps usable with `githubRepoToken`.",
+          "method": "get",
+          "name": "listGithubApps",
+          "output": "v1/list-github-apps-response.json#",
+          "query": [
+          ],
+          "route": "/github/apps",
+          "scopes": "auth:list-github-apps",
+          "stability": "experimental",
+          "title": "List configured github apps",
+          "type": "function"
+        },
+        {
+          "args": [
             "appName",
             "owner"
           ],

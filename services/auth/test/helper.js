@@ -403,6 +403,7 @@ helper.withGithub = skipping => {
     return {
       data: {
         id,
+        app_slug: 'renamed-gh-app',
         account: {
           login: owner,
         },
@@ -497,7 +498,7 @@ helper.withGithub = skipping => {
     },
   };
 
-  const app = { octokit: { apps: fakeOctokit }, installations: makeInstallationCache(), slug: undefined };
+  const app = { appId: '42', octokit: { apps: fakeOctokit }, installations: makeInstallationCache(), slug: undefined };
 
   suiteSetup('Github credentials', async () => {
     if (skipping()) {

@@ -815,6 +815,33 @@ func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, dur
 
 // Stability: *** EXPERIMENTAL ***
 //
+// List the github apps usable with `githubRepoToken`.
+//
+// Required scopes:
+//
+//	auth:list-github-apps
+//
+// See #listGithubApps
+func (auth *Auth) ListGithubApps() (*ListGithubAppsResponse, error) {
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/github/apps", new(ListGithubAppsResponse), nil)
+	return responseObject.(*ListGithubAppsResponse), err
+}
+
+// Returns a signed URL for ListGithubApps, valid for the specified duration.
+//
+// Required scopes:
+//
+//	auth:list-github-apps
+//
+// See ListGithubApps for more details.
+func (auth *Auth) ListGithubApps_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/github/apps", nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
 // Get a Github application installation token scoped to the given repositories
 // and permissions, using the configured app `appName`.
 //

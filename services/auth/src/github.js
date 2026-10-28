@@ -78,6 +78,7 @@ export const makeGithub = ({ cfg, monitor }) => {
 
   for (const [name, appCfg] of Object.entries(cfg.githubCredentials?.apps ?? {})) {
     apps.set(name, {
+      appId: String(appCfg.appId),
       octokit: buildOctokitApp(name, appCfg, monitor),
       installations: makeInstallationCache(),
       slug: undefined,
@@ -115,6 +116,29 @@ const reportRateLimited = async (res, app, appName) =>
   res.reportError('TooManyRequests', `${describeApp(await app.slug, appName)} is currently hitting rate limits`);
 
 export const githubBuilder = builder => {
+  builder.declare(
+    {
+      method: 'get',
+      route: '/github/apps',
+      name: 'listGithubApps',
+      output: 'list-github-apps-response.yml',
+      scopes: 'auth:list-github-apps',
+      title: 'List configured github apps',
+      stability: 'experimental',
+      category: 'Github Credentials',
+      description: 'List the github apps usable with `githubRepoToken`.',
+    },
+    async function (_req, res) {
+      const apps = await Promise.all(
+        [...this.github.entries()].map(async ([name, app]) => {
+          const slug = await getAppSlug(app, this.monitor);
+          return { name, appId: app.appId, ...(slug && { slug }) };
+        })
+      );
+      return res.reply({ apps });
+    }
+  );
+
   builder.declare(
     {
       method: 'post',

@@ -894,6 +894,37 @@ impl Auth {
         (path, query)
     }
 
+    /// List configured github apps
+    ///
+    /// List the github apps usable with `githubRepoToken`.
+    pub async fn listGithubApps(&self) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listGithubApps_details();
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listGithubApps endpoint
+    pub fn listGithubApps_url(&self) -> Result<String, Error> {
+        let (path, query) = Self::listGithubApps_details();
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the listGithubApps endpoint
+    pub fn listGithubApps_signed_url(&self, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listGithubApps_details();
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listGithubApps
+    fn listGithubApps_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "github/apps";
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get a repository scoped github token
     ///
     /// Get a Github application installation token scoped to the given repositories

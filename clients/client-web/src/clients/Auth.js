@@ -36,6 +36,7 @@ export default class Auth extends Client {
     this.sentryDSN.entry = {"args":["project"],"category":"Sentry Credentials","method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"};
     this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"category":"Websocktunnel Credentials","method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"};
     this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"category":"GCP Credentials","method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"};
+    this.listGithubApps.entry = {"args":[],"category":"Github Credentials","method":"get","name":"listGithubApps","output":true,"query":[],"route":"/github/apps","scopes":"auth:list-github-apps","stability":"experimental","type":"function"};
     this.githubRepoToken.entry = {"args":["appName","owner"],"category":"Github Credentials","input":true,"method":"post","name":"githubRepoToken","output":true,"query":[],"route":"/github/<appName>/<owner>/repo-token","scopes":{"AllOf":[{"each":"auth:github-repo-token:<appName>/<owner>/<repoPerm>","for":"repoPerm","in":"repoPerms"}]},"stability":"experimental","type":"function"};
     this.authenticateHawk.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"};
     this.testAuthenticate.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"};
@@ -304,6 +305,12 @@ export default class Auth extends Client {
     this.validate(this.gcpCredentials.entry, args);
 
     return this.request(this.gcpCredentials.entry, args);
+  }
+  // List the github apps usable with `githubRepoToken`.
+  listGithubApps(...args) {
+    this.validate(this.listGithubApps.entry, args);
+
+    return this.request(this.listGithubApps.entry, args);
   }
   // Get a Github application installation token scoped to the given repositories
   // and permissions, using the configured app `appName`.
