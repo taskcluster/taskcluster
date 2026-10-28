@@ -7,7 +7,7 @@
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "test": "NODE_OPTIONS=--dns-result-order=ipv4first mocha test/*_test.js"

@@ -8,7 +8,7 @@
   "license": "MPL-2.0",
   "private": true,
   "scripts": {
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "test": "mocha test/*_test.js test/**/*_test.js"

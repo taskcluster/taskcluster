@@ -15,7 +15,7 @@
     "test:update-snapshots": "cross-env TZ=Europe/Berlin vitest run -u",
     "test:watch": "cross-env TZ=Europe/Berlin vitest",
     "smoke": "playwright test --config playwright.config.mjs",
-    "lint": "biome check src",
+    "lint": "biome check --error-on-warnings src",
     "lint:fix": "biome check --write src",
     "format": "biome format --write src",
     "format:check": "biome format src"

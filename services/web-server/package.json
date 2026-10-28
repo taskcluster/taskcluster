@@ -8,7 +8,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "start": "cross-env NODE_ENV=development node src/main.js devServer",
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "test": "mocha test/*_test.js test/**/*_test.js"
