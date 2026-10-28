@@ -11,7 +11,7 @@
     "src"
   ],
   "scripts": {
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "test": "vitest run"

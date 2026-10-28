@@ -156,7 +156,7 @@
     "zurvan": "^0.8.0"
   },
   "scripts": {
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "lint:fix": "biome check --write",
     "lint:go": "bash test/go-lint.sh",
     "lint:py": "bash test/py-lint.sh",
