@@ -614,6 +614,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  test('public link to non-public artifact is resolved with anonymous scopes', async () => {
+    const taskId = helper.makeFakeTask();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    // public/exfil links to a private artifact
+    helper.queue.setArtifact(taskId, 'public/exfil', {
+      storageType: 's3',
+      url: 'https://private-bucket.example.com/private/secret.bin?signed',
+      linkToNonPublic: true,
+    });
+
+    helper.setAnonymousScopes(['queue:get-artifact:public/*']);
+    await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+      const url = helper.index.buildUrl(helper.index.findArtifactFromTask, 'my.name.space', 'public/exfil');
+      const res = await request
+        .get(url)
+        .redirects(0)
+        .catch(err => err.response);
+      assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+      assert.equal(
+        res.headers.location,
+        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fexfil`)
+      );
+    });
+  });
+
   test('delete task', async () => {
     const taskId = helper.makeFakeTask();
     debug('### Insert task into index');

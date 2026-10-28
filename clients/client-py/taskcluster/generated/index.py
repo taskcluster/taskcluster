@@ -176,6 +176,12 @@ class Index(BaseClient):
         This problem be remedied by including the revision in the index path or by bundling both
         installer and debug symbols into a single artifact.
 
+        If the artifact is readable by the `anonymous` role and is a `link` artifact, the
+        link is resolved using only the `anonymous` role's scopes, regardless of the
+        caller's own scopes. Links from a public artifact to a non-public artifact will
+        therefore be refused. Use `queue.getLatestArtifact` directly to resolve such links
+        with your own credentials.
+
         If no task exists for the given index path, this API end-point responds with 404.
 
         This method is ``stable``
