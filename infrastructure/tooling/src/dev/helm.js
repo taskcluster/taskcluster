@@ -72,7 +72,7 @@ const actions = [
     title: 'Generate k8s Resources',
     requires: ['dev-config', 'helm-version'],
     provides: ['target-templates'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       let command = ['helm', 'template'];
       command = command.concat(['taskcluster', '-f', 'dev-config.yml', 'infrastructure/k8s']);
       return {
