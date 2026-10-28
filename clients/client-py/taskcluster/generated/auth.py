@@ -448,6 +448,17 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["gcpCredentials"], *args, **kwargs)
 
+    def listGithubApps(self, *args, **kwargs):
+        """
+        List configured github apps
+
+        List the github apps usable with `githubRepoToken`.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listGithubApps"], *args, **kwargs)
+
     def githubRepoToken(self, *args, **kwargs):
         """
         Get a repository scoped github token
@@ -698,6 +709,14 @@ class Auth(BaseClient):
             "query": ["prefix", "continuationToken", "limit"],
             "route": "/clients/",
             "stability": "stable",
+        },
+        "listGithubApps": {
+            "args": [],
+            "method": "get",
+            "name": "listGithubApps",
+            "output": "v1/list-github-apps-response.json#",
+            "route": "/github/apps",
+            "stability": "experimental",
         },
         "listRoleIds": {
             "args": [],

@@ -17406,6 +17406,52 @@
   },
   {
     "content": {
+      "$id": "/schemas/auth/v1/list-github-apps-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Github apps usable with `githubRepoToken`.\n",
+      "properties": {
+        "apps": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "appId": {
+                "description": "Github app ID",
+                "title": "App ID",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the app in `githubRepoToken` calls and scopes",
+                "title": "App name",
+                "type": "string"
+              },
+              "slug": {
+                "description": "Github app slug, if it could be fetched",
+                "title": "App slug",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "appId"
+            ],
+            "title": "Github app",
+            "type": "object"
+          },
+          "title": "Github apps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "apps"
+      ],
+      "title": "List github apps response",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/list-github-apps-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/auth/v1/list-clients-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -28394,6 +28440,22 @@
           "scopes": "auth:gcp:access-token:<projectId>/<serviceAccount>",
           "stability": "stable",
           "title": "Get Temporary GCP Credentials",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Github Credentials",
+          "description": "List the github apps usable with `githubRepoToken`.",
+          "method": "get",
+          "name": "listGithubApps",
+          "output": "v1/list-github-apps-response.json#",
+          "query": [
+          ],
+          "route": "/github/apps",
+          "scopes": "auth:list-github-apps",
+          "stability": "experimental",
+          "title": "List configured github apps",
           "type": "function"
         },
         {

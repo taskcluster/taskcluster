@@ -375,6 +375,18 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	GithubApp struct {
+
+		// Github app ID
+		AppID string `json:"appId"`
+
+		// Name of the app in `githubRepoToken` calls and scopes
+		Name string `json:"name"`
+
+		// Github app slug, if it could be fetched
+		Slug string `json:"slug,omitempty"`
+	}
+
 	// The list of permissions and repositories to scope a repository level github token to.
 	GithubRepositoryTokenRequest struct {
 
@@ -480,6 +492,11 @@ type (
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
 		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
+	// Github apps usable with `githubRepoToken`.
+	ListGithubAppsResponse struct {
+		Apps []GithubApp `json:"apps"`
 	}
 
 	// Response from a request to authenticate a hawk request.

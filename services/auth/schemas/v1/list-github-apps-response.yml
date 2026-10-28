@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "List github apps response"
+description: |
+  Github apps usable with `githubRepoToken`.
+type: object
+properties:
+  apps:
+    type: array
+    title: "Github apps"
+    items:
+      title: "Github app"
+      type: object
+      properties:
+        name:
+          title: "App name"
+          description: "Name of the app in `githubRepoToken` calls and scopes"
+          type: string
+        appId:
+          title: "App ID"
+          description: "Github app ID"
+          type: string
+        slug:
+          title: "App slug"
+          description: "Github app slug, if it could be fetched"
+          type: string
+      additionalProperties: false
+      required:
+        - name
+        - appId
+additionalProperties: false
+required:
+  - apps
