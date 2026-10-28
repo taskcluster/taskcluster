@@ -18,9 +18,11 @@ const maxGrantErrors = 100
 
 type granter struct {
 	// The new owner
-	sid            *windows.SID
-	admins         *windows.SID
-	system         *windows.SID
+	sid *windows.SID
+	// What every directory, and every other entry, of the tree is given. They
+	// are the same for every node so they're only built once.
+	containerSD    *windows.SECURITY_DESCRIPTOR
+	leafSD         *windows.SECURITY_DESCRIPTOR
 	from           *windows.SID
 	fromPrivileged bool
 	errs           []error
@@ -94,6 +96,22 @@ func grantFullControl(path, username string, recurse bool) error {
 	if err != nil {
 		return fmt.Errorf("could not look up the SID of SYSTEM: %w", err)
 	}
+	grantSD := func(inheritance uint32) (*windows.SECURITY_DESCRIPTOR, error) {
+		return protectedDescriptor(path, sid, []windows.EXPLICIT_ACCESS{
+			fullControlACE(sid, windows.TRUSTEE_IS_USER, inheritance),
+			fullControlACE(admins, windows.TRUSTEE_IS_GROUP, inheritance),
+			fullControlACE(system, windows.TRUSTEE_IS_USER, inheritance),
+		})
+	}
+	// Inheritance flags only mean anything on something that can have children
+	containerSD, err := grantSD(windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT)
+	if err != nil {
+		return err
+	}
+	leafSD, err := grantSD(windows.NO_INHERITANCE)
+	if err != nil {
+		return err
+	}
 
 	root, err := safefs.OpenPathPinned(path, safefs.SecAccess)
 	if err != nil {
@@ -121,7 +139,7 @@ func grantFullControl(path, username string, recurse bool) error {
 		return err
 	}
 
-	g := &granter{sid: sid, admins: admins, system: system, from: owner, fromPrivileged: privilegedOwner(owner)}
+	g := &granter{sid: sid, containerSD: containerSD, leafSD: leafSD, from: owner, fromPrivileged: privilegedOwner(owner)}
 
 	if err := g.grantNode(path, root, dir); err != nil {
 		return err
@@ -147,41 +165,43 @@ func fullControlACE(sid *windows.SID, trusteeType windows.TRUSTEE_TYPE, inherita
 	}
 }
 
-func setProtectedOwnerAndDACL(handle windows.Handle, name string, owner *windows.SID, access []windows.EXPLICIT_ACCESS) error {
+// protectedDescriptor builds a security descriptor owned by owner whose DACL
+// holds exactly access and is protected from inheriting anything. It replaces
+// whatever it's applied to rather than merging into it.
+func protectedDescriptor(name string, owner *windows.SID, access []windows.EXPLICIT_ACCESS) (*windows.SECURITY_DESCRIPTOR, error) {
 	newDACL, err := windows.ACLFromEntries(access, nil)
 	if err != nil {
-		return fmt.Errorf("could not build DACL for %q: %w", name, err)
+		return nil, fmt.Errorf("could not build DACL for %q: %w", name, err)
 	}
 	newSD, err := windows.NewSecurityDescriptor()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := newSD.SetOwner(owner, false); err != nil {
-		return fmt.Errorf("could not set owner in security descriptor for %q: %w", name, err)
+		return nil, fmt.Errorf("could not set owner in security descriptor for %q: %w", name, err)
 	}
 	if err := newSD.SetDACL(newDACL, true, false); err != nil {
-		return fmt.Errorf("could not set DACL in security descriptor for %q: %w", name, err)
+		return nil, fmt.Errorf("could not set DACL in security descriptor for %q: %w", name, err)
 	}
 	if err := newSD.SetControl(windows.SE_DACL_PROTECTED, windows.SE_DACL_PROTECTED); err != nil {
-		return fmt.Errorf("could not protect the DACL in security descriptor for %q: %w", name, err)
+		return nil, fmt.Errorf("could not protect the DACL in security descriptor for %q: %w", name, err)
 	}
-	if err := windows.SetKernelObjectSecurity(handle, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION, newSD); err != nil {
+	return newSD, nil
+}
+
+func setOwnerAndDACL(handle windows.Handle, name string, sd *windows.SECURITY_DESCRIPTOR) error {
+	if err := windows.SetKernelObjectSecurity(handle, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION, sd); err != nil {
 		return fmt.Errorf("could not set owner/DACL on %q: %w", name, err)
 	}
 	return nil
 }
 
 func (g *granter) grantNode(name string, handle windows.Handle, container bool) error {
-	// Inheritance flags only mean anything on something that can have children
-	inheritance := uint32(windows.NO_INHERITANCE)
+	sd := g.leafSD
 	if container {
-		inheritance = windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT
+		sd = g.containerSD
 	}
-	return setProtectedOwnerAndDACL(handle, name, g.sid, []windows.EXPLICIT_ACCESS{
-		fullControlACE(g.sid, windows.TRUSTEE_IS_USER, inheritance),
-		fullControlACE(g.admins, windows.TRUSTEE_IS_GROUP, inheritance),
-		fullControlACE(g.system, windows.TRUSTEE_IS_USER, inheritance),
-	})
+	return setOwnerAndDACL(handle, name, sd)
 }
 
 func (g *granter) grantChildren(handle windows.Handle, parentPath string, depth int) {
@@ -190,11 +210,12 @@ func (g *granter) grantChildren(handle windows.Handle, parentPath string, depth 
 		return
 	}
 
-	// handle was opened for its security descriptor, which doesn't imply the right
-	// to list the directory, so reopen it
-	parent, err := safefs.OpenSelf(handle, safefs.DirAccess)
-	if err != nil {
-		g.refuse(fmt.Errorf("could not reopen %q: %w", parentPath, err))
+	// handle comes from a pinned open, which can already list the directory.
+	// Duplicate it rather than reopening the directory, which would cost a
+	// whole open per directory, so os.File can close its own copy.
+	var parent windows.Handle
+	if err := windows.DuplicateHandle(windows.CurrentProcess(), handle, windows.CurrentProcess(), &parent, 0, false, windows.DUPLICATE_SAME_ACCESS); err != nil {
+		g.refuse(fmt.Errorf("could not duplicate the handle of %q: %w", parentPath, err))
 		return
 	}
 	dir := os.NewFile(uintptr(parent), parentPath)
@@ -231,15 +252,19 @@ func (g *granter) grantChild(parent windows.Handle, name, parentPath string, dep
 		if err != nil {
 			return fmt.Errorf("could not stat %q: %w", childPath, err)
 		}
-		owner, err := readOwner(child, childPath)
-		if err != nil {
-			return err
-		}
-		if !g.mayTake(links, owner) {
-			if g.fromPrivileged {
-				return fmt.Errorf("refusing to grant access to %q: it's a hardlink and the tree is owned by a privileged account", childPath)
+		// The owner only matters for hardlinks, and reading it costs a syscall
+		// on every file of what can be a huge tree
+		if links > 1 {
+			owner, err := readOwner(child, childPath)
+			if err != nil {
+				return err
 			}
-			return fmt.Errorf("refusing to grant access to %q: it's a hardlink that doesn't belong to the previous owner of the tree", childPath)
+			if !g.mayTake(links, owner) {
+				if g.fromPrivileged {
+					return fmt.Errorf("refusing to grant access to %q: it's a hardlink and the tree is owned by a privileged account", childPath)
+				}
+				return fmt.Errorf("refusing to grant access to %q: it's a hardlink that doesn't belong to the previous owner of the tree", childPath)
+			}
 		}
 	}
 
@@ -297,8 +322,12 @@ func protectWorkerDir(path string) error {
 	}
 
 	inheritance := uint32(windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT)
-	return setProtectedOwnerAndDACL(handle, path, system, []windows.EXPLICIT_ACCESS{
+	sd, err := protectedDescriptor(path, system, []windows.EXPLICIT_ACCESS{
 		fullControlACE(admins, windows.TRUSTEE_IS_GROUP, inheritance),
 		fullControlACE(system, windows.TRUSTEE_IS_USER, inheritance),
 	})
+	if err != nil {
+		return err
+	}
+	return setOwnerAndDACL(handle, path, sd)
 }
