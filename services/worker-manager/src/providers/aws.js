@@ -18,6 +18,17 @@ import { WorkerPool, Worker } from '../data.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
+// RunInstances errors that are specific to one launch config's zone, instance type or subnet;
+// any other error (credentials, permissions, account limits) would fail for every config
+const CAPACITY_ERRORS = new Set([
+  'InsufficientInstanceCapacity',
+  'InsufficientHostCapacity',
+  'InsufficientFreeAddressesInSubnet',
+  'SpotMaxPriceTooLow',
+  'MaxSpotInstanceCountExceeded',
+  'Unsupported',
+]);
+
 export class AwsProvider extends Provider {
   constructor(conf) {
     super(conf);
@@ -110,21 +121,14 @@ export class AwsProvider extends Provider {
       workerPool.config
     );
 
-    const cfgs = await this.selectLaunchConfigsForSpawn({
-      workerPool,
-      toSpawn,
-      workerPoolStats,
-      returnAll: true,
-    });
-    const shuffledConfigs = _.shuffle(cfgs);
-    const toSpawnPerConfig = Math.ceil(toSpawn / shuffledConfigs.length);
+    // each selection is one instance; launch all instances of the same config in a single call
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
+    const selectionsByLc = Object.values(_.groupBy(cfgs, 'launchConfigId'));
 
-    let toSpawnCounter = toSpawn;
-    for await (const lc of shuffledConfigs) {
+    for (const selections of selectionsByLc) {
+      const lc = selections[0];
+      const instanceCount = selections.length;
       const config = lc.configuration;
-      if (toSpawnCounter <= 0) {
-        break;
-      }
 
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
@@ -157,7 +161,7 @@ export class AwsProvider extends Provider {
       // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
       // The raw data should be 16KB maximum
       if (userData.length > 16384) {
-        return await this.reportError({
+        await this.reportError({
           workerPool,
           kind: 'creation-error',
           title: 'User Data is too long',
@@ -167,10 +171,10 @@ export class AwsProvider extends Provider {
           },
           launchConfigId: lc.launchConfigId,
         });
+        continue;
       }
 
       const capacityPerInstance = config?.workerManager?.capacityPerInstance || config.capacityPerInstance || 1;
-      const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / capacityPerInstance);
       let spawned;
       try {
         spawned = await this._enqueue(`${config.region}.modify`, () =>
@@ -241,7 +245,9 @@ export class AwsProvider extends Provider {
           )
         );
       } catch (e) {
-        return await this.reportError({
+        // attribute the error to this launch config so its health drops, and keep going
+        // with the others only if it is specific to this config, e.g. its zone is out of capacity
+        await this.reportError({
           workerPool,
           kind: 'creation-error',
           title: 'Instance Creation Error',
@@ -249,12 +255,13 @@ export class AwsProvider extends Provider {
           extra: {
             config: config.launchConfig,
           },
+          launchConfigId: lc.launchConfigId,
         });
+        if (!CAPACITY_ERRORS.has(e.name)) {
+          return;
+        }
+        continue;
       }
-
-      // count down the capacity we actually spawned (which may be somewhat
-      // greater than toSpawnPerConfig due to rounding)
-      toSpawnCounter -= instanceCount * capacityPerInstance;
 
       await Promise.all(
         spawned.Instances.map(async i => {

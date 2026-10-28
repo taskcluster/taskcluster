@@ -227,15 +227,66 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         // capacity 34 at 6 per instance should be 6 instances..
         expectedWorkers: 6,
       },
-      async _workers => {
-        // spawn two each in three launchConfigs; spawning one each would only get us 5 instances since there
-        // are only 5 launchConfigs
-        assert.deepEqual(
-          fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount),
-          [2, 2, 2]
-        );
+      async workers => {
+        // one RunInstances call per selected launch config, covering all of its instances
+        const calls = fake.rgn('us-west-2').runInstancesCalls;
+        assert.equal(_.sumBy(calls, 'MinCount'), 6);
+        assert.equal(calls.length, new Set(workers.map(w => w.launchConfigId)).size);
+        for (const call of calls) {
+          assert.equal(call.MinCount, call.MaxCount);
+        }
+        assert(workers.every(w => w.capacity === 6));
       }
     );
+
+    const zoneLaunchConfig = launchConfigId => ({
+      ...defaultLaunchConfig,
+      workerManager: { ...defaultLaunchConfig.workerManager, launchConfigId },
+      launchConfig: { ...defaultLaunchConfig.launchConfig, ImageId: `img-${launchConfigId}` },
+    });
+
+    test('creation errors are attributed to the launch config and other configs still spawn', async () => {
+      fake.runInstancesErrors.set('img-lc-stockout', 'InsufficientInstanceCapacity');
+      const workerPool = await makeWorkerPool({
+        config: {
+          launchConfigs: [zoneLaunchConfig('lc-stockout'), zoneLaunchConfig('lc-ok')],
+          minCapacity: 40,
+          maxCapacity: 40,
+          scalingRatio: 1,
+        },
+      });
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats(workerPoolId) });
+
+      const calls = fake.rgn('us-west-2').runInstancesCalls;
+      assert.deepEqual(calls.map(c => c.ImageId).sort(), ['img-lc-ok', 'img-lc-stockout']);
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, calls.find(c => c.ImageId === 'img-lc-ok').MinCount);
+      assert(workers.every(w => w.launchConfigId === 'lc-ok'));
+
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].title, 'Instance Creation Error');
+      assert.equal(errors[0].launch_config_id, 'lc-stockout');
+    });
+
+    test('a creation error that is not about capacity stops provisioning', async () => {
+      fake.runInstancesErrors.set('img-lc-a', 'AuthFailure');
+      fake.runInstancesErrors.set('img-lc-b', 'AuthFailure');
+      const workerPool = await makeWorkerPool({
+        config: {
+          launchConfigs: [zoneLaunchConfig('lc-a'), zoneLaunchConfig('lc-b')],
+          minCapacity: 40,
+          maxCapacity: 40,
+          scalingRatio: 1,
+        },
+      });
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats(workerPoolId) });
+
+      assert.equal(fake.rgn('us-west-2').runInstancesCalls.length, 1);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
+      assert.equal(errors.length, 1);
+    });
 
     for (const ResourceType of ['instance', 'volume', 'launch-template']) {
       provisionTest(
