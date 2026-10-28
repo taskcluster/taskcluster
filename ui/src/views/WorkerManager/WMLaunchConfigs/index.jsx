@@ -189,13 +189,10 @@ export default class WMLaunchConfigs extends Component {
         ? launchConfig =>
             launchConfig.launchConfigId === highlightedLaunchConfigId
         : () => true;
-      // to calculate dynamic weight we need to mimic
-      // what LaunchConfigSelector.forWorkerPool is doing
-      // it operates on total number of errors and existing capacity
+      // mimic the capacity part of LaunchConfigSelector.forWorkerPool;
+      // the service also scales weights by each config's recent failures
+      // and registrations, which are not available here
       const wpMaxCapacity = workerPool?.config?.maxCapacity ?? 0;
-      const totalWorkerPoolErrors = Object.values(
-        errorsStats?.launchConfig ?? {}
-      ).reduce((acc, val) => acc + val, 0);
 
       return launchConfigs.filter(filterIfSelected).map(launchConfig => {
         const configId = launchConfig.launchConfigId;
@@ -217,17 +214,15 @@ export default class WMLaunchConfigs extends Component {
           stats.requestedCapacity +
           stats.runningCapacity +
           stats.stoppingCapacity;
-        const initialWeight = launchConfig.configuration?.initialWeight ?? 1.0;
+        const initialWeight =
+          launchConfig.configuration?.workerManager?.initialWeight ?? 1.0;
         const effectiveMaxCapacity =
-          launchConfig.configuration?.maxCapacity ?? wpMaxCapacity;
+          launchConfig.configuration?.workerManager?.maxCapacity ??
+          wpMaxCapacity;
         let dynamicWeight = initialWeight;
 
         if (currentNonStoppedCapacity > 0 && effectiveMaxCapacity > 0) {
           dynamicWeight -= currentNonStoppedCapacity / effectiveMaxCapacity;
-        }
-
-        if (totalErrors > 0 && totalWorkerPoolErrors > 0) {
-          dynamicWeight -= totalErrors / totalWorkerPoolErrors;
         }
 
         dynamicWeight = Math.max(0, dynamicWeight).toFixed(2);
@@ -245,7 +240,8 @@ export default class WMLaunchConfigs extends Component {
               ?.value ??
             '',
           initialWeight,
-          maxCapacity: launchConfig.configuration?.maxCapacity ?? -1,
+          maxCapacity:
+            launchConfig.configuration?.workerManager?.maxCapacity ?? -1,
           currentCapacity: stats.currentCapacity || 0,
           currentNonStoppedCapacity,
           stats,
@@ -481,7 +477,7 @@ export default class WMLaunchConfigs extends Component {
     const initialLoad = (loading || metaLoading) && !items.length;
     const headers = [
       { label: 'LaunchConfigId', id: 'launchConfigId' },
-      { label: 'Weight / Initial', id: 'dynamicWeight' },
+      { label: 'Capacity Weight / Initial', id: 'dynamicWeight' },
       { label: 'Capacity / Max', id: 'currentCapacity' },
       { label: 'Location', id: 'location' },
       { label: 'Requested', id: 'workerStats.requestedCount' },
@@ -585,11 +581,11 @@ export default class WMLaunchConfigs extends Component {
                   color="textSecondary"
                   style={{ display: 'flex', alignItems: 'center' }}>
                   <InformationIcon size={18} style={{ marginRight: 8 }} />
-                  Note: Dynamic Weight values are calculated in real-time based
-                  on the current state and may change rapidly. Therefore it is
-                  an approximation, not an exact value. <br /> Max capacity is
-                  taken from worker pool configuration if not defined in launch
-                  config.
+                  Note: Capacity Weight only accounts for capacity. Worker
+                  manager also lowers the weight of launch configs that recently
+                  failed to launch workers, which is not shown here. <br /> Max
+                  capacity is taken from worker pool configuration if not
+                  defined in launch config.
                 </Typography>
               </Box>
               <PaginatedDataTable
