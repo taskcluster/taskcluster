@@ -128,9 +128,6 @@ defaults:
     # If omitted, defaults to {}
     apps: !env:json:secret:optional GITHUB_CREDENTIALS_APPS
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 production:
   app:
     auditHistoryRetention:  !env:optional AUDIT_RETENTION_DAYS

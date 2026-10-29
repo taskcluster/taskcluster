@@ -372,13 +372,6 @@
   },
   {
     "element": "h2",
-    "id": "new-relic",
-    "path": "/manual/deploying/monitoring",
-    "subtitle": "New Relic",
-    "title": "Monitoring Services"
-  },
-  {
-    "element": "h2",
     "id": "prometheus-metrics",
     "path": "/manual/deploying/monitoring",
     "subtitle": "Prometheus Metrics",

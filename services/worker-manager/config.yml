@@ -33,9 +33,6 @@ defaults:
     amqps: !env:bool:optional PULSE_AMQPS
   providers: !env:json:secret PROVIDERS
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 test:
   server:
     port: 60409

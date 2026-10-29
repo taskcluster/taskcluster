@@ -56,9 +56,6 @@ defaults:
     amqps: !env:bool:optional PULSE_AMQPS
     namespace: taskcluster-github
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 test:
   app:
     botName: 'magicalTCspirit'

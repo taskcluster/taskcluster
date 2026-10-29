@@ -13,5 +13,4 @@ WRITE_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 TASKCLUSTER_ROOT_URL=http://taskcluster
 TASKCLUSTER_CLIENT_ID=static/taskcluster/purge-cache
 TASKCLUSTER_ACCESS_TOKEN=j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-NEW_RELIC=
 DEBUG=

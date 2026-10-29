@@ -60,9 +60,6 @@ defaults:
     apiUrl:      !env:optional SLACK_API_URL
     accessToken: !env:secret:optional SLACK_ACCESS_TOKEN
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 # Configuration of tests
 test:
   taskcluster:
