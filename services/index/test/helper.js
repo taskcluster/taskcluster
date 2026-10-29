@@ -193,10 +193,20 @@ const stubbedQueue = () => {
         }
         return task;
       },
-      latestArtifact: async (taskId, name) => {
+      latestArtifact: async function (taskId, name) {
         const key = `${taskId}/${name}`;
         const artifact = artifacts[key];
         assert(artifact, `fake queue has no artifact ${key}`);
+        const scopes = this._options.authorizedScopes;
+        if (
+          artifact.linkTarget &&
+          scopes &&
+          !satisfiesExpression(scopes, `queue:get-artifact:${artifact.linkTarget}`)
+        ) {
+          const err = new Error('fake queue: insufficient scopes to follow link');
+          err.statusCode = 403;
+          throw err;
+        }
         return artifact;
       },
     },

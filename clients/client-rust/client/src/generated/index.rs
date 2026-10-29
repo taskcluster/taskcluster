@@ -345,6 +345,10 @@ impl Index {
     /// This problem be remedied by including the revision in the index path or by bundling both
     /// installer and debug symbols into a single artifact.
     ///
+    /// If the artifact is a `link` artifact, the link is resolved using the caller's own
+    /// `queue:get-artifact:*` scopes rather than the index service's, so a link is only
+    /// followed if the caller could also read its target directly.
+    ///
     /// If no task exists for the given index path, this API end-point responds with 404.
     pub async fn findArtifactFromTask(&self, indexPath: &str, name: &str) -> Result<(), Error> {
         let method = "GET";

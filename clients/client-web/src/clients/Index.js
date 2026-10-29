@@ -113,6 +113,9 @@ export default class Index extends Client {
   // * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
   // This problem be remedied by including the revision in the index path or by bundling both
   // installer and debug symbols into a single artifact.
+  // If the artifact is a `link` artifact, the link is resolved using the caller's own
+  // `queue:get-artifact:*` scopes rather than the index service's, so a link is only
+  // followed if the caller could also read its target directly.
   // If no task exists for the given index path, this API end-point responds with 404.
   findArtifactFromTask(...args) {
     this.validate(this.findArtifactFromTask.entry, args);

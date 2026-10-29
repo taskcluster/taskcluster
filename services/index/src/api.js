@@ -1,4 +1,5 @@
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import { scopeIntersection } from 'taskcluster-lib-scopes';
 import helpers from './helpers.js';
 
 /**
@@ -394,6 +395,10 @@ builder.declare(
       'This problem be remedied by including the revision in the index path or by bundling both',
       'installer and debug symbols into a single artifact.',
       '',
+      "If the artifact is a `link` artifact, the link is resolved using the caller's own",
+      "`queue:get-artifact:*` scopes rather than the index service's, so a link is only",
+      'followed if the caller could also read its target directly.',
+      '',
       'If no task exists for the given index path, this API end-point responds with 404.',
     ].join('\n'),
   },
@@ -422,9 +427,14 @@ builder.declare(
       isPublic = false;
     }
 
+    // follow link artifacts with the caller's scopes, not the index service's
+    const queue = this.queue.use({
+      authorizedScopes: scopeIntersection(await req.scopes(), ['queue:get-artifact:*']),
+    });
+
     if (isPublic) {
       try {
-        const artifact = await this.queue.latestArtifact(task.taskId, artifactName);
+        const artifact = await queue.latestArtifact(task.taskId, artifactName);
         if (artifact.url) {
           return res.redirect(303, artifact.url);
         }
@@ -435,7 +445,7 @@ builder.declare(
       return res.redirect(303, url);
     }
 
-    const url = this.queue.externalBuildSignedUrl(this.queue.getLatestArtifact, task.taskId, artifactName, {
+    const url = queue.externalBuildSignedUrl(queue.getLatestArtifact, task.taskId, artifactName, {
       expiration: 15 * 60,
     });
     return res.redirect(303, url);
