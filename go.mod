@@ -50,6 +50,7 @@ require (
 	golang.org/x/tools v0.52.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
+	howett.net/plist v1.0.0
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -391,7 +392,6 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/mail.v2 v2.3.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	howett.net/plist v1.0.0 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect

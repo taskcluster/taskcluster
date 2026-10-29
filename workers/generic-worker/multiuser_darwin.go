@@ -81,6 +81,7 @@ const launchAgentReadyTimeout = 15 * time.Minute
 
 // waitForTaskUserSession blocks until the task user's launch agent is working
 func waitForTaskUserSession(ctx *TaskContext) error {
+	prunePersonas(1000, ctx.User.Name)
 	pd, err := process.TaskUserPlatformData(ctx.User, config.HeadlessTasks)
 	if err != nil {
 		return fmt.Errorf("could not build platform data for task user %v: %w", ctx.User.Name, err)
