@@ -19,6 +19,8 @@ import (
 type OSUser struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
+	// ReuseIDs is ignored on windows.
+	ReuseIDs bool `json:"-"`
 }
 
 func (user *OSUser) CreateNew(okIfExists bool) error {
