@@ -108,7 +108,7 @@ export const validate = references => {
     if (!content.$schema) {
       problems.push(`schema ${filename} has no $schema`);
     } else if (
-      !content.$schema.startsWith('http://json-schema.org') &&
+      !content.$schema.startsWith('http://json-schema.org/') &&
       !references.getSchema(content.$schema, { skipValidation: true })
     ) {
       problems.push(`schema ${filename} has invalid $schema (must be defined here or be on at json-schema.org)`);
