@@ -61,7 +61,7 @@
     "cors": "^2.8.6",
     "cron-parser": "5.10.1",
     "debug": "^4.4.3",
-    "ejs": "^3.1.10",
+    "ejs": "^7.0.2",
     "express": "5.2.1",
     "express-session": "^1.19.0",
     "express-sslify": "1.2.0",
