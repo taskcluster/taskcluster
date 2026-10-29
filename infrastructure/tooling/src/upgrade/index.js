@@ -56,6 +56,8 @@ const normalizeVersion = ({ version, label, prefix = '', stripPrefix = /^v/ }) =
 
 export const normalizeNodeVersion = version => normalizeVersion({ version, label: 'Node.js' });
 
+export const normalizeCorepackVersion = version => normalizeVersion({ version, label: 'corepack' });
+
 export const normalizeGoVersion = version =>
   normalizeVersion({
     version,
@@ -74,7 +76,14 @@ export const normalizeToolVersion = version => {
 
 const runtimeChangelogHeader = 'audience: general\nlevel: patch\n---\n';
 
-export const nodeChangelogBody = target => `${runtimeChangelogHeader}Upgrades to Node.js v${target}.\n`;
+export const nodeChangelogBody = ({ targetNode, targetCorepack, corepackChanged }) => {
+  const corepackSuffix = corepackChanged ? ` and corepack v${targetCorepack}` : '';
+
+  return `${runtimeChangelogHeader}Upgrades to Node.js v${targetNode}${corepackSuffix}.\n`;
+};
+
+export const corepackChangelogBody = targetCorepack =>
+  `${runtimeChangelogHeader}Upgrades to corepack v${targetCorepack}.\n`;
 
 export const goChangelogBody = ({ targetGo, targetGolangciLint, golangciLintChanged }) => {
   const golangciLintSuffix = golangciLintChanged ? ` and golangci-lint v${targetGolangciLint}` : '';
@@ -87,6 +96,10 @@ export const golangciLintChangelogBody = targetGolangciLint =>
 
 const currentNodeVersion = async () => {
   return (await readRepoJSON('package.json')).engines.node;
+};
+
+const currentCorepackVersion = async () => {
+  return (await readRepoFile('.corepack-version')).trim();
 };
 
 const currentGoVersion = async () => {
@@ -111,6 +124,24 @@ export const resolveNodeVersion = async spec => {
     return await latestNodeLtsRelease();
   }
   return normalizeNodeVersion(spec);
+};
+
+export const resolveCorepackVersion = async ({ spec, currentNode, targetNode }) => {
+  switch (spec) {
+    case 'skip':
+      return 'skip';
+    case 'auto':
+      if (targetNode === currentNode) {
+        return await currentCorepackVersion();
+      }
+      return await resolveCorepackVersion({ spec: 'latest', currentNode, targetNode });
+    case 'latest': {
+      const { version } = await fetchJSON('https://registry.npmjs.org/corepack/latest');
+      return normalizeCorepackVersion(version);
+    }
+    default:
+      return normalizeCorepackVersion(spec);
+  }
 };
 
 export const resolveGoVersion = async spec => {
@@ -243,41 +274,74 @@ const initialGenerate = async ({ dryRun, label }) => {
 };
 
 export const prepareNodeShell = async options => {
-  const current = await currentNodeVersion();
-  const target = await resolveNodeVersion(options.node || 'latest');
-  const changed = target !== current;
+  const currentNode = await currentNodeVersion();
+  const currentCorepack = await currentCorepackVersion();
+  const targetNode = await resolveNodeVersion(options.node || 'latest');
+  const targetCorepack = await resolveCorepackVersion({
+    spec: options.corepack || 'auto',
+    currentNode,
+    targetNode,
+  });
+  const nodeChanged = targetNode !== currentNode;
+  const corepackChanged = targetCorepack !== 'skip' && targetCorepack !== currentCorepack;
+  const changed = nodeChanged || corepackChanged;
 
-  console.error('Resolved Node.js upgrade target:');
-  console.error(`  Node.js: ${current} -> ${target}`);
+  console.error('Resolved Node.js upgrade targets:');
+  console.error(`  Node.js:  ${currentNode} -> ${targetNode}`);
+  console.error(`  corepack: ${currentCorepack} -> ${targetCorepack}`);
 
   if (!changed) {
-    console.error('No Node.js version change to apply.');
+    console.error('No Node.js or corepack version changes to apply.');
   } else {
     await confirmDirtyTree({ dryRun: options.dryRun, yes: options.yes });
   }
 
   printShellEnv({
-    UPGRADE_NODE_TARGET: target,
-    UPGRADE_NODE_CHANGED: changed ? '1' : '0',
+    UPGRADE_NODE_TARGET: targetNode,
+    UPGRADE_NODE_CHANGED: nodeChanged ? '1' : '0',
+    // the corepack version to install, even when it is not changing
+    UPGRADE_COREPACK_TARGET: targetCorepack === 'skip' ? currentCorepack : targetCorepack,
+    UPGRADE_COREPACK_CHANGED: corepackChanged ? '1' : '0',
     UPGRADE_DRY_RUN: options.dryRun ? '1' : '0',
   });
 };
 
 export const applyNode = async options => {
-  const target = normalizeNodeVersion(options.targetNode);
+  const targetNode = normalizeNodeVersion(options.targetNode);
+  const targetCorepack = normalizeCorepackVersion(options.targetCorepack);
   const dryRun = Boolean(options.dryRun);
+  const nodeChanged = Boolean(options.nodeChanged);
+  const corepackChanged = Boolean(options.corepackChanged);
 
-  await writeNodeVersion({ version: target, dryRun });
-  await initialGenerate({ dryRun, label: 'Node.js' });
-  await run('yarn', ['install'], { dryRun });
+  if (nodeChanged) {
+    await writeNodeVersion({ version: targetNode, dryRun });
+  }
+
+  if (corepackChanged) {
+    await writeTextFile({ file: '.corepack-version', value: targetCorepack, dryRun });
+  }
+
+  if (nodeChanged) {
+    await initialGenerate({ dryRun, label: 'Node.js' });
+    await run('yarn', ['install'], { dryRun });
+  }
   await run('yarn', ['generate'], { dryRun });
-  await writeChangelog({
-    file: `changelog/node-${target}.md`,
-    body: nodeChangelogBody(target),
-    dryRun,
-  });
 
-  printCompletion('Node.js');
+  if (nodeChanged) {
+    await writeChangelog({
+      file: `changelog/node-${targetNode}.md`,
+      body: nodeChangelogBody({ targetNode, targetCorepack, corepackChanged }),
+      dryRun,
+    });
+  } else if (corepackChanged) {
+    await writeChangelog({
+      file: `changelog/corepack-${targetCorepack}.md`,
+      body: corepackChangelogBody(targetCorepack),
+      dryRun,
+    });
+  }
+
+  printCompletion(nodeChanged ? 'Node.js' : 'corepack');
 };
 
 export const prepareGoShell = async options => {

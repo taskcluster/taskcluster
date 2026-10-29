@@ -14,8 +14,9 @@ yarn upgrade:node
 yarn upgrade:go
 ```
 
-By default, `yarn upgrade:node` fetches the latest Node.js LTS release and
-uses `nvm` to install it. `yarn upgrade:go` fetches the latest stable Go
+By default, `yarn upgrade:node` fetches the latest Node.js LTS release, uses
+`nvm` to install it, and updates the pinned corepack version when the Node.js
+version changes. `yarn upgrade:go` fetches the latest stable Go
 release, uses `gvm` to install it, and updates the pinned `golangci-lint`
 version when the Go version changes. Both scripts add a changelog snippet for
 the version bump.
@@ -45,7 +46,7 @@ versions may include a leading `v`; Go versions may include or omit the `go`
 prefix:
 
 ```shell
-yarn upgrade:node --node 24.15.0
+yarn upgrade:node --node 24.15.0 --corepack 0.36.0
 yarn upgrade:go --go go1.26.2 --golangci-lint 2.11.2
 ```
 
@@ -74,6 +75,21 @@ yarn upgrade:go --golangci-lint auto
 yarn upgrade:go --golangci-lint latest
 yarn upgrade:go --golangci-lint skip
 yarn upgrade:go --golangci-lint 2.11.2
+```
+
+Node.js no longer bundles [corepack](https://github.com/nodejs/corepack), so
+the version pinned in `.corepack-version` is installed from npm everywhere
+`yarn` runs: locally by `yarn upgrade:node`, and in the Docker images, Cloud
+Build steps, and release tasks, whose pins `yarn generate` keeps in sync. The
+`--corepack` option controls that pin. In `auto` mode, it is updated to the
+latest release when Node.js changes and left alone otherwise. A corepack-only
+bump (the Node.js version unchanged) writes its own changelog snippet.
+
+```shell
+yarn upgrade:node --corepack auto
+yarn upgrade:node --corepack latest
+yarn upgrade:node --corepack skip
+yarn upgrade:node --corepack 0.36.0
 ```
 
 If the working tree is dirty, the scripts ask before continuing. Pass `--yes`

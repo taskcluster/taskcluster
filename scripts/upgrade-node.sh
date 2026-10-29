@@ -10,11 +10,16 @@ Fetch, install, and apply a Node.js version upgrade using nvm.
 
 Defaults:
   --node latest
+  --corepack auto
 
 Options:
   --node <latest|VERSION>
       Node.js version to use. latest means the latest Node LTS. VERSION may
       include a leading "v".
+  --corepack <auto|latest|skip|VERSION>
+      corepack version to write to .corepack-version. In auto mode, this
+      updates to the latest release when Node.js changes and otherwise keeps
+      the current pinned version. VERSION may include a leading "v".
   --yes
       Do not prompt before continuing with a dirty working tree.
   --dry-run
@@ -27,6 +32,7 @@ Examples:
   scripts/upgrade-node.sh
   scripts/upgrade-node.sh --node 24.15.0
   scripts/upgrade-node.sh --node latest --dry-run
+  scripts/upgrade-node.sh --node 26.13.0 --corepack latest
 EOF
 }
 
@@ -80,31 +86,42 @@ run_node_env() {
 shell_env="$(run_node_env "$@")"
 eval "${shell_env}"
 
-if [[ "${UPGRADE_NODE_CHANGED}" != "1" ]]; then
+if [[ "${UPGRADE_NODE_CHANGED}" != "1" && "${UPGRADE_COREPACK_CHANGED}" != "1" ]]; then
   exit 0
 fi
 
-corepack_version="$(cat .corepack-version)"
+if [[ "${UPGRADE_NODE_CHANGED}" == "1" ]]; then
+  if [[ "${UPGRADE_DRY_RUN}" == "1" ]]; then
+    log "+ nvm install ${UPGRADE_NODE_TARGET}"
+    log "+ nvm use ${UPGRADE_NODE_TARGET}"
+  else
+    load_nvm
+    log "+ nvm install ${UPGRADE_NODE_TARGET}"
+    nvm_cmd install "${UPGRADE_NODE_TARGET}"
+    log "+ nvm use ${UPGRADE_NODE_TARGET}"
+    nvm_cmd use "${UPGRADE_NODE_TARGET}"
+  fi
+fi
 
-if [[ "${UPGRADE_DRY_RUN}" == "1" ]]; then
-  log "+ nvm install ${UPGRADE_NODE_TARGET}"
-  log "+ nvm use ${UPGRADE_NODE_TARGET}"
-  log "+ npm install -g corepack@${corepack_version}"
-else
-  load_nvm
-  log "+ nvm install ${UPGRADE_NODE_TARGET}"
-  nvm_cmd install "${UPGRADE_NODE_TARGET}"
-  log "+ nvm use ${UPGRADE_NODE_TARGET}"
-  nvm_cmd use "${UPGRADE_NODE_TARGET}"
-  # Node.js stopped bundling corepack in v25
-  log "+ npm install -g corepack@${corepack_version}"
-  npm install -g "corepack@${corepack_version}"
+# Node.js stopped bundling corepack in v25
+log "+ npm install -g corepack@${UPGRADE_COREPACK_TARGET}"
+if [[ "${UPGRADE_DRY_RUN}" != "1" ]]; then
+  npm install -g "corepack@${UPGRADE_COREPACK_TARGET}"
 fi
 
 apply_args=(
   upgrade:node:apply
   --target-node "${UPGRADE_NODE_TARGET}"
+  --target-corepack "${UPGRADE_COREPACK_TARGET}"
 )
+
+if [[ "${UPGRADE_NODE_CHANGED}" == "1" ]]; then
+  apply_args+=(--node-changed)
+fi
+
+if [[ "${UPGRADE_COREPACK_CHANGED}" == "1" ]]; then
+  apply_args+=(--corepack-changed)
+fi
 
 if [[ "${UPGRADE_DRY_RUN}" == "1" ]]; then
   apply_args+=(--dry-run)
