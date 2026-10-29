@@ -14,7 +14,7 @@
     "got": "^16.0.0",
     "hawk": "^9.0.1",
     "lodash": "^4.17.4",
-    "slugid": "^5.0.1",
+    "slugid": "^6.0.0",
     "taskcluster-lib-urls": "^13.0.0"
   },
   "devDependencies": {
