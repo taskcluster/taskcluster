@@ -23,5 +23,4 @@ PULSE_PASSWORD=admin
 PULSE_VHOST=local
 PULSE_AMQPS=false
 PROVIDERS={"static":{"providerType":"static"}}
-NEW_RELIC=
 DEBUG=

@@ -114,9 +114,6 @@ defaults:
     skipCorsConfiguration: !env:bool:optional AWS_SKIP_CORS_CONFIGURATION
     useBulkDelete:    !env:bool:optional AWS_USE_BULK_DELETE
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 # Configuration of tests
 test:
   taskcluster:

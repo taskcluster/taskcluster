@@ -80,9 +80,6 @@ defaults:
     # this should be a random string, and is used to create the session ID
     sessionSecret: !env:secret SESSION_SECRET
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 development:
   app:
     # this assumes that taskcluster-ui's dev server is running on port 5080

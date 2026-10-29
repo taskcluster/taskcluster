@@ -53,9 +53,6 @@ defaults:
     amqps: !env:bool:optional PULSE_AMQPS
     namespace: taskcluster-index
 
-  # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:secret:optional NEW_RELIC
-
 test:
   taskcluster:
     rootUrl: "https://tc.example.com"

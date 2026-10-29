@@ -46,7 +46,6 @@ const SHARED_CONFIG = {
   node_env: '.Values.nodeEnv',
   error_config: '.Values.errorConfig',
   application_name: '.Values.applicationName',
-  new_relic: '.Values.newRelic',
   prometheus_config: '.Values.prometheus',
 };
 
@@ -649,19 +648,6 @@ tasks.push({
           },
           required: ['reporter'],
           additionalProperties: true,
-        },
-        newRelic: {
-          type: 'object',
-          description: [
-            'If present, configuration for New Relic to be used by all services.  The properties and values of this',
-            'object are environment variables as given in',
-            'https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration',
-            'If omitted, the New Relic library will not be loaded.',
-          ].join('\n'),
-          propertyNames: {
-            pattern: '^NEW_RELIC_[A-Z0-9_]*$',
-          },
-          additionalProperties: { type: 'string' },
         },
         ingressType: {
           type: 'string',

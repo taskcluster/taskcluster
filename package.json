@@ -86,7 +86,6 @@
     "memorystore": "^1.6.8",
     "mkdirp": "^1.0.0",
     "netmask": "^2.1.1",
-    "newrelic": "^12.25.0",
     "node-fetch": "^3.3.2",
     "node-forge": "^1.4.2",
     "nodemailer": "^10.1.4",
