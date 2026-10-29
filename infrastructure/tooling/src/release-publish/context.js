@@ -31,11 +31,18 @@ export const loadContext = env => {
 };
 
 /**
- * Load publishing credentials from the release secret via taskcluster-proxy, failing
- * if any of the `required` secret keys (e.g. GH_TOKEN) is absent.
+ * Load publishing credentials via taskcluster-proxy from the task's release secret,
+ * which src/transforms/release.py names in RELEASE_SECRET, failing if any of the
+ * `required` secret keys (e.g. GH_TOKEN) is absent. Steps that require no keys
+ * read no secret: their tasks may not have one.
  */
-export const loadCredentials = async ({ staging, proxyUrl, required }) => {
-  const secretName = `project/taskcluster/${staging ? 'staging-' : ''}release`;
+export const loadCredentials = async ({ secretName, proxyUrl, required }) => {
+  if (!required.length) {
+    return {};
+  }
+  if (!secretName) {
+    throw new Error(`RELEASE_SECRET must name the secret holding ${required.join(', ')}`);
+  }
   const secrets = new taskcluster.Secrets({ rootUrl: proxyUrl });
   const { secret } = await secrets.get(secretName);
   const missing = required.filter(key => !secret[key]);

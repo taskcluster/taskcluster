@@ -1,7 +1,14 @@
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.yaml import load_yaml
 
-from ..constants import RELEASE_DEADLINE, RELEASE_NOTIFY, RELEASE_SECRET, STAGING_RELEASE_SECRET
+from ..constants import (
+    RELEASE_DEADLINE,
+    RELEASE_NOTIFY,
+    RELEASE_SECRET_PREFIX,
+    RELEASE_SECRETS,
+    STAGING_RELEASE_SECRET_PREFIX,
+    STAGING_RELEASE_SECRETS,
+)
 from ..release import release_info, toolchain_setup
 
 transforms = TransformSequence()
@@ -99,12 +106,24 @@ secret = TransformSequence()
 
 @secret.add
 def add_release_secret(config, tasks):
+    """Grant each task only the secret its `release-secret` key names, and tell
+    it which one in RELEASE_SECRET. Staging tasks that read no secret get none."""
     info = release_info(
         config.params["head_ref"], config.params["tasks_for"], config.params["project"]
     )
     for task in tasks:
-        name = STAGING_RELEASE_SECRET if info.staging else RELEASE_SECRET
-        task.setdefault("scopes", []).append(f"secrets:get:{name}")
+        name = task.pop("release-secret")
+        if name not in RELEASE_SECRETS:
+            raise ValueError(
+                f"{task['name']} has release-secret {name!r}; use one of {sorted(RELEASE_SECRETS)}"
+            )
+        if info.staging and name not in STAGING_RELEASE_SECRETS:
+            yield task
+            continue
+        prefix = STAGING_RELEASE_SECRET_PREFIX if info.staging else RELEASE_SECRET_PREFIX
+        secret_name = f"{prefix}/{name}"
+        task.setdefault("scopes", []).append(f"secrets:get:{secret_name}")
+        task["worker"].setdefault("env", {})["RELEASE_SECRET"] = secret_name
         yield task
 
 
