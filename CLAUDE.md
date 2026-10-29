@@ -204,7 +204,7 @@ When modifying service APIs:
 ## Important Constraints
 
 ### Requirements
-- Node version: 24.12.0 (use nvm)
+- Node version: 26.13.0 (use nvm; install corepack from npm, see `.corepack-version`)
 - Go version: go1.25.5 (use gvm) - only needed for `yarn generate`
 - Postgres: 15
 - Yarn: 4.12.0 (packageManager specified in package.json)

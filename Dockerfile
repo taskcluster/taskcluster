@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:24.22.1 AS build
+FROM node:26.13.0 AS build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -22,7 +22,7 @@ COPY /.yarn /base/yarn-client/.yarn/
 
 # install all dependencies
 WORKDIR /base/yarn-client
-RUN corepack enable && \
+RUN npm install -g corepack@0.36.0 && \
     yarn workspaces focus --all --production
 WORKDIR /base/yarn
 RUN yarn workspaces focus --all --production
@@ -63,7 +63,7 @@ RUN /bin/bash -c "\
 ##
 # build the final image
 
-FROM node:24.22.1-alpine AS image
+FROM node:26.13.0-alpine AS image
 RUN apk --no-cache add --update bash nginx nginx-mod-http-brotli
 COPY --from=build --chown=1000:1000 /base/app /app
 ENV HOME=/app

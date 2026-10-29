@@ -75,7 +75,7 @@ _TOOLCHAINS = {
         [
             'export PATH="$(pwd)/node/node-v${{NODE_VERSION}}-linux-x64/bin:${{PATH}}"',
             "node --version",
-            "corepack enable",
+            "npm install -g corepack@0.36.0",
         ],
     ),
     "uv": (

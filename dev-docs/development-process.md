@@ -10,10 +10,16 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 24.22.1 installed.
+You will need Node version 26.13.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
-We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
+We use `yarn` to run most development commands. The repository pins its Yarn
+version, and [corepack](https://github.com/nodejs/corepack) runs that version.
+Node.js no longer bundles corepack, so install the version in `.corepack-version`:
+
+```sh
+npm install -g corepack@$(cat .corepack-version)
+```
 
 ### Go
 

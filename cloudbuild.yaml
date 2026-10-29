@@ -28,6 +28,7 @@ steps:
       #!/usr/bin/env bash
       docker build -t ${_DEPLOY_IMAGE_NAME}:latest --cache-from ${_DEPLOY_IMAGE_NAME}:latest -<<EOF
       FROM node:${_NODE_VERSION}
+      RUN npm install -g corepack@0.36.0
       RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       RUN curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
       RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
@@ -65,7 +66,6 @@ steps:
       - '-c'
       - |
         gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
-        && corepack enable \
         && yarn \
         && yarn dev:db:upgrade \
         && yarn dev:apply > /dev/null
@@ -82,7 +82,7 @@ steps:
   - name: node:${_NODE_VERSION}
     args:
       - '-c'
-      - sleep 10 && corepack enable && yarn && yarn smoketest
+      - sleep 10 && npm install -g corepack@0.36.0 && yarn && yarn smoketest
     id: Smoketest
     entrypoint: bash
     env:
@@ -101,7 +101,7 @@ options:
   env:
     - USE_GKE_GCLOUD_AUTH_PLUGIN=True
 substitutions:
-  _NODE_VERSION: 24.22.1
+  _NODE_VERSION: 26.13.0
   _VERSION: '{"version":"${BRANCH_NAME}_${SHORT_SHA}","commit":"${SHORT_SHA}","source":"https://github.com/taskcluster/taskcluster","build":"${BUILD_ID}"}'
   _IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}
   _DEPLOY_IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}-deploy

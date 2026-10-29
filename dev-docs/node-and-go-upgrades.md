@@ -87,7 +87,9 @@ additional steps are needed.
 To update the node version:
 
 * Install the new node version, such as `nvm install --lts`
-* Enable [corepack](https://nodejs.org/api/corepack.html): `corepack enable`
+* Install [corepack](https://github.com/nodejs/corepack), which Node.js no
+  longer bundles: `npm install -g corepack@$(cat .corepack-version)`. To bump
+  corepack too, edit `.corepack-version` first.
 * Update `package.json`
 * Run `yarn generate`
 * Run `yarn install`

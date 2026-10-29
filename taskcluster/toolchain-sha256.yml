@@ -9,5 +9,5 @@
 # regenerating. Task generation fails if a toolchain URL has no hash here.
 https://go.dev/dl/go1.27.3.linux-amd64.tar.gz: 65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40
 https://static.rust-lang.org/dist/rust-1.98.0-x86_64-unknown-linux-gnu.tar.gz: aa30409afa67bd1ada244cefd82c7980e6a65bc113bb978e934b2413c75e3900
-https://nodejs.org/dist/v24.22.1/node-v24.22.1-linux-x64.tar.gz: eb6728e77c576a35162c122c45ccadf224d89ff00abc8dae46cc2897c6002d7c
+https://nodejs.org/dist/v26.13.0/node-v26.13.0-linux-x64.tar.gz: 5848553868b402d3fabb5b09270649977780a390f832155721025a08b5104455
 https://github.com/astral-sh/uv/releases/download/0.13.6/uv-x86_64-unknown-linux-gnu.tar.gz: f29c3e94ffabd7e6f3ba521dba169a9b7ec12100bf3257087f0f24f6123f3645

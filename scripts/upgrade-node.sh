@@ -84,18 +84,21 @@ if [[ "${UPGRADE_NODE_CHANGED}" != "1" ]]; then
   exit 0
 fi
 
+corepack_version="$(cat .corepack-version)"
+
 if [[ "${UPGRADE_DRY_RUN}" == "1" ]]; then
   log "+ nvm install ${UPGRADE_NODE_TARGET}"
   log "+ nvm use ${UPGRADE_NODE_TARGET}"
-  log "+ corepack enable"
+  log "+ npm install -g corepack@${corepack_version}"
 else
   load_nvm
   log "+ nvm install ${UPGRADE_NODE_TARGET}"
   nvm_cmd install "${UPGRADE_NODE_TARGET}"
   log "+ nvm use ${UPGRADE_NODE_TARGET}"
   nvm_cmd use "${UPGRADE_NODE_TARGET}"
-  log "+ corepack enable"
-  corepack enable
+  # Node.js stopped bundling corepack in v25
+  log "+ npm install -g corepack@${corepack_version}"
+  npm install -g "corepack@${corepack_version}"
 fi
 
 apply_args=(

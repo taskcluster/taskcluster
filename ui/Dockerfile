@@ -1,10 +1,10 @@
-FROM node:24.22.1
+FROM node:26.13.0
 
 WORKDIR /app/ui
 COPY yarn.lock package.json ./
 COPY .yarn/patches ./.yarn/patches
 
-RUN corepack enable && \
+RUN npm install -g corepack@0.36.0 && \
   yarn set version stable && \
   yarn config set nodeLinker node-modules && \
   yarn install
