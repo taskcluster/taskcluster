@@ -2,7 +2,7 @@ import stringify from 'json-stable-stringify';
 import path from 'node:path';
 import lodash from 'lodash';
 const { omit } = lodash;
-import { compile } from 'ejs';
+import ejs from 'ejs';
 import { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
@@ -31,7 +31,7 @@ export const tasks = [
         );
       });
 
-      const template = compile(await readRepoFile('clients/client-web/templates/client.ejs'));
+      const template = ejs.compile(await readRepoFile('clients/client-web/templates/client.ejs'));
 
       for (const name of Object.keys(apis)) {
         const { reference } = apis[name];
