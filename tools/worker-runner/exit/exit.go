@@ -3,12 +3,12 @@ package exit
 import (
 	"log"
 
-	taskcluster "github.com/taskcluster/taskcluster/v113/clients/client-go"
-	"github.com/taskcluster/taskcluster/v113/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v113/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v113/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v113/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v113/tools/workerproto"
+	taskcluster "github.com/taskcluster/taskcluster/v114/clients/client-go"
+	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v114/tools/workerproto"
 )
 
 // ExitManager manages worker exit.

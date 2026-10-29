@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/gwconfig"
 )
 
 const unreachableMB = math.MaxUint32

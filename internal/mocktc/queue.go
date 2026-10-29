@@ -17,9 +17,9 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
-	"github.com/taskcluster/taskcluster/v113/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v113/internal/scopes"
+	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
+	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v114/internal/scopes"
 )
 
 type Queue struct {

@@ -46,7 +46,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 )
 
 type Auth tcclient.Client

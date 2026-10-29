@@ -3,6 +3,104 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v114.0.0
+
+### GENERAL
+
+▶ [minor] [bug 2081655](http://bugzil.la/2081655)
+Worker-manager `worker-pool-error` pulse messages now include an optional `errorCode` with the provider-specific error code, such as Google GCE operation codes (e.g. `ZONE_RESOURCE_POOL_EXHAUSTED`) or Azure error codes.
+Operation errors reported by the Google provider now also include `workerId` and `workerGroup` in these messages.
+
+▶ [minor] [bug 2081655](http://bugzil.la/2081655)
+Worker-manager `worker-stopped` pulse messages now include an optional `reason`, such as `instance TERMINATED` or `instance not found`, when the provider can tell why the worker is considered stopped.
+The Google and AWS providers set it, and the `worker-stopped` log entry carries the same `reason` field.
+`worker-requested` and `worker-running` messages are unchanged.
+
+▶ [patch]
+Upgrades to uv 0.13.6 [SECURITY].
+
+### DEPLOYERS
+
+▶ [minor] [#9279](https://github.com/taskcluster/taskcluster/issues/9279)
+The auth service now sets a rate limit on the temporary Sentry DSNs it creates via `auth.sentryDSN`, defaulting to 30 events per 60 seconds. Deployers can override this with the new `SENTRY_RATE_LIMIT_COUNT` and `SENTRY_RATE_LIMIT_WINDOW` (seconds) configuration values (`auth.sentry_rate_limit_count` and `auth.sentry_rate_limit_window` in the Helm values). Keys created before this change are not rate-limited, but they expire and are replaced within 48 hours.
+
+▶ [patch] [#7667](https://github.com/taskcluster/taskcluster/issues/7667)
+Removed the expired (2026-08-25) cross-signed Azure intermediate certificates from worker-manager.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 2013686](http://bugzil.la/2013686)
+Generic Worker (Linux, with D2G enabled) now stops an aborted task's container before copying artifacts out of it, rather than afterwards. Aborting a task kills the `docker run` client, but not the container, which kept running and competing for resources while the worker copied artifacts and resolved the task. This matters most on spot instances, where the worker has only a short notice to resolve the task as `exception/worker-shutdown` before the instance is terminated.
+
+▶ [patch] [#9280](https://github.com/taskcluster/taskcluster/issues/9280)
+Generic Worker on Windows multiuser makes fewer system calls per file when granting a task user control of a writable directory cache, which speeds up mounting caches with many small files.
+
+▶ [patch]
+Generic Worker's websocket-to-TCP port exposure no longer leaks a goroutine for every connection. The handler now returns once both directions of the bridge have closed. Previously it waited on a `sync.WaitGroup` that was never decremented. Nothing in Generic Worker currently exposes TCP ports this way (livelog and interactive use HTTP exposure), so this has no effect in practice today.
+
+▶ [patch] [bug 2076152](http://bugzil.la/2076152)
+The worker will no longer follow links when cleaning up `live_backing.log` which would've allowed a task to remove any other task's log.
+
+### USERS
+
+▶ [MAJOR] [bug 2084218](http://bugzil.la/2084218)
+The queue now rejects artifact names with `.` or `..` path segments, like `public/./x` or `public/../x`. Names that just contain dots, like `public/final..doc`, are still fine. Such names produced download URLs pointing at the wrong place in storage.
+
+Download URLs for `s3` artifacts now escape special characters in the name, so they point at the right object.
+
+▶ [minor]
+New `auth.listGithubApps` endpoint to list the github apps usable with `githubRepoToken`.
+
+▶ [patch] [bug 2072172](http://bugzil.la/2072172)
+The Shell button on the Interactive Connect page now opens the shell with `noopener`, so the opened page can no longer navigate the original UI tab.
+Previously, a task could point its shell artifact at its own page and use it to redirect the UI tab.
+
+▶ [patch]
+The `replyTo` field of `notify.email` requests is now honoured. Previously it was accepted but never set on the outgoing email.
+
+▶ [patch] [#9284](https://github.com/taskcluster/taskcluster/issues/9284)
+The `taskcluster` Homebrew cask no longer triggers deprecation warnings for the `verified` URL parameter and the `postflight` stanza. It is now built with goreleaser v2.19.0, which removes `verified` and writes the macOS quarantine-removal hook as `postflight_steps`.
+
+▶ [patch]
+The github service no longer holds one of its 10 shared API request slots while waiting to retry a failed request
+
+▶ [patch] [#9235](https://github.com/taskcluster/taskcluster/issues/9235)
+The notify service's `slack` endpoint now returns a 400 `InputError` when Slack rejects the channel (`channel_not_found`, `not_in_channel` or `is_archived`), instead of a 500 `InternalServerError`.
+
+▶ [patch]
+When `githubRepoToken` fails because the github app isn't installed on the requested owner, the error now includes the github app's slug. Rate limit errors also include it when it's already known.
+
+▶ [patch] [#9316](https://github.com/taskcluster/taskcluster/issues/9316)
+web-server's pulse subscriptions now recover automatically when RabbitMQ cancels the consumer, and client disconnects are no longer reported as errors.
+
+### DEVELOPERS
+
+▶ [patch] [#8933](https://github.com/taskcluster/taskcluster/issues/8933)
+Refreshed the Azure attested-data test fixture, which expires 2027-01-29, and bundled its `Microsoft TLS G2 RSA CA OCSP 16` intermediate.
+
+### Automated Package Updates
+
+<details>
+<summary>15 Dependabot updates</summary>
+
+* build(deps): bump qs from 6.15.3 to 6.17.0 (ceeb791af3)
+* build(deps): bump github.com/go-jose/go-jose/v4 from 4.1.4 to 4.1.6 (24c162006e)
+* build(deps): bump qs from 6.16.0 to 6.16.1 (7b9cab96d4)
+* build(deps): bump qs from 6.15.2 to 6.17.0 in /clients/client-web (5fc703a884)
+* build(deps): bump qs from 6.16.0 to 6.16.1 in /ui (c1f99153a5)
+* build(deps): bump undici from 6.29.0 to 6.29.1 in /clients/client-web (488aefd066)
+* build(deps): bump serialize-javascript in /clients/client (6503b4e421)
+* build(deps): bump fast-uri from 3.1.8 to 3.1.9 in /ui (b23ff30dbb)
+* build(deps): bump body-parser from 2.3.0 to 2.4.0 (1402a8f58e)
+* build(deps): bump undici from 7.29.0 to 7.30.1 in /ui (ae56e6671b)
+* build(deps): bump fast-uri from 3.1.8 to 3.1.9 (acf02a496b)
+* build(deps): bump undici from 6.29.0 to 6.29.1 (728a2e1027)
+* build(deps): bump nodemailer from 10.0.12 to 10.1.4 (f5c73392e1)
+* build(deps): bump sanitize-html from 2.18.0 to 2.18.1 (dd6bb6adff)
+* build(deps-dev): bump @vitest/browser in /clients/client-web (0508706bab)
+
+</details>
+
 ## v113.2.0
 
 ### GENERAL

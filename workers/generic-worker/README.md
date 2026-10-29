@@ -433,7 +433,7 @@ where `<config file>` is the generic worker config file you created above.
 
 ## Documentation
 
-See the [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v113/workers/generic-worker?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v113/workers/generic-worker).
+See the [![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v114/workers/generic-worker?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v114/workers/generic-worker).
 
 ## Build from source
 

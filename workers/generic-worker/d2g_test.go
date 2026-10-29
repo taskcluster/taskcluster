@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
-	"github.com/taskcluster/taskcluster/v113/tools/d2g"
-	"github.com/taskcluster/taskcluster/v113/tools/d2g/dockerworker"
+	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
+	"github.com/taskcluster/taskcluster/v114/tools/d2g"
+	"github.com/taskcluster/taskcluster/v114/tools/d2g/dockerworker"
 )
 
 func TestD2GWithValidDockerWorkerPayload(t *testing.T) {

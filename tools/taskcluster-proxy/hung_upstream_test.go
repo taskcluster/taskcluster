@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v113/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 )
 
 // hungUpstream returns an upstream server that never responds until release

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v113/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/host"
 	"golang.org/x/sys/windows"
 )
 
