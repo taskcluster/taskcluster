@@ -1,6 +1,6 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fork } from 'node:child_process';
-import mockFs from 'mock-fs';
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import MonitorManager from '../src/monitormanager.js';
@@ -33,7 +33,6 @@ suite(testing.suiteName(), () => {
   teardown(() => {
     errorBucket.splice(0);
     monitorManager.reset();
-    mockFs.restore();
   });
 
   suite('timer', () => {
@@ -463,9 +462,8 @@ suite(testing.suiteName(), () => {
   });
 
   test('dockerflow version file', async () => {
-    mockFs({
-      '../../version.json': JSON.stringify({ version: 'whatever' }),
-    });
+    const versionFile = path.join(__dirname, '../../../version.json');
+    const { version } = JSON.parse(fs.readFileSync(versionFile, 'utf8'));
     const monitor = MonitorManager.setup({
       serviceName: 'testing-service',
       level: 'debug',
@@ -479,6 +477,6 @@ suite(testing.suiteName(), () => {
         bucket: errorBucket,
       },
     });
-    assert.equal(monitor.manager.taskclusterVersion, 'whatever');
+    assert.equal(monitor.manager.taskclusterVersion, version);
   });
 });

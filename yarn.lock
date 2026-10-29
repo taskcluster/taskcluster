@@ -6043,13 +6043,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mock-fs@npm:^5.5.0":
-  version: 5.5.0
-  resolution: "mock-fs@npm:5.5.0"
-  checksum: 10c0/56539c9ab1d29b72c4b3b54f003808c7c51e5c82454a80fc46fd811f40401652da32412bbf26daa4eabff0e44a08eeafbeb6c885c60c1111b5429a4279efbda4
-  languageName: node
-  linkType: hard
-
 "mockdate@npm:^3.0.2":
   version: 3.0.5
   resolution: "mockdate@npm:3.0.5"
@@ -7891,7 +7884,6 @@ __metadata:
     memorystore: "npm:^1.6.8"
     mkdirp: "npm:^1.0.0"
     mocha: "npm:^12.0.3"
-    mock-fs: "npm:^5.5.0"
     mockdate: "npm:^3.0.2"
     moment: "npm:^2.31.0"
     netmask: "npm:^2.1.1"

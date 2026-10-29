@@ -1,47 +1,44 @@
 import assert from 'node:assert';
 import load from '../src/built-services.js';
-import mockFs from 'mock-fs';
+import path from 'node:path';
 import References from '../src/index.js';
-import { getCommonSchemas } from '../src/common-schemas.js';
 import testing from '@taskcluster/lib-testing';
+import { makeTmpTree, removeTmpTree } from './helpers.js';
 
 suite(testing.suiteName(), () => {
-  suiteSetup(async () => {
-    // getCommonSchemas is memoized, but references files that are not present in the
-    // mockFs, so fetch it once before setting up the mockFs.
-    await getCommonSchemas();
-  });
+  let tmpDir;
 
-  teardown(() => {
-    mockFs.restore();
+  teardown(async () => {
+    await removeTmpTree(tmpDir);
+    tmpDir = undefined;
   });
 
   test('fails on files in the input dir', async () => {
-    mockFs({ '/test/input/some.data': 'junk' });
+    tmpDir = await makeTmpTree({ 'some.data': 'junk' });
 
     try {
-      await load({ directory: '/test/input' });
+      await load({ directory: tmpDir });
       assert.equal('should have thrown', 'but did not');
     } catch (err) {
-      assert.equal(err.message, '/test/input/some.data is not a directory');
+      assert.equal(err.message, `${path.join(tmpDir, 'some.data')} is not a directory`);
     }
   });
 
-  const setupFs = () => {
-    mockFs({
-      '/test/input/svc1/metadata.json': '{"version": 1}',
-      '/test/input/svc1/references/api.json': '{"api": 1, "$schema": "/sch"}',
-      '/test/input/svc1/references/events.json': '{"exchanges": 1, "$schema": "/sch"}',
-      '/test/input/svc2/metadata.json': '{"version": 1, "$schema": "/sch"}',
-      '/test/input/svc2/references/api.json': '{"api": 2, "$schema": "/sch"}',
-      '/test/input/svc3/metadata.json': '{"version": 1}',
-      '/test/input/svc3/references/exchanges.json': '{"exchanges": 3, "$schema": "/sch"}',
+  const setupFs = async () => {
+    tmpDir = await makeTmpTree({
+      'svc1/metadata.json': '{"version": 1}',
+      'svc1/references/api.json': '{"api": 1, "$schema": "/sch"}',
+      'svc1/references/events.json': '{"exchanges": 1, "$schema": "/sch"}',
+      'svc2/metadata.json': '{"version": 1, "$schema": "/sch"}',
+      'svc2/references/api.json': '{"api": 2, "$schema": "/sch"}',
+      'svc3/metadata.json': '{"version": 1}',
+      'svc3/references/exchanges.json': '{"exchanges": 3, "$schema": "/sch"}',
     });
   };
 
   test('reads references', async () => {
-    setupFs();
-    const { references, schemas } = await load({ directory: '/test/input' });
+    await setupFs();
+    const { references, schemas } = await load({ directory: tmpDir });
     assert.deepEqual(references.map(ref => JSON.stringify(ref.content)).sort(), [
       '{"api":1,"$schema":"/sch"}',
       '{"api":2,"$schema":"/sch"}',
@@ -52,8 +49,8 @@ suite(testing.suiteName(), () => {
   });
 
   test('References.fromBuiltServices reads references and adds common', async () => {
-    setupFs();
-    const references = await References.fromBuiltServices({ directory: '/test/input' });
+    await setupFs();
+    const references = await References.fromBuiltServices({ directory: tmpDir });
     assert.deepEqual(references.references.map(ref => JSON.stringify(ref.content)).sort(), [
       '{"api":1,"$schema":"/sch"}',
       '{"api":2,"$schema":"/sch"}',
@@ -66,9 +63,9 @@ suite(testing.suiteName(), () => {
   });
 
   test('reads schemas at all nesting levels', async () => {
-    mockFs({
-      '/test/input/svc1/metadata.json': '{"version": 1}',
-      '/test/input/svc1/schemas': {
+    tmpDir = await makeTmpTree({
+      'svc1/metadata.json': '{"version": 1}',
+      'svc1/schemas': {
         'root.json': '"root"',
         v1: {
           'versioned.json': '"versioned"',
@@ -82,7 +79,7 @@ suite(testing.suiteName(), () => {
         },
       },
     });
-    const { references, schemas } = await load({ directory: '/test/input' });
+    const { references, schemas } = await load({ directory: tmpDir });
     assert.deepEqual(references, []);
     assert.deepEqual(schemas.map(sch => JSON.stringify(sch.content)).sort(), ['"deeper"', '"root"', '"versioned"']);
   });
