@@ -204,6 +204,7 @@ func main() {
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
+			prunePersonas(0)
 			logEvent("instanceReboot", nil, time.Now())
 			if !config.DisableReboots {
 				host.ImmediateReboot()
