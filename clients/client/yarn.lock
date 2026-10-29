@@ -109,7 +109,7 @@ __metadata:
     lodash: "npm:^4.17.4"
     mocha: "npm:^12.0.3"
     nock: "npm:^14.0.13"
-    slugid: "npm:^5.0.1"
+    slugid: "npm:^6.0.0"
     taskcluster-lib-urls: "npm:^13.0.0"
   languageName: unknown
   linkType: soft
@@ -535,12 +535,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slugid@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "slugid@npm:5.0.1"
+"slugid@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "slugid@npm:6.0.0"
   dependencies:
-    uuid: "npm:^9.0.0"
-  checksum: 10c0/08cc043cc5937ced8314efb5e47dec9c71ac99da5835fd012b948f991239147e8011c727cd74ce9e99ce2923b6047d35f20e4f8dc9b3bbfea1bbea20277ee915
+    uuid: "npm:^14.0.3"
+  checksum: 10c0/2be0f7c7cb0ff229de7fc5b78beea40b7064cec19ea5fbe0beacab6ddbe976e5b4c8afa2313bcb493303a76077ced11b6d569cdf6a95cac3bac1baf5b9e53d51
   languageName: node
   linkType: hard
 
@@ -597,12 +597,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^9.0.0":
-  version: 9.0.1
-  resolution: "uuid@npm:9.0.1"
+"uuid@npm:^14.0.3":
+  version: 14.0.3
+  resolution: "uuid@npm:14.0.3"
   bin:
-    uuid: dist/bin/uuid
-  checksum: 10c0/1607dd32ac7fc22f2d8f77051e6a64845c9bce5cd3dd8aa0070c074ec73e666a1f63c7b4e0f4bf2bc8b9d59dc85a15e17807446d9d2b17c8485fbc2147b27f9b
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/e56e610ae3bd1ca099244e01ee5eff502675ede4601d971b80fff993ad97236c80197340113f759e6ead501ee6a8d52648f6deef1332ce9f192c4720f4891f62
   languageName: node
   linkType: hard
 
