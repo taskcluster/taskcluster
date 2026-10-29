@@ -27,13 +27,14 @@ const (
 )
 
 var (
-	certifiedLogPath      = filepath.Join("generic-worker", "certified.log")
-	certifiedLogName      = "public/logs/certified.log"
-	unsignedCertPath      = filepath.Join("generic-worker", "chain-of-trust.json")
-	unsignedCertName      = "public/chain-of-trust.json"
-	ed25519SignedCertPath = filepath.Join("generic-worker", "chain-of-trust.json.sig")
-	ed25519SignedCertName = "public/chain-of-trust.json.sig"
-	additionalDataPath    = "chain-of-trust-additional-data.json"
+	certifiedLogFileName      = "certified.log"
+	certifiedLogName          = "public/logs/certified.log"
+	unsignedCertFileName      = "chain-of-trust.json"
+	unsignedCertName          = "public/chain-of-trust.json"
+	ed25519SignedCertFileName = "chain-of-trust.json.sig"
+	ed25519SignedCertName     = "public/chain-of-trust.json.sig"
+
+	additionalDataPath = "chain-of-trust-additional-data.json"
 )
 
 type (
@@ -142,11 +143,11 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if feature.disabled {
 		return
 	}
-	taskDir := feature.task.TaskDir()
-	logFile := fileutil.AbsFrom(taskDir, logPath)
-	certifiedLogFile := fileutil.AbsFrom(taskDir, certifiedLogPath)
-	unsignedCert := fileutil.AbsFrom(taskDir, unsignedCertPath)
-	ed25519SignedCert := fileutil.AbsFrom(taskDir, ed25519SignedCertPath)
+	reservedArtifactsDir := feature.task.ReservedArtifactsDir()
+	logFile := filepath.Join(reservedArtifactsDir, logFileName)
+	certifiedLogFile := filepath.Join(reservedArtifactsDir, certifiedLogFileName)
+	unsignedCert := filepath.Join(reservedArtifactsDir, unsignedCertFileName)
+	ed25519SignedCert := filepath.Join(reservedArtifactsDir, ed25519SignedCertFileName)
 	if copyErr := safefs.CopyFile(logFile, certifiedLogFile, 0644); copyErr != nil {
 		err.add(executionError(internalError, errored, fmt.Errorf("could not create certified log: %w", copyErr)))
 		return

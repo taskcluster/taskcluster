@@ -23,6 +23,7 @@ func TestValidatePortConfiguration(t *testing.T) {
 			Ed25519SigningKeyLocation: "/tmp/key",
 			LiveLogExecutable:         "/usr/bin/livelog",
 			ProvisionerID:             "test-provisioner",
+			ReservedArtifactsDir:      "/tmp/reservedArtifacts",
 			RootURL:                   "https://example.com",
 			TasksDir:                  "/tmp/tasks",
 			WorkerGroup:               "test-group",

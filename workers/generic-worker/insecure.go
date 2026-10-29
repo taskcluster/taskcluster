@@ -159,6 +159,7 @@ func purgeOldTasks(skipDirs ...string) error {
 	}
 	// skipDirs contains all task directories to preserve (running tasks, etc.)
 	deleteTaskDirs(config.TasksDir, skipDirs...)
+	deleteTaskDirs(config.ReservedArtifactsDir, skipDirs...)
 	return nil
 }
 
@@ -205,7 +206,8 @@ func init() {
 		panic(err)
 	}
 	taskContext = &TaskContext{
-		TaskDir: pwd,
+		TaskDir:              pwd,
+		ReservedArtifactsDir: pwd,
 	}
 }
 

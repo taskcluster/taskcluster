@@ -204,7 +204,7 @@ func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
 
 func LogText(t *testing.T) string {
 	t.Helper()
-	bytes, err := os.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	bytes, err := os.ReadFile(filepath.Join(taskContext.ReservedArtifactsDir, logFileName))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
@@ -408,6 +408,7 @@ func GWTest(t *testing.T) *Test {
 		// should be enough for tests, and travis-ci.org CI environments don't
 		// have a lot of free disk
 		RequiredDiskSpaceMegabytes:     16,
+		ReservedArtifactsDir:           filepath.Join(testdataDir, t.Name(), "reservedArtifacts"),
 		RootURL:                        "http://localhost:13243",
 		RunAfterUserCreation:           "",
 		SentryProject:                  "generic-worker-tests",

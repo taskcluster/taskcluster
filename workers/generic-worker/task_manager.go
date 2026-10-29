@@ -108,6 +108,9 @@ func (tm *TaskManager) RunningTaskDirNames() []string {
 		if task.Context != nil && task.Context.TaskDir != "" {
 			names = append(names, filepath.Base(task.Context.TaskDir))
 		}
+		if task.Context != nil && task.Context.ReservedArtifactsDir != "" {
+			names = append(names, filepath.Base(task.Context.ReservedArtifactsDir))
+		}
 	}
 	return names
 }

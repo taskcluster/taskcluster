@@ -135,7 +135,8 @@ func init() {
 		panic(err)
 	}
 	taskContext = &TaskContext{
-		TaskDir: pwd,
+		TaskDir:              pwd,
+		ReservedArtifactsDir: pwd,
 	}
 }
 

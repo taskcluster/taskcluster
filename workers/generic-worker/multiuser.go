@@ -291,6 +291,7 @@ func purgeOldTasks(skipDirs ...string) error {
 
 	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), skips...)
 	deleteTaskDirs(config.TasksDir, skips...)
+	deleteTaskDirs(config.ReservedArtifactsDir, skips...)
 	// regardless of whether we are running as current user or not, we should purge old task users
 	err := deleteExistingOSUsers(skips...)
 	if err != nil {

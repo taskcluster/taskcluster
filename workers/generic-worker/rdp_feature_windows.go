@@ -10,12 +10,11 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/internal/scopes"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
 )
 
 var (
-	rdpInfoPath = filepath.Join("generic-worker", "rdp.json")
+	rdpInfoFileName = "rdp.json"
 )
 
 type RDPFeature struct {
@@ -93,7 +92,7 @@ func (l *RDPTask) createRDPArtifact() *CommandExecutionError {
 	if err != nil {
 		panic(err)
 	}
-	rdpInfoFile := fileutil.AbsFrom(ctx.TaskDir, rdpInfoPath)
+	rdpInfoFile := filepath.Join(ctx.ReservedArtifactsDir, rdpInfoFileName)
 	if err := safefs.WriteFile(rdpInfoFile, append(jsonBytes, '\n'), 0644); err != nil {
 		return executionError(internalError, errored, fmt.Errorf("could not write rdp info to %v: %w", rdpInfoFile, err))
 	}
@@ -101,8 +100,7 @@ func (l *RDPTask) createRDPArtifact() *CommandExecutionError {
 }
 
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
-	taskDir := l.task.TaskDir()
-	rdpInfoFile := fileutil.AbsFrom(taskDir, rdpInfoPath)
+	rdpInfoFile := filepath.Join(l.task.ReservedArtifactsDir(), rdpInfoFileName)
 	return l.task.uploadReservedArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{

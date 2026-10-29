@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -37,33 +36,18 @@ func TestNewTaskDirectoryForEachTask(t *testing.T) {
 
 	execute(t, TASKS_COMPLETE)
 
-	// scan task directories, to make sure there are three unique backing log files,
-	// implying that each task ran in its own directory
-
-	var taskDirs uint = 0
-	visitedRootDir := false
-	err := filepath.WalkDir(config.TasksDir, func(path string, d os.DirEntry, err error) error {
-		// filepath.WalkDir guarantees lexical ordering and therefore, first entry is root directory
-		if !visitedRootDir {
-			visitedRootDir = true
-			return nil
-		}
-		if !d.IsDir() {
-			t.Logf("Found file %v", path)
-			return nil
-		}
-		t.Logf("Found directory %v", path)
-		if !strings.HasPrefix(d.Name(), "task_") && d.Name() != "generic-worker" {
-			return fmt.Errorf("Discovered directory with name %q but was expecting it to start with `task_`", d.Name())
-		}
-		taskDirs++
-		return nil
-	})
-	if err != nil {
-		t.Fatalf("%v", err)
+	taskDirs, err := os.ReadDir(config.TasksDir)
+	require.NoError(t, err)
+	require.Len(t, taskDirs, int(config.NumberOfTasksToRun))
+	for _, d := range taskDirs {
+		require.True(t, d.IsDir() && strings.HasPrefix(d.Name(), "task_"), "unexpected entry %q in tasks dir", d.Name())
 	}
-	if taskDirs != config.NumberOfTasksToRun*2 {
-		t.Fatalf("Expected to find %v directories in total, but found %v", config.NumberOfTasksToRun*2, taskDirs)
+
+	reservedDirs, err := os.ReadDir(config.ReservedArtifactsDir)
+	require.NoError(t, err)
+	require.Len(t, reservedDirs, int(config.NumberOfTasksToRun))
+	for _, d := range reservedDirs {
+		require.FileExists(t, filepath.Join(config.ReservedArtifactsDir, d.Name(), logFileName))
 	}
 }
 
@@ -205,8 +189,8 @@ func TestConcurrentTaskPortAllocation(t *testing.T) {
 
 	// Find task directories and read their logs
 	var proxyPorts []int
-	err = filepath.WalkDir(config.TasksDir, func(path string, d os.DirEntry, err error) error {
-		if !d.IsDir() && d.Name() == "live_backing.log" {
+	err = filepath.WalkDir(config.ReservedArtifactsDir, func(path string, d os.DirEntry, err error) error {
+		if !d.IsDir() && d.Name() == logFileName {
 			content, err := os.ReadFile(path)
 			if err != nil {
 				return err

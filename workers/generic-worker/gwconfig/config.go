@@ -62,6 +62,7 @@ type (
 		PublicIP                       net.IP         `json:"publicIP"`
 		Region                         string         `json:"region"`
 		RequiredDiskSpaceMegabytes     uint           `json:"requiredDiskSpaceMegabytes"`
+		ReservedArtifactsDir           string         `json:"reservedArtifactsDir"`
 		RootURL                        string         `json:"rootURL"`
 		RunAfterUserCreation           string         `json:"runAfterUserCreation"`
 		SentryProject                  string         `json:"sentryProject"`
@@ -130,6 +131,7 @@ func (c *Config) Validate() error {
 		{value: c.Ed25519SigningKeyLocation, name: "ed25519SigningKeyLocation", disallowed: ""},
 		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
+		{value: c.ReservedArtifactsDir, name: "reservedArtifactsDir", disallowed: ""},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},

@@ -275,6 +275,9 @@ and reports back results to the queue.
                                             when each task starts. If it cannot free enough
                                             disk space, the worker will shut itself down.
                                             [default: 10240]` + requiredDockerDiskSpace() + `
+          reservedArtifactsDir              The directory where the worker writes the files it
+                                            uploads as reserved artifacts, such as the task log
+                                            and the chain of trust certificates. [default: "reservedArtifacts"]
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
                                             user, after the user has been created, the machine

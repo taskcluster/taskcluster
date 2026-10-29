@@ -70,8 +70,8 @@ var (
 	configFile     *gwconfig.File
 	features       []Feature
 
-	logPath   = filepath.Join("generic-worker", "live_backing.log")
-	debugInfo map[string]string
+	logFileName = "live_backing.log"
+	debugInfo   map[string]string
 
 	version          = internal.Version
 	revision         = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
@@ -284,6 +284,7 @@ func loadConfig(configFile *gwconfig.File) error {
 		NumberOfTasksToRun:             0,
 		ProvisionerID:                  "test-provisioner",
 		RequiredDiskSpaceMegabytes:     10240,
+		ReservedArtifactsDir:           "reservedArtifacts",
 		RootURL:                        "",
 		RunAfterUserCreation:           "",
 		SentryProject:                  "generic-worker",
@@ -421,6 +422,10 @@ func RunWorker() (exitCode ExitCode) {
 	err := os.MkdirAll(config.TasksDir, 0755)
 	if err != nil {
 		log.Printf("Failed to create tasks directory %s: %v", config.TasksDir, err)
+		return INTERNAL_ERROR
+	}
+	if err := ensureReservedArtifactsDir(); err != nil {
+		log.Printf("%v", err)
 		return INTERNAL_ERROR
 	}
 
@@ -684,20 +689,19 @@ mainLoop:
 					if removeErr := os.RemoveAll(ctx.TaskDir); removeErr != nil {
 						log.Printf("ERROR removing task directory %s: %v", ctx.TaskDir, removeErr)
 					}
+					removeReservedArtifactsDir(ctx)
 					deleteTaskUserOnCleanup(ctx)
 				}
 
-				// Create generic-worker subdirectory for logs, etc.
-				gwDir := filepath.Join(ctx.TaskDir, "generic-worker")
-				err = os.MkdirAll(gwDir, 0700)
+				ctx.ReservedArtifactsDir, err = createTaskReservedArtifactsDir(task.TaskID, task.RunID)
 				if err != nil {
-					log.Printf("ERROR creating generic-worker dir for task %s: %v", task.TaskID, err)
+					log.Printf("ERROR creating reserved artifacts dir for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
 					cleanupTaskSetup(nil)
 					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
 					continue
 				}
-				log.Printf("Created dir: %v", gwDir)
+				log.Printf("Created dir: %v", ctx.ReservedArtifactsDir)
 
 				// Get platform data for this task's context
 				pd, err := platformDataForTaskContext(ctx)
@@ -745,6 +749,9 @@ mainLoop:
 						if r := recover(); r != nil {
 							log.Printf("PANIC in task %s goroutine: %v", t.TaskID, r)
 							t.Error(fmt.Sprintf("Internal worker error (panic): %v", r))
+						}
+						if config.CleanUpTaskDirs {
+							removeReservedArtifactsDir(t.GetContext())
 						}
 						portManager.ReleasePorts(t.TaskID)
 						workerShutdown := errors != nil && errors.WorkerShutdown()
@@ -1307,12 +1314,44 @@ func (task *TaskRun) ReleaseResources() error {
 }
 
 type TaskContext struct {
-	TaskDir string
-	User    *gwruntime.OSUser
+	TaskDir              string
+	ReservedArtifactsDir string
+	User                 *gwruntime.OSUser
 }
 
 type WorkerStatus struct {
 	CurrentTaskIDs []string `json:"currentTaskIds"`
+}
+
+func ensureReservedArtifactsDir() error {
+	dir := config.ReservedArtifactsDir
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return fmt.Errorf("could not create reserved artifacts directory %q: %w", dir, err)
+	}
+	if err := protectWorkerDir(dir); err != nil {
+		return fmt.Errorf("could not protect reserved artifacts directory %q: %w", dir, err)
+	}
+	return nil
+}
+
+func createTaskReservedArtifactsDir(taskID string, runID uint) (string, error) {
+	dir, err := filepath.Abs(filepath.Join(config.ReservedArtifactsDir, fmt.Sprintf("task_%s_%d", taskID, runID)))
+	if err != nil {
+		return "", err
+	}
+	if err := os.Mkdir(dir, 0700); err != nil {
+		return "", err
+	}
+	return dir, nil
+}
+
+func removeReservedArtifactsDir(ctx *TaskContext) {
+	if ctx.ReservedArtifactsDir == "" {
+		return
+	}
+	if err := os.RemoveAll(ctx.ReservedArtifactsDir); err != nil {
+		log.Printf("ERROR removing reserved artifacts directory %s: %v", ctx.ReservedArtifactsDir, err)
+	}
 }
 
 // deleteTaskDirs deletes all task directories (directories whose name starts
