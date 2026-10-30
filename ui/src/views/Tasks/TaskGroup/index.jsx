@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { sum, isEmpty } from 'ramda';
-import { paramCase } from 'param-case';
+import { kebabCase } from 'change-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
 import { alpha, withStyles } from '@material-ui/core/styles';
@@ -853,7 +853,7 @@ export default class TaskGroup extends Component {
 
   handleNotifyDialogSubmit = () => {
     Object.entries(this.state.notifyPreferences).map(([key, checked]) =>
-      db.userPreferences.put(checked, paramCase(key))
+      db.userPreferences.put(checked, kebabCase(key))
     );
 
     this.setState({ previousNotifyPreferences: this.state.notifyPreferences });
