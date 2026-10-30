@@ -2,7 +2,6 @@ FROM node:24.22.1
 
 WORKDIR /app/ui
 COPY yarn.lock package.json ./
-COPY .yarn/patches ./.yarn/patches
 
 RUN corepack enable && \
   yarn set version stable && \
