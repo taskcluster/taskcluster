@@ -1340,7 +1340,7 @@ __metadata:
     react-helmet: "npm:^6.0.0"
     react-lazylog: "npm:^4.5.1"
     react-router-dom: "npm:^5.3.4"
-    react-virtualized: "patch:react-virtualized@npm%3A9.22.5#~/.yarn/patches/react-virtualized-npm-9.22.5-be95b8e1a8.patch"
+    react-virtualized: "npm:^9.22.6"
     react-window: "npm:^1.8.10"
     rehype-prism-plus: "npm:^2.0.2"
     remark-gfm: "npm:^4.0.1"
@@ -5655,9 +5655,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtualized@npm:9.22.5":
-  version: 9.22.5
-  resolution: "react-virtualized@npm:9.22.5"
+"react-virtualized@npm:^9.21.0, react-virtualized@npm:^9.22.6":
+  version: 9.22.6
+  resolution: "react-virtualized@npm:9.22.6"
   dependencies:
     "@babel/runtime": "npm:^7.7.2"
     clsx: "npm:^1.0.4"
@@ -5666,26 +5666,9 @@ __metadata:
     prop-types: "npm:^15.7.2"
     react-lifecycles-compat: "npm:^3.0.4"
   peerDependencies:
-    react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
-    react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
-  checksum: 10c0/b0444b472f317dce61119c07426c5e9ebfe5125d049996678da922717715a1aa83df755aa36877f4b1718aa2e181d22f15ebb807ee356418c56f922f865628c1
-  languageName: node
-  linkType: hard
-
-"react-virtualized@patch:react-virtualized@npm%3A9.22.5#~/.yarn/patches/react-virtualized-npm-9.22.5-be95b8e1a8.patch":
-  version: 9.22.5
-  resolution: "react-virtualized@patch:react-virtualized@npm%3A9.22.5#~/.yarn/patches/react-virtualized-npm-9.22.5-be95b8e1a8.patch::version=9.22.5&hash=bcabeb"
-  dependencies:
-    "@babel/runtime": "npm:^7.7.2"
-    clsx: "npm:^1.0.4"
-    dom-helpers: "npm:^5.1.3"
-    loose-envify: "npm:^1.4.0"
-    prop-types: "npm:^15.7.2"
-    react-lifecycles-compat: "npm:^3.0.4"
-  peerDependencies:
-    react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
-    react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0
-  checksum: 10c0/37d4fdd4c2c671ed645df55343ac19e85e5d4e397ce034865e3de623d5949447aa21596e359bd73612e6d9ad860e1143d3ec63b6ac1e92d85994630e95541e86
+    react: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/0c4fbe86e0c121adcdb7a3f322601eee4661afe65e31ef767c6d876016b1e7043fdad7998b4fa0252eaf73ffb6c14effcf0f729d154cd15304a8b15ad42b7b06
   languageName: node
   linkType: hard
 

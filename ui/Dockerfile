@@ -2,7 +2,6 @@ FROM node:26.13.0
 
 WORKDIR /app/ui
 COPY yarn.lock package.json ./
-COPY .yarn/patches ./.yarn/patches
 
 RUN npm install -g corepack@0.36.0 && \
   yarn set version stable && \

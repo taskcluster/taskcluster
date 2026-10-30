@@ -72,7 +72,7 @@
     "react-helmet": "^6.0.0",
     "react-lazylog": "^4.5.1",
     "react-router-dom": "^5.3.4",
-    "react-virtualized": "patch:react-virtualized@npm%3A9.22.5#~/.yarn/patches/react-virtualized-npm-9.22.5-be95b8e1a8.patch",
+    "react-virtualized": "^9.22.6",
     "react-window": "^1.8.10",
     "remark-gfm": "^4.0.1",
     "resolve-pathname": "^3.0.0",
@@ -100,7 +100,6 @@
     "vitest": "^5.0.2"
   },
   "resolutions": {
-    "get-intrinsic": "1.3.0",
-    "react-virtualized@npm:^9.21.0": "patch:react-virtualized@npm%3A9.22.5#~/.yarn/patches/react-virtualized-npm-9.22.5-be95b8e1a8.patch"
+    "get-intrinsic": "1.3.0"
   }
 }
