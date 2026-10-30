@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { bool } from 'prop-types';
 import { Link as RouterLink, NavLink } from 'react-router-dom';
-import isAbsolute from 'is-absolute-url';
 import matchRoutes from './matchRoutes';
+
+const SCHEME_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 
 /**
  * A react hook which augments `react-router-dom`'s `Link` component
@@ -11,7 +12,7 @@ import matchRoutes from './matchRoutes';
 const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
   let shouldReload = false;
   const path = typeof to === 'string' ? to : to.pathname;
-  const isPathAbsolute = isAbsolute(path);
+  const isExternal = SCHEME_REGEX.test(path);
   const Component = nav ? NavLink : RouterLink;
   const [prefetchFlag, setPrefetchFlag] = useState(false);
 
@@ -20,7 +21,7 @@ const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
       return;
     }
 
-    if (!isPathAbsolute) {
+    if (!isExternal) {
       const matchingRoutes = matchRoutes(path, Link.routes);
       const components = matchingRoutes.map(({ component }) =>
         component.preload()
@@ -67,7 +68,7 @@ const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
     }
   }
 
-  if (isPathAbsolute) {
+  if (isExternal) {
     return <a href={to} {...props} target="_blank" rel="noopener noreferrer" />;
   }
 
