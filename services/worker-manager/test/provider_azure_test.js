@@ -3384,6 +3384,72 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         m => m.payload.workerId === worker.workerId && m.payload.errorCode === 'DeploymentFailed'
       );
     });
+
+    test('reports the failing operation error code over the generic deployment code', async () => {
+      const existingWorkerPool = await WorkerPool.get(helper.db, workerPoolId);
+      if (!existingWorkerPool) {
+        await makeWorkerPool();
+      }
+
+      const deploymentName = 'deploy-operation-code';
+      await worker.update(helper.db, worker => {
+        worker.providerData = {
+          ...worker.providerData,
+          deploymentMethod: 'arm-template',
+          deployment: {
+            name: deploymentName,
+            operation: 'op/deployment',
+            id: false,
+          },
+          provisioningComplete: false,
+        };
+      });
+
+      await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
+        parameters: {
+          vmName: { value: worker.providerData.vm.name },
+        },
+      });
+      fake.deploymentsClient.deployments.setFakeDeploymentState('rgrp', deploymentName, 'Failed', {
+        code: 'DeploymentFailed',
+        message: 'Deployment failed',
+      });
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, [
+        {
+          id: '/fake-operation/quota',
+          properties: {
+            provisioningState: 'Failed',
+            provisioningOperation: 'Create',
+            statusCode: 'BadRequest',
+            statusMessage: {
+              status: 'Failed',
+              error: {
+                code: 'QuotaExceeded',
+                message: 'Operation could not be completed as it results in exceeding approved quota.',
+              },
+            },
+            targetResource: {
+              resourceType: 'Microsoft.Compute/virtualMachines',
+              resourceName: worker.providerData.vm.name,
+            },
+          },
+        },
+      ]);
+
+      await setState({ state: 'requested' });
+
+      await provider.checkWorker({ worker });
+
+      const [error] = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
+      assert.equal(error.extra.code, 'QuotaExceeded');
+      assert.deepEqual(await helper.db.fns.get_worker_pool_error_codes(workerPoolId), [
+        { code: 'QuotaExceeded', count: 1 },
+      ]);
+      helper.assertPulseMessage(
+        'worker-pool-error',
+        m => m.payload.workerId === worker.workerId && m.payload.errorCode === 'QuotaExceeded'
+      );
+    });
   });
 
   suite('registerWorker', () => {
