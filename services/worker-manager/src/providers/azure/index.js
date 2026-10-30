@@ -1056,7 +1056,7 @@ export class AzureProvider extends Provider {
       title: 'ARM Deployment Error',
       description,
       extra: {
-        code: deployment.properties?.error?.code ?? operationErrorCode,
+        code: operationErrorCode ?? deployment.properties?.error?.code,
         workerId: worker.workerId,
         workerGroup: worker.workerGroup,
         deploymentName: worker.providerData.deployment.name,
