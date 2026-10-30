@@ -120,25 +120,17 @@ export class Provider {
    * with probabilities adjusted with `initialWeight` and WorkerPoolStats that were collected at
    * provisioning time, which includes total number of workers and their states, and the errors
    *
-   * Some providers like AWS uses different approach to provision, as it can launch multiple instances
-   * of the same kind at once, so we return all launch configs and let it select the options.
-   *
    * Launch configs with weight = 0 would not be selected
    *
    * @param {Object} options
    * @param {WorkerPool} options.workerPool - worker pool
    * @param {Number} options.toSpawn - number of workers to spawn
    * @param {WorkerPoolStats} options.workerPoolStats - provisioning stats
-   * @param {Boolean} [options.returnAll] - return all launch configs
    */
-  async selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats, returnAll = false }) {
+  async selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats }) {
     assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
 
     const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool, workerPoolStats);
-
-    if (returnAll) {
-      return configSelector.getAll();
-    }
 
     return configSelector.selectCapacity(toSpawn);
   }
