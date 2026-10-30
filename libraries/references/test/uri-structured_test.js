@@ -2,23 +2,25 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert';
 import References from '../src/index.js';
 import { readUriStructured, writeUriStructured } from '../src/uri-structured.js';
-import mockFs from 'mock-fs';
+import path from 'node:path';
 import testing from '@taskcluster/lib-testing';
+import { makeTmpTree, removeTmpTree } from './helpers.js';
 
 suite(testing.suiteName(), () => {
-  teardown(() => {
-    mockFs.restore();
+  let tmpDir;
+
+  teardown(async () => {
+    await removeTmpTree(tmpDir);
+    tmpDir = undefined;
   });
 
   test('writes files', async () => {
-    mockFs({});
-
     // write some data to check later that it's deleted
-    await fs.mkdir('/refdata');
-    await fs.writeFile('/refdata/foo', 'bar');
+    tmpDir = await makeTmpTree({ 'refdata/foo': 'bar' });
+    const refdata = path.join(tmpDir, 'refdata');
 
     await writeUriStructured({
-      directory: '/refdata',
+      directory: refdata,
       serializable: [
         { filename: 'abc/def.json', content: { abc: 'def' } },
         { filename: 'abc.json', content: 'abc' },
@@ -26,21 +28,21 @@ suite(testing.suiteName(), () => {
     });
 
     try {
-      await fs.access('/refdata/foo', fs.constants.F_OK);
+      await fs.access(path.join(refdata, 'foo'), fs.constants.F_OK);
       assert.fail('foo should have been deleted');
     } catch (e) {
       assert.equal(e.code, 'ENOENT');
     }
-    assert.equal(await fs.readFile('/refdata/abc/def.json'), '{\n  "abc": "def"\n}');
-    assert.equal(await fs.readFile('/refdata/abc.json'), '"abc"');
+    assert.equal(await fs.readFile(path.join(refdata, 'abc/def.json')), '{\n  "abc": "def"\n}');
+    assert.equal(await fs.readFile(path.join(refdata, 'abc.json')), '"abc"');
   });
 
   test('reads files', async () => {
-    mockFs({
-      '/data/schemas/common/foo.json': '{"foo": "true"}',
-      '/data/references/something/bar.json': '{"bar": "true"}',
+    tmpDir = await makeTmpTree({
+      'schemas/common/foo.json': '{"foo": "true"}',
+      'references/something/bar.json': '{"bar": "true"}',
     });
-    const files = await readUriStructured({ directory: '/data' });
+    const files = await readUriStructured({ directory: tmpDir });
     assert.deepEqual(files.sort(), [
       {
         filename: 'references/something/bar.json',
@@ -54,12 +56,12 @@ suite(testing.suiteName(), () => {
   });
 
   test('fromUriStructured', async () => {
-    mockFs({
-      '/data/schemas/common/foo.json':
+    tmpDir = await makeTmpTree({
+      'schemas/common/foo.json':
         '{"foo": "true", "$id": "/schemas/common/foo.json", "$schema": "http://json-schema.org/draft-06/schema#"}',
-      '/data/references/something/bar.json': '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
+      'references/something/bar.json': '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
     });
-    const references = await References.fromUriStructured({ directory: '/data' });
+    const references = await References.fromUriStructured({ directory: tmpDir });
     assert.deepEqual(references.references, [
       {
         filename: 'references/something/bar.json',

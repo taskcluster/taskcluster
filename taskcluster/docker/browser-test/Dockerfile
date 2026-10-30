@@ -1,4 +1,4 @@
-FROM node:24.22.1-trixie-slim
+FROM node:26.13.0-trixie-slim
 
 VOLUME /builds/worker/checkouts
 
@@ -18,6 +18,7 @@ RUN mkdir -p /builds && \
     ca-certificates \
     curl \
     git && \
+    npm install -g corepack@0.36.0 && \
     npx -y @playwright/test@${PLAYWRIGHT_VERSION} install --with-deps chromium firefox && \
     chmod -R a+rX "${PLAYWRIGHT_BROWSERS_PATH}" && \
     rm -rf /var/lib/apt/lists/*

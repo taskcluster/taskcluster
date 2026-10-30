@@ -2,13 +2,17 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import { makeSerializable } from '../src/serializable.js';
-import mockFs from 'mock-fs';
+import path from 'node:path';
 import References from '../src/index.js';
 import testing from '@taskcluster/lib-testing';
+import { makeTmpTree, removeTmpTree } from './helpers.js';
 
 suite(testing.suiteName(), () => {
-  teardown(() => {
-    mockFs.restore();
+  let tmpDir;
+
+  teardown(async () => {
+    await removeTmpTree(tmpDir);
+    tmpDir = undefined;
   });
 
   const getReferences = async () => {
@@ -57,7 +61,7 @@ suite(testing.suiteName(), () => {
   });
 
   test('writes uri-structured', async () => {
-    mockFs({});
+    tmpDir = await makeTmpTree();
     const references = new References({
       references: [
         {
@@ -98,8 +102,9 @@ suite(testing.suiteName(), () => {
       ]),
     });
 
-    await references.writeUriStructured({ directory: '/refdata' });
-    assert.deepEqual(JSON.parse(fs.readFileSync('/refdata/schemas/test/sch.json')), {
+    const refdata = path.join(tmpDir, 'refdata');
+    await references.writeUriStructured({ directory: refdata });
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(refdata, 'schemas/test/sch.json'))), {
       $id: '/schemas/test/sch.json#',
       $schema: '/schemas/common/metaschema.json#',
       metadata: { name: 'api', version: 1 },

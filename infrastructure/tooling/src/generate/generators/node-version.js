@@ -1,4 +1,11 @@
-import { readRepoJSON, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } from '../../utils/index.js';
+import {
+  readRepoJSON,
+  readRepoFile,
+  modifyRepoFile,
+  writeRepoFile,
+  modifyRepoJSON,
+  modifyRepoYAML,
+} from '../../utils/index.js';
 
 export const tasks = [];
 
@@ -67,6 +74,38 @@ tasks.push({
       contents.substitutions._NODE_VERSION = nodeVersion;
       return contents;
     });
+  },
+});
+
+/**
+ * Update the corepack version to match everywhere, treating that in
+ * `.corepack-version` as authoritative. Node.js stopped bundling corepack in
+ * v25, so every environment that runs `corepack` installs it from npm.
+ */
+tasks.push({
+  title: 'Corepack Version',
+  // cloudbuild.yaml is also rewritten by the Node Version task
+  requires: ['target-node-version'],
+  provides: ['target-corepack-version'],
+  run: async (_requirements, utils) => {
+    const corepackVersion = (await readRepoFile('.corepack-version')).trim();
+    if (!corepackVersion.match(/^[0-9]+\.[0-9]+\.[0-9]+$/)) {
+      throw new Error(`invalid corepack version ${corepackVersion} in .corepack-version`);
+    }
+    utils.step({ title: `Setting corepack version ${corepackVersion}` });
+
+    for (const file of [
+      'Dockerfile',
+      'ui/Dockerfile',
+      'cloudbuild.yaml',
+      'taskcluster/docker/browser-test/Dockerfile',
+      'taskcluster/docker/ci/Dockerfile',
+      'taskcluster/docker/rabbit-test/Dockerfile',
+      'taskcluster/src/release.py',
+    ]) {
+      utils.status({ message: file });
+      await modifyRepoFile(file, contents => contents.replace(/corepack@[0-9.]+/g, `corepack@${corepackVersion}`));
+    }
   },
 });
 

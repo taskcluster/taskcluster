@@ -1,5 +1,5 @@
 FROM golang:1.27.3-trixie AS golang
-FROM node:24.22.1-trixie-slim
+FROM node:26.13.0-trixie-slim
 
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
@@ -29,6 +29,7 @@ RUN mkdir -p /builds && \
     git \
     gnupg \
     python3 && \
+    npm install -g corepack@0.36.0 && \
     curl -sSfL https://golangci-lint.run/install.sh | \
     sh -s -- -b $(go env GOPATH)/bin v$(cat .golangci-lint-version) && \
     install -d /usr/share/postgresql-common/pgdg && \

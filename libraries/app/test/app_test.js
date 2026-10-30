@@ -4,11 +4,12 @@ import request from 'superagent';
 import express from 'express';
 import isUUID from 'is-uuid';
 import testing from '@taskcluster/lib-testing';
+import fs from 'node:fs';
 import path from 'node:path';
-import mockFs from 'mock-fs';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
+const { version: VERSION } = JSON.parse(fs.readFileSync(path.resolve(REPO_ROOT, 'version.json'), 'utf8'));
 
 suite(testing.suiteName(), () => {
   // Test app creation
@@ -19,10 +20,6 @@ suite(testing.suiteName(), () => {
     const url = path => `http://localhost:${port}${path}`;
 
     suiteSetup(async () => {
-      mockFs({
-        [path.resolve(REPO_ROOT, 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
-      });
-
       // this library expects an "api" to have an express method that sets it up..
       const fakeApi = {
         express(app) {
@@ -82,7 +79,7 @@ suite(testing.suiteName(), () => {
     test('/__version__', async () => {
       const res = await request.get(url('/__version__'));
       assert(res.ok, 'Got response');
-      assert.equal(res.body.version, 'v99.99.99', 'Got the right version');
+      assert.equal(res.body.version, VERSION, 'Got the right version');
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
@@ -133,10 +130,6 @@ suite(testing.suiteName(), () => {
       } catch (err) {
         assert.equal(err.code, 'ECONNREFUSED');
       }
-    });
-
-    teardown(() => {
-      mockFs.restore();
     });
 
     suiteTeardown(() => server.terminate());

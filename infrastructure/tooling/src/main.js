@@ -108,6 +108,7 @@ program
 program
   .command('upgrade:node:prepare-shell')
   .option('--node <version>', 'Node.js version to use')
+  .option('--corepack <version>', 'corepack version to use')
   .option('--yes', 'Do not prompt before continuing with a dirty working tree')
   .option('--dry-run', 'Resolve versions without modifying files')
   .action(
@@ -120,6 +121,9 @@ program
 program
   .command('upgrade:node:apply')
   .requiredOption('--target-node <version>', 'Resolved target Node.js version')
+  .requiredOption('--target-corepack <version>', 'Resolved target corepack version')
+  .option('--node-changed', 'Whether the Node.js version changed')
+  .option('--corepack-changed', 'Whether the corepack version changed')
   .option('--dry-run', 'Print commands without modifying files')
   .action(
     actFn(async ({ options }) => {
