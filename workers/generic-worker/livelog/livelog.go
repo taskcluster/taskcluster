@@ -102,7 +102,7 @@ func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 		b []byte
 		e error
 	}
-	putResult := make(chan CommandResult)
+	putResult := make(chan CommandResult, 1)
 	go func() {
 		defer close(putResult)
 		var b bytes.Buffer
@@ -125,7 +125,7 @@ func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 		}
 	}()
 
-	inputStreamConnectionResult := make(chan error)
+	inputStreamConnectionResult := make(chan error, 1)
 	go func() {
 		defer close(inputStreamConnectionResult)
 		err := l.connectInputStream(ctx)

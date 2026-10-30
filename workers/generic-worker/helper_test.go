@@ -594,6 +594,7 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 			continue
 		}
 		b, rawResp, resp, url := getArtifactContentWithResponses(t, taskID, artifactName)
+		defer rawResp.Body.Close()
 		defer resp.Body.Close()
 		for _, requiredSubstring := range expected.Extracts {
 			if !strings.Contains(string(b), requiredSubstring) {
