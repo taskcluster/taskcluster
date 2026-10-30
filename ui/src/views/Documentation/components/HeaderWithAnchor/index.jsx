@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { string, oneOf } from 'prop-types';
-import { paramCase } from 'param-case';
+import { kebabCase } from 'change-case';
 import Typography from '@material-ui/core/Typography';
 
 const childrenToText = node => {
@@ -85,7 +85,7 @@ export default class HeaderWithAnchor extends Component {
   render() {
     const { classes, type, children, id, className, ...props } = this.props;
     const variant = this.getVariantFromType(type);
-    const anchorId = id || paramCase(childrenToText(children));
+    const anchorId = id || kebabCase(childrenToText(children));
 
     return (
       <Typography
