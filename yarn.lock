@@ -7109,13 +7109,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"regex-escape@npm:^3.4.11":
-  version: 3.4.11
-  resolution: "regex-escape@npm:3.4.11"
-  checksum: 10c0/8eac8cec83709536001d00c5954988841e9b0c33939c4af435ff7876761488a80edfcff024fc0fa9afd1032a96041570c688407d28735fab44265a110f40fb41
-  languageName: node
-  linkType: hard
-
 "request-ip@npm:^3.3.0":
   version: 3.3.0
   resolution: "request-ip@npm:3.3.0"
@@ -7898,7 +7891,6 @@ __metadata:
     qlobber: "npm:^8.0.1"
     qs: "npm:^6.16.1"
     quick-lru: "npm:^7.3.0"
-    regex-escape: "npm:^3.4.11"
     request-ip: "npm:^3.3.0"
     rimraf: "npm:^6.1.3"
     sanitize-html: "npm:^2.18.1"
