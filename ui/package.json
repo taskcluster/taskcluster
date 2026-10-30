@@ -77,7 +77,6 @@
     "react-window": "^1.8.10",
     "remark-gfm": "^4.0.1",
     "resolve-pathname": "^3.0.0",
-    "snake-case": "^3.0.3",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.1.0",
     "title-case": "^4.3.2"
