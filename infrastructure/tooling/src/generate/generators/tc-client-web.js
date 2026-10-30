@@ -5,7 +5,7 @@ const { omit } = lodash;
 import ejs from 'ejs';
 import { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 
 export const tasks = [
   {
@@ -17,7 +17,7 @@ export const tasks = [
 
       // clean up the clients directory to eliminate any "leftovers"
       await rimraf(path.join(REPO_ROOT, 'clients/client-web/src/clients'));
-      await mkdirp(path.join(REPO_ROOT, 'clients/client-web/src/clients'));
+      await fs.mkdir(path.join(REPO_ROOT, 'clients/client-web/src/clients'), { recursive: true });
 
       utils.status({ message: 'index' });
       await modifyRepoFile(path.join('clients/client-web/src/index.js'), async contents => {

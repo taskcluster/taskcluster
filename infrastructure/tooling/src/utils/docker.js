@@ -3,7 +3,7 @@ import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import got from 'got';
 import { execCommand, execCommandOutput } from './command.js';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import { rimraf } from 'rimraf';
 
 /**
@@ -104,7 +104,7 @@ export const dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) 
     if (credentials) {
       // override HOME so this doesn't use the user's credentials
       homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
-      await mkdirp(homeDir);
+      await fs.mkdir(homeDir, { recursive: true });
       env.HOME = homeDir;
 
       // run `docker login` to set up credentials in the temp homedir

@@ -1,6 +1,6 @@
 import util from 'node:util';
 import path from 'node:path';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import References from '@taskcluster/lib-references';
 import { execFile } from 'node:child_process';
 import { rimraf } from 'rimraf';
@@ -30,7 +30,7 @@ SERVICES.forEach(name => {
     run: async (_requirements, _utils) => {
       const svcDir = path.join(genDir, name);
 
-      await mkdirp(genDir);
+      await fs.mkdir(genDir, { recursive: true });
       await rimraf(svcDir);
 
       const { stdout } = await exec('node', [`services/${name}/src/main.js`, 'generateReferences'], {
@@ -56,7 +56,7 @@ tasks.push({
   ],
   provides: ['target-references', 'references-json'],
   run: async (requirements, _utils) => {
-    await mkdirp(genDir);
+    await fs.mkdir(genDir, { recursive: true });
 
     // combine all of the references, using a map to eliminate duplicate files
     // (the common schemas will be duplicated, for example)

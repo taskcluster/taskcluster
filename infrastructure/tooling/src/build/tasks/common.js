@@ -1,5 +1,5 @@
 import path from 'node:path';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import { ensureTask } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
 
@@ -13,7 +13,7 @@ export default ({ tasks, baseDir }) => {
     provides: ['clean-artifacts-dir'],
     run: async (_requirements, _utils) => {
       await rimraf(artifactsDir);
-      await mkdirp(artifactsDir);
+      await fs.mkdir(artifactsDir, { recursive: true });
       return { 'clean-artifacts-dir': artifactsDir };
     },
   });

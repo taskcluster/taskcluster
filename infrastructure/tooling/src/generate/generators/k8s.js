@@ -3,7 +3,7 @@ import path from 'node:path';
 import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import jsone from 'json-e';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import { rimraf } from 'rimraf';
 
 import {
@@ -359,7 +359,7 @@ tasks.push({
   provides: ['k8s-templates-dir'],
   run: async (_requirements, _utils) => {
     await rimraf(TMPL_DIR);
-    await mkdirp(TMPL_DIR);
+    await fs.mkdir(TMPL_DIR, { recursive: true });
   },
 });
 
