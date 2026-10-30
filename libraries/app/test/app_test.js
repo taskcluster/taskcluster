@@ -2,13 +2,15 @@ import assert from 'node:assert';
 import { App } from '../src/index.js';
 import request from 'superagent';
 import express from 'express';
-import isUUID from 'is-uuid';
+import { validate, version } from 'uuid';
 import testing from '@taskcluster/lib-testing';
 import path from 'node:path';
 import mockFs from 'mock-fs';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
+
+const isUUIDv4 = id => validate(id) && version(id) === 4;
 
 suite(testing.suiteName(), () => {
   // Test app creation
@@ -74,9 +76,9 @@ suite(testing.suiteName(), () => {
     test('trace ids (created when none passed in)', async () => {
       const res = await request.get(url('/api/test/v1/req-id')).buffer();
       const body = JSON.parse(res.text);
-      assert(isUUID.v4(res.headers['x-for-trace-id']));
-      assert(isUUID.v4(res.headers['x-for-request-id']));
-      assert(isUUID.v4(body.valueSet));
+      assert(isUUIDv4(res.headers['x-for-trace-id']));
+      assert(isUUIDv4(res.headers['x-for-request-id']));
+      assert(isUUIDv4(body.valueSet));
     });
 
     test('/__version__', async () => {

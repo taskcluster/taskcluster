@@ -5216,13 +5216,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-uuid@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "is-uuid@npm:1.0.2"
-  checksum: 10c0/9e39508b97c724668da7011f77c2f53485784b84a7b9c54fadb6369ebff236caf1912324e3390d0a0495fcddf5f19caa7a55e6cdd0f5b528a1e3210d51d8bd54
-  languageName: node
-  linkType: hard
-
 "is-wsl@npm:^3.1.0":
   version: 3.1.0
   resolution: "is-wsl@npm:3.1.0"
@@ -7874,7 +7867,6 @@ __metadata:
     hsts: "npm:^2.1.0"
     immutable: "npm:^4.3.9"
     inquirer: "npm:^14.2.2"
-    is-uuid: "npm:^1.0.2"
     iterall: "npm:^1.2.2"
     js-yaml: "npm:^4.3.1"
     json-e: "npm:^4.8.4"
