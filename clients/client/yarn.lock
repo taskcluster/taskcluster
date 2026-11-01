@@ -91,10 +91,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sindresorhus/is@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "@sindresorhus/is@npm:8.0.0"
-  checksum: 10c0/45fdbaf6abc77ce5b0a089b3acb02778799bd32ac9d55365ca18d6143871c99c2e1ccda1fa351b8c2678a23fe5a5097839d1796c69359258200e76222a852d40
+"@sindresorhus/is@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "@sindresorhus/is@npm:8.1.0"
+  checksum: 10c0/45e17a558af61fc7f0ee891a48060961f25534fc3836c464146f836d0df32f19fc4fa326c3f195186f104a81ee17253885f7b2dc71abe052e8f18fc233cfa790
   languageName: node
   linkType: hard
 
@@ -114,7 +114,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@types/http-cache-semantics@npm:^4.0.4":
+"@types/http-cache-semantics@npm:^4.2.0":
   version: 4.2.0
   resolution: "@types/http-cache-semantics@npm:4.2.0"
   checksum: 10c0/82dd33cbe7d4843f1e884a251c6a12d385b62274353b9db167462e7fbffdbb3a83606f9952203017c5b8cabbd7b9eef0cf240a3a9dedd20f69875c9701939415
@@ -158,18 +158,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cacheable-request@npm:^13.0.18":
-  version: 13.0.18
-  resolution: "cacheable-request@npm:13.0.18"
+"cacheable-request@npm:^13.0.19":
+  version: 13.0.19
+  resolution: "cacheable-request@npm:13.0.19"
   dependencies:
-    "@types/http-cache-semantics": "npm:^4.0.4"
+    "@types/http-cache-semantics": "npm:^4.2.0"
     get-stream: "npm:^9.0.1"
     http-cache-semantics: "npm:^4.2.0"
-    keyv: "npm:^5.5.5"
+    keyv: "npm:^5.6.0"
     mimic-response: "npm:^4.0.0"
     normalize-url: "npm:^8.1.1"
     responselike: "npm:^4.0.2"
-  checksum: 10c0/251d4831a00d9d9a10a2875c2e653e00b7392ba289de2744f2e0f873839a3bc05f88267ce74dc734558a0d6ad21b360b45b43f075cc807b544c7fc676b62ff78
+  checksum: 10c0/4d905619dcecd01a7f3a41fd3e0d3514a4db6d81504184453c76b1b3dc7463448815556d38bcfc32f9ca290ad35290c41ab64cea2ebbeb9d7c6aca9847cb4c94
   languageName: node
   linkType: hard
 
@@ -263,20 +263,20 @@ __metadata:
   linkType: hard
 
 "got@npm:^16.0.0":
-  version: 16.0.0
-  resolution: "got@npm:16.0.0"
+  version: 16.1.0
+  resolution: "got@npm:16.1.0"
   dependencies:
-    "@sindresorhus/is": "npm:^8.0.0"
+    "@sindresorhus/is": "npm:^8.1.0"
     byte-counter: "npm:^0.1.0"
-    cacheable-request: "npm:^13.0.18"
+    cacheable-request: "npm:^13.0.19"
     chunk-data: "npm:^0.1.0"
     decompress-response: "npm:^10.0.0"
     keyv: "npm:^5.6.0"
     lowercase-keys: "npm:^4.0.1"
     responselike: "npm:^4.0.2"
-    type-fest: "npm:^5.6.0"
-    uint8array-extras: "npm:^1.5.0"
-  checksum: 10c0/1d4d4c0900f808cf0e5ef661cf66ef45864e3f6abdc54fd01fae64cefce80fb15a94bde950c31450a494dd86d6d09c0c8f8099b3c6f63409eef23f523ecf82f7
+    type-fest: "npm:^5.10.0"
+    uint8array-extras: "npm:^1.6.0"
+  checksum: 10c0/99a8ec70cf7bacf1e507cf1a16a52ad01d7fe347946575bff7299a3422aec3f39cd4b8880b3487f18b722f227b39b18460bac47a7f525399747d6365ed90594a
   languageName: node
   linkType: hard
 
@@ -363,7 +363,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"keyv@npm:^5.5.5, keyv@npm:^5.6.0":
+"keyv@npm:^5.6.0":
   version: 5.6.0
   resolution: "keyv@npm:5.6.0"
   dependencies:
@@ -581,19 +581,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^5.6.0":
-  version: 5.6.0
-  resolution: "type-fest@npm:5.6.0"
+"type-fest@npm:^5.10.0":
+  version: 5.10.0
+  resolution: "type-fest@npm:5.10.0"
   dependencies:
     tagged-tag: "npm:^1.0.0"
-  checksum: 10c0/5468a8ffda7f3904e6f7bbd8069eb8b6dd4bd9156e206df7a01d09a73e28cd1afedf74ead9d0fc12841c8c90074194859feca240511c50800962fde1bd9ddcbc
+  checksum: 10c0/313c5d0e37a3f1cc82e942f3228f897623c8b54a63a8a95532d0c2c21ab200793caa70bd8904a83fd713eb28d87ba32468b09b345ef6efa25cecb345b467226f
   languageName: node
   linkType: hard
 
-"uint8array-extras@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "uint8array-extras@npm:1.5.0"
-  checksum: 10c0/0e74641ac7dadb02eadefc1ccdadba6010e007757bda824960de3c72bbe2b04e6d3af75648441f412148c4103261d54fcb60be45a2863beb76643a55fddba3bd
+"uint8array-extras@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "uint8array-extras@npm:1.6.0"
+  checksum: 10c0/d53177c025ebea31af1e445abd474027b66341a56f207f352a5a486aa1d492e228bbc883dc4a51ea8358bb88d60a019351e20a92dd17c2ef8326e29fbad57127
   languageName: node
   linkType: hard
 
