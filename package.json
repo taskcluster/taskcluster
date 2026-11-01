@@ -149,7 +149,7 @@
     "semver": "^7.8.5",
     "sinon": "^21.1.2",
     "snake-case": "^3.0.3",
-    "typescript": "^5.9.2",
+    "typescript": "^7.0.2",
     "zurvan": "^0.8.0"
   },
   "scripts": {
