@@ -17,7 +17,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
+    "@biomejs/biome": "^2.6.3",
     "@vitest/browser": "^5.0.5",
     "@vitest/browser-playwright": "^5.0.1",
     "playwright": "1.62.1",
