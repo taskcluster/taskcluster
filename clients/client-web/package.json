@@ -19,11 +19,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
     "@vitest/browser": "^5.0.5",
-    "@vitest/browser-playwright": "^5.0.1",
+    "@vitest/browser-playwright": "^5.0.5",
     "playwright": "1.62.1",
-    "vite": "^8.3.3",
+    "vite": "^8.3.5",
     "vite-plugin-node-polyfills": "^0.28.0",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.5"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
