@@ -5,7 +5,6 @@ import { getCommonSchemas } from './common-schemas.js';
 import Ajv from 'ajv';
 import fs from 'node:fs';
 import addFormats from 'ajv-formats';
-import regexEscape from 'regex-escape';
 import { validate } from './validate.js';
 
 const schemaPath = new URL('../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;
@@ -228,7 +227,7 @@ export class References {
       return new References(this);
     }
 
-    const rootUrlPrefix = new RegExp(`^${regexEscape(this.rootUrl)}`);
+    const rootUrlPrefix = new RegExp(`^${RegExp.escape(this.rootUrl)}`);
     const withoutRootUrl = uri => uri.replace(rootUrlPrefix, '');
 
     return new References({

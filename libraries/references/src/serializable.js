@@ -1,5 +1,4 @@
 import libUrls from 'taskcluster-lib-urls';
-import regexEscape from 'regex-escape';
 
 /**
  * Make a "serializable" data structure from the given references
@@ -20,7 +19,7 @@ export const makeSerializable = ({ references }) => {
 
   let urlPattern;
   if (references.rootUrl) {
-    urlPattern = new RegExp(`^${regexEscape(references.rootUrl)}/schemas/(.*)#`);
+    urlPattern = new RegExp(`^${RegExp.escape(references.rootUrl)}/schemas/(.*)#`);
   } else {
     urlPattern = /^\/schemas\/(.*)#/;
   }
