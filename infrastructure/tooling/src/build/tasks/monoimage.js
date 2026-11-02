@@ -13,7 +13,6 @@ import {
 
 import path from 'node:path';
 import { rimraf } from 'rimraf';
-import mkdirp from 'mkdirp';
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 
@@ -150,7 +149,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       const dockerDir = path.join(tempDir, 'devel-image');
       await rimraf(dockerDir);
-      await mkdirp(dockerDir);
+      fs.mkdirSync(dockerDir, { recursive: true });
 
       // the checked-in Dockerfile (also used by the release graph) builds on top of the monoimage
       fs.copyFileSync(

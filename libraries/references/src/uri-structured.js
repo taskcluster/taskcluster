@@ -1,4 +1,3 @@
-import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
 import path from 'node:path';
 import fs from 'node:fs/promises';
@@ -14,7 +13,7 @@ export const writeUriStructured = async ({ directory, serializable }) => {
     const pathname = path.join(directory, filename);
     const dirname = path.dirname(pathname);
     if (!dirs.has(dirname)) {
-      await mkdirp(dirname);
+      await fs.mkdir(dirname, { recursive: true });
       dirs.add(dirname);
     }
     await fs.writeFile(pathname, JSON.stringify(content, null, 2));

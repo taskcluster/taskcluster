@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { writeRepoFile, REPO_ROOT, execCommand } from '../../utils/index.js';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import { rimraf } from 'rimraf';
 
 const HEADER = `\
@@ -217,8 +217,8 @@ export const tasks = [
       // clean up the clients directory to eliminate any "leftovers"
       utils.status({ message: 'cleanup' });
       await rimraf(moduleDir);
-      await mkdirp(moduleDir);
-      await mkdirp(path.join(moduleDir, 'aio'));
+      await fs.mkdir(moduleDir, { recursive: true });
+      await fs.mkdir(path.join(moduleDir, 'aio'), { recursive: true });
 
       // generate Python package semaphore files
       await writeRepoFile(path.join(moduleDir, '__init__.py'), '');

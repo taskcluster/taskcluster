@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { writeRepoFile, REPO_ROOT } from '../../utils/index.js';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import { rimraf } from 'rimraf';
 
 const writeRsFile = async (filename, content) => {
@@ -262,7 +262,7 @@ export const tasks = [
       // clean up the clients directory to eliminate any "leftovers"
       utils.status({ message: 'cleanup' });
       await rimraf(moduleDir);
-      await mkdirp(moduleDir);
+      await fs.mkdir(moduleDir, { recursive: true });
 
       utils.status({ message: 'mod.rs' });
       await writeRsFile(path.join(moduleDir, 'mod.rs'), generateModFile(apis));

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import os from 'node:os';
 import { rimraf } from 'rimraf';
-import mkdirp from 'mkdirp';
+import fs from 'node:fs/promises';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 import { generateTasks } from './tasks/index.js';
 import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils/index.js';
@@ -18,10 +18,10 @@ class Build {
     if (!this.cmdOptions.cache) {
       await rimraf(this.baseDir);
     }
-    await mkdirp(this.baseDir);
+    await fs.mkdir(this.baseDir, { recursive: true });
 
     await rimraf(this.logsDir);
-    await mkdirp(this.logsDir);
+    await fs.mkdir(this.logsDir, { recursive: true });
 
     const credentials = await this.credentials();
     const target = this.target();
