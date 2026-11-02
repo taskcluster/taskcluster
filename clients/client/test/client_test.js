@@ -307,9 +307,7 @@ suite(testing.suiteName(), () => {
         const traceId = '456';
         nock(urlPrefix)
           .get('/v1/get-test')
-          .reply(function () {
-            return [200, { traceId: this.req.headers['x-taskcluster-trace-id'] }];
-          });
+          .reply(request => [200, { traceId: request.headers.get('x-taskcluster-trace-id') }]);
         let c = new Fake({ rootUrl, serviceDiscoveryScheme });
         c = c.taskclusterPerRequestInstance({ traceId, requestId });
         assert.equal((await c.get()).traceId, '456');
