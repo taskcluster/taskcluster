@@ -10,9 +10,9 @@ tasks:
       trustDomain: taskcluster
       # We set some of these directly in tc because we don't have some mozilla-specific concepts
       ownerEmail: taskcluster-internal@mozilla.com
-      # Pushes and cron jobs run at level 3, pull requests and comments at level 1.
+      # Pushes run at level 3, pull requests and comments at level 1.
       level:
-        $if: 'tasks_for in ["github-push", "cron"]'
+        $if: 'tasks_for == "github-push"'
         then: 3
         else: 1
 
@@ -20,24 +20,24 @@ tasks:
       baseRepoUrl:
         $switch:
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.base.repo.html_url}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${repository.url}'
+          'tasks_for in ["action", "pr-action"]': '${repository.url}'
           $default: '${event.repository.html_url}'
       repoUrl:
         $switch:
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.head.repo.html_url}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${repository.url}'
+          'tasks_for in ["action", "pr-action"]': '${repository.url}'
           $default: '${event.repository.html_url}'
       project:
         $switch:
           'tasks_for in ["github-push", "github-release"]': '${event.repository.name}'
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.base.repo.name}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${repository.project}'
+          'tasks_for in ["action", "pr-action"]': '${repository.project}'
       head_branch:
         $switch:
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': ${event.pull_request.head.ref}
           'tasks_for == "github-push"': ${event.ref}
           'tasks_for == "github-release"': '${event.release.target_commitish}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
+          'tasks_for in ["action", "pr-action"]': '${push.branch}'
       base_ref:
         $switch:
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': ${event.pull_request.base.ref}
@@ -49,35 +49,35 @@ tasks:
           'tasks_for == "github-push" && event.base_ref': ${event.base_ref}
           'tasks_for == "github-push" && !(event.base_ref)': ${event.ref}
           'tasks_for == "github-release"': ''
-          'tasks_for in ["cron", "action"]': '${push.branch}'
+          'tasks_for == "action"': '${push.branch}'
           'tasks_for == "pr-action"': '${push.base_branch}'
       head_ref:
         $switch:
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': ${event.pull_request.head.ref}
           'tasks_for == "github-push"': ${event.ref}
-          'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
+          'tasks_for in ["action", "pr-action"]': '${push.branch}'
           'tasks_for == "github-release"': ${event.release.tag_name}
       base_sha:
         $switch:
           'tasks_for == "github-push"': '${event.before}'
           'tasks_for == "github-release"': '${event.release.target_commitish}'
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.base.sha}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
+          'tasks_for in ["action", "pr-action"]': '${push.revision}'
       head_sha:
         $switch:
           'tasks_for == "github-push"': '${event.after}'
           'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.head.sha}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
+          'tasks_for in ["action", "pr-action"]': '${push.revision}'
           'tasks_for == "github-release"': '${event.release.tag_name}'
       head_tag:
         $if: 'tasks_for == "github-release"'
         then: "${event.release.tag_name}"
         else: ""
-      # build-decision (cron, actions) supplies ownTaskId itself and has no
+      # build-decision (actions) supplies ownTaskId itself and has no
       # as_slugid(); only the GitHub integration provides that function.
       ownTaskId:
         $switch:
-          'tasks_for in ["cron", "action", "pr-action"]': '${ownTaskId}'
+          'tasks_for in ["action", "pr-action"]': '${ownTaskId}'
           $default: { $eval: as_slugid("decision_task") }
       pullRequestAction:
         $switch:
@@ -95,7 +95,6 @@ tasks:
         || (tasks_for == "github-push" && project == "taskcluster" && event["ref"] == "refs/heads/main")
         || (tasks_for == "github-push" && project == "taskcluster" && event["ref"][:11] == "refs/tags/v")
         || (tasks_for == "github-push" && project == "staging-releases" && event["ref"][:27] == "refs/heads/staging-release/")
-        || (tasks_for == "cron" && project == "taskcluster")
       then:
         schedulerId: taskcluster-level-${level}
         taskId: "${ownTaskId}"
@@ -136,10 +135,6 @@ tasks:
                 $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
                 then:
                   - "assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}"
-                else:
-                  $if: 'tasks_for == "cron"'
-                  then:
-                    - "assume:repo:${repoUrl[8:]}:cron:${cron.job_name}"
 
         requires: all-completed
         priority: highest
@@ -181,32 +176,25 @@ tasks:
             - "--"
             - bash
             - -cx
-            - $let:
-                # Cron jobs choose their own target-tasks-method in .cron.yml;
-                # build-decision passes it through as cron.quoted_args.
-                targetTasksArgs:
-                  $if: 'tasks_for == "cron"'
-                  then: '${cron.quoted_args}'
-                  else: '--target-tasks-method=taskcluster-branches'
-              in: >
-                ln -s /builds/worker/artifacts artifacts &&
-                taskgraph decision
-                --pushlog-id='0'
-                --pushdate='0'
-                --project='${project}'
-                --owner='${ownerEmail}'
-                --level='${level}'
-                --repository-type=git
-                ${targetTasksArgs}
-                --tasks-for='${tasks_for}'
-                --base-repository='${baseRepoUrl}'
-                --base-ref='${base_ref}'
-                --base-rev='${base_sha}'
-                --head-repository='${repoUrl}'
-                --head-ref='${head_ref}'
-                --head-rev='${head_sha}'
-                --head-tag='${head_tag}' &&
-                echo "{}" > artifacts/actions.json # taskcluster is not using actions.json, setting to {} so CoT can still verify
+            - >
+              ln -s /builds/worker/artifacts artifacts &&
+              taskgraph decision
+              --pushlog-id='0'
+              --pushdate='0'
+              --project='${project}'
+              --owner='${ownerEmail}'
+              --level='${level}'
+              --repository-type=git
+              --target-tasks-method=taskcluster-branches
+              --tasks-for='${tasks_for}'
+              --base-repository='${baseRepoUrl}'
+              --base-ref='${base_ref}'
+              --base-rev='${base_sha}'
+              --head-repository='${repoUrl}'
+              --head-ref='${head_ref}'
+              --head-rev='${head_sha}'
+              --head-tag='${head_tag}' &&
+              echo "{}" > artifacts/actions.json # taskcluster is not using actions.json, setting to {} so CoT can still verify
 
           artifacts:
             "public":
