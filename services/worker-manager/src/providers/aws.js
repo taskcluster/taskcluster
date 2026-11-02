@@ -208,6 +208,10 @@ export class AwsProvider extends Provider {
                       Key: 'WorkerPoolId',
                       Value: `${workerPoolId}`,
                     },
+                    {
+                      Key: 'RootUrl',
+                      Value: this.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+                    },
                   ],
                 },
                 {
@@ -233,6 +237,10 @@ export class AwsProvider extends Provider {
                     {
                       Key: 'WorkerPoolId',
                       Value: `${workerPoolId}`,
+                    },
+                    {
+                      Key: 'RootUrl',
+                      Value: this.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
                     },
                   ],
                 },

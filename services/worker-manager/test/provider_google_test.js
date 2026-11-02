@@ -181,6 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.equal(parameters.zone, defaultLaunchConfig.zone);
         assert.deepEqual(parameters.requestBody.labels, {
           'created-by': `taskcluster-wm-${providerId}`,
+          'root-url': helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
           'managed-by': 'taskcluster',
           'worker-pool-id': workerPoolId.replace('/', '-'),
           owner: 'whatever-example-com',
@@ -271,6 +272,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const parameters = fake.compute.instances.insertCalls[0];
         assert.deepEqual(parameters.requestBody.labels, {
           'created-by': `taskcluster-wm-${providerId}`,
+          'root-url': helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
           'managed-by': 'taskcluster',
           'worker-pool-id': workerPoolId.replace('/', '-'),
           owner: 'whatever-example-com',
@@ -309,6 +311,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             initializeParams: {
               labels: {
                 'created-by': `taskcluster-wm-${providerId}`,
+                'root-url': helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
                 'managed-by': 'taskcluster',
                 'worker-pool-id': workerPoolId.replace('/', '-'),
                 owner: 'whatever-example-com',
@@ -381,6 +384,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             initializeParams: {
               labels: {
                 'created-by': `taskcluster-wm-${providerId}`,
+                'root-url': helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
                 'managed-by': 'taskcluster',
                 'worker-pool-id': workerPoolId.replace('/', '-'),
                 owner: 'whatever-example-com',
