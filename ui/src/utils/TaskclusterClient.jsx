@@ -7,6 +7,7 @@ const missingClientFactory = () => {
 export const TaskclusterClientContext = createContext(missingClientFactory);
 
 export const withTaskclusterClient = UnconnectedComponent =>
+  // biome-ignore lint/correctness/noComponentHookFactories: decorator
   function TaskclusterClientComponent(props) {
     const createTaskclusterClient = useContext(TaskclusterClientContext);
 

@@ -563,7 +563,7 @@ suite(testing.suiteName(), () => {
             assert.equal(url, `${cl.urlPrefix}/v1/query/test`);
           });
 
-          test('BuildSignedUrl with query-string', async () => {
+          test('BuildSignedUrl with empty query-string', async () => {
             const url = cl.buildSignedUrl(client.query, {});
             assertBewitUrl(url, `${cl.urlPrefix}/v1/query/test?bewit=XXX`);
           });
@@ -625,9 +625,9 @@ suite(testing.suiteName(), () => {
             assert(false);
           });
 
-          test('BuildUrl with missing parameter, but query options', async () => {
+          test('BuildSignedUrl with missing parameter, but query options', async () => {
             try {
-              cl.buildUrl(client.paramQuery, { option: 2 });
+              cl.buildSignedUrl(client.paramQuery, { option: 2 });
             } catch {
               return;
             }

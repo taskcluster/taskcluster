@@ -298,11 +298,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       testValidNamespaces(results);
     });
 
-    test('list top-level tasks', async () => {
-      const result = await helper.index.listTasks('', {});
-      testValidNamespaces(result.tasks);
-    });
-
     test('list top-level tasks (without auth)', async () => {
       helper.scopes('none');
       await assert.rejects(
