@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	yaml "gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v3"
 )
 
 // configFile is the location of the configuration file

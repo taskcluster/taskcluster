@@ -7,7 +7,7 @@ import (
 	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/run"
 	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/worker/worker"
 	"github.com/taskcluster/taskcluster/v114/tools/workerproto"
-	yaml "gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 type dummy struct {

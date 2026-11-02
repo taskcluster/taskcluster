@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 func TestUnmarshalLoggingYAML(t *testing.T) {

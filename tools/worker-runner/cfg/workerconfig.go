@@ -8,7 +8,7 @@ import (
 
 	"maps"
 
-	yaml "gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // The configuration that will be passed directly to the worker.  At

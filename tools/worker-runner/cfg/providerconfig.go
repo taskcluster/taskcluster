@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	yaml "gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // The configuration for a provider. This must at least have "providerType",

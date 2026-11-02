@@ -3,7 +3,7 @@ package cfg
 import (
 	"fmt"
 
-	yaml "gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // The configuration for logging. This must at least have "implementation",
