@@ -771,7 +771,7 @@ func CreateProfile(
 	lpProfilePath *uint16,
 	cchProfilePath uint32,
 ) (err error) {
-	r1, _, e1 := procCreateProfile.Call(
+	r1, _, _ := procCreateProfile.Call(
 		uintptr(unsafe.Pointer(lpSidString)),
 		uintptr(unsafe.Pointer(lpUserName)),
 		uintptr(unsafe.Pointer(lpProfilePath)),
@@ -782,7 +782,7 @@ func CreateProfile(
 	if int32(r1) < 0 {
 		// Ignore if profile already exists
 		if uint32(r1) != 0x800700B7 {
-			err = os.NewSyscallError("CreateProfile", e1)
+			err = os.NewSyscallError("CreateProfile", syscall.Errno(r1))
 		}
 	}
 	return
