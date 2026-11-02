@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v3"
-	"github.com/orcaman/writerseeker"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v114/clients/client-go/readwriteseeker"
 )
 
 type HTTPRetryError = internal.HTTPRetryError
@@ -21,14 +21,12 @@ type HTTPRetryError = internal.HTTPRetryError
 // byte slice. Returns the object itself, the Content-Type and Content-Length of
 // the downloaded object.
 func (object *Object) DownloadToBuf(name string) (buf []byte, contentType string, contentLength int64, err error) {
-	writeSeeker := &writerseeker.WriterSeeker{}
+	writeSeeker := &readwriteseeker.ReadWriteSeeker{}
 	contentType, contentLength, err = object.DownloadToWriteSeeker(name, writeSeeker)
 	if err != nil {
 		return
 	}
-	reader := writeSeeker.BytesReader()
-	buf = make([]byte, reader.Len())
-	_, err = reader.Read(buf)
+	buf = writeSeeker.Bytes()
 	return
 }
 

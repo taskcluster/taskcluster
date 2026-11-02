@@ -4,7 +4,18 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
+
+func TestBootTime(t *testing.T) {
+	bootTime, err := BootTime()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bootTime.IsZero() || bootTime.After(time.Now()) {
+		t.Fatalf("implausible boot time %v", bootTime)
+	}
+}
 
 func failingCommand() []string {
 	if runtime.GOOS == "windows" {

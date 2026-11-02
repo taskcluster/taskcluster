@@ -7,11 +7,8 @@ require (
 	github.com/Microsoft/go-winio v0.6.4
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/creack/pty v1.1.24
-	github.com/dchest/uniuri v1.2.0
-	github.com/deckarep/golang-set v1.8.0
 	github.com/distribution/reference v0.6.0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-	github.com/elastic/go-sysinfo v1.15.5
 	github.com/fatih/camelcase v1.0.0
 	github.com/getsentry/sentry-go v0.50.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
@@ -22,7 +19,6 @@ require (
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mholt/archives v0.1.5
 	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
-	github.com/orcaman/writerseeker v0.0.0-20200621085525-1d3f536ff85e
 	github.com/peterbourgon/mergemap v0.0.1
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/sergi/go-diff v1.4.0
@@ -167,7 +163,6 @@ require (
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.11.2 // indirect
-	github.com/elastic/go-windows v1.0.2 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.37.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
@@ -303,7 +298,6 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/polydawn/refmt v0.89.1-0.20221221234430-40501e09de1f // indirect
 	github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 // indirect
-	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
@@ -384,7 +378,6 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/mail.v2 v2.3.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	howett.net/plist v1.0.0 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect

@@ -15,18 +15,27 @@ type ReadWriteSeeker struct {
 
 // Write implements the io.Writer interface
 func (rws *ReadWriteSeeker) Write(p []byte) (n int, err error) {
-	minCap := overflow.Addp(rws.pos, len(p))
-	if minCap > cap(rws.buf) { // Make sure buf has enough capacity:
-		buf2 := make([]byte, len(rws.buf), overflow.Addp(minCap, len(p))) // add some extra
+	end := overflow.Addp(rws.pos, len(p))
+	if end > cap(rws.buf) {
+		// Double the capacity (or more, if needed), so that a sequence of
+		// writes costs amortized linear time
+		buf2 := make([]byte, len(rws.buf), max(end, 2*cap(rws.buf)))
 		copy(buf2, rws.buf)
 		rws.buf = buf2
 	}
-	if minCap > len(rws.buf) {
-		rws.buf = rws.buf[:minCap]
+	if end > len(rws.buf) {
+		rws.buf = rws.buf[:end]
 	}
 	copy(rws.buf[rws.pos:], p)
-	rws.pos += len(p)
+	rws.pos = end
 	return len(p), nil
+}
+
+// Bytes returns the full contents written so far, regardless of the current
+// position. The returned slice aliases the internal buffer, so it is only
+// valid until the next call to Write.
+func (rws *ReadWriteSeeker) Bytes() []byte {
+	return rws.buf
 }
 
 // Seek implements the io.Seeker interface
