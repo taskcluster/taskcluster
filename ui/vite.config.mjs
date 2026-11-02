@@ -84,7 +84,7 @@ const docsHtmlFallback = () => ({
 
 const proxy = target => ({ target, changeOrigin: true });
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   root: dir,
   resolve: {
     alias: {
@@ -92,6 +92,9 @@ export default defineConfig(({ mode }) => ({
     },
     extensions: ['.mjs', '.jsx', '.js', '.json'],
     dedupe: ['react', 'react-dom'],
+  },
+  oxc: {
+    decorator: { legacy: true },
   },
   plugins: [
     docsHtmlFallback(),
@@ -106,17 +109,7 @@ export default defineConfig(({ mode }) => ({
         rehypePlugins: [[rehypePrism, { ignoreMissing: true }]],
       }),
     },
-    react({
-      babel: {
-        plugins: [
-          ['@babel/plugin-proposal-decorators', { legacy: true }],
-          ['@babel/plugin-proposal-class-properties', { loose: false }],
-          ...(mode === 'production'
-            ? [['transform-react-remove-prop-types', { removeImport: true }]]
-            : []),
-        ],
-      },
-    }),
+    react(),
     nodePolyfills({ globals: { Buffer: true, global: true, process: true } }),
     envJs(),
   ],
