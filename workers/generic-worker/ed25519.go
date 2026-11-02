@@ -1,11 +1,10 @@
 package main
 
 import (
+	"crypto/ed25519"
 	"encoding/base64"
 	"io"
 	"os"
-
-	"golang.org/x/crypto/ed25519"
 )
 
 func generateEd25519Keypair(privateKeyFile string) error {

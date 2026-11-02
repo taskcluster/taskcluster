@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
 	taskcluster "github.com/taskcluster/taskcluster/v114/clients/client-go"
 )
@@ -69,8 +68,7 @@ func TestCheckProviderResultsNoCloud(t *testing.T) {
 }
 
 func TestReadCacheFile(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	cachePath := filepath.Join(dir, "cache.json")
 
 	t.Run("NotFound", func(t *testing.T) {

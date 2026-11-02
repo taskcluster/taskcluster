@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sys/unix"
 )
@@ -24,8 +23,7 @@ func makePermsBad(t *testing.T, filename string) {
 // that ReadPrivateFile accepts such a file rather than rejecting it for not
 // being exactly 0600.
 func TestMakeFilePrivate_DoesNotWidenTighterModes(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 
 	for _, mode := range []os.FileMode{0400, 0500, 0600, 0700} {
 		t.Run(mode.String(), func(t *testing.T) {
@@ -58,8 +56,7 @@ func TestMakeFilePrivate_DoesNotWidenTighterModes(t *testing.T) {
 // block trying to read from it (or consume arbitrary attacker-supplied data
 // if it's a FIFO the attacker controls).
 func TestMakeFilePrivate_RefusesNonRegularFile(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	filename := filepath.Join(dir, "fifo")
 	require.NoError(t, unix.Mkfifo(filename, 0600))
 
@@ -81,8 +78,7 @@ func TestMakeFilePrivate_RefusesNonRegularFile(t *testing.T) {
 // identical check is unreachable under non-root: its O_RDONLY open fails
 // with EACCES before the mode check runs on an owner-unreadable file.
 func TestReadPrivateFile_RefusesOwnerUnreadable(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 
 	// Only modes with no group/other bits are tested here; the loose-perms
 	// path is already covered elsewhere. 0200 = write only; 0300 = write +

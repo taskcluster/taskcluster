@@ -5,13 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPerms(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 
 	t.Run("Good", func(t *testing.T) {
 		filename := filepath.Join(dir, "good")
@@ -40,8 +38,7 @@ func TestPerms(t *testing.T) {
 }
 
 func TestMakeFilePrivate(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 
 	t.Run("AlreadyPrivate", func(t *testing.T) {
 		filename := filepath.Join(dir, "already-private")

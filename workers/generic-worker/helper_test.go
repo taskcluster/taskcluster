@@ -22,7 +22,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mcuadros/go-defaults"
-	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
@@ -284,7 +283,7 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	v4uuid[0] &= 0x7f
 
 	// Convert to a string taskID
-	taskID = slugid.Encode(uuid.UUID(v4uuid))
+	taskID = slugid.Encode(v4uuid)
 
 	// See if task already exists
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)

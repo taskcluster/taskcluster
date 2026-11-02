@@ -16,7 +16,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Flaque/filet"
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -1284,11 +1283,10 @@ func TestProxyHeartbeat(t *testing.T) {
 }
 
 func TestProxyVersion(t *testing.T) {
-	defer filet.CleanUp(t)
-
 	oldVersionJsonPath := versionJsonPath
 	defer func() { versionJsonPath = oldVersionJsonPath }()
-	versionJsonPath = filet.TmpFile(t, "", `{"version": "1.2.3"}`).Name()
+	versionJsonPath = path.Join(t.TempDir(), "version.json")
+	require.NoError(t, os.WriteFile(versionJsonPath, []byte(`{"version": "1.2.3"}`), 0644))
 
 	//  start proxy server
 	proxyConfig := Config{
@@ -1318,13 +1316,11 @@ func TestProxyVersion(t *testing.T) {
 }
 
 func TestProxyVersionNotFound(t *testing.T) {
-	defer filet.CleanUp(t)
-
 	// If versionPath doesn't point to an existing file, we should fail gracefully
 	// with a 404
 	oldVersionJsonPath := versionJsonPath
 	defer func() { versionJsonPath = oldVersionJsonPath }()
-	versionJsonPath = path.Join(filet.TmpDir(t, ""), "nosuch")
+	versionJsonPath = path.Join(t.TempDir(), "nosuch")
 
 	//  start proxy server
 	proxyConfig := Config{

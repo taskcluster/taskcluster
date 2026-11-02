@@ -3,10 +3,9 @@
 package main
 
 import (
+	"crypto/ed25519"
 	"encoding/base64"
 	"os"
-
-	"golang.org/x/crypto/ed25519"
 )
 
 func readEd25519PrivateKeyFromFile(path string) (privateKey ed25519.PrivateKey, err error) {

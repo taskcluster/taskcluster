@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	uuidlib "uuid"
 
 	"github.com/taskcluster/taskcluster/v114/clients/client-shell/cmds/root"
 
-	uuidlib "github.com/pborman/uuid"
 	"github.com/spf13/cobra"
 	sluglib "github.com/taskcluster/slugid-go/slugid"
 )
@@ -113,7 +113,11 @@ func encode(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid uuid format '%s'", uuid)
 	}
 
-	// the uuid string needs to be parsed into uuidlib.UUID before encoding
-	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Encode(uuidlib.Parse(uuid)))
+	// the uuid string needs to be parsed into raw bytes before encoding
+	parsed, err := uuidlib.Parse(uuid)
+	if err != nil {
+		return fmt.Errorf("invalid uuid format '%s': %w", uuid, err)
+	}
+	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Encode(parsed[:]))
 	return nil
 }

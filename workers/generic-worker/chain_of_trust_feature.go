@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
-	"golang.org/x/crypto/ed25519"
 )
 
 const (
