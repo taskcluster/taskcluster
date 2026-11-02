@@ -30,11 +30,9 @@ require (
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
-	github.com/streadway/amqp v1.1.0
 	github.com/stretchr/testify v1.12.1
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
 	github.com/taskcluster/httpbackoff/v3 v3.1.0
-	github.com/taskcluster/pulse-go v1.0.0
 	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3
 	github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
@@ -298,7 +296,6 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
-	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
