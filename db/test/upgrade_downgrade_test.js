@@ -75,7 +75,7 @@ suite(testing.suiteName(), () => {
     await helper.upgradeTo(latestVersion.version);
   });
 
-  test('downgrade to version 0', async () => {
+  test('downgrade to version 0 again', async () => {
     await helper.downgradeTo(0);
     await assertEmptySchema();
     await assertNoPermissions();

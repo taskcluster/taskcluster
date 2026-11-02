@@ -216,11 +216,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await expireWithRetentionDays(2);
       assert.equal((await checkWPE()).length, 0);
     });
-
-    test('old error', async () => {
-      await makeWPE({ reported: taskcluster.fromNow('-3 days') });
-      await expireWithRetentionDays(2);
-      assert.equal((await checkWPE()).length, 0);
-    });
   });
 });

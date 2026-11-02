@@ -19,6 +19,7 @@ const resolve = (value, props) =>
 const withPaginatedResource =
   ({ name, fetch, payload, select }) =>
   Component =>
+    // biome-ignore lint/correctness/noComponentHookFactories: decorator
     function PaginatedResourceComponent(props) {
       const state = usePaginatedResource(fetch(props), {
         payload: resolve(payload, props),

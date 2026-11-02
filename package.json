@@ -118,7 +118,7 @@
     "@aws-sdk/client-iam": "^3.1141.0",
     "@aws-sdk/client-sns": "^3.1141.0",
     "@aws-sdk/client-sqs": "^3.1141.0",
-    "@biomejs/biome": "^2.5.10",
+    "@biomejs/biome": "^2.6.4",
     "@taskcluster/lib-testing": "link:libraries/testing",
     "@types/pg": "^8.23.1",
     "acorn-loose": "^8.5.0",

@@ -6,22 +6,23 @@ import Code from '../Code';
 import 'highlight.js/styles/atom-one-dark.css';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 
-const JsonDisplay = props => {
-  const YamlJsonSwitch = ({ handleChange, value }) => (
-    <Typography component="div">
-      <Grid component="label" container alignItems="center" spacing={1}>
-        <Grid item>YAML</Grid>
-        <Grid item>
-          <Switch
-            checked={value === 'json'}
-            onChange={handleChange}
-            name="yaml_json_switch"
-          />
-        </Grid>
-        <Grid item>JSON</Grid>
+const YamlJsonSwitch = ({ handleChange, value }) => (
+  <Typography component="div">
+    <Grid component="label" container alignItems="center" spacing={1}>
+      <Grid item>YAML</Grid>
+      <Grid item>
+        <Switch
+          checked={value === 'json'}
+          onChange={handleChange}
+          name="yaml_json_switch"
+        />
       </Grid>
-    </Typography>
-  );
+      <Grid item>JSON</Grid>
+    </Grid>
+  </Typography>
+);
+
+const JsonDisplay = props => {
   const [language, setLanguage] = useState(props.syntax);
   const toText =
     language === 'yaml'

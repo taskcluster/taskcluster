@@ -17,6 +17,7 @@ const resolve = (value, props) =>
 const withResource =
   ({ name, fetch, key }) =>
   Component =>
+    // biome-ignore lint/correctness/noComponentHookFactories: decorator
     function ResourceComponent(props) {
       const state = useResource(fetch(props), { key: resolve(key, props) });
       const injected = name ? { [name]: state } : state;
