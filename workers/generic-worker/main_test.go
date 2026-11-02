@@ -12,8 +12,8 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v114/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v114/internal/slugid"
 )
 
 // Test failure should resolve as "failed"

@@ -10,11 +10,11 @@ import (
 	"github.com/taskcluster/taskcluster/v114/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
-	sluglib "github.com/taskcluster/slugid-go/slugid"
+	sluglib "github.com/taskcluster/taskcluster/v114/internal/slugid"
 )
 
 var (
-	// See https://github.com/taskcluster/slugid-go/blob/master/README.md for
+	// See the internal/slugid package documentation for
 	// an explanation of these regular expressions. Note, compiling once is
 	// more performant than compiling with each decode/encode call. We can use
 	// regexp.MustCompile rather than regexp.Compile since these are constant
@@ -95,7 +95,11 @@ func decode(cmd *cobra.Command, args []string) error {
 	}
 
 	// and decode
-	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Decode(slug))
+	uuid, err := sluglib.Decode(slug)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(cmd.OutOrStdout(), uuid)
 	return nil
 }
 
@@ -113,11 +117,11 @@ func encode(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid uuid format '%s'", uuid)
 	}
 
-	// the uuid string needs to be parsed into raw bytes before encoding
+	// the uuid string needs to be parsed into a uuid.UUID before encoding
 	parsed, err := uuidlib.Parse(uuid)
 	if err != nil {
 		return fmt.Errorf("invalid uuid format '%s': %w", uuid, err)
 	}
-	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Encode(parsed[:]))
+	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Encode(parsed))
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v114/internal/slugid"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/host"
 )
 

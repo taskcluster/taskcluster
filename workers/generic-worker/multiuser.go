@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v114/internal/slugid"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/process"

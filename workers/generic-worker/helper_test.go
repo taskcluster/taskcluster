@@ -19,16 +19,17 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/gorilla/mux"
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcindex"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v114/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v114/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v114/internal/slugid"
 	"github.com/taskcluster/taskcluster/v114/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/graceful"
@@ -283,7 +284,7 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	v4uuid[0] &= 0x7f
 
 	// Convert to a string taskID
-	taskID = slugid.Encode(v4uuid)
+	taskID = slugid.Encode(uuid.UUID(v4uuid))
 
 	// See if task already exists
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
