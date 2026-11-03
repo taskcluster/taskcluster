@@ -74,29 +74,26 @@ Adjust weights below to see how workers would be distributed across configuratio
 
 The actual weight used for provisioning is dynamically adjusted based on:
 - Current capacity vs maxCapacity
-- Recent error rates (within the last hour)
+- The launch configuration's recent health (within the last 15 minutes)
 
-The adjustment follows these rules:
+```
+adjustedWeight = (initialWeight - existingCapacity/maxCapacity) * health
+health         = max(0.02, 1 - failures / (failures + successes + 1))
+```
 
-1. **Capacity-based adjustment**:
-   ```
-   adjustedWeight = initialWeight - (existingCapacity/maxCapacity)
-   ```
-
-2. **Error-based adjustment**:
-   ```
-   adjustedWeight = initialWeight - (configErrors/totalErrors)
-   ```
+- `failures` is the number of errors reported for this launch configuration in the last 15 minutes, including errors that workers report.
+- `successes` is the number of workers from this launch configuration that registered in the last 15 minutes and are still running.
 
 This ensures that:
 - Configurations approaching their capacity limit are used less frequently
-- Configurations experiencing errors receive reduced priority
-- Configurations with persistent failures are temporarily avoided
+- Configurations with no recent failures keep their full weight
+- When several configurations are failing at once (for example, a cloud region running out of spot capacity), most new workers go to the configurations that are succeeding
+- Failing configurations keep a small share of requests, so they are still probed and regain weight once they start succeeding again
 
 ### Error Recovery
 
-Worker-Manager uses a 1-hour sliding window for error tracking, allowing configurations to automatically recover from temporary issues.
-This prevents permanent exclusion while maintaining system reliability.
+Worker-Manager uses a 15-minute sliding window for errors and successes, so configurations recover automatically once they stop failing.
+Recovery is gradual: after a burst of failures, health stays low until those failures age out of the window.
 
 ## Usage Tracking
 

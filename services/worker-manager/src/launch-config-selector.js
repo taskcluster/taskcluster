@@ -4,6 +4,26 @@ import { WorkerPoolLaunchConfig } from './data.js';
 
 /** @typedef {{ launchConfig: WorkerPoolLaunchConfig, weight: number, remainingCapacity: number }} WeightedConfig */
 
+/** Errors and launch successes older than this do not affect launch config health */
+export const HEALTH_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Lowest health a launch config can have, so failing configs keep getting
+ * a trickle of requests and recovery is noticed
+ */
+export const HEALTH_FLOOR = 0.02;
+
+/**
+ * Health of a launch config between HEALTH_FLOOR and 1, from its recent failures and successes.
+ * One pseudo-success keeps a single transient error from flooring a config.
+ *
+ * @param {number} failures
+ * @param {number} successes
+ */
+export const launchConfigHealth = (failures, successes) =>
+  // (s + 1) / (f + s + 1) is 1 - f / (f + s + 1) without the rounding error of the subtraction
+  Math.max(HEALTH_FLOOR, (successes + 1) / (failures + successes + 1));
+
 /**
  * A class to select a launch config based on a weighted random selection.
  * The weight of each launch config is determined by the initial weight.
@@ -123,8 +143,8 @@ export class LaunchConfigSelector {
    * that is proportional to its weight (initialWeight + adjustedWeight)
    *
    * If workerPoolStats are passed, launch config's
-   * initial weights would be adjusted proportionally to the number
-   * of errors and existing capacity
+   * initial weights would be adjusted proportionally to existing capacity,
+   * and scaled by the config's health (recent failures vs successes)
    *
    * Launch configs with initial or adjusted weight of 0 would not be returned
    *
@@ -156,12 +176,12 @@ export class LaunchConfigSelector {
           cfg.remainingCapacity = Math.max(0, maxCapacity - existingCapacity);
         }
 
-        const errorsCount = workerPoolStats.errorsByLaunchConfig.get(cfg.launchConfig.launchConfigId) || 0;
-        const totalErrors = workerPoolStats.totalErrors;
-        if (errorsCount > 0 && totalErrors > 0) {
-          // decrease likelihood proportionally to the errors count
-          cfg.weight -= errorsCount / totalErrors;
-        }
+        // scale the weight by this config's own recent failure rate
+        const { launchConfigId } = cfg.launchConfig;
+        cfg.weight *= launchConfigHealth(
+          workerPoolStats.errorsByLaunchConfig.get(launchConfigId) || 0,
+          workerPoolStats.successesByLaunchConfig.get(launchConfigId) || 0
+        );
       }
 
       // ensure single viable configs can spawn even with adjusted weight <= 0

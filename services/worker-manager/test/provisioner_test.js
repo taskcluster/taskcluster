@@ -2,9 +2,11 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
+import slugid from 'slugid';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { WorkerPool, Worker } from '../src/data.js';
 import { ApiError } from '../src/providers/provider.js';
+import { TestingProvider } from '../src/providers/testing.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -466,6 +468,70 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         }
       );
       monitor.manager.reset();
+    });
+
+    test('provision scan collects launch config health within the window', async () => {
+      const workerPoolId = 'pp/hh';
+      await WorkerPool.fromApi({
+        workerPoolId,
+        providerId: 'testing1',
+        previousProviderIds: [],
+        description: '',
+        created: new Date(),
+        lastModified: new Date(),
+        config: {},
+        owner: 'me@example.com',
+        emailOnError: false,
+        providerData: {},
+      }).create(helper.db);
+
+      const minutesAgo = minutes => new Date(Date.now() - minutes * 60 * 1000);
+      const addError = reported =>
+        helper.db.fns.create_worker_pool_error_launch_config(
+          slugid.v4(),
+          workerPoolId,
+          reported,
+          'operation-error',
+          'Operation Error',
+          'zone does not have enough resources',
+          {},
+          'lc1'
+        );
+      await addError(minutesAgo(5)); // inside the window
+      await addError(minutesAgo(30)); // outside the window
+
+      const addWorker = (workerId, lastModified, state) =>
+        Worker.fromApi({
+          workerPoolId,
+          workerGroup: 'wg',
+          workerId,
+          providerId: 'testing1',
+          lastModified,
+          capacity: 1,
+          state,
+          launchConfigId: 'lc1',
+          providerData: {},
+        }).create(helper.db);
+      await addWorker('recent-running', minutesAgo(5), Worker.states.RUNNING); // inside the window
+      await addWorker('old-running', minutesAgo(30), Worker.states.RUNNING); // outside the window
+
+      let captured;
+      const originalProvision = TestingProvider.prototype.provision;
+      TestingProvider.prototype.provision = async ({ workerPool, workerPoolStats }) => {
+        if (workerPool.workerPoolId === workerPoolId) {
+          captured = workerPoolStats;
+        }
+      };
+      try {
+        const provisioner = await helper.load('provisioner');
+        await provisioner.provision();
+      } finally {
+        TestingProvider.prototype.provision = originalProvision;
+      }
+
+      assert.ok(captured, 'provider.provision should have been called for the pool');
+      assert.equal(captured.errorsByLaunchConfig.get('lc1'), 1);
+      assert.equal(captured.successesByLaunchConfig.get('lc1'), 1);
     });
   });
 

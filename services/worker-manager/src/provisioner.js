@@ -4,7 +4,7 @@ import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { WorkerPool, Worker, WorkerPoolStats } from './data.js';
 import { ApiError } from './providers/provider.js';
 import { measureTime } from './util.js';
-import { fromNow } from '@taskcluster/client';
+import { HEALTH_WINDOW_MS } from './launch-config-selector.js';
 
 /**
  * Run all provisioning logic
@@ -107,7 +107,9 @@ export class Provisioner {
         ...after,
       });
 
-    const stats = new WorkerPoolStats(workerPoolId);
+    // errors and launch successes are both counted over the same recent window
+    const recentSince = new Date(Date.now() - HEALTH_WINDOW_MS);
+    const stats = new WorkerPoolStats(workerPoolId, {}, { recentSince });
     for await (const row of paginatedIterator({
       fetch,
       indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
@@ -119,11 +121,9 @@ export class Provisioner {
       stats.updateFromWorker(worker);
     }
 
-    // add information about errors in the past 60 minutes
-    const lastHour = fromNow('-1 hour');
-    const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, lastHour);
+    // add information about errors in the recent window
+    const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, recentSince);
     for (const row of errorsByLc) {
-      stats.totalErrors += row.count;
       stats.errorsByLaunchConfig.set(row.launch_config_id, row.count);
     }
 

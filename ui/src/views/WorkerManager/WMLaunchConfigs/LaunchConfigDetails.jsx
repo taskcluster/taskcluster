@@ -83,7 +83,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
                   <TableHead>
                     <TableRow>
                       <TableCell>Initial Weight</TableCell>
-                      <TableCell>Dynamic Weight</TableCell>
+                      <TableCell>Capacity Weight</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>

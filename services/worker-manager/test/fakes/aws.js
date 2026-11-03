@@ -22,6 +22,8 @@ export class FakeEC2 extends FakeCloud {
   _reset() {
     this.mock = mockClient(EC2Client);
     this._regions = new Map();
+    // RunInstances fails for these ImageIds, with the mapped AWS error code
+    this.runInstancesErrors = new Map();
     TEST_REGIONS.forEach(region => {
       this.rgn(region);
     });
@@ -53,6 +55,11 @@ export class FakeEC2 extends FakeCloud {
     this.mock.on(RunInstancesCommand).callsFake(launchConfig => {
       this.validate(launchConfig, 'aws-launch-config.yml');
       this.mock.runInstancesCalls.push(launchConfig);
+      if (this.runInstancesErrors.has(launchConfig.ImageId)) {
+        const err = new Error(`RunInstances failed for ${launchConfig.ImageId}`);
+        err.name = this.runInstancesErrors.get(launchConfig.ImageId);
+        throw err;
+      }
       const Instances = [];
 
       for (let i = 0; i < launchConfig.MinCount; i++) {
