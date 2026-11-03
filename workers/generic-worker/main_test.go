@@ -68,6 +68,7 @@ func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
 	mocktc.ShouldTerminateAfterNCalls = 5
 	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
 
+	setupWorkerRunnerTest(t, "should-worker-terminate")
 	withWorkerRunner = true
 	t.Cleanup(func() { withWorkerRunner = false })
 
@@ -84,6 +85,34 @@ func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
 	// with the 5s inter-loop wait).
 	if elapsed.Seconds() < 8 {
 		t.Fatalf("Worker should have been alive for at least 8s (idle timer reset), but was alive for %v", elapsed)
+	}
+}
+
+// TestIdleTimeoutWithoutShouldWorkerTerminateCapability verifies that when
+// worker-runner does not support the should-worker-terminate capability (as
+// with static and standalone providers), the worker exits on idle timeout
+// without consulting Worker Manager. The mock Worker Manager says to terminate
+// on the first call, so consulting it would exit with WORKER_MANAGER_SHUTDOWN
+// instead.
+func TestIdleTimeoutWithoutShouldWorkerTerminateCapability(t *testing.T) {
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
+	}
+
+	setup(t)
+
+	mocktc.ShouldTerminateAfterNCalls = 1
+	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
+
+	setupWorkerRunnerTest(t)
+	withWorkerRunner = true
+	t.Cleanup(func() { withWorkerRunner = false })
+
+	config.IdleTimeoutSecs = 3
+	exitCode := RunWorker()
+
+	if exitCode != IDLE_TIMEOUT {
+		t.Fatalf("Was expecting exit code %v (IDLE_TIMEOUT), but got exit code %v", IDLE_TIMEOUT, exitCode)
 	}
 }
 

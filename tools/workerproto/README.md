@@ -87,6 +87,12 @@ If false, then shutdown is imminent and the worker should simply clean up and ex
 
 There is no reponse message.
 
+### should-worker-terminate
+
+This capability has no associated message.
+When supported by both worker-runner and the worker, it indicates that worker-manager decides when the worker should terminate, so the worker may call worker-manager's [`shouldWorkerTerminate`](https://docs.taskcluster.net/docs/reference/core/worker-manager/api#shouldWorkerTerminate) API.
+Worker-runner supports this capability for dynamically provisioned workers (the `aws`, `azure`, and `google` providers), but not for the `static` or `standalone` providers.
+
 ### log
 
 This message type, sent from the worker, contains a structured log message for transmission to a log destination.
