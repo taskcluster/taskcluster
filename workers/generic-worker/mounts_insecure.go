@@ -25,7 +25,7 @@ func unarchive(source, destination, format string, ctx *TaskContext, pd *process
 		return fmt.Errorf("cannot create process to unarchive %v to %v as task user: %v", source, destination, err)
 	}
 	result := cmd.Execute()
-	if result.ExitError != nil {
+	if !result.Succeeded() {
 		return fmt.Errorf("cannot unarchive %v to %v as task user: %v", source, destination, result)
 	}
 	return nil

@@ -9,6 +9,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v114/workers/generic-worker/runtime"
 )
 
@@ -65,6 +66,52 @@ func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
 	)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// breakTaskUserHelper makes the generic-worker helper subcommands that run as
+// the task user fail to start, by pointing the binary lookup at an empty
+// GOPATH.
+func breakTaskUserHelper(t *testing.T) *process.PlatformData {
+	t.Helper()
+	pd, err := platformDataForTaskContext(taskContext)
+	if err != nil {
+		t.Fatalf("Could not get platform data for task user: %v", err)
+	}
+	t.Setenv("GOPATH", t.TempDir())
+	return pd
+}
+
+// TestCreateFileAsTaskUserFailsIfHelperCannotStart tests that a file is not
+// opened by the worker when the task user helper that should create it never
+// ran, since the helper is what checks the task user may write there.
+func TestCreateFileAsTaskUserFailsIfHelperCannotStart(t *testing.T) {
+	setup(t)
+
+	file := filepath.Join(t.TempDir(), "existing-file")
+	if err := os.WriteFile(file, []byte("original"), 0644); err != nil {
+		t.Fatalf("Could not write %v: %v", file, err)
+	}
+	pd := breakTaskUserHelper(t)
+
+	f, err := CreateFileAsTaskUser(file, taskContext, pd)
+	if err == nil {
+		_ = f.Close()
+		t.Fatalf("Expected CreateFileAsTaskUser to fail when its helper cannot start, but it opened %v", file)
+	}
+}
+
+// TestUnarchiveFailsIfHelperCannotStart tests that unarchiving reports an
+// error when the task user helper that should extract the archive never ran.
+func TestUnarchiveFailsIfHelperCannotStart(t *testing.T) {
+	setup(t)
+
+	src := filepath.Join(testdataDir, "unknown_issuer_app_1.zip")
+	dst := filepath.Join(taskContext.TaskDir, t.Name())
+	pd := breakTaskUserHelper(t)
+
+	if err := unarchive(src, dst, "zip", taskContext, pd); err == nil {
+		t.Fatalf("Expected unarchive to fail when its helper cannot start")
+	}
 }
 
 // TestPrivilegedGenericWorkerBinaryFailsTask tests that when the generic-worker binary
