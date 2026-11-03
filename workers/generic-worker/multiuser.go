@@ -365,7 +365,7 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, err)
 	}
 	result := cmd.Execute()
-	if result.ExitError != nil {
+	if !result.Succeeded() {
 		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, result)
 	}
 	if !safefs.IsExistingDir(dir) {
@@ -380,7 +380,7 @@ func CreateFileAsTaskUser(file string, ctx *TaskContext, pd *process.PlatformDat
 		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, err)
 	}
 	result := cmd.Execute()
-	if result.ExitError != nil {
+	if !result.Succeeded() {
 		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, result)
 	}
 	return safefs.OpenExistingRDWR(file)
