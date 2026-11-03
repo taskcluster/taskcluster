@@ -222,8 +222,6 @@ func main() {
 			logEvent("instanceShutdown", nil, time.Now())
 			shutdownWorker("worker manager requested termination")
 		case WORKER_SHUTDOWN:
-			// worker-runner does not remove the worker itself when we exit non-zero,
-			// so ask it to; without worker-runner, leave the host running.
 			if WorkerRunnerProtocol.Capable("shutdown") {
 				logEvent("instanceShutdown", nil, time.Now())
 				shutdownWorker("graceful termination")
