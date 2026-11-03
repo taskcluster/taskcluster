@@ -15774,6 +15774,29 @@
             "procs": {
               "additionalProperties": false,
               "properties": {
+                "check_dangling_resources": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
                 "expire_errors": {
                   "additionalProperties": false,
                   "properties": {
@@ -15995,7 +16018,8 @@
                 "expire_workers",
                 "expire_worker_pools",
                 "expire_launch_configs",
-                "expire_errors"
+                "expire_errors",
+                "check_dangling_resources"
               ],
               "title": "Process settings for this service",
               "type": "object"
@@ -19056,6 +19080,51 @@
           "name": "countMetric",
           "title": "Generic Count",
           "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A cloud resource tagged as managed by taskcluster that worker-manager no\nlonger tracks, found by the periodic dangling-resources check.  No action is\ntaken on it.  Reason is one of: 'untracked' (instance with no worker row),\n'stopped-but-alive' (instance whose worker is STOPPED), 'unattached' (disk,\nNIC or IP not attached to anything).",
+          "fields": {
+            "ageHours": "Resource age in hours",
+            "createdAt": "Resource creation time",
+            "legacy": "True if the resource has no root-url tag, so it may belong to another deployment",
+            "location": "Zone, region or location of the resource",
+            "name": "Cloud resource name",
+            "providerId": "Provider ID",
+            "providerType": "Provider type (google, aws, azure)",
+            "reason": "Why the resource is considered dangling: 'untracked', 'stopped-but-alive' or 'unattached'",
+            "resourceId": "Cloud resource ID",
+            "resourceType": "Resource type: 'instance', 'disk', 'nic' or 'ip'",
+            "workerGroup": "Worker group of the matching worker key, or null",
+            "workerId": "Worker ID of the matching worker key, or null",
+            "workerPoolId": "Worker pool ID from the resource tags, or null",
+            "workerState": "State of the matching worker row, or null if there is none"
+          },
+          "level": "notice",
+          "name": "danglingResource",
+          "title": "Dangling Cloud Resource",
+          "type": "dangling-resource",
+          "version": 1
+        },
+        {
+          "description": "Per-provider summary of a dangling-resources check run: how many resources\ntagged as managed by taskcluster were listed, how many were excluded, and how\nmany were found dangling, by reason.",
+          "fields": {
+            "byType": "Listed resources by resource type",
+            "dangling": "Dangling resources by reason",
+            "foreign": "Resources tagged with another deployment's root URL (not checked)",
+            "legacy": "Resources without a root-url tag (checked, but may belong to another deployment)",
+            "listErrors": "1 if listing resources failed (nothing was checked), else 0",
+            "listed": "Total resources listed with the managed-by taskcluster tag",
+            "lookupErrors": "Number of worker lookups that failed",
+            "providerId": "Provider ID",
+            "providerType": "Provider type (google, aws, azure)",
+            "tooYoung": "Resources younger than the grace period (not checked)",
+            "unknownAge": "Resources with no known creation time (not checked)"
+          },
+          "level": "notice",
+          "name": "danglingResourcesSummary",
+          "title": "Dangling Cloud Resources Summary",
+          "type": "dangling-resources-summary",
           "version": 1
         },
         {

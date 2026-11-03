@@ -65,6 +65,7 @@ export class FakeAzure extends FakeCloud {
       pipeline: new FakePipeline(),
     };
     this.resourcesClient = {
+      resources: new GenericResources(this),
       resourceGroups: this._managers.resourceGroup,
       pipeline: new FakePipeline(),
     };
@@ -152,6 +153,17 @@ class ResourceManager {
     const req = new ResourceRequest('delete', this.resourceType, resourceGroupName, name, {});
     this._requests.set(key, req);
     return req;
+  }
+
+  async *listAll() {
+    for (const [key, res] of this._resources) {
+      yield { name: key.split('/').pop(), ...res };
+    }
+  }
+
+  // disks.list() lists the whole subscription, like listAll() for other types
+  list() {
+    return this.listAll();
   }
 
   // Subclass Overrides
@@ -438,6 +450,29 @@ export class DeploymentManager extends ResourceManager {
   setFakeDeploymentOperations(resourceGroupName, name, operations) {
     const key = `${resourceGroupName}/${name}`;
     this._deploymentOperations.set(key, operations);
+  }
+}
+
+/**
+ * The generic `resources` API, listing NICs and IPs by resource type with their
+ * `createdTime` (set it via makeFakeResource overrides).
+ */
+class GenericResources {
+  constructor(fake) {
+    this.fake = fake;
+  }
+
+  async *list({ filter, expand }) {
+    assert.equal(expand, 'createdTime');
+    const managers = {
+      "resourceType eq 'Microsoft.Network/networkInterfaces'": this.fake._managers.nic,
+      "resourceType eq 'Microsoft.Network/publicIPAddresses'": this.fake._managers.ip,
+    };
+    const manager = managers[filter];
+    assert(manager, `unsupported filter ${filter}`);
+    for await (const { id, name, createdTime } of manager.listAll()) {
+      yield { id, name, createdTime };
+    }
   }
 }
 

@@ -287,3 +287,10 @@ services:
       - cron
       - worker-manager
       - worker-manager-cron
+  worker-manager-cron-check-dangling-resources:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron

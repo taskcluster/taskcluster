@@ -14,6 +14,7 @@ import tcdb from '@taskcluster/db';
 import { Provisioner } from './provisioner.js';
 import { Providers } from './providers/index.js';
 import { WorkerScanner } from './worker-scanner.js';
+import { ResourceChecker } from './resource-checker.js';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
 import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
@@ -85,6 +86,16 @@ const load = loader(
         return monitor.childMonitor('expireWorkers').oneShot(ownName, async () => {
           const count = await Worker.expire({ db, monitor });
           monitor.info(`deleted ${count} workers`);
+        });
+      },
+    },
+
+    checkDanglingResources: {
+      requires: ['monitor', 'providers', 'db'],
+      setup: ({ monitor, providers, db }, ownName) => {
+        const childMonitor = monitor.childMonitor('checkDanglingResources');
+        return childMonitor.oneShot(ownName, async () => {
+          await new ResourceChecker({ providers, db, monitor: childMonitor }).check();
         });
       },
     },

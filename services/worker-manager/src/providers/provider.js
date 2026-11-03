@@ -24,6 +24,22 @@ import { Worker, WorkerPoolError } from '../data.js';
  *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
  * }} ProviderConfigOptions */
 
+/** @typedef {{
+ *   resourceType: 'instance' | 'disk' | 'nic' | 'ip',
+ *   resourceId: string,
+ *   name: string,
+ *   location: string | null,
+ *   createdAt: Date | null,
+ *   rootUrlTag: string | null,
+ *   workerPoolId: string | null,
+ *   attached?: boolean,
+ *   worker?: { workerPoolId: string, workerGroup: string, workerId: string } | null,
+ * }} ManagedResource
+ *
+ * `worker` is set for instances (null if the worker key cannot be determined),
+ * `attached` is set for disks, NICs and IPs.
+ */
+
 /**
  * The parent class for all providers.
  *
@@ -112,6 +128,31 @@ export class Provider {
   async checkWorker() {}
 
   async scanCleanup() {}
+
+  /**
+   * Value of the root-url tag/label this provider stamps on the cloud resources
+   * it creates, identifying the deployment that owns them.  Providers whose cloud
+   * restricts tag values override this with a sanitized form.
+   *
+   * @returns {string}
+   */
+  rootUrlTagValue() {
+    return this.rootUrl;
+  }
+
+  /**
+   * List the cloud resources carrying the `managed-by: taskcluster` tag, for the
+   * dangling-resources check.  This lists resources of *all* deployments sharing
+   * the cloud account, and resources predating the root-url tag; the caller
+   * tells them apart using `rootUrlTag`.
+   *
+   * Must throw if any listing call fails, rather than returning partial results.
+   *
+   * @returns {Promise<ManagedResource[]>}
+   */
+  async listManagedResources() {
+    return [];
+  }
 
   /**
    * Get active launch configs to spawn workers

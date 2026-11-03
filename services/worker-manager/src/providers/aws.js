@@ -1,7 +1,9 @@
 import { ApiError, Provider } from './provider.js';
 import {
   EC2Client,
+  DescribeInstancesCommand,
   DescribeRegionsCommand,
+  DescribeVolumesCommand,
   RunInstancesCommand,
   DescribeInstanceStatusCommand,
   TerminateInstancesCommand,
@@ -210,7 +212,7 @@ export class AwsProvider extends Provider {
                     },
                     {
                       Key: 'RootUrl',
-                      Value: this.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+                      Value: this.rootUrlTagValue(),
                     },
                   ],
                 },
@@ -240,7 +242,7 @@ export class AwsProvider extends Provider {
                     },
                     {
                       Key: 'RootUrl',
-                      Value: this.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+                      Value: this.rootUrlTagValue(),
                     },
                   ],
                 },
@@ -465,6 +467,76 @@ export class AwsProvider extends Provider {
         );
       }
     });
+  }
+
+  rootUrlTagValue() {
+    return this.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+  }
+
+  async listManagedResources() {
+    /** @type {import('./provider.js').ManagedResource[]} */
+    const resources = [];
+    const tagsOf = tags => Object.fromEntries((tags || []).map(({ Key, Value }) => [Key, Value]));
+    const managedFilter = { Name: 'tag:ManagedBy', Values: ['taskcluster'] };
+
+    const listAll = async (region, Command, input, field) => {
+      const items = [];
+      let NextToken;
+      do {
+        const res = await this._enqueue(`${region}.describe`, () =>
+          this.ec2s[region].send(new Command({ ...input, MaxResults: 1000, NextToken }))
+        );
+        items.push(...(res[field] || []));
+        NextToken = res.NextToken;
+      } while (NextToken);
+      return items;
+    };
+
+    for (const region of Object.keys(this.ec2s)) {
+      const reservations = await listAll(
+        region,
+        DescribeInstancesCommand,
+        {
+          Filters: [
+            managedFilter,
+            // terminated instances linger in the API for a while but cost nothing
+            { Name: 'instance-state-name', Values: ['pending', 'running', 'shutting-down', 'stopping', 'stopped'] },
+          ],
+        },
+        'Reservations'
+      );
+      for (const instance of reservations.flatMap(r => r.Instances || [])) {
+        const tags = tagsOf(instance.Tags);
+        const workerPoolId = tags.WorkerPoolId ?? null;
+        resources.push({
+          resourceType: 'instance',
+          resourceId: instance.InstanceId,
+          name: instance.InstanceId,
+          location: region,
+          createdAt: instance.LaunchTime ? new Date(instance.LaunchTime) : null,
+          rootUrlTag: tags.RootUrl ?? null,
+          workerPoolId,
+          worker: workerPoolId ? { workerPoolId, workerGroup: region, workerId: instance.InstanceId } : null,
+        });
+      }
+
+      const volumes = await listAll(region, DescribeVolumesCommand, { Filters: [managedFilter] }, 'Volumes');
+      for (const volume of volumes) {
+        const tags = tagsOf(volume.Tags);
+        resources.push({
+          resourceType: 'disk',
+          resourceId: volume.VolumeId,
+          name: volume.VolumeId,
+          location: region,
+          createdAt: volume.CreateTime ? new Date(volume.CreateTime) : null,
+          rootUrlTag: tags.RootUrl ?? null,
+          workerPoolId: tags.WorkerPoolId ?? null,
+          attached: Boolean(volume.Attachments?.length),
+        });
+      }
+    }
+
+    return resources;
   }
 
   async scanPrepare() {

@@ -2898,6 +2898,29 @@
         "procs": {
           "additionalProperties": false,
           "properties": {
+            "check_dangling_resources": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            },
             "expire_errors": {
               "additionalProperties": false,
               "properties": {
@@ -3119,7 +3142,8 @@
             "expire_workers",
             "expire_worker_pools",
             "expire_launch_configs",
-            "expire_errors"
+            "expire_errors",
+            "check_dangling_resources"
           ],
           "title": "Process settings for this service",
           "type": "object"

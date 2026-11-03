@@ -345,6 +345,63 @@ MonitorManager.register({
   },
 });
 
+MonitorManager.register({
+  name: 'danglingResource',
+  title: 'Dangling Cloud Resource',
+  type: 'dangling-resource',
+  version: 1,
+  level: 'notice',
+  description: `
+    A cloud resource tagged as managed by taskcluster that worker-manager no
+    longer tracks, found by the periodic dangling-resources check.  No action is
+    taken on it.  Reason is one of: 'untracked' (instance with no worker row),
+    'stopped-but-alive' (instance whose worker is STOPPED), 'unattached' (disk,
+    NIC or IP not attached to anything).
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    providerType: 'Provider type (google, aws, azure)',
+    resourceType: "Resource type: 'instance', 'disk', 'nic' or 'ip'",
+    resourceId: 'Cloud resource ID',
+    name: 'Cloud resource name',
+    location: 'Zone, region or location of the resource',
+    reason: "Why the resource is considered dangling: 'untracked', 'stopped-but-alive' or 'unattached'",
+    legacy: 'True if the resource has no root-url tag, so it may belong to another deployment',
+    workerPoolId: 'Worker pool ID from the resource tags, or null',
+    workerGroup: 'Worker group of the matching worker key, or null',
+    workerId: 'Worker ID of the matching worker key, or null',
+    workerState: 'State of the matching worker row, or null if there is none',
+    createdAt: 'Resource creation time',
+    ageHours: 'Resource age in hours',
+  },
+});
+
+MonitorManager.register({
+  name: 'danglingResourcesSummary',
+  title: 'Dangling Cloud Resources Summary',
+  type: 'dangling-resources-summary',
+  version: 1,
+  level: 'notice',
+  description: `
+    Per-provider summary of a dangling-resources check run: how many resources
+    tagged as managed by taskcluster were listed, how many were excluded, and how
+    many were found dangling, by reason.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    providerType: 'Provider type (google, aws, azure)',
+    listed: 'Total resources listed with the managed-by taskcluster tag',
+    byType: 'Listed resources by resource type',
+    foreign: "Resources tagged with another deployment's root URL (not checked)",
+    legacy: 'Resources without a root-url tag (checked, but may belong to another deployment)',
+    tooYoung: 'Resources younger than the grace period (not checked)',
+    unknownAge: 'Resources with no known creation time (not checked)',
+    dangling: 'Dangling resources by reason',
+    listErrors: '1 if listing resources failed (nothing was checked), else 0',
+    lookupErrors: 'Number of worker lookups that failed',
+  },
+});
+
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
   providerId: 'ID of the provider',

@@ -25,37 +25,38 @@ The processes that have `continuous` for their deadline and schedule run every f
 have their schedules and maximum allowed duration defined here. All times are relative to the timezone of the k8s cluster.
 
 {/* BEGIN MONITORING TABLE */}
-| Service        | Name                         | Logger                     | Deadline (seconds) | Schedule                    |
-| -------------- | ---------------------------- | -------------------------- | ------------------ | --------------------------- |
-| auth           | purgeExpiredClients          | taskcluster.auth           | 86400              | At 12:00 AM                 |
-| auth           | purgeAuditHistory            | taskcluster.auth           | 86400              | At 12:10 AM                 |
-| github         | sync                         | taskcluster.github         | 86400              | At 02:00 AM                 |
-| hooks          | expires                      | taskcluster.hooks          | 86400              | At 12:10 AM                 |
-| index          | expire                       | taskcluster.index          | 86400              | At 12:05 AM                 |
-| object         | expire                       | taskcluster.object         | 86400              | At 01:00 AM                 |
-| purge-cache    | expireCachePurges            | taskcluster.purge-cache    | 86400              | At 01:05 AM                 |
-| queue          | claimResolver                | taskcluster.queue          | continuous         | continuous                  |
-| queue          | deadlineResolver             | taskcluster.queue          | continuous         | continuous                  |
-| queue          | dependencyResolver           | taskcluster.queue          | continuous         | continuous                  |
-| queue          | expireArtifacts              | taskcluster.queue          | 86400              | At 01:10 AM                 |
-| queue          | expireTask                   | taskcluster.queue          | 86400              | At 12:10 AM                 |
-| queue          | expireTaskGroups             | taskcluster.queue          | 86400              | At 12:15 AM                 |
-| queue          | expireTaskDependency         | taskcluster.queue          | 86400              | At 12:20 AM                 |
-| queue          | expireQueueMessages          | taskcluster.queue          | 3600               | At 23 minutes past the hour |
-| queue          | expireWorkerInfo             | taskcluster.queue          | 86400              | At 12:05 AM                 |
-| queue          | workerMetrics                | taskcluster.queue          | continuous         | continuous                  |
-| secrets        | expire                       | taskcluster.secrets        | 600                | Every hour                  |
-| web-server     | scanner                      | taskcluster.web-server     | 86400              | At 12:01 AM                 |
-| web-server     | cleanup-session-storage      | taskcluster.web-server     | 86400              | At 12:05 AM                 |
-| web-server     | cleanup-expire-auth-codes    | taskcluster.web-server     | 86400              | At 12:00 AM                 |
-| web-server     | cleanup-expire-access-tokens | taskcluster.web-server     | 86400              | At 12:00 AM                 |
-| worker-manager | provisioner                  | taskcluster.worker-manager | continuous         | continuous                  |
-| worker-manager | workerscanner                | taskcluster.worker-manager | continuous         | continuous                  |
-| worker-manager | workerscanner-azure          | taskcluster.worker-manager | continuous         | continuous                  |
-| worker-manager | expire-workers               | taskcluster.worker-manager | 86400              | At 01:30 AM                 |
-| worker-manager | expire-worker-pools          | taskcluster.worker-manager | 86400              | At 12:01 AM                 |
-| worker-manager | expire-launch-configs        | taskcluster.worker-manager | 86400              | At 01:00 AM                 |
-| worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM                 |
+| Service        | Name                         | Logger                     | Deadline (seconds) | Schedule                                   |
+| -------------- | ---------------------------- | -------------------------- | ------------------ | ------------------------------------------ |
+| auth           | purgeExpiredClients          | taskcluster.auth           | 86400              | At 12:00 AM                                |
+| auth           | purgeAuditHistory            | taskcluster.auth           | 86400              | At 12:10 AM                                |
+| github         | sync                         | taskcluster.github         | 86400              | At 02:00 AM                                |
+| hooks          | expires                      | taskcluster.hooks          | 86400              | At 12:10 AM                                |
+| index          | expire                       | taskcluster.index          | 86400              | At 12:05 AM                                |
+| object         | expire                       | taskcluster.object         | 86400              | At 01:00 AM                                |
+| purge-cache    | expireCachePurges            | taskcluster.purge-cache    | 86400              | At 01:05 AM                                |
+| queue          | claimResolver                | taskcluster.queue          | continuous         | continuous                                 |
+| queue          | deadlineResolver             | taskcluster.queue          | continuous         | continuous                                 |
+| queue          | dependencyResolver           | taskcluster.queue          | continuous         | continuous                                 |
+| queue          | expireArtifacts              | taskcluster.queue          | 86400              | At 01:10 AM                                |
+| queue          | expireTask                   | taskcluster.queue          | 86400              | At 12:10 AM                                |
+| queue          | expireTaskGroups             | taskcluster.queue          | 86400              | At 12:15 AM                                |
+| queue          | expireTaskDependency         | taskcluster.queue          | 86400              | At 12:20 AM                                |
+| queue          | expireQueueMessages          | taskcluster.queue          | 3600               | At 23 minutes past the hour                |
+| queue          | expireWorkerInfo             | taskcluster.queue          | 86400              | At 12:05 AM                                |
+| queue          | workerMetrics                | taskcluster.queue          | continuous         | continuous                                 |
+| secrets        | expire                       | taskcluster.secrets        | 600                | Every hour                                 |
+| web-server     | scanner                      | taskcluster.web-server     | 86400              | At 12:01 AM                                |
+| web-server     | cleanup-session-storage      | taskcluster.web-server     | 86400              | At 12:05 AM                                |
+| web-server     | cleanup-expire-auth-codes    | taskcluster.web-server     | 86400              | At 12:00 AM                                |
+| web-server     | cleanup-expire-access-tokens | taskcluster.web-server     | 86400              | At 12:00 AM                                |
+| worker-manager | provisioner                  | taskcluster.worker-manager | continuous         | continuous                                 |
+| worker-manager | workerscanner                | taskcluster.worker-manager | continuous         | continuous                                 |
+| worker-manager | workerscanner-azure          | taskcluster.worker-manager | continuous         | continuous                                 |
+| worker-manager | expire-workers               | taskcluster.worker-manager | 86400              | At 01:30 AM                                |
+| worker-manager | expire-worker-pools          | taskcluster.worker-manager | 86400              | At 12:01 AM                                |
+| worker-manager | expire-launch-configs        | taskcluster.worker-manager | 86400              | At 01:00 AM                                |
+| worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM                                |
+| worker-manager | check-dangling-resources     | taskcluster.worker-manager | 3600               | At 20 minutes past the hour, every 6 hours |
 {/* END MONITORING TABLE */}
 
 ## Prometheus Metrics
