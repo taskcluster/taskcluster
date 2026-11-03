@@ -4723,6 +4723,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     );
   });
 
+  suite('listManagedResources failures', () => {
+    const tags = { 'managed-by': 'taskcluster', 'root-url': helper.rootUrl };
+    const makeError = statusCode => Object.assign(new Error('boom'), { statusCode });
+
+    setup(() => {
+      for (const name of ['vm-1', 'vm-2', 'vm-3']) {
+        fake._managers.vm.makeFakeResource('rgrp', name, { location: 'westus', tags });
+      }
+    });
+
+    test('a transient error resumes from the continuation token', async () => {
+      fake._managers.vm.listFailures.push(makeError(503));
+      const resources = await provider.listManagedResources();
+      assert.deepEqual(
+        resources.map(r => r.name),
+        ['vm-1', 'vm-2', 'vm-3']
+      );
+    });
+
+    test('a persistent error fails the listing', async () => {
+      fake._managers.vm.listFailures.push(makeError(400));
+      await assert.rejects(() => provider.listManagedResources(), /boom/);
+    });
+  });
+
   suite('scanCleanup', () => {
     const sandbox = sinon.createSandbox({});
     let reportedErrors = [];

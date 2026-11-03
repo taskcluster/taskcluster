@@ -33,6 +33,8 @@ export class FakeAzure extends FakeCloud {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.deploymentsClient;
     });
+    this.sinon.stub(azureApi, 'getComputeContinuationToken').callsFake(page => hiddenTokens.get(page));
+    this.sinon.stub(azureApi, 'getResourcesContinuationToken').callsFake(page => hiddenTokens.get(page));
     this.sinon.stub(azureApi, 'ClientSecretCredential').returns({
       getToken() {
         return { token: 'fake-credentials', expiresOnTimestamp: Date.now() + 3600 * 1000 };
@@ -53,6 +55,10 @@ export class FakeAzure extends FakeCloud {
       deployment: new DeploymentManager(this, 'deployment'),
       resourceGroup: new ResourceGroupManager(this),
     };
+
+    // like the real compute SDK, which has no public page token
+    this._managers.vm.hideTokens = true;
+    this._managers.disk.hideTokens = true;
 
     this.computeClient = {
       virtualMachines: this._managers.vm,
@@ -76,6 +82,39 @@ export class FakeAzure extends FakeCloud {
     this.restClient = new FakeRestClient(this);
   }
 }
+
+/**
+ * Like the SDK's paged iterators: async-iterable, and `byPage()` yields arrays
+ * (two items per page, so pagination is exercised) carrying a `continuationToken`,
+ * or with the token hidden (readable only via the stubbed SDK helpers).
+ * Like the SDK, an iterator that threw is finished.  Errors in `failures` are
+ * thrown, one per page fetch.
+ */
+const hiddenTokens = new WeakMap();
+const pagedList = (map, convert, failures = [], hideToken = false) => {
+  const items = () => [...map].map(convert);
+  return {
+    async *[Symbol.asyncIterator]() {
+      yield* items();
+    },
+    async *byPage({ continuationToken } = {}) {
+      const all = items();
+      for (let i = Number(continuationToken || 0); i < all.length; i += 2) {
+        if (failures.length) {
+          throw failures.shift();
+        }
+        const page = all.slice(i, i + 2);
+        const token = i + 2 < all.length ? String(i + 2) : undefined;
+        if (hideToken) {
+          hiddenTokens.set(page, token);
+        } else {
+          page.continuationToken = token;
+        }
+        yield page;
+      }
+    },
+  };
+};
 
 const makeError = (message, statusCode) => {
   const err = new Error(message);
@@ -112,6 +151,7 @@ class ResourceManager {
 
     this._requests = new Map();
     this._resources = new Map();
+    this.listFailures = [];
   }
 
   // SDK Methods
@@ -155,10 +195,13 @@ class ResourceManager {
     return req;
   }
 
-  async *listAll() {
-    for (const [key, res] of this._resources) {
-      yield { name: key.split('/').pop(), ...res };
-    }
+  listAll() {
+    return pagedList(
+      this._resources,
+      ([key, res]) => ({ name: key.split('/').pop(), ...res }),
+      this.listFailures,
+      this.hideTokens
+    );
   }
 
   // disks.list() lists the whole subscription, like listAll() for other types
@@ -462,7 +505,7 @@ class GenericResources {
     this.fake = fake;
   }
 
-  async *list({ filter, expand }) {
+  list({ filter, expand }) {
     assert.equal(expand, 'createdTime');
     const managers = {
       "resourceType eq 'Microsoft.Network/networkInterfaces'": this.fake._managers.nic,
@@ -470,9 +513,16 @@ class GenericResources {
     };
     const manager = managers[filter];
     assert(manager, `unsupported filter ${filter}`);
-    for await (const { id, name, createdTime } of manager.listAll()) {
-      yield { id, name, createdTime };
-    }
+    return pagedList(
+      manager._resources,
+      ([key, res]) => ({
+        id: res.id,
+        name: key.split('/').pop(),
+        createdTime: res.createdTime,
+      }),
+      [],
+      true
+    );
   }
 }
 

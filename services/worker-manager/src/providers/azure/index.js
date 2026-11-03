@@ -2229,19 +2229,31 @@ export class AzureProvider extends Provider {
     }
   }
 
+  listingScope() {
+    return `azure/${this.providerConfig.subscriptionId}`;
+  }
+
   async listManagedResources() {
     /** @type {import('../provider.js').ManagedResource[]} */
     const resources = [];
     // ARM's tag filter strips tags from the results, so list by type and filter here
     const isManaged = r => r.tags?.['managed-by'] === 'taskcluster';
-    const collect = iterable =>
-      this._enqueue('list', async () => {
-        const items = [];
-        for await (const item of iterable()) {
-          items.push(item);
-        }
-        return items;
-      });
+    // One queued call per page, so a large subscription does not hit the per-call timeout.
+    // A failed SDK page iterator is finished for good, so every attempt starts a new one
+    // from the continuation token; retrying `next()` on the failed one would look like the end.
+    const collect = async (iterable, getToken = page => page.continuationToken) => {
+      const items = [];
+      let continuationToken;
+      do {
+        const { page, token } = await this._enqueue('list', async () => {
+          const { value, done } = await iterable().byPage({ continuationToken }).next();
+          return done ? { page: [], token: undefined } : { page: value, token: getToken(value) };
+        });
+        items.push(...page);
+        continuationToken = token;
+      } while (continuationToken);
+      return items;
+    };
 
     const base = r => ({
       resourceId: r.id,
@@ -2251,7 +2263,12 @@ export class AzureProvider extends Provider {
       workerPoolId: r.tags['worker-pool-id'] ?? null,
     });
 
-    for (const vm of (await collect(() => this.computeClient.virtualMachines.listAll())).filter(isManaged)) {
+    for (const vm of (
+      await collect(
+        () => this.computeClient.virtualMachines.listAll(),
+        page => azureApi.getComputeContinuationToken(page)
+      )
+    ).filter(isManaged)) {
       const workerPoolId = vm.tags['worker-pool-id'];
       const workerGroup = vm.tags['worker-group'] || vm.location;
       resources.push({
@@ -2262,7 +2279,12 @@ export class AzureProvider extends Provider {
       });
     }
 
-    for (const disk of (await collect(() => this.computeClient.disks.list())).filter(isManaged)) {
+    for (const disk of (
+      await collect(
+        () => this.computeClient.disks.list(),
+        page => azureApi.getComputeContinuationToken(page)
+      )
+    ).filter(isManaged)) {
       resources.push({
         ...base(disk),
         resourceType: 'disk',
@@ -2274,8 +2296,9 @@ export class AzureProvider extends Provider {
     // NICs and IPs carry no creation time; the generic resources API has it
     const createdTimes = new Map();
     for (const type of ['Microsoft.Network/networkInterfaces', 'Microsoft.Network/publicIPAddresses']) {
-      const items = await collect(() =>
-        this.resourcesClient.resources.list({ filter: `resourceType eq '${type}'`, expand: 'createdTime' })
+      const items = await collect(
+        () => this.resourcesClient.resources.list({ filter: `resourceType eq '${type}'`, expand: 'createdTime' }),
+        page => azureApi.getResourcesContinuationToken(page)
       );
       for (const item of items) {
         createdTimes.set(item.id?.toLowerCase(), item.createdTime);

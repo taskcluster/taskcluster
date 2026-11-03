@@ -39,18 +39,35 @@ export class ResourceChecker {
   }
 
   async check() {
+    const supported = (/** @type {Provider} */ provider) =>
+      provider.listManagedResources !== Provider.prototype.listManagedResources;
+
+    // providers whose setup failed are not listed, which the summary makes visible
+    for (const provider of this.providers.setupFailed().filter(supported)) {
+      this.monitor.log.danglingResourcesSummary({ ...this.#newSummary(provider), listErrors: 1 });
+    }
+    // providers sharing a cloud account would list the same resources; the first one does it.
+    // forAll starts the callbacks in order, so the scope is claimed before any listing awaits.
+    const listedScopes = new Set();
     await this.providers.forAll((/** @type {Provider} */ provider) => {
-      if (provider.listManagedResources === Provider.prototype.listManagedResources) {
+      if (!supported(provider)) {
         return;
+      }
+      const scope = provider.listingScope();
+      if (scope && listedScopes.has(scope)) {
+        this.monitor.debug(`Skipping ${provider.providerId}: ${scope} is listed by another provider`);
+        return;
+      }
+      if (scope) {
+        listedScopes.add(scope);
       }
       return this.#checkProvider(provider);
     });
   }
 
   /** @param {Provider} provider */
-  async #checkProvider(provider) {
-    const { providerId, providerType } = provider;
-    const summary = {
+  #newSummary({ providerId, providerType }) {
+    return {
       providerId,
       providerType,
       listed: 0,
@@ -63,6 +80,12 @@ export class ResourceChecker {
       listErrors: 0,
       lookupErrors: 0,
     };
+  }
+
+  /** @param {Provider} provider */
+  async #checkProvider(provider) {
+    const { providerId, providerType } = provider;
+    const summary = this.#newSummary(provider);
 
     /** @type {ManagedResource[]} */
     let resources;
@@ -113,7 +136,11 @@ export class ResourceChecker {
         }
         if (!worker) {
           reason = 'untracked';
-        } else if (worker.state === Worker.states.STOPPED) {
+        } else if (
+          worker.state === Worker.states.STOPPED &&
+          now - worker.lastModified.getTime() >= this.gracePeriodMs
+        ) {
+          // a worker marked stopped moments ago may still be shutting down
           reason = 'stopped-but-alive';
         }
       } else if (!resource.attached) {

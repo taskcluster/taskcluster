@@ -992,6 +992,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.deepEqual(resources[0].createdAt, new Date(created));
   });
 
+  test('listManagedResources fails on unreachable zones', async () => {
+    fake.compute.instances.aggregatedList = async () => ({
+      data: { items: { 'zones/us-east1-a': { warning: { code: 'UNREACHABLE' } } } },
+    });
+    await assert.rejects(() => provider.listManagedResources(), /unreachable scopes zones\/us-east1-a/);
+  });
+
   suite('errorHandler', () => {
     // _backoffDelay is 1 in test config, so backoffs below are 1 * <multiplier>.
     const make500 = () => {

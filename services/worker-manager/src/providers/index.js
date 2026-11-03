@@ -139,6 +139,13 @@ export class Providers {
   }
 
   /**
+   * Get the providers whose setup has failed
+   */
+  setupFailed() {
+    return Object.values(this._providers).filter(p => p.setupFailed);
+  }
+
+  /**
    * Return true if this providerId is defined (regardless of whether its setup failed)
    *
    * @param {string} providerId

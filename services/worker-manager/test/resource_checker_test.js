@@ -21,19 +21,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   const fakeProvider = listManagedResources => ({
     providerId: 'cloud',
     providerType: 'google',
+    setupFailed: false,
+    listingScope: () => null,
     rootUrlTagValue: () => 'ours',
     listManagedResources,
   });
 
   const runCheck = async provider => {
-    const providers = { forAll: cb => Promise.all([provider].map(cb)) };
+    const providers = {
+      forAll: cb => Promise.all([provider].filter(p => !p.setupFailed).map(cb)),
+      setupFailed: () => [provider].filter(p => p.setupFailed),
+    };
     await new ResourceChecker({ providers, db: helper.db, monitor }).check();
     const fields = type => monitor.manager.messages.filter(m => m.Type === type).map(m => m.Fields);
     return { dangling: fields('dangling-resource'), summaries: fields('dangling-resources-summary') };
   };
 
-  const makeWorker = async (workerId, state) =>
-    Worker.fromApi({
+  const makeWorker = async (workerId, state, lastModified = old) => {
+    const worker = Worker.fromApi({
       workerPoolId,
       workerGroup: 'zone-a',
       workerId,
@@ -42,7 +47,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       state,
       providerData: {},
       expires: taskcluster.fromNow('1 day'),
-    }).create(helper.db);
+    });
+    worker.lastModified = lastModified;
+    return worker.create(helper.db);
+  };
 
   const instance = (workerId, extra = {}) => ({
     resourceType: 'instance',
@@ -70,11 +78,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   test('classifies listed resources', async () => {
     await makeWorker('running', Worker.states.RUNNING);
     await makeWorker('stopped', Worker.states.STOPPED);
+    await makeWorker('stopping', Worker.states.STOPPED, new Date());
 
     const { dangling, summaries } = await runCheck(
       fakeProvider(async () => [
         instance('running'),
         instance('stopped'),
+        instance('stopping'),
         instance('unknown'),
         instance('legacy', { rootUrlTag: null }),
         instance('foreign', { rootUrlTag: 'theirs' }),
@@ -98,8 +108,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       {
         providerId: 'cloud',
         providerType: 'google',
-        listed: 9,
-        byType: { instance: 6, disk: 3 },
+        listed: 10,
+        byType: { instance: 7, disk: 3 },
         foreign: 1,
         legacy: 1,
         tooYoung: 1,
@@ -125,5 +135,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(summaries[0].listed, 0);
     // the reported error is expected here
     monitor.manager.reset();
+  });
+
+  test('providers sharing a cloud account are listed once', async () => {
+    const listed = [];
+    const make = providerId => ({
+      ...fakeProvider(async () => {
+        listed.push(providerId);
+        return [];
+      }),
+      providerId,
+      listingScope: () => 'google/proj',
+    });
+    const [a, b] = [make('a'), make('b')];
+    const providers = { forAll: cb => Promise.all([a, b].map(cb)), setupFailed: () => [] };
+    await new ResourceChecker({ providers, db: helper.db, monitor }).check();
+    assert.deepEqual(listed, ['a']);
+  });
+
+  test('provider whose setup failed is reported as a list error', async () => {
+    const { dangling, summaries } = await runCheck({ ...fakeProvider(async () => []), setupFailed: true });
+    assert.deepEqual(dangling, []);
+    assert.equal(summaries.length, 1);
+    assert.equal(summaries[0].providerId, 'cloud');
+    assert.equal(summaries[0].listErrors, 1);
   });
 });

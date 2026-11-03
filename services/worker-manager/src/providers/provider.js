@@ -141,6 +141,16 @@ export class Provider {
   }
 
   /**
+   * Identify the cloud account that `listManagedResources` lists, so that
+   * providers sharing an account are only listed once.  Null if unknown.
+   *
+   * @returns {string | null}
+   */
+  listingScope() {
+    return null;
+  }
+
+  /**
    * List the cloud resources carrying the `managed-by: taskcluster` tag, for the
    * dangling-resources check.  This lists resources of *all* deployments sharing
    * the cloud account, and resources predating the root-url tag; the caller

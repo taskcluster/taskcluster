@@ -499,6 +499,10 @@ export class GoogleProvider extends Provider {
       .slice(0, 63);
   }
 
+  listingScope() {
+    return `google/${this.project}`;
+  }
+
   async listManagedResources() {
     /** @type {import('./provider.js').ManagedResource[]} */
     const resources = [];
@@ -512,6 +516,16 @@ export class GoogleProvider extends Provider {
         const { data } = await this._enqueue('list', () =>
           api.aggregatedList({ project: this.project, filter, maxResults: 500, pageToken })
         );
+        // a zone that cannot be listed must not look like a zone without resources
+        const unreachable = [
+          ...(data.unreachables || []),
+          ...Object.entries(data.items || {})
+            .filter(([, scoped]) => scoped.warning?.code === 'UNREACHABLE')
+            .map(([scope]) => scope),
+        ];
+        if (unreachable.length) {
+          throw new Error(`Unable to list ${field}: unreachable scopes ${unreachable.join(', ')}`);
+        }
         for (const scoped of Object.values(data.items || {})) {
           items.push(...(scoped[field] || []));
         }
@@ -523,14 +537,10 @@ export class GoogleProvider extends Provider {
     for (const instance of await listAll(this.compute.instances, 'instances')) {
       const zone = lastSegment(instance.zone);
       // the label has a lossy workerPoolId; the metadata has the worker key as registered
-      let workerPoolId = null;
-      let workerGroup = zone;
       const tcMetadata = (instance.metadata?.items || []).find(item => item.key === 'taskcluster');
-      try {
-        const parsed = tcMetadata ? JSON.parse(tcMetadata.value) : {};
-        workerPoolId = parsed.workerPoolId || null;
-        workerGroup = parsed.workerGroup || zone;
-      } catch {}
+      const parsed = tcMetadata ? JSON.parse(tcMetadata.value) : {};
+      const workerPoolId = parsed.workerPoolId || null;
+      const workerGroup = parsed.workerGroup || zone;
       resources.push({
         resourceType: 'instance',
         resourceId: String(instance.id),
