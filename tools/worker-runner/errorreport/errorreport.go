@@ -2,10 +2,10 @@ package errorreport
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"reflect"
 
-	"github.com/pkg/errors"
 	taskcluster "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/run"
@@ -82,7 +82,7 @@ func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
 func ReportWorkerError(state *run.State, factory tc.WorkerManagerClientFactory, payload *tcworkermanager.WorkerErrorReport) error {
 	wc, err := factory(state.RootURL, &state.Credentials)
 	if err != nil {
-		return errors.Wrap(err, "error instanciating worker-manager client")
+		return fmt.Errorf("error instanciating worker-manager client: %w", err)
 	}
 	if _, err = wc.ReportWorkerError(state.WorkerPoolID, payload); err != nil {
 		log.Printf("Error reporting worker error: %v", err)

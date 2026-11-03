@@ -5,7 +5,6 @@
 :: cd to dir containing this script
 pushd %~dp0
 
-go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign || exit /b %ERRORLEVEL%
 cd gw-codegen
 go install -v || exit /b %ERRORLEVEL%
 cd ..
@@ -30,5 +29,3 @@ set GORACE=history_size=7
 :: when a new major release is made.
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 go test -ldflags "-X github.com/taskcluster/taskcluster/v114/workers/generic-worker.revision=%REVISION%" ./... || exit /b %ERRORLEVEL%
-
-ineffassign . || exit /b %ERRORLEVEL%

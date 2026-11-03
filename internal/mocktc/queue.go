@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v114/internal/scopes"
+	"github.com/taskcluster/taskcluster/v114/internal/slugid"
 )
 
 type Queue struct {

@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/perms"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // RunnerConfig defines the configuration for taskcluster-worker-starter.  See the usage

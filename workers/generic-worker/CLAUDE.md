@@ -39,8 +39,8 @@ go build -tags insecure -ldflags "-X main.revision=$(git rev-parse HEAD)" .
 # Full build (both engines, current platform, includes go vet + test compilation)
 bash build.sh -s          # -s skips code generation (use if you already ran yarn generate)
 
-# Full build + tests + linters
-bash build.sh -st         # -s skips codegen, -t runs tests and linters
+# Full build + tests
+bash build.sh -st         # -s skips codegen, -t runs tests
 
 # Build all platform variants
 bash build.sh -a
@@ -51,9 +51,9 @@ Note the syntax differs: `go build` uses `-X main.revision=...` while `go test` 
 
 The `-t` flag in `build.sh` runs:
 - `go test` with `-race` flag (insecure engine)
-- `go tool golint`
-- `go tool ineffassign`
 - `go tool goimports -w .`
+
+Linting (including `ineffassign`) is done by golangci-lint; see below.
 
 ## Formatting and Linting
 

@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster/v114/tools/worker-runner/logging"
 	loggingCommon "github.com/taskcluster/taskcluster/v114/tools/worker-runner/logging/logging"
@@ -39,8 +38,7 @@ func TestFakeGenericWorker(t *testing.T) {
 	loggingDestination := setupLogging()
 	defer teardownLogging()
 
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	workerPath := filepath.Join(dir, "fake.exe")
 	configPath := filepath.Join(dir, "runner.yaml")
 	workerConfigPath := filepath.Join(dir, "worker.yaml")
@@ -82,8 +80,7 @@ worker:
 }
 
 func TestDummy(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	configPath := filepath.Join(dir, "runner.yaml")
 
 	err := os.WriteFile(configPath, []byte(`
@@ -112,8 +109,7 @@ worker:
 }
 
 func TestDummyCached(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	configPath := filepath.Join(dir, "runner.yaml")
 	cachePath := filepath.Join(dir, "cache.json")
 

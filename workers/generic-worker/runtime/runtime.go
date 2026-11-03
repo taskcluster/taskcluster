@@ -1,25 +1,23 @@
 package runtime
 
 import (
+	"crypto/rand"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
-
-	"github.com/dchest/uniuri"
 )
 
-// Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
-// that could potentially affect security. Prefixed with `pWd0_` to ensure
-// password contains a special character (_), lowercase and uppercase letters,
-// and a number. This is useful if the OS has a strict password policy
-// requiring all of these. The total password length is 29 characters (24 of
-// which are random). 29 characters should not be too long for the OS. The 24
-// random characters of [A-Za-z0-9] provide (26+26+10)^24 possible permutations
-// (approx 143 bits of randomness). Randomisation is not seeded, so results
-// should not be reproducible.
+// Uses crypto/rand.Text, which returns [A-Z2-7] characters, to avoid strange
+// escaping problems that could potentially affect security. Prefixed with
+// `pWd0_` to ensure password contains a special character (_), lowercase and
+// uppercase letters, and a number. This is useful if the OS has a strict
+// password policy requiring all of these. The total password length is at
+// least 31 characters (at least 26 of which are random), which should not be
+// too long for the OS. The random base32 characters provide at least 128 bits
+// of randomness.
 func GeneratePassword() string {
-	return "pWd0_" + uniuri.NewLen(24)
+	return "pWd0_" + rand.Text()
 }
 
 func GenericWorkerBinary() string {

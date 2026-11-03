@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
 	"reflect"
 
-	homedir "github.com/mitchellh/go-homedir"
-	yaml "gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v3"
 )
 
 // configFile is the location of the configuration file
@@ -17,7 +17,9 @@ func configFile() string {
 	if configFolder == "" {
 		homeFolder := os.Getenv("HOME")
 		if homeFolder == "" {
-			homeFolder, _ = homedir.Dir()
+			if u, err := user.Current(); err == nil {
+				homeFolder = u.HomeDir
+			}
 		}
 		if homeFolder != "" {
 			configFolder = filepath.Join(homeFolder, ".config")

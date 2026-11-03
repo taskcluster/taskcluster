@@ -5,13 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFile(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	path := filepath.Join(dir, "greeting")
 
 	file := File{
@@ -32,8 +30,7 @@ func TestFile(t *testing.T) {
 }
 
 func TestFileSubdir(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	path := filepath.Join(dir, "path", "to", "greeting")
 
 	file := File{
@@ -54,8 +51,7 @@ func TestFileSubdir(t *testing.T) {
 }
 
 func TestZipSubdir(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	path := filepath.Join(dir, "path", "to", "unpack")
 
 	file := File{

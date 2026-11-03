@@ -14,12 +14,12 @@ import (
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcauth"
 	"github.com/taskcluster/taskcluster/v114/clients/client-shell/cmds/root"
 	"github.com/taskcluster/taskcluster/v114/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v114/internal/slugid"
 )
 
 var log = root.Logger

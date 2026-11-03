@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sys/windows"
 )
@@ -35,8 +34,7 @@ func makePermsBad(t *testing.T, filename string) {
 // created via WritePrivateFile (owner-only DACL) should be recognized as
 // private and returned unchanged.
 func TestMakeFilePrivate_Windows_AlreadyPrivate(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	filename := filepath.Join(dir, "already-private")
 	require.NoError(t, WritePrivateFile(filename, []byte("secret")))
 
@@ -53,8 +51,7 @@ func TestMakeFilePrivate_Windows_AlreadyPrivate(t *testing.T) {
 // whose DACL grants access to other principals should be detected and
 // rewritten to owner-only.
 func TestMakeFilePrivate_Windows_LoosePerms(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	filename := filepath.Join(dir, "loose")
 	require.NoError(t, WritePrivateFile(filename, []byte("secret")))
 	makePermsBad(t, filename)
@@ -72,8 +69,7 @@ func TestMakeFilePrivate_Windows_LoosePerms(t *testing.T) {
 // TestMakeFilePrivate_Windows_NonExistent covers the error path for a
 // missing file.
 func TestMakeFilePrivate_Windows_NonExistent(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	filename := filepath.Join(dir, "does-not-exist")
 
 	_, err := MakeFilePrivate(filename)

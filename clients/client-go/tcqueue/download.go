@@ -6,9 +6,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/orcaman/writerseeker"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v114/clients/client-go/readwriteseeker"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcobject"
 )
 
@@ -18,14 +18,12 @@ type HTTPRetryError = internal.HTTPRetryError
 // in-memory byte slice. If RunID is -1, the latest run is used.  Returns the
 // object itself, the Content-Type and Content-Length of the downloaded object.
 func (queue *Queue) DownloadArtifactToBuf(taskID string, runID int64, name string) (buf []byte, contentType string, contentLength int64, err error) {
-	writeSeeker := &writerseeker.WriterSeeker{}
+	writeSeeker := &readwriteseeker.ReadWriteSeeker{}
 	contentType, contentLength, err = queue.DownloadArtifactToWriteSeeker(taskID, runID, name, writeSeeker)
 	if err != nil {
 		return
 	}
-	reader := writeSeeker.BytesReader()
-	buf = make([]byte, reader.Len())
-	_, err = reader.Read(buf)
+	buf = writeSeeker.Bytes()
 	return
 }
 

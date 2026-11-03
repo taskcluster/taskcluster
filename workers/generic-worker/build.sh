@@ -141,8 +141,6 @@ if $TEST; then
 # when a new major release is made.
 ####################################################################
   CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v114/workers/generic-worker.revision=${GIT_REVISION}" -race -timeout 1h ./...
-  go tool golint $(go list ./...) | sed "s*${PWD}/**"
-  go tool ineffassign .
   go tool goimports -w .
 
 fi

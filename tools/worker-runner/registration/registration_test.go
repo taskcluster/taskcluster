@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
@@ -97,8 +96,7 @@ func TestCredsExpirationGraceful(t *testing.T) {
 }
 
 func TestCredsExpirationNewCredentials(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	cachePath := filepath.Join(dir, "cache.json")
 
 	runnercfg := cfg.RunnerConfig{
@@ -199,8 +197,7 @@ func TestUntilRenew(t *testing.T) {
 }
 
 func TestUseCachedRun_Expired(t *testing.T) {
-	defer filet.CleanUp(t)
-	dir := filet.TmpDir(t, "")
+	dir := t.TempDir()
 	cachePath := filepath.Join(dir, "cache.json")
 
 	runnercfg := cfg.RunnerConfig{

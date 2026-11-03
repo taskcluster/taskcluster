@@ -7,9 +7,20 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+	"time"
 
+	"github.com/shirou/gopsutil/v4/host"
 	"github.com/taskcluster/shell"
 )
+
+// BootTime returns the time the host was booted.
+func BootTime() (time.Time, error) {
+	bootTime, err := host.BootTime()
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Unix(int64(bootTime), 0), nil
+}
 
 // Run is equivalent to exec.Command(name, arg...).Run() but with logging.
 func Run(name string, arg ...string) (err error) {

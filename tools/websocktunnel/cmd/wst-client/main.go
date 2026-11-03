@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	set "github.com/deckarep/golang-set"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/taskcluster/v114/internal"
@@ -80,9 +79,7 @@ func main() {
 
 	// hold count of running connections
 	var running sync.WaitGroup
-	// used for set operations
 	count := uint64(0)
-	runSet := set.NewSet()
 	run := true
 	// accept new streams from this channel
 	strChan := make(chan net.Conn, 1)
@@ -147,12 +144,7 @@ func main() {
 				port:   targetPort,
 				count:  count,
 			}
-			f.notify = func() {
-				runSet.Remove(f)
-			}
-
 			count++
-			_ = runSet.Add(f)
 			running.Go(f.forward)
 		}
 	}
@@ -164,7 +156,6 @@ type forwarder struct {
 	conn   net.Conn
 	port   int
 	count  uint64
-	notify func()
 }
 
 // forwards multiplexed stream to port
@@ -172,7 +163,6 @@ func (f *forwarder) forward() {
 	var err error
 	strPort := strconv.Itoa(f.port)
 	f.conn, err = net.Dial("tcp", ":"+strPort)
-	defer f.notify()
 	// just to be sure
 	defer f.kill()
 	if err != nil {

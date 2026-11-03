@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/taskcluster/v114/clients/client-shell/config"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v3"
 )
 
 // getOptionFromKey returns the command, option, definition, value of a config option

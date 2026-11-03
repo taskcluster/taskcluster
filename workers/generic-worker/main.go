@@ -27,7 +27,6 @@ import (
 	"slices"
 
 	docopt "github.com/docopt/docopt-go"
-	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
 	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcqueue"
@@ -433,8 +432,8 @@ func RunWorker() (exitCode ExitCode) {
 	log.Printf("Config: %v", config)
 	log.Printf("Detected %s platform", runtime.GOOS)
 	log.Printf("Detected %s engine", engine)
-	if host, err := sysinfo.Host(); err == nil {
-		logEvent("instanceBoot", nil, host.Info().BootTime)
+	if bootTime, err := host.BootTime(); err == nil {
+		logEvent("instanceBoot", nil, bootTime)
 	}
 	log.Printf("Working directory: %q", cwd)
 	log.Printf("Tasks resolved count file: %q", trcPath)

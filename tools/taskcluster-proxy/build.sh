@@ -77,9 +77,6 @@ if $TEST; then
   CGO_ENABLED=1 GORACE="history_size=7" go test -v -ldflags "-X github.com/taskcluster/taskcluster.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
 fi
 go vet ./...
-golint ./...
-go get github.com/gordonklaus/ineffassign
-ineffassign .
 
 echo "Build successful!"
 git status
