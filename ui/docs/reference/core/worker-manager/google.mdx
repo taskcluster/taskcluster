@@ -42,8 +42,10 @@ The provider creates workers and worker disks with the following labels.
  * `managed-by` - `taskcluster`
  * `created-by` - `taskcluster-wm-<providerId>`
  * `owner` - the worker pool's owner
+ * `launch-config-id` - the ID of the launch config used to create the worker
+ * `root-url` - the deployment's `rootUrl` (truncated to 63 characters)
 
-Note that values are lower-cased and disallowed characters are replaced with `_`, to comply with with [GCP limitations](https://cloud.google.com/resource-manager/docs/creating-managing-labels).
+Note that values are lower-cased and disallowed characters are replaced with `-`, to comply with with [GCP limitations](https://cloud.google.com/resource-manager/docs/creating-managing-labels).
 
 ## Worker-Pool Configuration
 

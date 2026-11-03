@@ -197,11 +197,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Name', 'foo/bar');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'WorkerPoolId', 'foo/bar');
+        assertHasTag(
+          fake.rgn('us-west-2').runInstancesCalls[0],
+          'instance',
+          'RootUrl',
+          helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase()
+        );
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'CreatedBy', 'taskcluster-wm-aws');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Owner', 'whatever@example.com');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
+        assertHasTag(
+          fake.rgn('us-west-2').runInstancesCalls[0],
+          'volume',
+          'RootUrl',
+          helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase()
+        );
       }
     );
 
@@ -265,11 +277,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Name', 'foo/bar');
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'WorkerPoolId', 'foo/bar');
+          assertHasTag(
+            fake.rgn('us-west-2').runInstancesCalls[0],
+            'instance',
+            'RootUrl',
+            helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase()
+          );
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'CreatedBy', 'taskcluster-wm-aws');
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Owner', 'whatever@example.com');
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
           assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
+          assertHasTag(
+            fake.rgn('us-west-2').runInstancesCalls[0],
+            'volume',
+            'RootUrl',
+            helper.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase()
+          );
         }
       );
     }

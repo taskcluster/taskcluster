@@ -262,6 +262,10 @@ export class GoogleProvider extends Provider {
           'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
           owner: workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
           'launch-config-id': launchConfig.launchConfigId,
+          'root-url': this.rootUrl
+            .replace(/[^a-zA-Z0-9-]/g, '-')
+            .toLowerCase()
+            .slice(0, 63),
         };
         let op;
 
