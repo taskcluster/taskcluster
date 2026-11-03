@@ -98,6 +98,7 @@ func (p *AWSProvider) UseCachedRun(run *run.State) error {
 
 func (p *AWSProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
+	proto.AddCapability("should-worker-terminate")
 }
 
 func (p *AWSProvider) checkTerminationTime() bool {

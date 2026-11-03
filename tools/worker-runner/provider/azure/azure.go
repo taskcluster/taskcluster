@@ -106,6 +106,7 @@ func (p *AzureProvider) UseCachedRun(run *run.State) error {
 
 func (p *AzureProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
+	proto.AddCapability("should-worker-terminate")
 }
 
 func (p *AzureProvider) checkTerminationTime() bool {

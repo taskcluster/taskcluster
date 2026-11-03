@@ -107,6 +107,7 @@ func (p *GoogleProvider) UseCachedRun(run *run.State) error {
 
 func (p *GoogleProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
+	proto.AddCapability("should-worker-terminate")
 }
 
 func (p *GoogleProvider) checkTerminationTime() bool {

@@ -99,6 +99,7 @@ func startProtocol() {
 	WorkerRunnerProtocol.AddCapability("error-report")
 	WorkerRunnerProtocol.AddCapability("log")
 	WorkerRunnerProtocol.AddCapability("shutdown")
+	WorkerRunnerProtocol.AddCapability("should-worker-terminate")
 
 	WorkerRunnerProtocol.Start(true)
 }

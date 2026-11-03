@@ -786,7 +786,7 @@ mainLoop:
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					if !withWorkerRunner || checkWhetherToTerminate() {
+					if !managedByWorkerManager() || checkWhetherToTerminate() {
 						_ = purgeOldTasks(taskManager.RunningTaskDirNames()...)
 						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 						return IDLE_TIMEOUT
@@ -847,8 +847,15 @@ type taskCompletionResult struct {
 	workerShutdown bool
 }
 
+// managedByWorkerManager reports whether Worker Manager decides when this
+// worker should terminate. Worker-runner only supports the
+// should-worker-terminate capability for providers where it does.
+func managedByWorkerManager() bool {
+	return withWorkerRunner && WorkerRunnerProtocol.Capable("should-worker-terminate")
+}
+
 func checkWhetherToTerminate() bool {
-	if withWorkerRunner {
+	if managedByWorkerManager() {
 		workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
 		swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
 		if err != nil {
