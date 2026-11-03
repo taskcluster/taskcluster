@@ -7,5 +7,5 @@ import (
 )
 
 func (cot *ChainOfTrustTaskFeature) catCotKeyCommand() (*process.Command, error) {
-	return process.NewCommand([]string{"/bin/cat", config.Ed25519SigningKeyLocation}, cwd, cot.task.EnvVars(), cot.task.pd)
+	return process.NewCommandNoOutputStreams([]string{"/bin/cat", config.Ed25519SigningKeyLocation}, cwd, []string{}, cot.task.pd)
 }
