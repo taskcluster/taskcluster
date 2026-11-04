@@ -64,6 +64,9 @@ RUN /bin/bash -c "\
 
 FROM node:26.13.0-alpine AS image
 RUN apk --no-cache add --update bash nginx nginx-mod-http-brotli
+# node:26 images no longer ship yarn; yarn classic defers to the vendored
+# release in .yarnrc.yml's yarnPath
+RUN npm install -g yarn@1.22.22 && npm cache clean --force
 COPY --from=build --chown=1000:1000 /base/app /app
 ENV HOME=/app
 WORKDIR /app
