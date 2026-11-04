@@ -2,7 +2,9 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -170,8 +172,11 @@ func Save(config map[string]map[string]any) error {
 	// Write config file
 	configFile := configFile()
 	// Attempt to create config folder if it doesn't exist... (ignore errors)
-	_ = os.MkdirAll(filepath.Dir(configFile), 0664)
-	if err = os.WriteFile(configFile, data, 0664); err != nil {
+	_ = os.MkdirAll(filepath.Dir(configFile), 0700)
+	if err = os.Chmod(configFile, 0600); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("failed to restrict permissions of config file: %s, error: %s", configFile, err)
+	}
+	if err = os.WriteFile(configFile, data, 0600); err != nil {
 		return fmt.Errorf("failed to write config file: %s, error: %s", configFile, err)
 	}
 

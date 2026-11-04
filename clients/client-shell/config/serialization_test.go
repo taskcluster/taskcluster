@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -36,4 +37,44 @@ func TestLoadV2Config(t *testing.T) {
 	if !reflect.DeepEqual(got["config"], want) {
 		t.Errorf("Load() config = %#v, want %#v", got["config"], want)
 	}
+}
+
+func TestSaveConfigPermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix file permissions not supported on windows")
+	}
+
+	dir := filepath.Join(t.TempDir(), "xdgconfig")
+	t.Setenv("XDG_CONFIG_HOME", dir)
+	configFile := filepath.Join(dir, "taskcluster.yml")
+
+	check := func() {
+		t.Helper()
+
+		if err := Save(map[string]map[string]any{}); err != nil {
+			t.Fatal(err)
+		}
+
+		di, err := os.Stat(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if perm := di.Mode().Perm(); perm != 0700 {
+			t.Errorf("config dir permissions = %o, want 700", perm)
+		}
+
+		fi, err := os.Stat(configFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if perm := fi.Mode().Perm(); perm != 0600 {
+			t.Errorf("config file permissions = %o, want 600", perm)
+		}
+	}
+
+	check()
+	if err := os.Chmod(configFile, 0664); err != nil {
+		t.Fatal(err)
+	}
+	check()
 }

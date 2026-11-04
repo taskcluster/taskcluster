@@ -39,7 +39,7 @@ func cmdGet(cmd *cobra.Command, args []string) error {
 
 	// set output to file if necessary
 	if output, _ := cmd.Flags().GetString("output"); len(output) != 0 {
-		file, err := os.Create(output)
+		file, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 		if err != nil {
 			return fmt.Errorf("failed to create output file '%s', error: %s", output, err)
 		}
