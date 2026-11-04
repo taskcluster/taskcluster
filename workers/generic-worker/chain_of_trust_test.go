@@ -9,15 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v114/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 )
 
 func TestExitCodeMissingChainOfTrustKey(t *testing.T) {
@@ -555,46 +552,66 @@ func TestChainOfTrustAdditionalDataAsCurrentUser(t *testing.T) {
 	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
 }
 
-// The command that checks the task user can't read the private chain of trust
-// key must not inherit the task payload env or the worker's stdout/stderr.
-func TestCatCotKeyCommandIsolatedFromTask(t *testing.T) {
+// TestChainOfTrustKeyCheckFailsIfHelperCannotStart tests that the chain of
+// trust feature does not treat the private key as secure when the task user
+// helper that should try to read it never ran.
+func TestChainOfTrustKeyCheckFailsIfHelperCannotStart(t *testing.T) {
 	setup(t)
+	pd := breakTaskUserHelper(t)
 	task := &TaskRun{
-		TaskID: "KTBKfEgxR5GdfIIREQIvFQ",
-		Context: &TaskContext{
-			TaskDir: t.TempDir(),
-			User:    &gwruntime.OSUser{Name: "task_1762198000000"},
-		},
-		pd: &process.PlatformData{},
-	}
-	task.Payload.Env = map[string]string{
-		"GW_TEST_ENV_VAR": "foo",
+		TaskID:  "KTBKfEgxR5GdfIIREQIvFQ",
+		Context: taskContext,
+		pd:      pd,
 	}
 	cot := &ChainOfTrustTaskFeature{task: task}
 
-	c, err := cot.catCotKeyCommand()
+	err := cot.Start()
+	if err == nil {
+		t.Fatal("Expected chain of trust feature to fail to start when its key check helper cannot start")
+	}
+	if err.Reason != internalError {
+		t.Fatalf("Expected reason %q but got %q: %v", internalError, err.Reason, err.Cause)
+	}
+}
+
+// TestChainOfTrustKeyCheckPassesIfTaskUserCantReadKey tests that the chain of
+// trust feature starts once the private key has been locked down with
+// fileutil.SecureFiles, and that it is the file permissions, not the
+// directory, that stop the task user from reading the key.
+func TestChainOfTrustKeyCheckPassesIfTaskUserCantReadKey(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: CoT key permission isolation requires a non-root environment")
+	}
+
+	setup(t)
+	key := filepath.Join(worldWritableTempDir(t, "cot-key"), "ed25519_private_key")
+	if err := os.WriteFile(key, []byte("not a real key"), 0644); err != nil {
+		t.Fatalf("Could not write %v: %v", key, err)
+	}
+	config.Ed25519SigningKeyLocation = key
+	pd, err := platformDataForTaskContext(taskContext)
 	if err != nil {
-		t.Fatalf("Could not create command: %v", err)
+		t.Fatalf("Could not get platform data for task user: %v", err)
 	}
-	if runtime.GOOS == "windows" {
-		// On Windows the command starts from the user's default environment.
-		for _, e := range c.Env {
-			if strings.HasPrefix(strings.ToUpper(e), "GW_TEST_ENV_VAR=") {
-				t.Errorf("Command env contains task payload env var %q", e)
-			}
+	startCot := func() *CommandExecutionError {
+		task := &TaskRun{
+			TaskID:  "KTBKfEgxR5GdfIIREQIvFQ",
+			Context: taskContext,
+			pd:      pd,
 		}
-	} else {
-		if c.Env == nil {
-			t.Error("Command env is nil, so it would inherit the worker's environment")
-		}
-		if len(c.Env) != 0 {
-			t.Errorf("Command env should be empty, but is %q", c.Env)
-		}
+		cot := &ChainOfTrustTaskFeature{task: task}
+		return cot.Start()
 	}
-	if c.Stdout != nil {
-		t.Errorf("Command stdout should be nil, but is %v", c.Stdout)
+
+	// Before the key is secured, the task user should be able to read it.
+	if cotErr := startCot(); cotErr == nil || cotErr.Reason != malformedPayload {
+		t.Fatalf("Expected malformed-payload before securing %v, but got %v", key, cotErr)
 	}
-	if c.Stderr != nil {
-		t.Errorf("Command stderr should be nil, but is %v", c.Stderr)
+
+	if err := fileutil.SecureFiles(key); err != nil {
+		t.Fatalf("Could not secure %v: %v", key, err)
+	}
+	if err := startCot(); err != nil {
+		t.Fatalf("Expected chain of trust feature to start, but got %v: %v", err.Reason, err.Cause)
 	}
 }

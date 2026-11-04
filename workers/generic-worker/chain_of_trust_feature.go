@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -127,16 +127,11 @@ func (feature *ChainOfTrustTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
-	// Return an error if the task user can read the private key file.
-	// We shouldn't be able to read the private key, if we can let's raise
-	// MalformedPayloadError, as it could be a problem with the task definition
-	// (for example, enabling chainOfTrust when runTaskAsCurrentUser is enabled).
 	err := feature.ensureTaskUserCantReadPrivateCotKey()
 	if err != nil {
 		feature.disabled = true
-		return MalformedPayloadError(err)
 	}
-	return nil
+	return err
 }
 
 func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
@@ -227,17 +222,23 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	))
 }
 
-func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
-	c, err := cot.catCotKeyCommand()
-	if err != nil {
-		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key %v - %v", config.Ed25519SigningKeyLocation, err))
+// ensureTaskUserCantReadPrivateCotKey returns an error unless an attempt to
+// read the private key as the task user fails because the file can't be read.
+// If the task user can read the private key, it returns a MalformedPayloadError,
+// as it could be a problem with the task definition (for example, enabling
+// chainOfTrust when runTaskAsCurrentUser is enabled). If the check itself
+// couldn't be carried out, it returns an internal error.
+func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() *CommandExecutionError {
+	_, err := catFileAsTaskUser(config.Ed25519SigningKeyLocation, io.Discard, cot.task.pd, cwd)
+	var contentErr artifacts.ContentError
+	switch {
+	case err == nil:
+		return MalformedPayloadError(errors.New(ChainOfTrustKeyNotSecureMessage))
+	case errors.As(err, &contentErr):
+		return nil
+	default:
+		return executionError(internalError, errored, fmt.Errorf("could not check that the task user can't read private chain of trust key %v: %w", config.Ed25519SigningKeyLocation, err))
 	}
-	r := c.Execute()
-	if !r.Failed() {
-		log.Print(r.String())
-		return errors.New(ChainOfTrustKeyNotSecureMessage)
-	}
-	return nil
 }
 
 func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (mergedCert []byte, err error) {
