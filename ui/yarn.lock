@@ -1080,7 +1080,6 @@ __metadata:
     deep-sort-object: "npm:^1.0.2"
     deepmerge: "npm:^4.3.1"
     dexie: "npm:^3.2.6"
-    dot-prop-immutable: "npm:^2.0.0"
     fast-memoize: "npm:^2.5.1"
     highlight.js: "npm:^11.12.0"
     hterm-umdjs: "npm:^1.4.1"
@@ -2283,13 +2282,6 @@ __metadata:
   version: 4.22.0
   resolution: "domain-browser@npm:4.22.0"
   checksum: 10c0/2ef7eda6d2161038fda0c9aa4c9e18cc7a0baa89ea6be975d449527c2eefd4b608425db88508e2859acc472f46f402079274b24bd75e3fb506f28c5dba203129
-  languageName: node
-  linkType: hard
-
-"dot-prop-immutable@npm:^2.0.0":
-  version: 2.1.1
-  resolution: "dot-prop-immutable@npm:2.1.1"
-  checksum: 10c0/d3826411b717be8b69f92c6a2996408c2669fee81f2e7c78ed961f4835cc977cceaf9083d822685cb1f8e8970f8265b85c6a216e1593e5afa3c4cd9c893d1489
   languageName: node
   linkType: hard
 
