@@ -222,7 +222,7 @@ func main() {
 			logEvent("instanceShutdown", nil, time.Now())
 			shutdownWorker("worker manager requested termination")
 		case WORKER_SHUTDOWN:
-			if WorkerRunnerProtocol.Capable("shutdown") {
+			if managedByWorkerManager() {
 				logEvent("instanceShutdown", nil, time.Now())
 				shutdownWorker("graceful termination")
 			}
