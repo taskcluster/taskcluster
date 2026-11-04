@@ -14,6 +14,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
+	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
 )
 
 func TestExitCodeMissingChainOfTrustKey(t *testing.T) {
@@ -549,4 +550,68 @@ func TestChainOfTrustAdditionalDataAsCurrentUser(t *testing.T) {
 	// Chain of trust is not allowed when running as current user
 	// since signing key cannot be secured
 	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
+}
+
+// TestChainOfTrustKeyCheckFailsIfHelperCannotStart tests that the chain of
+// trust feature does not treat the private key as secure when the task user
+// helper that should try to read it never ran.
+func TestChainOfTrustKeyCheckFailsIfHelperCannotStart(t *testing.T) {
+	setup(t)
+	pd := breakTaskUserHelper(t)
+	task := &TaskRun{
+		TaskID:  "KTBKfEgxR5GdfIIREQIvFQ",
+		Context: taskContext,
+		pd:      pd,
+	}
+	cot := &ChainOfTrustTaskFeature{task: task}
+
+	err := cot.Start()
+	if err == nil {
+		t.Fatal("Expected chain of trust feature to fail to start when its key check helper cannot start")
+	}
+	if err.Reason != internalError {
+		t.Fatalf("Expected reason %q but got %q: %v", internalError, err.Reason, err.Cause)
+	}
+}
+
+// TestChainOfTrustKeyCheckPassesIfTaskUserCantReadKey tests that the chain of
+// trust feature starts once the private key has been locked down with
+// fileutil.SecureFiles, and that it is the file permissions, not the
+// directory, that stop the task user from reading the key.
+func TestChainOfTrustKeyCheckPassesIfTaskUserCantReadKey(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: CoT key permission isolation requires a non-root environment")
+	}
+
+	setup(t)
+	key := filepath.Join(worldWritableTempDir(t, "cot-key"), "ed25519_private_key")
+	if err := os.WriteFile(key, []byte("not a real key"), 0644); err != nil {
+		t.Fatalf("Could not write %v: %v", key, err)
+	}
+	config.Ed25519SigningKeyLocation = key
+	pd, err := platformDataForTaskContext(taskContext)
+	if err != nil {
+		t.Fatalf("Could not get platform data for task user: %v", err)
+	}
+	startCot := func() *CommandExecutionError {
+		task := &TaskRun{
+			TaskID:  "KTBKfEgxR5GdfIIREQIvFQ",
+			Context: taskContext,
+			pd:      pd,
+		}
+		cot := &ChainOfTrustTaskFeature{task: task}
+		return cot.Start()
+	}
+
+	// Before the key is secured, the task user should be able to read it.
+	if cotErr := startCot(); cotErr == nil || cotErr.Reason != malformedPayload {
+		t.Fatalf("Expected malformed-payload before securing %v, but got %v", key, cotErr)
+	}
+
+	if err := fileutil.SecureFiles(key); err != nil {
+		t.Fatalf("Could not secure %v: %v", key, err)
+	}
+	if err := startCot(); err != nil {
+		t.Fatalf("Expected chain of trust feature to start, but got %v: %v", err.Reason, err.Cause)
+	}
 }
