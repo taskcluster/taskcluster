@@ -143,7 +143,7 @@ func buildExecutor(service definitions.Service, entry definitions.Entry) func(*c
 		var output = cmd.OutOrStdout()
 		if flag := cmd.Flags().Lookup("output"); flag != nil && flag.Changed {
 			filename := flag.Value.String()
-			f, err := os.Create(filename)
+			f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 			if err != nil {
 				return fmt.Errorf("failed to open output file, error: %s", err)
 			}
