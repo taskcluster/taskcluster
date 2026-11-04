@@ -296,6 +296,8 @@ worker_manager:
       cpu: 10m
     expire_errors:
       cpu: 10m
+    check_dangling_resources:
+      cpu: 10m
 ui:
   subscription_endpoint: ...
   ui_login_strategy_names: ...

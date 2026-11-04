@@ -62,6 +62,7 @@ worker-manager/expire-workers) exec node services/worker-manager/src/main.js exp
 worker-manager/expire-worker-pools) exec node services/worker-manager/src/main.js expireWorkerPools;;
 worker-manager/expire-launch-configs) exec node services/worker-manager/src/main.js expireLaunchConfigs;;
 worker-manager/expire-errors) exec node services/worker-manager/src/main.js expireErrors;;
+worker-manager/check-dangling-resources) exec node services/worker-manager/src/main.js checkDanglingResources;;
 worker-manager/write-docs) exec node services/worker-manager/src/main.js writeDocs;;
 script/lint) shift; exec yarn run lint "${@}";;
 script/lint:fix) shift; exec yarn run lint:fix "${@}";;

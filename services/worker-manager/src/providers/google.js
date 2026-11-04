@@ -262,10 +262,7 @@ export class GoogleProvider extends Provider {
           'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
           owner: workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
           'launch-config-id': launchConfig.launchConfigId,
-          'root-url': this.rootUrl
-            .replace(/[^a-zA-Z0-9-]/g, '-')
-            .toLowerCase()
-            .slice(0, 63),
+          'root-url': this.rootUrlTagValue(),
         };
         let op;
 
@@ -493,6 +490,90 @@ export class GoogleProvider extends Provider {
       }
       worker.lastChecked = now;
     });
+  }
+
+  rootUrlTagValue() {
+    return this.rootUrl
+      .replace(/[^a-zA-Z0-9-]/g, '-')
+      .toLowerCase()
+      .slice(0, 63);
+  }
+
+  listingScope() {
+    return `google/${this.project}`;
+  }
+
+  async listManagedResources() {
+    /** @type {import('./provider.js').ManagedResource[]} */
+    const resources = [];
+    const filter = 'labels.managed-by = "taskcluster"';
+    const lastSegment = url => (url || '').split('/').pop() || null;
+
+    const listAll = async (api, field) => {
+      const items = [];
+      let pageToken;
+      do {
+        const { data } = await this._enqueue('list', () =>
+          api.aggregatedList({ project: this.project, filter, maxResults: 500, pageToken })
+        );
+        // a zone that cannot be listed must not look like a zone without resources
+        const unreachable = [
+          ...(data.unreachables || []),
+          ...Object.entries(data.items || {})
+            .filter(([, scoped]) => scoped.warning?.code === 'UNREACHABLE')
+            .map(([scope]) => scope),
+        ];
+        if (unreachable.length) {
+          throw new Error(`Unable to list ${field}: unreachable scopes ${unreachable.join(', ')}`);
+        }
+        for (const scoped of Object.values(data.items || {})) {
+          items.push(...(scoped[field] || []));
+        }
+        pageToken = data.nextPageToken;
+      } while (pageToken);
+      return items;
+    };
+
+    for (const instance of await listAll(this.compute.instances, 'instances')) {
+      const zone = lastSegment(instance.zone);
+      // the label has a lossy workerPoolId; the metadata has the worker key as registered
+      const tcMetadata = (instance.metadata?.items || []).find(item => item.key === 'taskcluster');
+      // metadata of instances from other deployments is not ours to trust: no worker key, not a failed listing
+      let parsed = {};
+      try {
+        const value = tcMetadata?.value ? JSON.parse(tcMetadata.value) : null;
+        if (value && typeof value === 'object') {
+          parsed = value;
+        }
+      } catch {}
+      const workerPoolId = parsed.workerPoolId || null;
+      const workerGroup = parsed.workerGroup || zone;
+      resources.push({
+        resourceType: 'instance',
+        resourceId: String(instance.id),
+        name: instance.name,
+        location: zone,
+        createdAt: instance.creationTimestamp ? new Date(instance.creationTimestamp) : null,
+        rootUrlTag: instance.labels?.['root-url'] ?? null,
+        workerPoolId,
+        worker: workerPoolId ? { workerPoolId, workerGroup, workerId: String(instance.id) } : null,
+      });
+    }
+
+    for (const disk of await listAll(this.compute.disks, 'disks')) {
+      resources.push({
+        resourceType: 'disk',
+        resourceId: String(disk.id),
+        name: disk.name,
+        location: lastSegment(disk.zone),
+        createdAt: disk.creationTimestamp ? new Date(disk.creationTimestamp) : null,
+        rootUrlTag: disk.labels?.['root-url'] ?? null,
+        workerPoolId: disk.labels?.['worker-pool-id'] ?? null,
+        attached: Boolean(disk.users?.length),
+      });
+    }
+
+    return resources;
   }
 
   /**

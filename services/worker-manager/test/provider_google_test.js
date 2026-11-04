@@ -948,6 +948,86 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  test('listManagedResources', async () => {
+    const zoneUrl = 'https://www.googleapis.com/compute/v1/projects/testy/zones/us-east1-a';
+    const created = '2026-01-01T00:00:00.000-07:00';
+    fake.compute.instances.aggregatedListPages = [
+      [
+        [
+          'zones/us-east1-a',
+          {
+            id: '123',
+            name: 'foo-bar-abc',
+            zone: zoneUrl,
+            creationTimestamp: created,
+            labels: { 'managed-by': 'taskcluster', 'root-url': provider.rootUrlTagValue() },
+            metadata: {
+              items: [{ key: 'taskcluster', value: JSON.stringify({ workerPoolId, workerGroup: 'us-east1' }) }],
+            },
+          },
+        ],
+      ],
+      // second page, without metadata (worker key unknown) or root-url label (legacy)
+      [['zones/us-east1-a', { id: '456', name: 'old', zone: zoneUrl, creationTimestamp: created, labels: {} }]],
+      [
+        [
+          'zones/us-east1-a',
+          {
+            id: '322',
+            name: 'null-metadata',
+            zone: zoneUrl,
+            creationTimestamp: created,
+            labels: {},
+            metadata: { items: [{ key: 'taskcluster', value: null }] },
+          },
+        ],
+      ],
+      // metadata that is not valid JSON (e.g. from another deployment) only loses the worker key
+      [
+        [
+          'zones/us-east1-a',
+          {
+            id: '321',
+            name: 'odd',
+            zone: zoneUrl,
+            creationTimestamp: created,
+            labels: {},
+            metadata: { items: [{ key: 'taskcluster', value: 'not json' }] },
+          },
+        ],
+      ],
+    ];
+    fake.compute.disks.aggregatedListPages = [
+      [['zones/us-east1-a', { id: '789', name: 'disk', zone: zoneUrl, creationTimestamp: created, users: [] }]],
+    ];
+
+    const resources = await provider.listManagedResources();
+    assert.deepEqual(
+      resources.map(r => [r.resourceType, r.resourceId, r.rootUrlTag, r.worker, r.attached]),
+      [
+        [
+          'instance',
+          '123',
+          provider.rootUrlTagValue(),
+          { workerPoolId, workerGroup: 'us-east1', workerId: '123' },
+          undefined,
+        ],
+        ['instance', '456', null, null, undefined],
+        ['instance', '322', null, null, undefined],
+        ['instance', '321', null, null, undefined],
+        ['disk', '789', null, undefined, false],
+      ]
+    );
+    assert.deepEqual(resources[0].createdAt, new Date(created));
+  });
+
+  test('listManagedResources fails on unreachable zones', async () => {
+    fake.compute.instances.aggregatedList = async () => ({
+      data: { items: { 'zones/us-east1-a': { warning: { code: 'UNREACHABLE' } } } },
+    });
+    await assert.rejects(() => provider.listManagedResources(), /unreachable scopes zones\/us-east1-a/);
+  });
+
   suite('errorHandler', () => {
     // _backoffDelay is 1 in test config, so backoffs below are 1 * <multiplier>.
     const make500 = () => {

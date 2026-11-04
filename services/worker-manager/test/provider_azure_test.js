@@ -4687,6 +4687,67 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  test('listManagedResources', async () => {
+    const created = new Date('2026-01-01T00:00:00Z');
+    const tags = {
+      'managed-by': 'taskcluster',
+      'root-url': helper.rootUrl,
+      'worker-pool-id': workerPoolId,
+      'worker-group': 'westus',
+    };
+    const { vm, disk, nic, ip } = fake._managers;
+    vm.makeFakeResource('rgrp', 'vm-1', { location: 'westus', tags, timeCreated: created });
+    vm.makeFakeResource('rgrp', 'not-ours', { location: 'westus', tags: {} });
+    disk.makeFakeResource('rgrp', 'disk-1', { tags, timeCreated: created, diskState: 'Unattached' });
+    nic.makeFakeResource('rgrp', 'nic-1', { tags, createdTime: created, virtualMachine: { id: 'id/vm-1' } });
+    ip.makeFakeResource('rgrp', 'pip-1', { tags, createdTime: created });
+    ip.makeFakeResource('rgrp', 'pip-nat', { tags, createdTime: created, natGateway: { id: 'id/nat' } });
+
+    const resources = await provider.listManagedResources();
+    assert.deepEqual(
+      resources.map(r => [r.resourceType, r.name, r.rootUrlTag, r.worker, r.attached, r.createdAt?.toJSON()]),
+      [
+        [
+          'instance',
+          'vm-1',
+          helper.rootUrl,
+          { workerPoolId, workerGroup: 'westus', workerId: 'vm-1' },
+          undefined,
+          created.toJSON(),
+        ],
+        ['disk', 'disk-1', helper.rootUrl, undefined, false, created.toJSON()],
+        ['nic', 'nic-1', helper.rootUrl, undefined, true, created.toJSON()],
+        ['ip', 'pip-1', helper.rootUrl, undefined, false, created.toJSON()],
+        ['ip', 'pip-nat', helper.rootUrl, undefined, true, created.toJSON()],
+      ]
+    );
+  });
+
+  suite('listManagedResources failures', () => {
+    const tags = { 'managed-by': 'taskcluster', 'root-url': helper.rootUrl };
+    const makeError = statusCode => Object.assign(new Error('boom'), { statusCode });
+
+    setup(() => {
+      for (const name of ['vm-1', 'vm-2', 'vm-3']) {
+        fake._managers.vm.makeFakeResource('rgrp', name, { location: 'westus', tags });
+      }
+    });
+
+    test('a transient error resumes from the continuation token', async () => {
+      fake._managers.vm.listFailures.push(makeError(503));
+      const resources = await provider.listManagedResources();
+      assert.deepEqual(
+        resources.map(r => r.name),
+        ['vm-1', 'vm-2', 'vm-3']
+      );
+    });
+
+    test('a persistent error fails the listing', async () => {
+      fake._managers.vm.listFailures.push(makeError(400));
+      await assert.rejects(() => provider.listManagedResources(), /boom/);
+    });
+  });
+
   suite('scanCleanup', () => {
     const sandbox = sinon.createSandbox({});
     let reportedErrors = [];

@@ -9,6 +9,7 @@ import path from 'node:path';
 import taskcluster from '@taskcluster/client';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
+import { DescribeInstancesCommand, DescribeVolumesCommand } from '@aws-sdk/client-ec2';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -812,6 +813,52 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
       helper.assertNoPulseMessage('worker-removed');
     });
+  });
+
+  test('AWS provider - listingScope', () => {
+    assert.equal(provider.listingScope(), 'aws/accesskeyid');
+  });
+
+  test('AWS provider - listManagedResources', async () => {
+    const LaunchTime = new Date('2026-01-01T00:00:00Z');
+    const tags = {
+      Tags: [
+        { Key: 'WorkerPoolId', Value: workerPoolId },
+        { Key: 'RootUrl', Value: 'theirs' },
+      ],
+    };
+    // regions are listed in order (us-west-2 first), instances then volumes
+    fake.mock
+      .on(DescribeInstancesCommand)
+      .resolvesOnce({ Reservations: [{ Instances: [{ InstanceId: 'i-1', LaunchTime, ...tags }] }], NextToken: 'n' })
+      .resolvesOnce({ Reservations: [{ Instances: [{ InstanceId: 'i-2', LaunchTime }] }] })
+      .resolves({ Reservations: [] });
+    fake.mock
+      .on(DescribeVolumesCommand)
+      .resolvesOnce({ Volumes: [{ VolumeId: 'vol-1', CreateTime: LaunchTime, Attachments: [] }] })
+      .resolves({ Volumes: [] });
+
+    const resources = await provider.listManagedResources();
+    assert.deepEqual(
+      resources.map(r => [r.resourceType, r.resourceId, r.location, r.rootUrlTag, r.worker, r.attached]),
+      [
+        [
+          'instance',
+          'i-1',
+          'us-west-2',
+          'theirs',
+          { workerPoolId, workerGroup: 'us-west-2', workerId: 'i-1' },
+          undefined,
+        ],
+        ['instance', 'i-2', 'us-west-2', null, null, undefined],
+        ['disk', 'vol-1', 'us-west-2', null, undefined, false],
+      ]
+    );
+    const { Filters } = fake.mock.commandCalls(DescribeInstancesCommand)[0].args[0].input;
+    assert.deepEqual(Filters[0], { Name: 'tag:ManagedBy', Values: ['taskcluster'] });
+    // the mock does not validate parameters; these are the AWS maximums
+    assert.equal(fake.mock.commandCalls(DescribeInstancesCommand)[0].args[0].input.MaxResults, 1000);
+    assert.equal(fake.mock.commandCalls(DescribeVolumesCommand)[0].args[0].input.MaxResults, 500);
   });
 
   suite('AWS provider - removeWorker', () => {

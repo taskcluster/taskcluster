@@ -55,6 +55,7 @@ export class FakeGoogle extends FakeCloud {
 
     this.compute = {
       instances: new Instances(this),
+      disks: new Disks(this),
       globalOperations: new Operations(this, 'global'),
       regionOperations: new Operations(this, 'region'),
       zoneOperations: new Operations(this, 'zone'),
@@ -116,6 +117,8 @@ class FakeOAuth2 {
  * Parameters passed to `insert` are stored in the array `insertCalls`.
  *
  * Set failFakeInsertWith to an error instance to have the next insert() call fail
+ *
+ * Set aggregatedListPages to control `aggregatedList` (see fakeAggregatedList)
  */
 export class Instances {
   constructor(fake) {
@@ -169,6 +172,10 @@ export class Instances {
     return {}; // provider ignores the return value
   }
 
+  async aggregatedList(parameters) {
+    return fakeAggregatedList(parameters, this.aggregatedListPages, 'instances');
+  }
+
   // fake utilities
 
   /**
@@ -178,6 +185,35 @@ export class Instances {
     assert.equal(project, PROJECT);
     const key = `${zone}/${instance}`;
     this.instances.set(key, { status });
+  }
+}
+
+/**
+ * Serve `aggregatedList` from `pages`: an array of pages, each an array of
+ * `[scope, item]` pairs, e.g. `[['zones/us-east1-a', {id: '1', ...}]]`.
+ */
+const fakeAggregatedList = ({ project, pageToken }, pages = [[]], field) => {
+  assert.equal(project, PROJECT);
+  const page = pageToken ? Number(pageToken) : 0;
+  const items = {};
+  for (const [scope, item] of pages[page]) {
+    items[scope] = items[scope] || { [field]: [] };
+    items[scope][field].push(item);
+  }
+  const nextPageToken = page + 1 < pages.length ? String(page + 1) : undefined;
+  return { data: { items, nextPageToken } };
+};
+
+/**
+ * The google `disks` API.  Set `aggregatedListPages` to control `aggregatedList`.
+ */
+export class Disks {
+  constructor(fake) {
+    this.fake = fake;
+  }
+
+  async aggregatedList(parameters) {
+    return fakeAggregatedList(parameters, this.aggregatedListPages, 'disks');
   }
 }
 

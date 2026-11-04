@@ -37,6 +37,11 @@ expire-errors:
   schedule: '10 0 * * *'
   deadline: 86400
   command: node services/worker-manager/src/main.js expireErrors
+check-dangling-resources:
+  type: cron
+  schedule: '20 */6 * * *'
+  deadline: 3600
+  command: node services/worker-manager/src/main.js checkDanglingResources
 write-docs:
   type: build
   command: node services/worker-manager/src/main.js writeDocs

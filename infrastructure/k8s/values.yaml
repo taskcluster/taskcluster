@@ -301,6 +301,9 @@ worker_manager:
     expire_errors:
       cpu: 800m
       memory: 500Mi
+    check_dangling_resources:
+      cpu: 200m
+      memory: 500Mi
   debug: ''
   autoscaling:
     enabled: false

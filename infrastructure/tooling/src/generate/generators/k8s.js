@@ -100,6 +100,7 @@ const DEFAULT_RESOURCES = {
   'worker_manager.expire_workers': ['200m', '200Mi'],
   'worker_manager.expire_worker_pools': ['800m', '500Mi'],
   'worker_manager.expire_errors': ['800m', '500Mi'],
+  'worker_manager.check_dangling_resources': ['200m', '500Mi'],
   'ui.web': ['50m', '10Mi'],
   'references.web': ['10m', '10Mi'],
 };

@@ -1040,3 +1040,19 @@ services:
       - cron
       - worker-manager
       - worker-manager-cron
+  worker-manager-cron-check-dangling-resources:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/check-dangling-resources
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
