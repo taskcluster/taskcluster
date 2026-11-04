@@ -1638,8 +1638,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('successful provisioning process', async () => {
-      // Ip provisioning should have already started inside the provision() call
-      await assertProvisioningState({ ip: 'inprogress' });
+      // provision() only creates the worker row; the scanner creates the resources
+      await assertProvisioningState({ ip: 'none', nic: 'none', vm: 'none' });
       const ipName = worker.providerData.ip.name;
       const nicName = worker.providerData.nic.name;
       const vmName = worker.providerData.vm.name;

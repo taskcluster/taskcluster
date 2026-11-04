@@ -615,9 +615,8 @@ export class AzureProvider extends Provider {
     });
     await worker.create(this.db);
     await this.onWorkerRequested({ worker, terminateAfter });
-
-    // Start requesting resources immediately
-    await this.checkWorker({ worker });
+    // resources are created by the worker scanner
+    // creating them here too would race it and possibly leave dangling resources
   }
 
   /**
