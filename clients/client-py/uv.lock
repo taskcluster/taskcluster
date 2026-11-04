@@ -2511,7 +2511,7 @@ wheels = [
 
 [[package]]
 name = "taskcluster"
-version = "115.0.0"
+version = "115.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", version = "3.13.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },

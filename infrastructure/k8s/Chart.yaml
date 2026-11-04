@@ -1,6 +1,6 @@
 apiVersion: v2
 name: taskcluster
-appVersion: '115.0.0'
+appVersion: '115.0.1'
 description:  Framework that supports Mozilla's continuous integration and release processes.
 version: 0.2.0
 keywords:
