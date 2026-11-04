@@ -385,7 +385,9 @@ MonitorManager.register({
   description: `
     Per-provider summary of a dangling-resources check run: how many resources
     tagged as managed by taskcluster were listed, how many were excluded, and how
-    many were found dangling, by reason.
+    many were found dangling, by reason.  Providers sharing a cloud account
+    (same GCP project, Azure subscription or AWS access key) are listed once,
+    and their summary is logged under the first of them.
   `,
   fields: {
     providerId: 'Provider ID',

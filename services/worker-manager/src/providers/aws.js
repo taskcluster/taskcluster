@@ -473,6 +473,13 @@ export class AwsProvider extends Provider {
     return this.rootUrl.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
   }
 
+  // Providers with the same access key list the same account (all of its enabled regions).
+  // Different keys for one account are not detected, so such providers are each listed.
+  listingScope() {
+    const accessKeyId = this.providerConfig.credentials?.accessKeyId;
+    return accessKeyId ? `aws/${accessKeyId}` : null;
+  }
+
   async listManagedResources() {
     /** @type {import('./provider.js').ManagedResource[]} */
     const resources = [];

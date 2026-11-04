@@ -19107,7 +19107,7 @@
           "version": 1
         },
         {
-          "description": "Per-provider summary of a dangling-resources check run: how many resources\ntagged as managed by taskcluster were listed, how many were excluded, and how\nmany were found dangling, by reason.",
+          "description": "Per-provider summary of a dangling-resources check run: how many resources\ntagged as managed by taskcluster were listed, how many were excluded, and how\nmany were found dangling, by reason.  Providers sharing a cloud account\n(same GCP project, Azure subscription or AWS access key) are listed once,\nand their summary is logged under the first of them.",
           "fields": {
             "byType": "Listed resources by resource type",
             "dangling": "Dangling resources by reason",

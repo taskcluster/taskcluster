@@ -969,6 +969,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       ],
       // second page, without metadata (worker key unknown) or root-url label (legacy)
       [['zones/us-east1-a', { id: '456', name: 'old', zone: zoneUrl, creationTimestamp: created, labels: {} }]],
+      // metadata that is not valid JSON (e.g. from another deployment) only loses the worker key
+      [
+        [
+          'zones/us-east1-a',
+          {
+            id: '321',
+            name: 'odd',
+            zone: zoneUrl,
+            creationTimestamp: created,
+            labels: {},
+            metadata: { items: [{ key: 'taskcluster', value: 'not json' }] },
+          },
+        ],
+      ],
     ];
     fake.compute.disks.aggregatedListPages = [
       [['zones/us-east1-a', { id: '789', name: 'disk', zone: zoneUrl, creationTimestamp: created, users: [] }]],
@@ -986,6 +1000,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           undefined,
         ],
         ['instance', '456', null, null, undefined],
+        ['instance', '321', null, null, undefined],
         ['disk', '789', null, undefined, false],
       ]
     );

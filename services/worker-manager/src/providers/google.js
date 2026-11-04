@@ -538,7 +538,11 @@ export class GoogleProvider extends Provider {
       const zone = lastSegment(instance.zone);
       // the label has a lossy workerPoolId; the metadata has the worker key as registered
       const tcMetadata = (instance.metadata?.items || []).find(item => item.key === 'taskcluster');
-      const parsed = tcMetadata ? JSON.parse(tcMetadata.value) : {};
+      // metadata of instances from other deployments is not ours to trust: no worker key, not a failed listing
+      let parsed = {};
+      try {
+        parsed = tcMetadata ? JSON.parse(tcMetadata.value) : {};
+      } catch {}
       const workerPoolId = parsed.workerPoolId || null;
       const workerGroup = parsed.workerGroup || zone;
       resources.push({

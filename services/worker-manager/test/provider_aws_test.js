@@ -815,6 +815,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  test('AWS provider - listingScope', () => {
+    assert.equal(provider.listingScope(), 'aws/accesskeyid');
+  });
+
   test('AWS provider - listManagedResources', async () => {
     const LaunchTime = new Date('2026-01-01T00:00:00Z');
     const tags = {
