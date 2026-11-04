@@ -32,9 +32,10 @@ export LIVELOG_PUT_PORT=32815
 export LIVELOG_GET_PORT=32844
 ```
 
-`ACCESS_TOKEN` is an arbitrary url-safe string that you provide via the
-`ACCESS_TOKEN` environment variable to the livelog process when it starts up.
-The provides some level or security via obscurity when managed as a secret
+`ACCESS_TOKEN` is an arbitrary, non-empty, url-safe string that you provide via
+the `ACCESS_TOKEN` environment variable to the livelog process when it starts
+up. It is required: livelog exits at startup if it is unset or empty.
+This provides some level of security via obscurity when managed as a secret
 between client and server, especially when used in combination with https.
 
 By default http is used for serving GET requests, unless environment variables
@@ -135,3 +136,16 @@ The following environment variables can be used to configure the server.
  * `LIVELOG_PUT_PORT` PUT port number (optional - default is 60022)
  * `LIVELOG_GET_PORT` GET port number (optional - default is 60023)
  * `LIVELOG_TEMP_DIR` directory for temporary streaming files (optional - default is system temp dir)
+
+## Exit Codes
+
+Livelog exits with one of the following codes if its configuration is invalid
+at startup.
+
+| Code | Meaning |
+|------|---------|
+| 64 | `LIVELOG_PUT_PORT` is not a number |
+| 65 | `LIVELOG_PUT_PORT` is not between 0 and 65535 |
+| 66 | `LIVELOG_GET_PORT` is not a number |
+| 67 | `LIVELOG_GET_PORT` is not between 0 and 65535 |
+| 68 | `ACCESS_TOKEN` is unset or empty |
