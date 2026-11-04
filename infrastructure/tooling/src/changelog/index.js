@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import semver from 'semver';
 import { globSync } from 'glob';
 import chalk from 'chalk';

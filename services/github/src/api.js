@@ -1,12 +1,19 @@
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import libUrls from 'taskcluster-lib-urls';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const assetsPath = path.join(__dirname, '/../assets/');
 
-import { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR, GITHUB_BUILD_STATES } from './constants.js';
+import {
+  EVENT_TYPES,
+  CHECK_RUN_ACTIONS,
+  PUBLISHERS,
+  GITHUB_TASKS_FOR,
+  GITHUB_BUILD_STATES,
+  USER_YAML_SCHEMA,
+} from './constants.js';
 
 import {
   shouldSkipCommit,
@@ -969,7 +976,7 @@ builder.declare(
     const validator = await this.schemaset.validator(rootUrl);
 
     try {
-      const tcYml = yaml.load(body);
+      const tcYml = yaml.load(body, { schema: USER_YAML_SCHEMA });
       const { tasks, scopes } = this.intree({
         config: tcYml,
         payload,

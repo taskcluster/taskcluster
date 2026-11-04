@@ -4,7 +4,7 @@ import _ from 'lodash';
 import fs from 'node:fs';
 import path from 'node:path';
 import walk from 'walk';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import Ajv from 'ajv';

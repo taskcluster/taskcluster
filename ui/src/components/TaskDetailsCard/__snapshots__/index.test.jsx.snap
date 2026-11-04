@@ -330,7 +330,7 @@ exports[`should render TaskDetailsCard 1`] = `
                           <span
                             class="hljs-string"
                           >
-                            '-c'
+                            -c
                           </span>
                           
   

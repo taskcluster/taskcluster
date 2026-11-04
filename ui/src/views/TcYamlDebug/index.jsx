@@ -15,6 +15,7 @@ import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
 import ajv from '../../utils/ajv';
+import yamlSchema, { loadOptionalDocument } from '../../utils/yamlSchema';
 import scrollToHash from '../../utils/scrollToHash';
 import { withTaskclusterClient } from '../../utils/TaskclusterClient';
 import JsonDisplay from '../../components/JsonDisplay';
@@ -356,7 +357,7 @@ export default class TcYamlDebug extends Component {
     this.setState({ parsed: true });
 
     try {
-      doc = load(this.state.editorValue);
+      doc = load(this.state.editorValue, { schema: yamlSchema });
     } catch (e) {
       this.addFinding({
         type: 'parser',
@@ -447,7 +448,7 @@ export default class TcYamlDebug extends Component {
     };
 
     try {
-      const extraContext = load(this.state.extraContext);
+      const extraContext = loadOptionalDocument(this.state.extraContext);
       const parsed = await this.githubClient.renderTaskclusterYml({
         body: this.state.editorValue,
         organization: 'taskcluster',

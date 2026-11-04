@@ -5,6 +5,7 @@ import jsone from 'json-e';
 import { load } from 'js-yaml';
 import { Auth, Hooks, Queue } from '@taskcluster/client-web';
 import removeKeys from '../../utils/removeKeys';
+import yamlSchema from '../../utils/yamlSchema';
 import { nice } from '../../utils/slugid';
 import validateActionsJson from '../../utils/validateActionsJson';
 import ajv from '../../utils/ajv';
@@ -25,7 +26,7 @@ export default async ({ task, form, action, getCredentials, taskActions }) => {
     task.taskId === task.taskGroupId || !task.decisionTask
       ? task
       : task.decisionTask;
-  const input = load(form);
+  const input = load(form, { schema: yamlSchema });
   const validate = ajv.compile(action.schema || {});
   const valid = validate(input);
   const validateActionsJsonInstance = await validateActionsJson();

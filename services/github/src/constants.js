@@ -1,3 +1,5 @@
+import { binaryTag, CORE_SCHEMA, mergeTag, omapTag, pairsTag, timestampTag } from 'js-yaml';
+
 export const CHECK_RUN_STATES = {
   QUEUED: 'queued',
   IN_PROGRESS: 'in_progress',
@@ -112,3 +114,6 @@ export default {
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
 };
+
+// Should be kept in sync with the one in ui/src/utils/yamlSchema.js
+export const USER_YAML_SCHEMA = CORE_SCHEMA.withTags(mergeTag, timestampTag, binaryTag, omapTag, pairsTag);

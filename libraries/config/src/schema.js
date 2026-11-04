@@ -1,19 +1,19 @@
 import _ from 'lodash';
 import assert from 'node:assert';
-import yaml from 'js-yaml';
+import { CORE_SCHEMA, defineScalarTag, NOT_RESOLVED } from 'js-yaml';
 
 /*
  * Create a YAML type that loads from environment variable
  */
 const createType = (env, vars, basename, _typeName, deserialize) => {
   return [basename, `${basename}:secret`, `${basename}:optional`, `${basename}:secret:optional`].map(name => {
-    return new yaml.Type(name, {
-      kind: 'scalar', // Takes a string as input
-      resolve: data => {
-        return typeof data === 'string' && /^[A-Z0-9_]+$/.test(data);
-      },
+    return defineScalarTag(name, {
+      identify: () => false,
       // Deserialize the data, in the case we read the environment variable
-      construct: data => {
+      resolve: data => {
+        if (!/^[A-Z0-9_]+$/.test(data)) {
+          return NOT_RESOLVED;
+        }
         if (Array.isArray(vars)) {
           vars.push({
             type: basename,
@@ -38,7 +38,7 @@ const createType = (env, vars, basename, _typeName, deserialize) => {
  * This schema allows our special !env types
  */
 export default (env, vars) =>
-  yaml.JSON_SCHEMA.extend(
+  CORE_SCHEMA.withTags(
     _.flatten([
       createType(env, vars, '!env', 'string', val => {
         return val;

@@ -16,8 +16,8 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '5672:5672'
-      - '15672:15672'
+      - 5672:5672
+      - 15672:15672
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -30,7 +30,7 @@ services:
       - db-data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - '5432:5432'
+      - 5432:5432
     environment:
       POSTGRES_DB: taskcluster
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -60,7 +60,7 @@ services:
     networks:
       - local
     ports:
-      - '3090:4566'
+      - 3090:4566
     volumes:
       - ./docker/buckets:/var/lib/localstack
     environment:
@@ -82,7 +82,7 @@ services:
         condition: service_healthy
     entrypoint: /bin/sh
     command:
-      - '-c'
+      - -c
       - |-
         aws --endpoint-url=http://s3:4566 s3 mb s3://public-bucket || true
         aws --endpoint-url=http://s3:4566 s3 mb s3://private-bucket || true
@@ -96,7 +96,7 @@ services:
     networks:
       - local
     ports:
-      - '9090:9090'
+      - 9090:9090
     volumes:
       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
   ui:
@@ -108,7 +108,7 @@ services:
     volumes:
       - ./docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf
     ports:
-      - '3022:8080'
+      - 3022:8080
   references:
     image: ${IMAGE}
     networks:
@@ -117,7 +117,7 @@ services:
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
     ports:
-      - '3023:8080'
+      - 3023:8080
   taskcluster:
     image: nginx:1.30.1
     networks:
@@ -134,7 +134,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '80:80'
+      - 80:80
   tc_admin_init:
     image: taskcluster/tc-admin:5.3.1
     networks:
@@ -189,7 +189,7 @@ services:
       tc_admin_init:
         condition: service_completed_successfully
     ports:
-      - '59999:59999'
+      - 59999:59999
   generic-worker-static:
     image: ${IMAGE_GENERIC_WORKER}
     networks:
@@ -217,7 +217,7 @@ services:
       tc_admin_init:
         condition: service_completed_successfully
     ports:
-      - '59999:59999'
+      - 59999:59999
   auth-web:
     image: ${IMAGE}
     networks:
@@ -237,7 +237,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3011:8080'
+      - 3011:8080
   auth-cron-purgeExpiredClients:
     image: ${IMAGE}
     networks:
@@ -303,7 +303,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3012:8080'
+      - 3012:8080
   github-background-worker:
     image: ${IMAGE}
     networks:
@@ -355,7 +355,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3013:8080'
+      - 3013:8080
   hooks-background-scheduler:
     image: ${IMAGE}
     networks:
@@ -423,7 +423,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3014:8080'
+      - 3014:8080
   index-background-handlers:
     image: ${IMAGE}
     networks:
@@ -475,7 +475,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3015:8080'
+      - 3015:8080
   notify-background-handler:
     image: ${IMAGE}
     networks:
@@ -513,7 +513,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3016:8080'
+      - 3016:8080
   object-cron-expire:
     image: ${IMAGE}
     networks:
@@ -551,7 +551,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3017:8080'
+      - 3017:8080
   purge-cache-cron-expireCachePurges:
     image: ${IMAGE}
     networks:
@@ -589,7 +589,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3018:8080'
+      - 3018:8080
   queue-background-claimResolver:
     image: ${IMAGE}
     networks:
@@ -807,7 +807,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3019:8080'
+      - 3019:8080
   secrets-cron-expire:
     image: ${IMAGE}
     networks:
@@ -843,7 +843,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3050:3050'
+      - 3050:3050
   web-server-cron-scanner:
     image: ${IMAGE}
     networks:
@@ -927,7 +927,7 @@ services:
       retries: 100
       start_period: 3s
     ports:
-      - '3020:8080'
+      - 3020:8080
   worker-manager-background-provisioner:
     image: ${IMAGE}
     networks:

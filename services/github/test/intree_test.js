@@ -4,9 +4,9 @@ import assert from 'node:assert';
 import _ from 'lodash';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import testing from '@taskcluster/lib-testing';
-import { GITHUB_TASKS_FOR } from '../src/constants.js';
+import { GITHUB_TASKS_FOR, USER_YAML_SCHEMA } from '../src/constants.js';
 
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
 const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
@@ -84,7 +84,7 @@ suite(testing.suiteName(), () => {
    **/
   const buildConfigTest = (testName, configPath, params, expected, count = -1, shouldError = false) => {
     test(testName, async () => {
-      params.config = yaml.load(fs.readFileSync(configPath));
+      params.config = yaml.load(fs.readFileSync(configPath), { schema: USER_YAML_SCHEMA });
       params.schema = {
         0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),
         1: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.v1.yml'),

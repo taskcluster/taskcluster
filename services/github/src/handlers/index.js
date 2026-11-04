@@ -2,7 +2,7 @@ import _ from 'lodash';
 import stringify from 'fast-json-stable-stringify';
 import crypto from 'node:crypto';
 import taskcluster from '@taskcluster/client';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
@@ -14,7 +14,7 @@ import { jobHandler } from './job.js';
 import { rerunHandler } from './rerun.js';
 import { taskclusterYmlHandler } from './taskclusterYml.js';
 import { POLICIES } from './policies.js';
-import { GITHUB_BUILD_STATES } from '../constants.js';
+import { GITHUB_BUILD_STATES, USER_YAML_SCHEMA } from '../constants.js';
 import { v1ToV6 } from 'uuid';
 
 // github uses UUID1 and to compare them as ordered strings we convert it to V6 which is sortable
@@ -601,8 +601,15 @@ class Handlers {
    */
   async getYml({ instGithub, owner, repo, ref }) {
     const content = await getRawYml({ instGithub, owner, repo, ref });
+    if (content === null) {
+      return null;
+    }
 
-    return content === null ? null : yaml.load(content);
+    const documents = yaml.loadAll(content, { schema: USER_YAML_SCHEMA });
+    if (documents.length > 1) {
+      throw new yaml.YAMLException('expected a single document in the stream, but found more');
+    }
+    return documents[0] ?? null;
   }
 
   _handlerStarted(name) {

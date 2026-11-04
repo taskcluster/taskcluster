@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import path from 'node:path';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import fs from 'node:fs';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-config');

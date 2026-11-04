@@ -47,6 +47,7 @@ import urls from '../../../utils/urls';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import Button from '../../../components/Button';
 import db from '../../../utils/db';
+import yamlSchema from '../../../utils/yamlSchema';
 import validateTaskPayloadSchemas from '../../../utils/validateTaskPayloadSchemas';
 
 const tutorialWorkerPoolId =
@@ -192,7 +193,7 @@ export default class CreateTask extends Component {
 
     if (task) {
       const taskId = nice();
-      let payload = load(task);
+      let payload = load(task, { schema: yamlSchema });
 
       db.taskDefinitions.put(payload);
 
@@ -245,7 +246,7 @@ export default class CreateTask extends Component {
 
   handleTaskChange = value => {
     try {
-      load(value);
+      load(value, { schema: yamlSchema });
       this.setState({ invalid: false, task: value });
     } catch (_err) {
       this.setState({ invalid: true, task: value });
@@ -259,7 +260,7 @@ export default class CreateTask extends Component {
   handleLint = async () => {
     const { payloadSchema, task } = this.state;
     const schema = TASK_PAYLOAD_SCHEMAS[payloadSchema];
-    const input = load(task);
+    const input = load(task, { schema: yamlSchema });
     const errors = await validateTaskPayloadSchemas(
       input,
       schema?.type,
@@ -274,7 +275,9 @@ export default class CreateTask extends Component {
   handleUpdateTimestamps = () =>
     this.setState({
       createdTaskError: null,
-      task: this.parameterizeTask(load(this.state.task)),
+      task: this.parameterizeTask(
+        load(this.state.task, { schema: yamlSchema })
+      ),
     });
 
   parameterizeTask(task) {
@@ -305,7 +308,7 @@ export default class CreateTask extends Component {
       }
     };
 
-    return `${dump(iter(task), { noCompatMode: true, noRefs: true })}`;
+    return `${dump(iter(task), { noRefs: true })}`;
   }
 
   render() {

@@ -22,6 +22,7 @@ import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
 import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import { secret } from '../../utils/prop-types';
+import yamlSchema from '../../utils/yamlSchema';
 
 @withStyles(theme => ({
   fab: {
@@ -136,7 +137,7 @@ export default class SecretForm extends Component {
 
     this.props.onSaveSecret(secretName, {
       expires,
-      secret: load(editorValue),
+      secret: load(editorValue, { schema: yamlSchema }),
     });
   };
 
@@ -144,7 +145,7 @@ export default class SecretForm extends Component {
     const { editorValue, secretName, expires } = this.state;
 
     try {
-      load(editorValue);
+      load(editorValue, { schema: yamlSchema });
 
       return secretName && expires && editorValue;
     } catch (_err) {
