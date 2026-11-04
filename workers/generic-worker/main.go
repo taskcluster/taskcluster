@@ -221,6 +221,11 @@ func main() {
 		case WORKER_MANAGER_SHUTDOWN:
 			logEvent("instanceShutdown", nil, time.Now())
 			shutdownWorker("worker manager requested termination")
+		case WORKER_SHUTDOWN:
+			if managedByWorkerManager() {
+				logEvent("instanceShutdown", nil, time.Now())
+				shutdownWorker("graceful termination")
+			}
 		}
 		os.Exit(int(exitCode))
 	case arguments["install"]:
