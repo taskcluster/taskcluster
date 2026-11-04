@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
+	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
 )
 
 var (

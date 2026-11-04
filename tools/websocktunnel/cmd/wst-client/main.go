@@ -13,8 +13,8 @@ import (
 
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/taskcluster/taskcluster/v114/internal"
-	"github.com/taskcluster/taskcluster/v114/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v115/internal"
+	"github.com/taskcluster/taskcluster/v115/tools/websocktunnel/client"
 )
 
 const usage = `Websocketunnel Client is a command line utility which establishes a connection

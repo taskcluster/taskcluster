@@ -3,6 +3,114 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v115.0.0
+
+### GENERAL
+
+▶ [MAJOR]
+Upgrades to Node.js latest LTS, v26.13.0.
+
+The published `@taskcluster/client` package now requires Node.js 26 (`engines.node` is `^26`, previously `^24`), so users of the client must upgrade to Node.js 26.
+
+Node.js no longer bundles corepack, so Taskcluster images now install the version pinned in `.corepack-version` from npm. Developers should do the same: `npm install -g corepack@$(cat .corepack-version)`.
+
+### DEPLOYERS
+
+▶ [MAJOR]
+Remove support for NewRelic. Deployers must remove newRelic from their Helm values and drop any NEW_RELIC environment variable or secret from non-Helm deployment.
+
+▶ [minor] [#8113](https://github.com/taskcluster/taskcluster/issues/8113)
+Worker-manager has a new `check-dangling-resources` cron job, running every 6 hours, that looks for leaked cloud resources. It lists Google, AWS and Azure resources tagged `managed-by: taskcluster` (instances, disks/volumes, and Azure NICs and public IPs) and logs a `dangling-resource` message for each one worker-manager no longer tracks: instances with no worker record or a stopped one, and disks, NICs or IPs that aren't attached to anything. It also logs a `dangling-resources-summary` message per provider. The job only reports and takes no action. Resources tagged with another deployment's root URL are counted but not checked. Resources without a root-url tag, created before it was added, are checked and flagged as `legacy`.
+
+The job needs list permissions on each cloud: `compute.instances.list` and `compute.disks.list` in GCP, `ec2:DescribeInstances` and `ec2:DescribeVolumes` in AWS, and in Azure `Microsoft.Compute/virtualMachines/read`, `Microsoft.Compute/disks/read`, `Microsoft.Network/networkInterfaces/read`, `Microsoft.Network/publicIPAddresses/read` and `Microsoft.Resources/subscriptions/resources/read` on the subscription (the listing is subscription-wide). A provider whose setup failed, or whose listing fails (including unreachable GCP zones), is reported with `listErrors: 1` in its summary.
+
+▶ [patch] [#8113](https://github.com/taskcluster/taskcluster/issues/8113)
+Worker-manager now tags instances and disks/volumes created by the Google and AWS providers with the deployment's `rootUrl` (label `root-url` in GCP, tag `RootUrl` in AWS), matching the Azure provider. This lets deployments sharing a cloud account tell their resources apart. GCP resources allow at most 64 labels, so worker pools already near that limit will get one extra label.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 1401934](http://bugzil.la/1401934)
+The worker will now store reserved artifacts (logs, CoT certificate, rdp.json)
+in a directory at `<reservedArtifactsDir>/task_<taskId>_<runId>` instead of in
+the task working directory at `generic-worker/`.
+
+▶ [minor] [#9412](https://github.com/taskcluster/taskcluster/issues/9412)
+Generic Worker now only calls Worker Manager's `shouldWorkerTerminate` endpoint when worker-runner supports the new `should-worker-terminate` capability, which it does for the `aws`, `azure`, and `google` providers. Static and standalone workers no longer make this call, since Worker Manager never makes termination decisions for them, and once again exit when `idleTimeoutSecs` is reached instead of resetting the idle timer indefinitely as they have since v96.7.1. Upgrade worker-runner along with generic-worker: with an older worker-runner, generic-worker will not consult Worker Manager.
+
+▶ [patch] [bug 2084233](http://bugzil.la/2084233)
+Generic Worker (multiuser) now runs the chain of trust private key check using the `generic-worker cat-file` subcommand, without the task's environment variables and without attaching it to the worker's stdout/stderr. If the check can't be carried out, the task now resolves as `exception/internal-error` instead of proceeding as though the key were secure.
+
+▶ [patch]
+Generic Worker no longer leaks goroutines in its livelog handling: one (along
+with the livelog process output it holds) for every task that uses the
+livelog feature, and one each time the livelog process exits before it is
+ready.
+
+▶ [patch] [bug 2084231](http://bugzil.la/2084231)
+Generic Worker now fails file mounts, directory creation and archive extraction when the `generic-worker` helper subcommand that runs as the task user cannot be started, instead of continuing as though the helper had succeeded.
+
+▶ [patch] [#9419](https://github.com/taskcluster/taskcluster/issues/9419)
+Generic-worker now asks worker-runner to shut down the instance after a graceful termination (exit code 72, `WORKER_SHUTDOWN`). Before, the instance stayed idle until the cloud provider terminated it.
+
+▶ [patch]
+When failing to create a profile on windows, generic worker will now display
+the right error instead of the error message from the previous command it ran
+
+### ADMINS
+
+▶ [patch]
+Worker-pool errors for failed Azure ARM deployments now carry the error code of the failing deployment operation, such as `QuotaExceeded`. They previously carried the generic `DeploymentFailed` code, which hid the cause in worker-pool error statistics. Existing records keep their old codes.
+
+### USERS
+
+▶ [MAJOR]
+User provided YAMLs (such as `.taskcluster.yml` and hook definitions) are now parsed with js-yaml 5. This changes how some values are interpreted:
+
+- `!!set` and complex keys (list or object) are no longer supported
+- `0b` prefixed integers, signed hex/binary integers (`+0x42`, `-0b10`) and numbers containing underscores (`4_2`) are now parsed as strings instead of numbers
+- signed floats with their leading 0 omitted (`-.5`/`+.5`) are now floats instead of strings
+
+▶ [patch] [bug 2072166](http://bugzil.la/2072166)
+The index service's `findArtifactFromTask` endpoint now follows `link` artifacts using the caller's own `queue:get-artifact:*` scopes instead of the index service's. Previously a link from an artifact the caller could read (for example `public/x`) to one they could not read would still be followed, both for public artifacts and when redirecting to a signed URL for non-public ones.
+
+▶ [patch] [bug 2072175](http://bugzil.la/2072175)
+The taskcluster CLI now writes its config file as being readable by its owner
+only on unix like systems. If you have used `taskcluster config set` in the
+past, you should run `chmod 0600
+${XDG_CONFIG_HOME:-$HOME/.config}/taskcluster.yml`
+
+### DEVELOPERS
+
+▶ [patch]
+`yarn upgrade:node` now manages the corepack version pinned in `.corepack-version`. Its new `--corepack <auto|latest|skip|VERSION>` option defaults to `auto`, which updates corepack to the latest release whenever the Node.js version changes.
+
+### OTHER
+
+▶ Additional change not described here: [#9149](https://github.com/taskcluster/taskcluster/issues/9149).
+
+### Automated Package Updates
+
+<details>
+<summary>15 Dependabot updates</summary>
+
+* build(deps-dev): bump the ui-vitest group across 1 directory with 2 updates (f65b5c2660)
+* build(deps): bump the node-deps group across 1 directory with 16 updates (d70b07cd60)
+* build(deps-dev): bump glob from 13.0.6 to 14.0.2 (8df6b3c6cd)
+* build(deps): bump follow-redirects from 1.16.1 to 1.16.2 (f2b66287ca)
+* build(deps): bump follow-redirects in /clients/client (a68ad16acc)
+* build(deps): bump follow-redirects in /clients/client-test (36112b086b)
+* build(deps): bump query-string in /clients/client-web (57c9515051)
+* build(deps): bump the gh-actions-deps group with 4 updates (1e9e49d350)
+* build(deps-dev): bump the client-web-vitest group (26a1d4bd71)
+* build(deps): bump the go-deps group with 2 updates (372f92f570)
+* build(deps): bump got in /clients/client in the client-node-deps group (501779f5d1)
+* build(deps): bump decode-uri-component in /clients/client-web (fd8ff521fd)
+* build(deps): bump decode-uri-component from 0.5.0 to 0.5.1 in /ui (912d9e453c)
+* build(deps): bump picomatch from 4.0.2 to 4.0.7 (f3d1657112)
+* build(deps): bump path-to-regexp from 1.8.0 to 1.9.0 in /ui (c46a9c91d0)
+
+</details>
+
 ## v114.0.0
 
 ### GENERAL

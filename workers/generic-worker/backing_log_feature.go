@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v114/internal/scopes"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v115/internal/scopes"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
 )
 
 type (

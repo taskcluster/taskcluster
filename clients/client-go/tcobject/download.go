@@ -11,8 +11,8 @@ import (
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/internal"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/readwriteseeker"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/readwriteseeker"
 )
 
 type HTTPRetryError = internal.HTTPRetryError

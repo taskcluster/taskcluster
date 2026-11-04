@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
+	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
 )
 
 type WorkerManager struct {

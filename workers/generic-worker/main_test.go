@@ -12,8 +12,8 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v114/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
+	"github.com/taskcluster/taskcluster/v115/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
 )
 
 // Test failure should resolve as "failed"
@@ -126,7 +126,7 @@ func TestRevisionNumberStored(t *testing.T) {
 		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
 
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v114/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v115/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
 			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)

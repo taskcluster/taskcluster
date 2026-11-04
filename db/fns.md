@@ -722,10 +722,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `update_client(client_id_in text, description_in text, encrypted_access_token_in jsonb, expires_in timestamptz, disabled_in boolean, scopes_in jsonb, delete_on_expiration_in boolean)` (compatibility guaranteed until v115.0.0)
-
 ## github
 
 * [`create_github_build_pr`](#create_github_build_pr)

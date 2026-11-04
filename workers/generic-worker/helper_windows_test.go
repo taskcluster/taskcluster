@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 )
 

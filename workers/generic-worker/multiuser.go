@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v114/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v115/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
 )
 
 const (

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcqueueevents"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcqueueevents"
 )
 
 // Each binding type provides the exchange name and routing key pattern to bind

@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {

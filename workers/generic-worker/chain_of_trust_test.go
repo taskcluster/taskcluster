@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
 )
 
 func TestExitCodeMissingChainOfTrustKey(t *testing.T) {

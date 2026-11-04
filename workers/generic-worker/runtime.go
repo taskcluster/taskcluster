@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
 )
 
 type reservedContentSource string

@@ -6,10 +6,10 @@ import (
 	"io"
 	"os"
 
-	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/internal"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/readwriteseeker"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcobject"
+	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/readwriteseeker"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcobject"
 )
 
 type HTTPRetryError = internal.HTTPRetryError

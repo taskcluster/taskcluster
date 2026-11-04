@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/v114/clients/client-go"
-	"github.com/taskcluster/taskcluster/v114/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
+	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
 )
 
 // runCancel cancels the runs of a given task.

@@ -15,8 +15,8 @@ import (
 	"syscall"
 
 	"github.com/mholt/archives"
-	"github.com/taskcluster/taskcluster/v114/internal/slugid"
-	"github.com/taskcluster/taskcluster/v114/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v115/internal/slugid"
+	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
 )
 
 func WriteToFileAsJSON(obj any, filename string) error {
