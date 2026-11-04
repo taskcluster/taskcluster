@@ -856,6 +856,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     );
     const { Filters } = fake.mock.commandCalls(DescribeInstancesCommand)[0].args[0].input;
     assert.deepEqual(Filters[0], { Name: 'tag:ManagedBy', Values: ['taskcluster'] });
+    // the mock does not validate parameters; these are the AWS maximums
+    assert.equal(fake.mock.commandCalls(DescribeInstancesCommand)[0].args[0].input.MaxResults, 1000);
+    assert.equal(fake.mock.commandCalls(DescribeVolumesCommand)[0].args[0].input.MaxResults, 500);
   });
 
   suite('AWS provider - removeWorker', () => {

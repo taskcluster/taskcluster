@@ -486,12 +486,13 @@ export class AwsProvider extends Provider {
     const tagsOf = tags => Object.fromEntries((tags || []).map(({ Key, Value }) => [Key, Value]));
     const managedFilter = { Name: 'tag:ManagedBy', Values: ['taskcluster'] };
 
-    const listAll = async (region, Command, input, field) => {
+    // AWS caps MaxResults per API: 1000 for DescribeInstances, 500 for DescribeVolumes
+    const listAll = async (region, Command, input, field, MaxResults) => {
       const items = [];
       let NextToken;
       do {
         const res = await this._enqueue(`${region}.describe`, () =>
-          this.ec2s[region].send(new Command({ ...input, MaxResults: 1000, NextToken }))
+          this.ec2s[region].send(new Command({ ...input, MaxResults, NextToken }))
         );
         items.push(...(res[field] || []));
         NextToken = res.NextToken;
@@ -510,7 +511,8 @@ export class AwsProvider extends Provider {
             { Name: 'instance-state-name', Values: ['pending', 'running', 'shutting-down', 'stopping', 'stopped'] },
           ],
         },
-        'Reservations'
+        'Reservations',
+        1000
       );
       for (const instance of reservations.flatMap(r => r.Instances || [])) {
         const tags = tagsOf(instance.Tags);
@@ -527,7 +529,7 @@ export class AwsProvider extends Provider {
         });
       }
 
-      const volumes = await listAll(region, DescribeVolumesCommand, { Filters: [managedFilter] }, 'Volumes');
+      const volumes = await listAll(region, DescribeVolumesCommand, { Filters: [managedFilter] }, 'Volumes', 500);
       for (const volume of volumes) {
         const tags = tagsOf(volume.Tags);
         resources.push({

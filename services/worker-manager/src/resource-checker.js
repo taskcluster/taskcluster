@@ -46,23 +46,22 @@ export class ResourceChecker {
     for (const provider of this.providers.setupFailed().filter(supported)) {
       this.monitor.log.danglingResourcesSummary({ ...this.#newSummary(provider), listErrors: 1 });
     }
-    // providers sharing a cloud account would list the same resources; the first one does it.
-    // forAll starts the callbacks in order, so the scope is claimed before any listing awaits.
+    // providers sharing a cloud account would list the same resources; the first one does it
+    const active = (await this.providers.forAll((/** @type {Provider} */ provider) => provider)).filter(supported);
     const listedScopes = new Set();
-    await this.providers.forAll((/** @type {Provider} */ provider) => {
-      if (!supported(provider)) {
-        return;
-      }
+    const toCheck = active.filter(provider => {
       const scope = provider.listingScope();
-      if (scope && listedScopes.has(scope)) {
+      if (!scope) {
+        return true;
+      }
+      if (listedScopes.has(scope)) {
         this.monitor.debug(`Skipping ${provider.providerId}: ${scope} is listed by another provider`);
-        return;
+        return false;
       }
-      if (scope) {
-        listedScopes.add(scope);
-      }
-      return this.#checkProvider(provider);
+      listedScopes.add(scope);
+      return true;
     });
+    await Promise.all(toCheck.map(provider => this.#checkProvider(provider)));
   }
 
   /** @param {Provider} provider */

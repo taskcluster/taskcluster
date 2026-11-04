@@ -541,7 +541,10 @@ export class GoogleProvider extends Provider {
       // metadata of instances from other deployments is not ours to trust: no worker key, not a failed listing
       let parsed = {};
       try {
-        parsed = tcMetadata ? JSON.parse(tcMetadata.value) : {};
+        const value = tcMetadata?.value ? JSON.parse(tcMetadata.value) : null;
+        if (value && typeof value === 'object') {
+          parsed = value;
+        }
       } catch {}
       const workerPoolId = parsed.workerPoolId || null;
       const workerGroup = parsed.workerGroup || zone;
