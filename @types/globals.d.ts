@@ -5,7 +5,3 @@ declare module 'lodash' {
   function shuffle<T extends object>(items: T[]): T[];
   function isString(a: any): boolean;
 }
-
-declare module 'js-yaml' {
-  function load(content: string): any;
-}

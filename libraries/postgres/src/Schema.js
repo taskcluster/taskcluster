@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { strict as assert } from 'node:assert';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import path from 'node:path';
 import Version from './Version.js';
 import Access from './Access.js';

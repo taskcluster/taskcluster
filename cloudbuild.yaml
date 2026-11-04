@@ -3,23 +3,23 @@ steps:
     id: Prefetch deploy image
     entrypoint: bash
     args:
-      - '-c'
+      - -c
       - docker pull ${_DEPLOY_IMAGE_NAME}:latest || exit 0
   - name: gcr.io/cloud-builders/docker
     args:
       - build
-      - '--build-arg'
+      - --build-arg
       - DOCKER_FLOW_VERSION=${_VERSION}
-      - '-t'
+      - -t
       - ${_IMAGE_NAME}:${_IMAGE_VERSION}
-      - '-t'
+      - -t
       - ${_IMAGE_NAME}:latest
       - .
     id: Build
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - '-a'
+      - -a
       - ${_IMAGE_NAME}
     id: Push
   - name: gcr.io/cloud-builders/docker
@@ -39,7 +39,7 @@ steps:
       - KUBECTL_VERSION=v1.37.0
   - name: bash
     args:
-      - '-c'
+      - -c
       - |
         echo "$$DEV_CONFIG" | sed -E "s|dockerImage:.+$|dockerImage: ${_IMAGE_NAME}:${_IMAGE_VERSION}|" > /workspace/dev-config.yml
     id: Get secrets
@@ -63,7 +63,7 @@ steps:
       done
   - name: ${_DEPLOY_IMAGE_NAME}
     args:
-      - '-c'
+      - -c
       - |
         gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
         && yarn \
@@ -74,14 +74,14 @@ steps:
   - name: ${_DEPLOY_IMAGE_NAME}
     id: Cleanup old pods
     args:
-      - '-c'
+      - -c
       - |
         gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
         && kubectl get pods -n dev --field-selector=status.phase!=Running -o name | xargs kubectl delete -n dev
     entrypoint: bash
   - name: node:${_NODE_VERSION}
     args:
-      - '-c'
+      - -c
       - sleep 10 && npm install -g corepack@0.36.0 && yarn && yarn smoketest
     id: Smoketest
     entrypoint: bash

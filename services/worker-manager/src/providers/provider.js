@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import { Worker, WorkerPoolError } from '../data.js';
 
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */

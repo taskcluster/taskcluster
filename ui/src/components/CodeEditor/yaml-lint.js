@@ -1,6 +1,6 @@
 import CodeMirror from 'codemirror';
-import { load } from 'js-yaml';
 import 'codemirror/addon/lint/lint';
+import { loadOptionalDocument } from '../../utils/yamlSchema';
 
 /*
   Override 'codemirror/addon/lint/yaml-lint' registerHelper
@@ -9,14 +9,14 @@ import 'codemirror/addon/lint/lint';
  */
 CodeMirror.registerHelper('lint', 'yaml', text => {
   try {
-    load(text);
+    loadOptionalDocument(text);
   } catch (e) {
-    const loc = e.mark;
+    const { line, column } = e.mark ?? { line: 0, column: 0 };
 
     return [
       {
-        from: CodeMirror.Pos(loc.line, loc.column),
-        to: CodeMirror.Pos(loc.line, loc.column),
+        from: CodeMirror.Pos(line, column),
+        to: CodeMirror.Pos(line, column),
         message: e.message,
       },
     ];

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import path from 'node:path';
 import { globSync } from 'glob';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import jsone from 'json-e';
 import fs from 'node:fs/promises';
 import { rimraf } from 'rimraf';

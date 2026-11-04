@@ -43,6 +43,7 @@ import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
 import HookBindingDebugger from '../HookBindingDebugger';
 import removeKeys from '../../utils/removeKeys';
+import yamlSchema from '../../utils/yamlSchema';
 
 const initialHook = {
   metadata: {
@@ -375,7 +376,7 @@ export default class HookForm extends Component {
     try {
       this.setState({
         taskInput: value,
-        hook: assocPath(['task'], load(value), hook),
+        hook: assocPath(['task'], load(value, { schema: yamlSchema }), hook),
         taskValidYaml: true,
       });
     } catch (_err) {
@@ -400,7 +401,7 @@ export default class HookForm extends Component {
     return onTriggerHook({
       hookId,
       hookGroupId,
-      payload: load(triggerContextInput),
+      payload: load(triggerContextInput, { schema: yamlSchema }),
     });
   };
 
@@ -408,7 +409,11 @@ export default class HookForm extends Component {
     try {
       this.setState({
         triggerSchemaInput: value,
-        hook: assocPath(['triggerSchema'], load(value), this.state.hook),
+        hook: assocPath(
+          ['triggerSchema'],
+          load(value, { schema: yamlSchema }),
+          this.state.hook
+        ),
         triggerSchemaValidYaml: true,
       });
     } catch (_err) {

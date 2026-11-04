@@ -79,5 +79,5 @@ spec:
               exec:
                 command:
                   - /bin/sh
-                  - '-c'
+                  - -c
                   - sleep 120

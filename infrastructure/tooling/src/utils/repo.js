@@ -2,7 +2,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import fs from 'node:fs';
 import { globSync } from 'glob';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import stringify from 'json-stable-stringify';
 import { execFile } from 'node:child_process';
 import pSynchronize from 'p-synchronize';

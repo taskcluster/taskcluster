@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import fs from 'node:fs';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
