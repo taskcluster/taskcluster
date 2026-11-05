@@ -33,7 +33,7 @@ type (
 
 		// The installation which had an event.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    10000000000
 		InstallationID int64 `json:"installationId"`
 
@@ -183,7 +183,7 @@ type (
 
 		// The installation which had an event.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    10000000000
 		InstallationID int64 `json:"installationId"`
 

@@ -347,7 +347,7 @@ type (
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -432,7 +432,7 @@ type (
 
 		// Total capacity available across all workers for this launch configuration that are currently not "stopped"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		CurrentCapacity int64 `json:"currentCapacity"`
 
 		// The ID of the launch configuration
@@ -440,42 +440,42 @@ type (
 
 		// Total capacity available across all workers for this launch configuration with state "requested"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RequestedCapacity int64 `json:"requestedCapacity"`
 
 		// Total worker count in "requested" state for this launch configuration
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RequestedCount int64 `json:"requestedCount"`
 
 		// Total capacity available across all workers for this launch configuration with state "running"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RunningCapacity int64 `json:"runningCapacity"`
 
 		// Total worker count in "running" state for this launch configuration
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RunningCount int64 `json:"runningCount"`
 
 		// Total capacity available across all workers for this launch configuration with state "stopped"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppedCapacity int64 `json:"stoppedCapacity"`
 
 		// Total worker count in "stopped" state for this launch configuration
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppedCount int64 `json:"stoppedCount"`
 
 		// Total capacity available across all workers for this launch configuration with state "stopping"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppingCapacity int64 `json:"stoppingCapacity"`
 
 		// Total worker count in "stopping" state for this launch configuration
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppingCount int64 `json:"stoppingCount"`
 
 		// The ID of this worker pool
@@ -488,47 +488,47 @@ type (
 
 		// Total capacity available across all workers for this worker pool that are currently not "stopped"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		CurrentCapacity int64 `json:"currentCapacity"`
 
 		// Total capacity available across all workers for this worker pool with state "requested"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RequestedCapacity int64 `json:"requestedCapacity"`
 
 		// Total worker count in "requested" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RequestedCount int64 `json:"requestedCount"`
 
 		// Total capacity available across all workers for this worker pool with state "running"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RunningCapacity int64 `json:"runningCapacity"`
 
 		// Total worker count in "running" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RunningCount int64 `json:"runningCount"`
 
 		// Total capacity available across all workers for this worker pool with state "stopped"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppedCapacity int64 `json:"stoppedCapacity"`
 
 		// Total worker count in "stopped" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppedCount int64 `json:"stoppedCount"`
 
 		// Total capacity available across all workers for this worker pool with state "stopping"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppingCapacity int64 `json:"stoppingCapacity"`
 
 		// Total worker count in "stopping" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppingCount int64 `json:"stoppingCount"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
@@ -546,7 +546,7 @@ type (
 		// the worker is not managed by worker manager and is only known to the queue, the
 		// true capacity is not known.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date of the first time this worker claimed a task.
@@ -633,7 +633,7 @@ type (
 
 		// Number of tasks this worker can handle at once
 		//
-		// Mininum:    1
+		// Minimum:    1
 		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date and time when this worker will be deleted from the DB
@@ -693,7 +693,7 @@ type (
 
 		// Number of tasks this worker can handle at once
 		//
-		// Mininum:    1
+		// Minimum:    1
 		Capacity int64 `json:"capacity"`
 
 		// Date and time when this worker was created
@@ -942,7 +942,7 @@ type (
 
 		// Total capacity available across all workers for this worker pool that are currently not "stopped"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		CurrentCapacity int64 `json:"currentCapacity"`
 
 		// A description of this worker pool.
@@ -972,42 +972,42 @@ type (
 
 		// Total capacity available across all workers for this worker pool with state "requested"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RequestedCapacity int64 `json:"requestedCapacity"`
 
 		// Total worker count in "requested" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RequestedCount int64 `json:"requestedCount"`
 
 		// Total capacity available across all workers for this worker pool with state "running"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RunningCapacity int64 `json:"runningCapacity"`
 
 		// Total worker count in "running" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		RunningCount int64 `json:"runningCount"`
 
 		// Total capacity available across all workers for this worker pool with state "stopped"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppedCapacity int64 `json:"stoppedCapacity"`
 
 		// Total worker count in "stopped" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppedCount int64 `json:"stoppedCount"`
 
 		// Total capacity available across all workers for this worker pool with state "stopping"
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppingCapacity int64 `json:"stoppingCapacity"`
 
 		// Total worker count in "stopping" state for this worker pool
 		//
-		// Mininum:    0
+		// Minimum:    0
 		StoppingCount int64 `json:"stoppingCount"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
@@ -1084,7 +1084,7 @@ type (
 		// the worker is not managed by worker manager and is only known to the queue, the
 		// true capacity is not known.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date and time after which the worker will be automatically

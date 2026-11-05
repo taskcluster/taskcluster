@@ -43,7 +43,7 @@ type (
 
 		// Number of tasks this worker can handle at once
 		//
-		// Mininum:    1
+		// Minimum:    1
 		Capacity int64 `json:"capacity"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.
@@ -96,7 +96,7 @@ type (
 
 		// Number of tasks this worker can handle at once
 		//
-		// Mininum:    1
+		// Minimum:    1
 		Capacity int64 `json:"capacity"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.
@@ -157,7 +157,7 @@ type (
 
 		// Number of tasks this worker can handle at once
 		//
-		// Mininum:    1
+		// Minimum:    1
 		Capacity int64 `json:"capacity"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.

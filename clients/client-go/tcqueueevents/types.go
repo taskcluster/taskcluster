@@ -49,7 +49,7 @@ type (
 
 		// Id of the run on which artifact was created.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -123,7 +123,7 @@ type (
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -207,7 +207,7 @@ type (
 
 		// Id of the run that completed the task
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -267,7 +267,7 @@ type (
 		// Id of the last run for the task, not provided if `deadline`
 		// was exceeded before a run was started.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId,omitempty"`
 
@@ -309,7 +309,7 @@ type (
 
 		// Id of the run that failed.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -417,7 +417,7 @@ type (
 
 		// Total number of tasks where priority was changed
 		//
-		// Mininum:    0
+		// Minimum:    0
 		TasksAffected int64 `json:"tasksAffected"`
 
 		// Message version
@@ -466,7 +466,7 @@ type (
 
 		// Id of run that became pending, `run-id`s always starts from 0
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -522,7 +522,7 @@ type (
 
 		// Id of the run that just started, always starts from 0
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -612,7 +612,7 @@ type (
 
 		// Number of retries left for the task in case of infrastructure issues
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    999
 		RetriesLeft int64 `json:"retriesLeft"`
 

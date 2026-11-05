@@ -458,7 +458,7 @@ type (
 		// If you are running behind a reverse proxy look for the `x-forwarded-port`
 		// header.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    65535
 		Port int64 `json:"port"`
 
