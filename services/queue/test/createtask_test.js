@@ -298,6 +298,54 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     );
   });
 
+  const indexedTaskDef = extra => ({ ...taskDef, routes: ['index.my-ns.my-task'], extra });
+
+  for (const [name, index] of [
+    ['rank too large', { rank: 4188604196101 }],
+    ['rank too small', { rank: -2147483649 }],
+    ['rank not an integer', { rank: 1.5 }],
+    ['rank not a number', { rank: '42' }],
+    ['rank null', { rank: null }],
+    ['expires not a date', { expires: 'garbage' }],
+    ['expires in the past', { expires: taskcluster.fromNowJSON('-1 day') }],
+    ['expires epoch 0', { expires: 0 }],
+    ['expires null', { expires: null }],
+    ['data not an object', { data: 'garbage' }],
+    ['data null', { data: null }],
+  ]) {
+    test(`createTask with extra.index (${name}) returns a 400`, async () => {
+      await assert.rejects(
+        () => helper.queue.createTask(slugid.v4(), indexedTaskDef({ index })),
+        err => err.statusCode === 400 && err.code === 'InputError' && /extra\.index/.test(err.message)
+      );
+    });
+  }
+
+  for (const [name, index] of [
+    ['valid', { rank: 2147483647, expires: taskcluster.fromNowJSON('1 day'), data: { hello: 'world' } }],
+    ['expires a future epoch', { expires: taskcluster.fromNow('1 day').getTime() }],
+    ['data an array', { data: [] }],
+    ['index null', null],
+    ['index not an object', 42],
+    ['index an array', []],
+  ]) {
+    test(`createTask with extra.index (${name})`, async () => {
+      const taskId = slugid.v4();
+      const extra = { index, other: 'stuff' };
+
+      await helper.queue.createTask(taskId, indexedTaskDef(extra));
+
+      const task = await helper.queue.task(taskId);
+      assume(task.extra).deep.equals(extra);
+    });
+  }
+
+  test('createTask with invalid extra.index without index routes', async () => {
+    const taskId = slugid.v4();
+
+    await helper.queue.createTask(taskId, { ...taskDef, extra: { index: { rank: 1.5 } } });
+  });
+
   test('createTask w. created > deadline', async () => {
     const taskId = slugid.v4();
     const taskDef2 = _.defaults(

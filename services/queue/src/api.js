@@ -705,6 +705,24 @@ const authorizeTaskCreation = async (req, taskId, taskDef) => {
   });
 };
 
+// Bounds of the index service `rank` column (postgres `int4`)
+const INDEX_RANK_MIN = -2147483648;
+const INDEX_RANK_MAX = 2147483647;
+
+const validateExtraIndex = index => {
+  const { rank, expires, data } = index ?? {};
+  if (rank !== undefined && !(Number.isInteger(rank) && rank >= INDEX_RANK_MIN && rank <= INDEX_RANK_MAX)) {
+    return `\`rank\` must be an integer between ${INDEX_RANK_MIN} and ${INDEX_RANK_MAX}`;
+  }
+  if (expires !== undefined && !(new Date(expires) > new Date())) {
+    return '`expires` must be a date in the future';
+  }
+  if (data !== undefined && (data === null || typeof data !== 'object')) {
+    return '`data` must be an object';
+  }
+  return null;
+};
+
 /** Construct default values and validate dates */
 const patchAndValidateTaskDef = (taskId, taskDef, maxTaskDeadlineDays) => {
   // Set taskGroupId to taskId if not provided
@@ -767,6 +785,17 @@ const patchAndValidateTaskDef = (taskId, taskDef, maxTaskDeadlineDays) => {
       code: 'InputError',
       message: '`expires` cannot be before `deadline`',
       details: { deadline: taskDef.deadline, expires: taskDef.expires },
+    };
+  }
+
+  const indexError = taskDef.routes.some(route => route.startsWith('index.'))
+    ? validateExtraIndex(taskDef.extra?.index)
+    : null;
+  if (indexError) {
+    return {
+      code: 'InputError',
+      message: `\`extra.index\` is invalid: ${indexError}`,
+      details: { index: taskDef.extra?.index },
     };
   }
 
