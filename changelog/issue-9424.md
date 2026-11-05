@@ -1,6 +1,7 @@
 audience: worker-deployers
-level: minor
+level: patch
 reference: issue 9424
 ---
-Worker-manager's Azure provider no longer creates resources from the provisioner to avoid race condition with the worker scanner.
-Both processes used to create resources and when provisioner's create was slow, it could land after scanner had already torn down a worker whose VM failed to be provisioned. This left unattached network interfaces or public IP dangling.
+Worker-manager's Azure provider no longer leaks network interfaces and public IPs for resource-based (non-ARM) launch configs. The provisioner used to create a worker's first resource itself, racing the worker scanner. Slow create could land after the scanner had already torn the worker down. Already-leaked resources need manual cleanup.
+
+For ARM template launch configs, the scanner now waits up to 10 minutes for a new worker's deployment to appear instead of removing the worker right away.

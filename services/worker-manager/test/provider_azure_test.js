@@ -1679,6 +1679,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const ipName = worker.providerData.ip.name;
       const nicName = worker.providerData.nic.name;
       const vmName = worker.providerData.vm.name;
+      assert(!fake.networkClient.publicIPAddresses._requests.has(`rgrp/${ipName}`), 'provision() sent no IP create');
 
       debug('first call');
       await provider.provisionResources({ worker, monitor });
