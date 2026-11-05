@@ -157,7 +157,6 @@ export const load = loader(
           queueEvents: queueEvents,
           credentials: cfg.pulse,
           queueName: cfg.app.listenerQueueName,
-          routePrefix: cfg.app.routePrefix,
           monitor: monitor.childMonitor('handlers'),
           pulseClient: pulseClient,
           db,

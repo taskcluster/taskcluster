@@ -6,36 +6,34 @@ import libUrls from 'taskcluster-lib-urls';
 /** Handler listening for tasks that carries notifications */
 class Handler {
   constructor(options) {
-    const { rootUrl, notifier, monitor, routePrefix, ignoreTaskReasonResolved, pulseClient, queue, queueEvents } =
-      options;
+    const { rootUrl, notifier, monitor, ignoreTaskReasonResolved, pulseClient, queue, queueEvents } = options;
 
     this.rootUrl = rootUrl;
     this.queue = queue;
     this.notifier = notifier;
     this.monitor = monitor;
-    this.routePrefix = routePrefix;
     this.ignoreTaskReasonResolved = ignoreTaskReasonResolved;
 
     this.pulseClient = pulseClient;
     this.bindings = [
-      queueEvents.taskDefined(`route.${routePrefix}.#.on-defined.#`),
-      queueEvents.taskDefined(`route.${routePrefix}.#.on-transition.#`),
-      queueEvents.taskPending(`route.${routePrefix}.#.on-pending.#`),
-      queueEvents.taskPending(`route.${routePrefix}.#.on-transition.#`),
-      queueEvents.taskRunning(`route.${routePrefix}.#.on-running.#`),
-      queueEvents.taskRunning(`route.${routePrefix}.#.on-transition.#`),
-      queueEvents.taskCompleted(`route.${routePrefix}.#.on-completed.#`),
-      queueEvents.taskCompleted(`route.${routePrefix}.#.on-any.#`), // deprecated
-      queueEvents.taskCompleted(`route.${routePrefix}.#.on-resolved.#`),
-      queueEvents.taskCompleted(`route.${routePrefix}.#.on-transition.#`),
-      queueEvents.taskFailed(`route.${routePrefix}.#.on-failed.#`),
-      queueEvents.taskFailed(`route.${routePrefix}.#.on-any.#`), // deprecated
-      queueEvents.taskFailed(`route.${routePrefix}.#.on-resolved.#`),
-      queueEvents.taskFailed(`route.${routePrefix}.#.on-transition.#`),
-      queueEvents.taskException(`route.${routePrefix}.#.on-exception.#`),
-      queueEvents.taskException(`route.${routePrefix}.#.on-any.#`), // deprecated
-      queueEvents.taskException(`route.${routePrefix}.#.on-resolved.#`),
-      queueEvents.taskException(`route.${routePrefix}.#.on-transition.#`),
+      queueEvents.taskDefined('route.notify.#.on-defined.#'),
+      queueEvents.taskDefined('route.notify.#.on-transition.#'),
+      queueEvents.taskPending('route.notify.#.on-pending.#'),
+      queueEvents.taskPending('route.notify.#.on-transition.#'),
+      queueEvents.taskRunning('route.notify.#.on-running.#'),
+      queueEvents.taskRunning('route.notify.#.on-transition.#'),
+      queueEvents.taskCompleted('route.notify.#.on-completed.#'),
+      queueEvents.taskCompleted('route.notify.#.on-any.#'), // deprecated
+      queueEvents.taskCompleted('route.notify.#.on-resolved.#'),
+      queueEvents.taskCompleted('route.notify.#.on-transition.#'),
+      queueEvents.taskFailed('route.notify.#.on-failed.#'),
+      queueEvents.taskFailed('route.notify.#.on-any.#'), // deprecated
+      queueEvents.taskFailed('route.notify.#.on-resolved.#'),
+      queueEvents.taskFailed('route.notify.#.on-transition.#'),
+      queueEvents.taskException('route.notify.#.on-exception.#'),
+      queueEvents.taskException('route.notify.#.on-any.#'), // deprecated
+      queueEvents.taskException('route.notify.#.on-resolved.#'),
+      queueEvents.taskException('route.notify.#.on-transition.#'),
     ];
   }
 
@@ -100,7 +98,7 @@ class Handler {
         const route = entry.split('.');
 
         // skip routes that are not in our namespace
-        if (route[0] !== this.routePrefix) {
+        if (route[0] !== 'notify') {
           return;
         }
 
