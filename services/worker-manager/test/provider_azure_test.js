@@ -1272,6 +1272,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       }
     });
 
+    test('new REQUESTED worker without deployment or operation is removed only after the grace period', async () => {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: { value: 'east' },
+          },
+        },
+      });
+
+      const [worker] = await helper.getWorkers();
+      const { resourceGroupName } = worker.providerData;
+
+      // simulate the provisioner's PUT still in flight: no deployment in Azure, no operation recorded
+      await fake.deploymentsClient.deployments.beginDelete(resourceGroupName, worker.providerData.deployment.name);
+      await worker.update(helper.db, w => {
+        w.providerData.deployment.operation = false;
+      });
+
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert.equal(worker.state, 'requested', 'new worker should wait for the provisioner');
+      assert.ok(!worker.providerData.provisioningComplete);
+
+      await worker.update(helper.db, w => {
+        w.created = taskcluster.fromNow('-11 minutes');
+      });
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+      assert.equal(worker.state, 'stopping', 'worker past the grace period should be removed');
+    });
+
     test('failed ARM deployment does not remove RUNNING worker', async () => {
       await provisionWorkerPool({
         armDeployment: {
@@ -1638,11 +1674,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('successful provisioning process', async () => {
-      // Ip provisioning should have already started inside the provision() call
-      await assertProvisioningState({ ip: 'inprogress' });
+      // provision() only creates the worker row; the scanner creates the resources
+      await assertProvisioningState({ ip: 'none', nic: 'none', vm: 'none' });
       const ipName = worker.providerData.ip.name;
       const nicName = worker.providerData.nic.name;
       const vmName = worker.providerData.vm.name;
+      assert(!fake.networkClient.publicIPAddresses._requests.has(`rgrp/${ipName}`), 'provision() sent no IP create');
 
       debug('first call');
       await provider.provisionResources({ worker, monitor });
