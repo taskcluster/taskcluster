@@ -9,7 +9,7 @@ import path from 'node:path';
 import taskcluster from '@taskcluster/client';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
-import { DescribeInstancesCommand, DescribeVolumesCommand } from '@aws-sdk/client-ec2';
+import { DescribeInstancesCommand, DescribeVolumesCommand, TerminateInstancesCommand } from '@aws-sdk/client-ec2';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -875,6 +875,72 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await assert.doesNotReject(provider.removeWorker({ worker }));
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
       assert.equal(worker.state, Worker.states.STOPPING);
+    });
+
+    test('already terminated instance does not report error', async () => {
+      let reportedError = null;
+      const origReportError = provider.reportError.bind(provider);
+      provider.reportError = async err => {
+        reportedError = err;
+        return origReportError(err);
+      };
+
+      await makeWorkerPool();
+
+      fake.mock.on(TerminateInstancesCommand).resolvesOnce({
+        TerminatingInstances: [
+          {
+            InstanceId: 'i-terminated',
+            CurrentState: { Name: 'terminated' },
+          },
+        ],
+      });
+
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-terminated',
+        state: Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+        },
+      });
+      await worker.create(helper.db);
+      await assert.doesNotReject(provider.removeWorker({ worker }));
+      assert.equal(reportedError, null);
+    });
+
+    test('unexpected instance state reports error without throwing', async () => {
+      let reportedError = null;
+      const origReportError = provider.reportError.bind(provider);
+      provider.reportError = async err => {
+        reportedError = err;
+        return origReportError(err);
+      };
+
+      await makeWorkerPool();
+
+      fake.mock.on(TerminateInstancesCommand).resolvesOnce({
+        TerminatingInstances: [
+          {
+            InstanceId: 'i-unexpected',
+            CurrentState: { Name: 'running' },
+          },
+        ],
+      });
+
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-unexpected',
+        state: Worker.states.REQUESTED,
+        providerData: {
+          ...workerInDB.providerData,
+        },
+      });
+      await worker.create(helper.db);
+      await assert.doesNotReject(provider.removeWorker({ worker }));
+      assert.notEqual(reportedError, null);
+      assert.equal(reportedError.kind, 'termination-error');
+      assert.match(reportedError.description, /expected to shut down instance i-unexpected but got running state/);
     });
   });
 });
