@@ -35,7 +35,7 @@ properties:
             with the highest `rank` will be stored and returned in later
             requests. If two tasks has the same `rank` the latest task will be
             stored.
-          type:           number
+          type:           integer
         data:
           title:          "Task Specific Data"
           description: |

@@ -28,7 +28,7 @@ type (
 		// If multiple tasks are indexed with the same `namespace` the task with the
 		// highest `rank` will be stored and returned in later requests. If two tasks
 		// has the same `rank` the latest task will be stored.
-		Rank float64 `json:"rank"`
+		Rank int64 `json:"rank"`
 
 		// Unique task identifier, this is UUID encoded as
 		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
@@ -141,7 +141,7 @@ type (
 		// with the highest `rank` will be stored and returned in later
 		// requests. If two tasks has the same `rank` the latest task will be
 		// stored.
-		Rank float64 `json:"rank"`
+		Rank int64 `json:"rank"`
 
 		// Unique task identifier for the task currently indexed at `namespace`.
 		//
