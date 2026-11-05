@@ -226,7 +226,6 @@ const load = loader(
           rootUrl: cfg.taskcluster.rootUrl,
           notifier,
           monitor: monitor.childMonitor('handler'),
-          routePrefix: cfg.app.routePrefix,
           ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
           queue,
           queueEvents,

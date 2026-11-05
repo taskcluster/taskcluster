@@ -15,7 +15,6 @@ import { consume } from '@taskcluster/lib-pulse';
  *   queueEvents:        // taskcluster.QueueEvents instance
  *   credentials:        // Pulse credentials
  *   queueName:          // Queue name (optional)
- *   routePrefix:        // Routing-key prefix for "route.<routePrefix>.#"
  *   monitor:            // base.monitor({...})
  *   db:                 // db instance
  * }
@@ -25,18 +24,16 @@ const Handlers = function (options) {
   assert(options.queue, 'An instance of taskcluster.Queue is required');
   assert(options.queueEvents instanceof taskcluster.QueueEvents, 'An instance of taskcluster.QueueEvents is required');
   assert(options.credentials, 'credentials must be provided');
-  assert(options.routePrefix, 'routePrefix is required');
   assert(options.monitor, 'monitor is required for statistics');
   // Store options on this for use in event handlers
   this.queue = options.queue;
   this.queueEvents = options.queueEvents;
   this.credentials = options.credentials;
-  this.routePrefix = options.routePrefix;
   this.queueName = options.queueName;
   this.monitor = options.monitor;
   this.pq = null;
   // Binding for completed tasks
-  this.binding = options.queueEvents.taskCompleted(`route.${options.routePrefix}.#`);
+  this.binding = options.queueEvents.taskCompleted('route.index.#');
   this.pulseClient = options.pulseClient;
   this.db = options.db;
 };
@@ -44,9 +41,6 @@ const Handlers = function (options) {
 /** Setup handlers and start listening */
 Handlers.prototype.setup = async function () {
   assert(this.pq === null, 'Cannot setup twice!');
-
-  // Create regular expression for parsing routes
-  this.routeRegexp = new RegExp(`^${this.routePrefix}\\.(.*)$`);
 
   this.pq = await consume(
     {
@@ -72,8 +66,8 @@ Handlers.prototype.terminate = async function () {
 Handlers.prototype.completed = function (message) {
   // Find namespaces to index under
   const namespaces = message.routes
-    .filter(route => this.routeRegexp.test(route))
-    .map(route => this.routeRegexp.exec(route)[1])
+    .filter(route => route.startsWith('index.'))
+    .map(route => route.slice('index.'.length))
     .filter(namespace => helpers.namespaceFormat.test(namespace));
 
   // If there is no namespace we better log this

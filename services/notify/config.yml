@@ -1,7 +1,6 @@
 defaults:
   app:
     sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
-    routePrefix:                  notify
     # Rate limits for email: maximum average rate of count/time
     # 50 per 10 minute is a reasonable default: someone with an exploding
     # taskgraph will get 50 messages, and will be able to get another 50
@@ -68,7 +67,6 @@ test:
     region:           us-east-1
   app:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
-    routePrefix: test-notify
     emailBlacklist: []
   server:
     port:             60401

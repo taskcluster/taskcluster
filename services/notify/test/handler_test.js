@@ -85,7 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
   ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
     test(`does not publish for ${reasonResolved}`, async () => {
-      const route = 'test-notify.pulse.notify-test.on-transition';
+      const route = 'notify.pulse.notify-test.on-transition';
       helper.queue.addTask(baseStatus.taskId, makeTask([route]));
       const status = _.cloneDeep(baseStatus);
       status.state = 'exception';
@@ -106,7 +106,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('pulse', async () => {
-    const route = 'test-notify.pulse.notify-test.on-transition';
+    const route = 'notify.pulse.notify-test.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
@@ -120,7 +120,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('pulse on-defined', async () => {
-    const route = 'test-notify.pulse.notify-test.on-defined';
+    const route = 'notify.pulse.notify-test.on-defined';
     helper.queue.addTask(definedStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('pulse ignores routes outside the route prefix', async () => {
-    const route = 'test-notify.pulse.notify-test-prefixed.on-transition';
+    const route = 'notify.pulse.notify-test-prefixed.on-transition';
     const foreignRoute = 'garbage.pulse.notify-test-foreign.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route, foreignRoute]));
     await helper.fakePulseMessage({
@@ -150,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('pulse denylisted', async () => {
-    const route = 'test-notify.pulse.notify-test-denied.on-transition';
+    const route = 'notify.pulse.notify-test-denied.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
@@ -165,7 +165,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
   test('email', async () => {
     const address = helper.emailAddress();
-    const route = `test-notify.email.${address}.on-transition`;
+    const route = `notify.email.${address}.on-transition`;
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
     await helper.fakePulseMessage({
       payload: {
@@ -179,7 +179,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('matrix', async () => {
-    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
+    const route = 'notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
     task.extra = {
       notify: {
@@ -209,7 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('matrix (default notice)', async () => {
-    const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
+    const route = 'notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
     task.extra = {
       notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' },
@@ -234,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('matrix (rejected)', async () => {
-    const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-transition';
+    const route = 'notify.matrix-room.!rejected:mozilla.org.on-transition';
     const task = makeTask([route]);
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
@@ -251,7 +251,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('slack', async () => {
-    const route = 'test-notify.slack-channel.C123456.on-transition';
+    const route = 'notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
     task.extra = {
       notify: { slackText: 'hey hey ${rootUrl}/tasks/${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] },
@@ -278,7 +278,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('slack with unfurl', async () => {
-    const route = 'test-notify.slack-channel.C123456.on-transition';
+    const route = 'notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
     task.extra = {
       notify: { slackText: 'somelink', slackUnfurlLinks: true, slackUnfurlMedia: true },
