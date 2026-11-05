@@ -216,6 +216,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   }
 
+  for (const data of [null, 'garbage', 42]) {
+    test(`Run task with invalid .extra.index.data ${JSON.stringify(data)}`, async () => {
+      const taskId = slugid.nice();
+      const task = makeTask();
+      task.extra = { index: { data } };
+      helper.queue.addTask(taskId, task);
+
+      await helper.fakePulseMessage({
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.index.abc',
+        routes: task.routes,
+        payload: { status: { taskId } },
+      });
+
+      const rows = await helper.db.fns.get_indexed_task('my-ns', 'my-indexed-thing');
+      assert.deepEqual(rows, [], 'Expected the task not to be indexed');
+    });
+  }
+
   test('Expiring Indexed Tasks', async () => {
     // Create expiration
     const expiry = new Date();

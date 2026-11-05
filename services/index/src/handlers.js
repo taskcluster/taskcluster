@@ -116,8 +116,7 @@ Handlers.prototype.completed = function (message) {
       return;
     }
 
-    // Check that data is an object
-    if (typeof options.data !== 'object') {
+    if (options.data === null || typeof options.data !== 'object') {
       debug('Expected object from task.extra.index.data, failed on %j', message);
       return;
     }
