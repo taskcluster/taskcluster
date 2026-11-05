@@ -16,7 +16,7 @@ type (
 		// Size of the artifact content in bytes, if reported by the worker.
 		// This value is null if the worker did not report the size.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Expected content-type of the artifact.  This is informational only:
@@ -55,7 +55,7 @@ type (
 		// Total number of tasks that were cancelled with this call.
 		// It includes all non-resolved tasks.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		CancelledCount int64 `json:"cancelledCount"`
 
 		// Identifier for the task-group being listed.
@@ -65,7 +65,7 @@ type (
 
 		// Current count of tasks in the task group.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		TaskGroupSize int64 `json:"taskGroupSize"`
 
 		// List of `taskIds` cancelled by this call.
@@ -98,7 +98,7 @@ type (
 		// Number of tasks to attempt to claim.
 		//
 		// Default:    1
-		// Mininum:    1
+		// Minimum:    1
 		// Maximum:    32
 		Tasks int64 `json:"tasks"`
 
@@ -134,7 +134,7 @@ type (
 		// pending tasks. But there cannot be more pending tasks reported here.
 		// Ie. this is an **upper-bound** on the number of pending tasks.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		PendingTasks int64 `json:"pendingTasks"`
 
 		// Unique identifier for a provisioner, that can supply specified
@@ -522,7 +522,7 @@ type (
 		// Optional size of the artifact content, in bytes.
 		// This is informational and used for monitoring purposes.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Artifact content type.  This is advisory in nature and can be used,
@@ -818,7 +818,7 @@ type (
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -872,7 +872,7 @@ type (
 		// Optional size of the artifact content, in bytes.
 		// This is informational and used for monitoring purposes.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Artifact mime-type, when uploading artifact to the signed
@@ -959,7 +959,7 @@ type (
 
 		// `run-id` assigned to this run of the task
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -1030,7 +1030,7 @@ type (
 
 		// `run-id` assigned to this run of the task
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -1214,7 +1214,7 @@ type (
 		// these events are to be expected.
 		//
 		// Default:    5
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    49
 		Retries int64 `json:"retries,omitempty"`
 
@@ -1407,7 +1407,7 @@ type (
 		// these events are to be expected.
 		//
 		// Default:    5
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    49
 		Retries int64 `json:"retries"`
 
@@ -1629,7 +1629,7 @@ type (
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskIds []string `json:"taskIds"`
 
-		// Mininum:    0
+		// Minimum:    0
 		TasksAffected int64 `json:"tasksAffected"`
 	}
 
@@ -1766,7 +1766,7 @@ type (
 
 		// `run-id` assigned to this run of the task
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -1797,7 +1797,7 @@ type (
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -1868,7 +1868,7 @@ type (
 
 		// Number of retries left for the task in case of infrastructure issues
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    999
 		RetriesLeft int64 `json:"retriesLeft"`
 
@@ -1954,14 +1954,14 @@ type (
 		// `workerType`. Number of reported here may be higher than actual number of
 		// claimed tasks.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		ClaimedTasks int64 `json:"claimedTasks"`
 
 		// An approximate number of pending tasks for the given `provisionerId` and
 		// `workerType`. Number of reported here may be higher than actual number of
 		// pending tasks.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		PendingTasks int64 `json:"pendingTasks"`
 
 		// Unique identifier for a provisioner, that can supply specified
@@ -2007,7 +2007,7 @@ type (
 
 		// Unique run identifier, this is a number between 0 and 1000 inclusive.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 
@@ -2027,7 +2027,7 @@ type (
 
 		// Unique run identifier, this is a number between 0 and 1000 inclusive.
 		//
-		// Mininum:    0
+		// Minimum:    0
 		// Maximum:    1000
 		RunID int64 `json:"runId"`
 

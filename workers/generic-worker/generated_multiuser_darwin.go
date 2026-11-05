@@ -305,7 +305,7 @@ type (
 
 		// Maximum time the task container can run in seconds.
 		//
-		// Mininum:    1
+		// Minimum:    1
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
@@ -327,7 +327,7 @@ type (
 		// Since: generic-worker 49.0.0
 		//
 		// Array items:
-		// Mininum:    0
+		// Minimum:    0
 		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
 
 		// Exit codes for any command in the task payload to cause this task to
@@ -340,7 +340,7 @@ type (
 		// Since: generic-worker 10.10.0
 		//
 		// Array items:
-		// Mininum:    1
+		// Minimum:    1
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -594,7 +594,7 @@ type (
 		//
 		// Since: generic-worker 0.0.1
 		//
-		// Mininum:    1
+		// Minimum:    1
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// Directories and/or files to be mounted.

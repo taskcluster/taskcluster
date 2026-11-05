@@ -336,7 +336,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 		metadata += "// Max length: " + strconv.Itoa(*maxItems) + "\n"
 	}
 	if minimum := jsonSubSchema.Minimum; minimum != nil {
-		metadata += "// Mininum:    " + strconv.Itoa(*minimum) + "\n"
+		metadata += "// Minimum:    " + strconv.Itoa(*minimum) + "\n"
 	}
 	if maximum := jsonSubSchema.Maximum; maximum != nil {
 		metadata += "// Maximum:    " + strconv.Itoa(*maximum) + "\n"
