@@ -864,12 +864,12 @@ func checkWhetherToTerminate() bool {
 		swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
 		if err != nil {
 			log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
+			return false
+		}
+		if swtr.Terminate {
+			log.Print("Terminating, since Worker Manager told me to")
 		} else {
-			if swtr.Terminate {
-				log.Print("Terminating, since Worker Manager told me to")
-			} else {
-				log.Print("Not terminating, worker manager loves me")
-			}
+			log.Print("Not terminating, worker manager loves me")
 		}
 		return swtr.Terminate
 	}
