@@ -61,6 +61,8 @@ const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deall
 
 const DEPLOYMENT_METHOD_ARM = 'arm-template';
 const CASCADE_PROBE_TIMEOUT_MS = 30000;
+// How long a new ARM worker may have no deployment before the scanner treats it as missing
+const ARM_DEPLOYMENT_START_GRACE_MS = 10 * 60 * 1000;
 
 /**
  * All identity comparisons normalize ARM-id casing
@@ -710,7 +712,7 @@ export class AzureProvider extends Provider {
       queueInactivityTimeout,
     };
 
-    const worker = Worker.fromApi({
+    const worker = await Worker.fromApi({
       workerPoolId,
       providerId: this.providerId,
       workerGroup,
@@ -718,8 +720,8 @@ export class AzureProvider extends Provider {
       capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
       providerData,
       launchConfigId: lc.launchConfigId,
-    });
-    await worker.create(this.db);
+    }).create(this.db);
+
     await this.onWorkerRequested({ worker, terminateAfter });
 
     this.monitor.debug({
@@ -950,6 +952,15 @@ export class AzureProvider extends Provider {
           return true;
         }
       } else {
+        // The provisioner creates the deployment right after the worker, and records the
+        // operation only once that call returns, which can take minutes.
+        if (
+          worker.state === Worker.states.REQUESTED &&
+          Date.now() - worker.created.getTime() < ARM_DEPLOYMENT_START_GRACE_MS
+        ) {
+          monitor.debug('deployment not found and no operation yet; waiting for the provisioner');
+          return false;
+        }
         // No operation to track - deployment never existed or validation failed early
         // Mark as complete so STOPPING workers can proceed with cleanup
         monitor.info({
