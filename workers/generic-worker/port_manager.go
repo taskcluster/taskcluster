@@ -20,8 +20,8 @@ const (
 // Each task gets a block of ports based on the configured base ports.
 type PortManager struct {
 	sync.Mutex
-	allocated         map[string][]uint16 // taskID -> allocated ports
-	slots             map[string]uint8    // taskID -> slot index
+	allocated         map[string][]uint16 // taskRunKey -> allocated ports
+	slots             map[string]uint8    // taskRunKey -> slot index
 	usedSlots         map[uint8]bool      // slot index -> in use
 	liveLogBase       uint16
 	interactiveBase   uint16
@@ -51,16 +51,17 @@ func NewPortManager(c *gwconfig.PublicConfig) *PortManager {
 	}
 }
 
-// AllocatePorts allocates a block of ports for a task.
+// AllocatePorts allocates a block of ports for a task run.
 // Returns the allocated ports or an error if no slots are available.
 // Disabled features get 0 in their slot — callers should consult the
 // corresponding Enable* config flag before using a port.
-func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
+func (pm *PortManager) AllocatePorts(taskID string, runID uint) ([]uint16, error) {
+	key := taskRunKey(taskID, runID)
 	pm.Lock()
 	defer pm.Unlock()
 
 	// Check if already allocated
-	if ports, exists := pm.allocated[taskID]; exists {
+	if ports, exists := pm.allocated[key]; exists {
 		return ports, nil
 	}
 
@@ -83,30 +84,32 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 		ports[PortIndexTaskclusterProxy] = pm.proxyBase + offset
 	}
 
-	pm.allocated[taskID] = ports
-	pm.slots[taskID] = slot
+	pm.allocated[key] = ports
+	pm.slots[key] = slot
 	pm.usedSlots[slot] = true
 	return ports, nil
 }
 
-// ReleasePorts releases the ports allocated to a task.
-func (pm *PortManager) ReleasePorts(taskID string) {
+// ReleasePorts releases the ports allocated to a task run.
+func (pm *PortManager) ReleasePorts(taskID string, runID uint) {
+	key := taskRunKey(taskID, runID)
 	pm.Lock()
 	defer pm.Unlock()
-	if slot, exists := pm.slots[taskID]; exists {
+	if slot, exists := pm.slots[key]; exists {
 		delete(pm.usedSlots, slot)
 	}
-	delete(pm.allocated, taskID)
-	delete(pm.slots, taskID)
+	delete(pm.allocated, key)
+	delete(pm.slots, key)
 }
 
-// GetPorts returns a copy of the ports allocated to a task, or nil if
+// GetPorts returns a copy of the ports allocated to a task run, or nil if
 // not allocated. A copy is returned so callers can't mutate the
 // internal slice.
-func (pm *PortManager) GetPorts(taskID string) []uint16 {
+func (pm *PortManager) GetPorts(taskID string, runID uint) []uint16 {
+	key := taskRunKey(taskID, runID)
 	pm.Lock()
 	defer pm.Unlock()
-	ports, ok := pm.allocated[taskID]
+	ports, ok := pm.allocated[key]
 	if !ok {
 		return nil
 	}
@@ -115,33 +118,36 @@ func (pm *PortManager) GetPorts(taskID string) []uint16 {
 	return result
 }
 
-// LiveLogPorts returns the LiveLog PUT and GET ports for a task.
-func (pm *PortManager) LiveLogPorts(taskID string) (putPort, getPort uint16, ok bool) {
+// LiveLogPorts returns the LiveLog PUT and GET ports for a task run.
+func (pm *PortManager) LiveLogPorts(taskID string, runID uint) (putPort, getPort uint16, ok bool) {
+	key := taskRunKey(taskID, runID)
 	pm.Lock()
 	defer pm.Unlock()
-	ports, exists := pm.allocated[taskID]
+	ports, exists := pm.allocated[key]
 	if !exists || len(ports) < 2 {
 		return 0, 0, false
 	}
 	return ports[PortIndexLiveLogPUT], ports[PortIndexLiveLogGET], true
 }
 
-// InteractivePort returns the Interactive port for a task.
-func (pm *PortManager) InteractivePort(taskID string) (uint16, bool) {
+// InteractivePort returns the Interactive port for a task run.
+func (pm *PortManager) InteractivePort(taskID string, runID uint) (uint16, bool) {
+	key := taskRunKey(taskID, runID)
 	pm.Lock()
 	defer pm.Unlock()
-	ports, exists := pm.allocated[taskID]
+	ports, exists := pm.allocated[key]
 	if !exists || len(ports) <= PortIndexInteractive {
 		return 0, false
 	}
 	return ports[PortIndexInteractive], true
 }
 
-// TaskclusterProxyPort returns the TaskclusterProxy port for a task.
-func (pm *PortManager) TaskclusterProxyPort(taskID string) (uint16, bool) {
+// TaskclusterProxyPort returns the TaskclusterProxy port for a task run.
+func (pm *PortManager) TaskclusterProxyPort(taskID string, runID uint) (uint16, bool) {
+	key := taskRunKey(taskID, runID)
 	pm.Lock()
 	defer pm.Unlock()
-	ports, exists := pm.allocated[taskID]
+	ports, exists := pm.allocated[key]
 	if !exists || len(ports) <= PortIndexTaskclusterProxy {
 		return 0, false
 	}

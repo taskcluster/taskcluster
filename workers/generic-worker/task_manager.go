@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 // TaskManager manages concurrent task execution and tracks running tasks.
 type TaskManager struct {
 	sync.RWMutex
-	runningTasks map[string]*TaskRun
+	runningTasks map[string]*TaskRun // taskRunKey -> task run
 	capacity     uint8
 	lastActive   time.Time
 }
@@ -44,18 +45,19 @@ func (tm *TaskManager) AvailableCapacity() uint {
 func (tm *TaskManager) AddTask(task *TaskRun) {
 	tm.Lock()
 	defer tm.Unlock()
-	tm.runningTasks[task.TaskID] = task
+	tm.runningTasks[taskRunKey(task.TaskID, task.RunID)] = task
 	tm.lastActive = time.Now()
 	tm.updateWorkerStatusLocked()
 }
 
-// RemoveTask unregisters a task.
+// RemoveTask unregisters the given run of a task.
 // Updates the worker status file with remaining running task IDs.
-func (tm *TaskManager) RemoveTask(taskID string) {
+func (tm *TaskManager) RemoveTask(taskID string, runID uint) {
+	key := taskRunKey(taskID, runID)
 	tm.Lock()
 	defer tm.Unlock()
-	if _, exists := tm.runningTasks[taskID]; exists {
-		delete(tm.runningTasks, taskID)
+	if _, exists := tm.runningTasks[key]; exists {
+		delete(tm.runningTasks, key)
 		tm.lastActive = time.Now()
 		tm.updateWorkerStatusLocked()
 	}
@@ -66,8 +68,8 @@ func (tm *TaskManager) RunningTaskIDs() []string {
 	tm.RLock()
 	defer tm.RUnlock()
 	ids := make([]string, 0, len(tm.runningTasks))
-	for id := range tm.runningTasks {
-		ids = append(ids, id)
+	for _, task := range tm.runningTasks {
+		ids = append(ids, task.TaskID)
 	}
 	return ids
 }
@@ -91,11 +93,11 @@ func (tm *TaskManager) LastActive() time.Time {
 	return tm.lastActive
 }
 
-// GetTask returns the TaskRun for the given task ID, or nil if not found.
-func (tm *TaskManager) GetTask(taskID string) *TaskRun {
+// GetTask returns the TaskRun for the given run of a task, or nil if not found.
+func (tm *TaskManager) GetTask(taskID string, runID uint) *TaskRun {
 	tm.RLock()
 	defer tm.RUnlock()
-	return tm.runningTasks[taskID]
+	return tm.runningTasks[taskRunKey(taskID, runID)]
 }
 
 // RunningTaskDirNames returns the base names of all running task directories.
@@ -119,8 +121,8 @@ func (tm *TaskManager) RunningTaskDirNames() []string {
 // Must be called while holding the lock.
 func (tm *TaskManager) updateWorkerStatusLocked() {
 	ids := make([]string, 0, len(tm.runningTasks))
-	for id := range tm.runningTasks {
-		ids = append(ids, id)
+	for _, task := range tm.runningTasks {
+		ids = append(ids, task.TaskID)
 	}
 
 	if len(ids) == 0 {
@@ -136,4 +138,8 @@ func (tm *TaskManager) updateWorkerStatusLocked() {
 			log.Printf("WARNING: could not write worker status file: %v", err)
 		}
 	}
+}
+
+func taskRunKey(taskID string, runID uint) string {
+	return taskID + "/" + strconv.FormatUint(uint64(runID), 10)
 }

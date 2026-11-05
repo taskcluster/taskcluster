@@ -25,7 +25,7 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 3))
 
 	// Allocate ports for first task
-	ports1, err := pm.AllocatePorts("task1")
+	ports1, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 	require.Len(t, ports1, gwconfig.PortsPerTask)
 	require.Equal(t, uint16(60000), ports1[PortIndexLiveLogPUT])
@@ -34,7 +34,7 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	require.Equal(t, uint16(8080), ports1[PortIndexTaskclusterProxy])
 
 	// Allocate ports for second task
-	ports2, err := pm.AllocatePorts("task2")
+	ports2, err := pm.AllocatePorts("task2", 0)
 	require.NoError(t, err)
 	require.Len(t, ports2, gwconfig.PortsPerTask)
 	// Ports should be offset by gwconfig.PortsPerTask (4)
@@ -44,12 +44,12 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	require.Equal(t, uint16(8084), ports2[PortIndexTaskclusterProxy])
 
 	// Allocate ports for third task
-	ports3, err := pm.AllocatePorts("task3")
+	ports3, err := pm.AllocatePorts("task3", 0)
 	require.NoError(t, err)
 	require.Len(t, ports3, gwconfig.PortsPerTask)
 
 	// Fourth task should fail (capacity exhausted)
-	_, err = pm.AllocatePorts("task4")
+	_, err = pm.AllocatePorts("task4", 0)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "no available port slots")
 }
@@ -58,20 +58,20 @@ func TestPortManagerReleasePorts(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
 
 	// Allocate all capacity
-	_, err := pm.AllocatePorts("task1")
+	_, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
-	_, err = pm.AllocatePorts("task2")
+	_, err = pm.AllocatePorts("task2", 0)
 	require.NoError(t, err)
 
 	// Should fail - no capacity
-	_, err = pm.AllocatePorts("task3")
+	_, err = pm.AllocatePorts("task3", 0)
 	require.Error(t, err)
 
 	// Release one task's ports
-	pm.ReleasePorts("task1")
+	pm.ReleasePorts("task1", 0)
 
 	// Should now succeed
-	ports3, err := pm.AllocatePorts("task3")
+	ports3, err := pm.AllocatePorts("task3", 0)
 	require.NoError(t, err)
 	// Should reuse slot 0
 	require.Equal(t, uint16(60000), ports3[PortIndexLiveLogPUT])
@@ -81,32 +81,32 @@ func TestPortManagerGetPorts(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
 
 	// Not allocated yet
-	require.Nil(t, pm.GetPorts("task1"))
+	require.Nil(t, pm.GetPorts("task1", 0))
 
 	// Allocate
-	ports, err := pm.AllocatePorts("task1")
+	ports, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 
 	// Should return same ports
-	require.Equal(t, ports, pm.GetPorts("task1"))
+	require.Equal(t, ports, pm.GetPorts("task1", 0))
 
 	// Release
-	pm.ReleasePorts("task1")
-	require.Nil(t, pm.GetPorts("task1"))
+	pm.ReleasePorts("task1", 0)
+	require.Nil(t, pm.GetPorts("task1", 0))
 }
 
 func TestPortManagerLiveLogPorts(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
 
 	// Not allocated
-	_, _, ok := pm.LiveLogPorts("task1")
+	_, _, ok := pm.LiveLogPorts("task1", 0)
 	require.False(t, ok)
 
 	// Allocate
-	_, err := pm.AllocatePorts("task1")
+	_, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 
-	putPort, getPort, ok := pm.LiveLogPorts("task1")
+	putPort, getPort, ok := pm.LiveLogPorts("task1", 0)
 	require.True(t, ok)
 	require.Equal(t, uint16(60000), putPort)
 	require.Equal(t, uint16(60001), getPort)
@@ -116,14 +116,14 @@ func TestPortManagerInteractivePort(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
 
 	// Not allocated
-	_, ok := pm.InteractivePort("task1")
+	_, ok := pm.InteractivePort("task1", 0)
 	require.False(t, ok)
 
 	// Allocate
-	_, err := pm.AllocatePorts("task1")
+	_, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 
-	port, ok := pm.InteractivePort("task1")
+	port, ok := pm.InteractivePort("task1", 0)
 	require.True(t, ok)
 	require.Equal(t, uint16(53000), port)
 }
@@ -132,14 +132,14 @@ func TestPortManagerTaskclusterProxyPort(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
 
 	// Not allocated
-	_, ok := pm.TaskclusterProxyPort("task1")
+	_, ok := pm.TaskclusterProxyPort("task1", 0)
 	require.False(t, ok)
 
 	// Allocate
-	_, err := pm.AllocatePorts("task1")
+	_, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 
-	port, ok := pm.TaskclusterProxyPort("task1")
+	port, ok := pm.TaskclusterProxyPort("task1", 0)
 	require.True(t, ok)
 	require.Equal(t, uint16(8080), port)
 }
@@ -148,11 +148,11 @@ func TestPortManagerIdempotentAllocation(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
 
 	// First allocation
-	ports1, err := pm.AllocatePorts("task1")
+	ports1, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 
 	// Second allocation for same task should return same ports
-	ports2, err := pm.AllocatePorts("task1")
+	ports2, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 	require.Equal(t, ports1, ports2)
 }
@@ -161,15 +161,15 @@ func TestPortManagerSlotReuse(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 3))
 
 	// Allocate slots 0, 1, 2
-	_, _ = pm.AllocatePorts("task1") // slot 0
-	_, _ = pm.AllocatePorts("task2") // slot 1
-	_, _ = pm.AllocatePorts("task3") // slot 2
+	_, _ = pm.AllocatePorts("task1", 0) // slot 0
+	_, _ = pm.AllocatePorts("task2", 0) // slot 1
+	_, _ = pm.AllocatePorts("task3", 0) // slot 2
 
 	// Release slot 1
-	pm.ReleasePorts("task2")
+	pm.ReleasePorts("task2", 0)
 
 	// New task should get slot 1
-	ports, err := pm.AllocatePorts("task4")
+	ports, err := pm.AllocatePorts("task4", 0)
 	require.NoError(t, err)
 	// Slot 1 means offset of 4 (PortsPerTask)
 	require.Equal(t, uint16(60004), ports[PortIndexLiveLogPUT])
@@ -186,7 +186,7 @@ func TestPortManagerDisabledFeaturesGetZero(t *testing.T) {
 		// EnableTaskclusterProxy intentionally unset
 	}
 	pm := NewPortManager(c)
-	ports, err := pm.AllocatePorts("task1")
+	ports, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 	require.Len(t, ports, gwconfig.PortsPerTask)
 	require.Equal(t, uint16(0), ports[PortIndexLiveLogPUT])
@@ -197,13 +197,26 @@ func TestPortManagerDisabledFeaturesGetZero(t *testing.T) {
 
 func TestPortManagerGetPortsReturnsCopy(t *testing.T) {
 	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
-	_, err := pm.AllocatePorts("task1")
+	_, err := pm.AllocatePorts("task1", 0)
 	require.NoError(t, err)
 
-	got := pm.GetPorts("task1")
+	got := pm.GetPorts("task1", 0)
 	got[0] = 99 // mutate the returned slice
 
 	// Subsequent reads must not see the mutation
-	again := pm.GetPorts("task1")
+	again := pm.GetPorts("task1", 0)
 	require.Equal(t, uint16(60000), again[PortIndexLiveLogPUT])
+}
+
+func TestPortManagerSeparatesRunsOfSameTask(t *testing.T) {
+	pm := NewPortManager(testConfig(60000, 53000, 8080, 2))
+
+	ports0, err := pm.AllocatePorts("task1", 0)
+	require.NoError(t, err)
+	ports1, err := pm.AllocatePorts("task1", 1)
+	require.NoError(t, err)
+	require.NotEqual(t, ports0, ports1)
+
+	pm.ReleasePorts("task1", 0)
+	require.Equal(t, ports1, pm.GetPorts("task1", 1))
 }
