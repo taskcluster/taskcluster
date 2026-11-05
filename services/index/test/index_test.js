@@ -197,6 +197,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(result.expires, expires, 'Expected the given expiry to be used');
   });
 
+  for (const rank of [2147483648, -2147483649, 4188604196101, 1.5, '42', null]) {
+    test(`Run task with invalid .extra.index.rank ${JSON.stringify(rank)}`, async () => {
+      const taskId = slugid.nice();
+      const task = makeTask();
+      task.extra = { index: { rank } };
+      helper.queue.addTask(taskId, task);
+
+      await helper.fakePulseMessage({
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.index.abc',
+        routes: task.routes,
+        payload: { status: { taskId } },
+      });
+
+      const rows = await helper.db.fns.get_indexed_task('my-ns', 'my-indexed-thing');
+      assert.deepEqual(rows, [], 'Expected the task not to be indexed');
+    });
+  }
+
   test('Expiring Indexed Tasks', async () => {
     // Create expiration
     const expiry = new Date();

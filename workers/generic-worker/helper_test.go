@@ -723,7 +723,7 @@ func getArtifactContent(t *testing.T, taskID string, artifact string) []byte {
 
 // indexArtifact inserts the given taskID into the index at the given namespace
 // with the given rank.
-func indexArtifact(t *testing.T, namespace string, taskID string, rank float64) {
+func indexArtifact(t *testing.T, namespace string, taskID string, rank int64) {
 	t.Helper()
 	index := serviceFactory.Index(config.Credentials(), config.RootURL)
 	_, err := index.InsertTask(namespace, &tcindex.InsertTaskRequest{
