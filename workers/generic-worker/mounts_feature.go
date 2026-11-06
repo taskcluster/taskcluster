@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -525,8 +524,8 @@ func (ac *ArtifactContent) RequiredScopes() []string {
 	return []string{}
 }
 
-// Same as ArtifactContent. FindTask checks the index scope when the cache
-// key is resolved. The Queue still checks queue:get-artifact for the bytes.
+// Same as ArtifactContent. FindTask checks the index scope when the mount
+// is resolved. The Queue still checks queue:get-artifact for the bytes.
 func (ic *IndexedContent) RequiredScopes() []string {
 	return []string{}
 }
@@ -1206,7 +1205,7 @@ func (f *FileMount) Unmount(taskMount *TaskMount) error {
 // authorizeCachedArtifact asks the queue whether this task may read a cached
 // artifact. Download does that itself, cache hits and shared downloads do not.
 // entry is already retained by taskMount and is released on failure.
-func authorizeCachedArtifact(fsContent FSContent, taskMount *TaskMount, cacheKey string, entry *Cache) error {
+func authorizeCachedArtifact(fsContent FSContent, taskMount *TaskMount, entry *Cache) error {
 	reject := func(err error) error {
 		cacheMutex.Lock()
 		taskMount.releaseFileCache(entry)
@@ -1214,27 +1213,16 @@ func authorizeCachedArtifact(fsContent FSContent, taskMount *TaskMount, cacheKey
 		return err
 	}
 
-	var taskID, name string
-	switch c := fsContent.(type) {
-	case *ArtifactContent:
-		taskID, name = c.TaskID, c.Artifact
-	case *IndexedContent:
-		rest, ok := strings.CutPrefix(cacheKey, "artifact:")
-		if ok {
-			taskID, name, ok = strings.Cut(rest, ":")
-		}
-		if !ok || taskID == "" || name != c.Artifact {
-			return reject(fmt.Errorf("invalid artifact cache key %q", cacheKey))
-		}
-	default:
+	ac, ok := fsContent.(*ArtifactContent)
+	if !ok {
 		return nil
 	}
 
 	taskMount.task.queueMux.RLock()
 	queue := taskMount.task.Queue
 	taskMount.task.queueMux.RUnlock()
-	if _, err := queue.LatestArtifact(taskID, name); err != nil {
-		return reject(fmt.Errorf("cannot reuse cached copy of task %s artifact %s: queue did not confirm this task may download it: %w", taskID, name, err))
+	if _, err := queue.LatestArtifact(ac.TaskID, ac.Artifact); err != nil {
+		return reject(fmt.Errorf("cannot reuse cached copy of task %s artifact %s: queue did not confirm this task may download it: %w", ac.TaskID, ac.Artifact, err))
 	}
 	return nil
 }
@@ -1265,6 +1253,12 @@ func isCallerRejected(err error) bool {
 // A task that shared another task's download retries when that download was
 // rejected for the caller. Its own 401 or 403 is final.
 func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha256 string, err error) {
+	if ic, ok := fsContent.(*IndexedContent); ok {
+		fsContent, err = ic.artifactContent(taskMount)
+		if err != nil {
+			return "", "", err
+		}
+	}
 	cacheKey, err := fsContent.UniqueKey(taskMount)
 	if err != nil {
 		return "", "", err
@@ -1285,7 +1279,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 		taskMount.retainFileCache(cachedEntry)
 		cacheMutex.Unlock()
 
-		if authErr := authorizeCachedArtifact(fsContent, taskMount, cacheKey, cachedEntry); authErr != nil {
+		if authErr := authorizeCachedArtifact(fsContent, taskMount, cachedEntry); authErr != nil {
 			return "", "", authErr
 		}
 		cacheMutex.Lock()
@@ -1397,7 +1391,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 	}
 
 	if !downloaded {
-		if authErr := authorizeCachedArtifact(fsContent, taskMount, cacheKey, retained); authErr != nil {
+		if authErr := authorizeCachedArtifact(fsContent, taskMount, retained); authErr != nil {
 			return "", "", authErr
 		}
 	}
@@ -1609,17 +1603,19 @@ func (ac *ArtifactContent) Download(taskMount *TaskMount) (file string, sha256 s
 	return
 }
 
-func (ic *IndexedContent) Download(taskMount *TaskMount) (file string, sha256 string, err error) {
+func (ic *IndexedContent) artifactContent(taskMount *TaskMount) (*ArtifactContent, error) {
 	itr, err := taskMount.index.FindTask(ic.Namespace)
 	if err != nil {
-		return "", "", err
+		return nil, fmt.Errorf("cannot find task in index namespace %v: %w", ic.Namespace, err)
 	}
-	ac := &ArtifactContent{
-		Artifact: ic.Artifact,
-		SHA256:   "",
-		TaskID:   itr.TaskID,
-	}
-	return ac.Download(taskMount)
+	taskMount.Infof("Index namespace %v resolved to task %v", ic.Namespace, itr.TaskID)
+	return &ArtifactContent{Artifact: ic.Artifact, TaskID: itr.TaskID}, nil
+}
+
+var errUnresolvedIndexedContent = errors.New("IndexedContent must be resolved with artifactContent before use")
+
+func (ic *IndexedContent) Download(taskMount *TaskMount) (file string, sha256 string, err error) {
+	return "", "", errUnresolvedIndexedContent
 }
 
 func (ac *ArtifactContent) String() string {
@@ -1635,8 +1631,7 @@ func (ac *ArtifactContent) UniqueKey(taskMount *TaskMount) (string, error) {
 }
 
 func (ic *IndexedContent) UniqueKey(taskMount *TaskMount) (string, error) {
-	itr, err := taskMount.index.FindTask(ic.Namespace)
-	return "artifact:" + itr.TaskID + ":" + ic.Artifact, err
+	return "", errUnresolvedIndexedContent
 }
 
 func (ac *ArtifactContent) RequiredSHA256() string {
