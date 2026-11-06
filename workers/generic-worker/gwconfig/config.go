@@ -304,8 +304,3 @@ func (cf *File) UpdateConfig(c *Config) error {
 	}
 	return nil
 }
-
-func (cf *File) DoesNotExist() bool {
-	_, err := os.Stat(cf.Path)
-	return err != nil && os.IsNotExist(err)
-}
