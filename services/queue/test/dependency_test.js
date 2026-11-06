@@ -790,6 +790,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
         if (err.code !== 'InputError') {
           throw err;
         }
+        assert.match(err.message, /exceeds the maximum allowed number of dependencies/);
       }
     );
   });
