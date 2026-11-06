@@ -18,7 +18,10 @@ properties:
       If multiple tasks are indexed with the same `namespace` the task with the
       highest `rank` will be stored and returned in later requests. If two tasks
       has the same `rank` the latest task will be stored.
-    type:           number
+    type:           integer
+    # rank is stored as a postgres int4
+    minimum: -2147483648
+    maximum: 2147483647
   data:
     title:          "Task Specific Data"
     description: |

@@ -17,6 +17,12 @@ const makeError = (message, code, statusCode) => {
 
 export const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
+// Bounds of the `rank` column (a postgres int4)
+export const RANK_MIN = -2147483648;
+export const RANK_MAX = 2147483647;
+
+export const isValidRank = rank => Number.isInteger(rank) && rank >= RANK_MIN && rank <= RANK_MAX;
+
 export const taskUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements.
@@ -70,7 +76,7 @@ export const taskUtils = {
     assert(input.expires instanceof Date, 'expires must be a Date object');
     assert(input.data instanceof Object, 'data must be an object');
     assert(input.taskId, 'taskId must be given');
-    assert(typeof input.rank === 'number', 'rank must be a number');
+    assert(isValidRank(input.rank), `rank must be an integer between ${RANK_MIN} and ${RANK_MAX}`);
     assert(db, 'db must be set');
 
     const [namespace, name] = splitNamespace(fullNamespace);
@@ -349,4 +355,13 @@ const isPublicArtifact = auth => {
   return artifactName => satisfiesArtifactScope(anonymousScopeCache, artifactName);
 };
 
-export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat, isPublicArtifact };
+export default {
+  taskUtils,
+  namespaceUtils,
+  splitNamespace,
+  namespaceFormat,
+  isPublicArtifact,
+  isValidRank,
+  RANK_MIN,
+  RANK_MAX,
+};

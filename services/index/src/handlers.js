@@ -106,14 +106,17 @@ Handlers.prototype.completed = function (message) {
       return;
     }
 
-    // Check that we have a number
-    if (typeof options.rank !== 'number') {
-      debug('Expected number from task.extra.index.rank, failing on %j', message);
+    if (!helpers.isValidRank(options.rank)) {
+      debug(
+        'Expected an integer between %d and %d from task.extra.index.rank, failed on %j',
+        helpers.RANK_MIN,
+        helpers.RANK_MAX,
+        message
+      );
       return;
     }
 
-    // Check that data is an object
-    if (typeof options.data !== 'object') {
+    if (options.data === null || typeof options.data !== 'object') {
       debug('Expected object from task.extra.index.data, failed on %j', message);
       return;
     }

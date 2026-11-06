@@ -83,6 +83,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.deepEqual(rows, [], 'Expected nothing to be inserted');
   });
 
+  for (const rank of [2147483648, -2147483649, 4188604196101, 1.5, -67.69]) {
+    test(`insert (rank ${rank} out of range)`, async () => {
+      const myns = slugid.v4();
+
+      await assert.rejects(
+        () =>
+          helper.index.insertTask(`${myns}.my-task`, {
+            taskId: helper.makeFakeTask(),
+            rank,
+            data: {},
+            expires: taskcluster.fromNow('1 hour'),
+          }),
+        err => err.statusCode === 400 && err.code === 'InputValidationError',
+        'Expected the insertion to be rejected'
+      );
+    });
+  }
+
+  for (const rank of [2147483647, -2147483648]) {
+    test(`insert (rank ${rank} at limits)`, async () => {
+      const myns = slugid.v4();
+      const taskId = helper.makeFakeTask();
+
+      await helper.index.insertTask(`${myns}.my-task`, {
+        taskId,
+        rank,
+        data: {},
+        expires: taskcluster.fromNow('1 hour'),
+      });
+
+      const result = await helper.index.findTask(`${myns}.my-task`);
+      assert.equal(result.rank, rank);
+    });
+  }
+
   test('insert (expiring after the task is capped)', async () => {
     const myns = slugid.v4();
     const taskExpires = taskcluster.fromNow('1 day');
