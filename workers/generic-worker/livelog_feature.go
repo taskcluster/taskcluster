@@ -193,6 +193,7 @@ func (l *LiveLogTask) uploadLiveLogArtifact(getPort uint16) error {
 			},
 			ContentType: "text/plain; charset=utf-8",
 			URL:         exposeURL.String(),
+			HideURL:     true,
 		},
 	)
 	if uploadErr != nil {

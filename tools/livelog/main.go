@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"log"
 	"math"
@@ -27,7 +28,7 @@ Usage: livelog [-h | --help | --short-version | --version]
 Environment:
  LIVELOG_GET_PORT (required)	port on which to listen for GET requests to serve logs
  LIVELOG_PUT_PORT (required)	port on which to listen for PUT requests to receive logs
- ACCESS_TOKEN			an arbitrary url-safe string
+ ACCESS_TOKEN (required)	an arbitrary, non-empty, url-safe string
  SERVER_CRT_FILE		path to a file containing a certificate, if not provided, the server will run without TLS
  SERVER_KEY_FILE		path to a file containing a key, if not provided, the server will run without TLS
  LIVELOG_TEMP_DIR		directory for temporary streaming files, defaults to the system temp dir
@@ -54,19 +55,17 @@ func abort(writer http.ResponseWriter) {
 	conn.Close()
 }
 
-func startLogServe(stream *stream.Stream, getAddr string) {
-	// Get access token from environment variable
-	accessToken := os.Getenv("ACCESS_TOKEN")
-
+func startLogServe(stream *stream.Stream, getAddr, accessToken string) {
 	routes := http.NewServeMux()
 	routes.HandleFunc("/log/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("output %s %s", r.Method, r.URL.String())
+		log.Printf("output %s /log/<redacted>", r.Method)
 
 		// Authenticate the request with accessToken, this is good enough because
 		// live logs are short-lived, we do this by slicing away '/log/' from the
-		// URL and comparing the reminder to the accessToken, ensuring a URL pattern
+		// URL and comparing the remainder to the accessToken, ensuring a URL pattern
 		// /log/<accessToken>
-		if r.URL.String()[5:] != accessToken {
+		if subtle.ConstantTimeCompare([]byte(r.URL.String()[5:]), []byte(accessToken)) != 1 {
+			log.Print("output access denied")
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.WriteHeader(401)
@@ -188,6 +187,12 @@ func main() {
 		return
 	}
 
+	accessToken := os.Getenv("ACCESS_TOKEN")
+	if accessToken == "" {
+		log.Print("env var ACCESS_TOKEN must be set to a non-empty value")
+		os.Exit(68)
+	}
+
 	putAddr := portAddressOrExit("LIVELOG_PUT_PORT", DEFAULT_PUT_PORT, 64, 65)
 	getAddr := portAddressOrExit("LIVELOG_GET_PORT", DEFAULT_GET_PORT, 66, 67)
 
@@ -200,10 +205,10 @@ func main() {
 		}
 	}
 
-	serve(putAddr, getAddr)
+	serve(putAddr, getAddr, accessToken)
 }
 
-func serve(putAddr, getAddr string) {
+func serve(putAddr, getAddr, accessToken string) {
 	handlingPut := false
 	mutex := sync.Mutex{}
 
@@ -260,7 +265,7 @@ func serve(putAddr, getAddr string) {
 
 		// Initialize the sub server in another go routine...
 		log.Print("Begin consuming...")
-		go startLogServe(stream, getAddr)
+		go startLogServe(stream, getAddr, accessToken)
 		consumeErr := stream.Consume()
 		if consumeErr != nil {
 			log.Println("Error finalizing consume of stream", consumeErr)

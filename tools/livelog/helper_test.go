@@ -48,6 +48,8 @@ type TestLivelogServer struct {
 	tempdir string
 }
 
+const testAccessToken = "7_3HoMEbQau1Qlzwx-JZgg"
+
 func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 	t.Helper()
 	tempdir, err := os.MkdirTemp("", "livelog-tests-")
@@ -105,16 +107,15 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 	writer.TempDir = tempdir
 
 	// set up some config for the put server
-	os.Setenv("ACCESS_TOKEN", "7_3HoMEbQau1Qlzwx-JZgg")
 	if tls {
-		os.Setenv("SERVER_CRT_FILE", "test/server.crt")
-		os.Setenv("SERVER_KEY_FILE", "test/server.key")
+		t.Setenv("SERVER_CRT_FILE", "test/server.crt")
+		t.Setenv("SERVER_KEY_FILE", "test/server.key")
 	} else {
-		os.Unsetenv("SERVER_CRT_FILE")
-		os.Unsetenv("SERVER_KEY_FILE")
+		t.Setenv("SERVER_CRT_FILE", "")
+		t.Setenv("SERVER_KEY_FILE", "")
 	}
 
-	go serve(":putport", ":getport")
+	go serve(":putport", ":getport", testAccessToken)
 
 	return ts
 }
