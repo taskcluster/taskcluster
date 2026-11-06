@@ -41,30 +41,6 @@ func TestTaskManagerCapacity(t *testing.T) {
 	require.True(t, tm.IsIdle())
 }
 
-func TestTaskManagerRunningTaskIDs(t *testing.T) {
-	tm := NewTaskManager(5)
-
-	task1 := &TaskRun{TaskID: "task1"}
-	task2 := &TaskRun{TaskID: "task2"}
-	tm.AddTask(task1)
-	tm.AddTask(task2)
-
-	ids := tm.RunningTaskIDs()
-	require.Len(t, ids, 2)
-	require.Contains(t, ids, "task1")
-	require.Contains(t, ids, "task2")
-}
-
-func TestTaskManagerGetTask(t *testing.T) {
-	tm := NewTaskManager(2)
-
-	task1 := &TaskRun{TaskID: "task1"}
-	tm.AddTask(task1)
-
-	require.Equal(t, task1, tm.GetTask("task1", 0))
-	require.Nil(t, tm.GetTask("nonexistent", 0))
-}
-
 func TestTaskManagerLastActive(t *testing.T) {
 	tm := NewTaskManager(2)
 	initialTime := tm.LastActive()
@@ -111,7 +87,5 @@ func TestTaskManagerTracksRunsOfSameTaskSeparately(t *testing.T) {
 
 	tm.RemoveTask("task1", 0)
 	require.Equal(t, uint(1), tm.TaskCount())
-	require.Nil(t, tm.GetTask("task1", 0))
-	require.Equal(t, run1, tm.GetTask("task1", 1))
 	require.Equal(t, []string{"task_task1_1"}, tm.RunningTaskDirNames())
 }

@@ -102,58 +102,6 @@ func (pm *PortManager) ReleasePorts(taskID string, runID uint) {
 	delete(pm.slots, key)
 }
 
-// GetPorts returns a copy of the ports allocated to a task run, or nil if
-// not allocated. A copy is returned so callers can't mutate the
-// internal slice.
-func (pm *PortManager) GetPorts(taskID string, runID uint) []uint16 {
-	key := taskRunKey(taskID, runID)
-	pm.Lock()
-	defer pm.Unlock()
-	ports, ok := pm.allocated[key]
-	if !ok {
-		return nil
-	}
-	result := make([]uint16, len(ports))
-	copy(result, ports)
-	return result
-}
-
-// LiveLogPorts returns the LiveLog PUT and GET ports for a task run.
-func (pm *PortManager) LiveLogPorts(taskID string, runID uint) (putPort, getPort uint16, ok bool) {
-	key := taskRunKey(taskID, runID)
-	pm.Lock()
-	defer pm.Unlock()
-	ports, exists := pm.allocated[key]
-	if !exists || len(ports) < 2 {
-		return 0, 0, false
-	}
-	return ports[PortIndexLiveLogPUT], ports[PortIndexLiveLogGET], true
-}
-
-// InteractivePort returns the Interactive port for a task run.
-func (pm *PortManager) InteractivePort(taskID string, runID uint) (uint16, bool) {
-	key := taskRunKey(taskID, runID)
-	pm.Lock()
-	defer pm.Unlock()
-	ports, exists := pm.allocated[key]
-	if !exists || len(ports) <= PortIndexInteractive {
-		return 0, false
-	}
-	return ports[PortIndexInteractive], true
-}
-
-// TaskclusterProxyPort returns the TaskclusterProxy port for a task run.
-func (pm *PortManager) TaskclusterProxyPort(taskID string, runID uint) (uint16, bool) {
-	key := taskRunKey(taskID, runID)
-	pm.Lock()
-	defer pm.Unlock()
-	ports, exists := pm.allocated[key]
-	if !exists || len(ports) <= PortIndexTaskclusterProxy {
-		return 0, false
-	}
-	return ports[PortIndexTaskclusterProxy], true
-}
-
 // findAvailableSlot returns the first available slot index.
 // Must be called with the lock held.
 func (pm *PortManager) findAvailableSlot() (uint8, bool) {

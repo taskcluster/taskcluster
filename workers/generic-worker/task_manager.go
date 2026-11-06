@@ -63,17 +63,6 @@ func (tm *TaskManager) RemoveTask(taskID string, runID uint) {
 	}
 }
 
-// RunningTaskIDs returns a slice of all currently running task IDs.
-func (tm *TaskManager) RunningTaskIDs() []string {
-	tm.RLock()
-	defer tm.RUnlock()
-	ids := make([]string, 0, len(tm.runningTasks))
-	for _, task := range tm.runningTasks {
-		ids = append(ids, task.TaskID)
-	}
-	return ids
-}
-
 // TaskCount returns the number of currently running tasks.
 func (tm *TaskManager) TaskCount() uint {
 	tm.RLock()
@@ -91,13 +80,6 @@ func (tm *TaskManager) LastActive() time.Time {
 	tm.RLock()
 	defer tm.RUnlock()
 	return tm.lastActive
-}
-
-// GetTask returns the TaskRun for the given run of a task, or nil if not found.
-func (tm *TaskManager) GetTask(taskID string, runID uint) *TaskRun {
-	tm.RLock()
-	defer tm.RUnlock()
-	return tm.runningTasks[taskRunKey(taskID, runID)]
 }
 
 // RunningTaskDirNames returns the base names of all running task directories.
