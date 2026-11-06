@@ -1,6 +1,5 @@
 import http from 'node:http';
 import fs from 'node:fs';
-import _ from 'lodash';
 import sinon from 'sinon';
 import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
@@ -34,22 +33,21 @@ helper.rootUrl = 'http://127.0.0.1:1';
 
 // Build an http request from a json file with fields describing
 // headers and a body
-helper.jsonHttpRequest = (jsonFile, options) => {
+helper.jsonHttpRequest = (jsonFile, { rawBody, headers } = {}) => {
   const url = new URL(helper.rootUrl);
-  const defaultOptions = {
+  const jsonData = JSON.parse(fs.readFileSync(jsonFile));
+  const options = {
     hostname: url.hostname,
     port: Number(url.port),
     path: '/api/github/v1/github',
     method: 'POST',
+    headers: { ...jsonData.headers, ...headers },
   };
-  options = _.defaultsDeep(options, defaultOptions);
-  const jsonData = JSON.parse(fs.readFileSync(jsonFile));
-  options.headers = jsonData.headers;
 
   return new Promise((accept, reject) => {
     try {
       const req = http.request(options, accept);
-      req.write(JSON.stringify(jsonData.body));
+      req.write(rawBody ?? JSON.stringify(jsonData.body));
       req.end();
     } catch (e) {
       reject(e);

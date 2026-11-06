@@ -3,6 +3,7 @@ import helper from './helper.js';
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
+import { generateXHubSignature } from '../src/utils.js';
 
 const TC_DEV_INSTALLATION_ID = 28513985;
 
@@ -102,6 +103,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const webhookMessage = monitor.manager.messages.find(({ Type }) => Type === 'webhook-received');
     assert(webhookMessage, 'expected webhook-received monitor message');
+  });
+
+  test('Signature is checked against the raw body, not a reserialization', async () => {
+    const filename = './test/data/webhooks/webhook.issue_comment.created.json';
+    const { body } = JSON.parse(fs.readFileSync(filename));
+    // Mangle the formatting slightly so the raw body doesn't roundtrip serialization
+    const rawBody = JSON.stringify(body, null, 2);
+    assert.notEqual(JSON.stringify(JSON.parse(rawBody)), rawBody);
+
+    const response = await helper.jsonHttpRequest(filename, {
+      rawBody,
+      headers: {
+        'X-Hub-Signature-256': generateXHubSignature('abc123', rawBody, 'sha256'),
+      },
+    });
+    assert.equal(response.statusCode, 200);
+    response.connection?.destroy();
+    assert(monitor.manager.messages.find(({ Type }) => Type === 'webhook-received'));
   });
 
   // Also should have data in the db after this one
