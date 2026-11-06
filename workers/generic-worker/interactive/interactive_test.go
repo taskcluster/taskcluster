@@ -46,7 +46,7 @@ func TestInteractiveNormal(t *testing.T) {
 		InteractiveCmd: cmd,
 	}
 
-	testInteractive(t, 53765, interactiveCommands, ctx)
+	testInteractive(t, 31769, interactiveCommands, ctx)
 }
 
 func testInteractive(t *testing.T, port uint16, interactiveCommands InteractiveCommands, ctx context.Context) {

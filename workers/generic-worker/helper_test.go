@@ -391,7 +391,7 @@ func GWTest(t *testing.T) *Test {
 		IdleTimeoutSecs:           60,
 		InstanceID:                "test-instance-id",
 		InstanceType:              "p3.enormous",
-		InteractivePort:           53765,
+		InteractivePort:           31769,
 		LiveLogExecutable:         "livelog",
 		// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 		// These ports are not exposed outside of the host. However, in CI they must differ from those of the
@@ -415,7 +415,7 @@ func GWTest(t *testing.T) *Test {
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,
 		TaskclusterProxyExecutable:     "taskcluster-proxy",
-		TaskclusterProxyPort:           34569,
+		TaskclusterProxyPort:           31569,
 		TasksDir:                       filepath.Join(testdataDir, t.Name(), "tasks"),
 		WorkerGroup:                    "test-worker-group",
 		WorkerID:                       "test-worker-id",
