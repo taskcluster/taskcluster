@@ -213,14 +213,21 @@ export default function PaginatedDataTable({
                 }}>
                 {normalizedHeaders.map(header => (
                   <TableCell key={`table-header-${header.id}`}>
-                    <TableSortLabel
-                      className={classes.sortHeader}
-                      id={header.id}
-                      active={header.id === sortByHeader}
-                      direction={sortDirection || 'desc'}
-                      onClick={() => onHeaderClick?.(header.id)}>
-                      {header.label}
-                    </TableSortLabel>
+                    {onHeaderClick ? (
+                      <TableSortLabel
+                        className={classes.sortHeader}
+                        id={header.id}
+                        active={header.id === sortByHeader}
+                        direction={sortDirection || 'desc'}
+                        onClick={() => onHeaderClick(header.id)}>
+                        {header.label}
+                      </TableSortLabel>
+                    ) : (
+                      // Nothing handles a click, so don't offer a sort arrow.
+                      <span className={classes.sortHeader} id={header.id}>
+                        {header.label}
+                      </span>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -291,6 +298,7 @@ PaginatedDataTable.propTypes = {
   /**
    * A function to execute when a column header is clicked.
    * Will receive the header name, which can be used to handle sorting.
+   * Without it the headers are plain labels, with no sort arrow.
    */
   onHeaderClick: func,
   /**
