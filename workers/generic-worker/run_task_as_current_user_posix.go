@@ -47,8 +47,8 @@ func (r *RunTaskAsCurrentUserTask) platformSpecificActions() *CommandExecutionEr
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		delete(r.task.Payload.Env, "XDG_RUNTIME_DIR")
 	}
-	var newEnv []string
 	for _, c := range r.task.Commands {
+		var newEnv []string
 		for _, e := range c.Env {
 			if !strings.HasPrefix(e, "XDG_RUNTIME_DIR=") {
 				newEnv = append(newEnv, e)
