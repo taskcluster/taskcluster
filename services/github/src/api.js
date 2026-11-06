@@ -272,9 +272,7 @@ builder.declare(
     } else if (webhookSecrets && !xHubSignature) {
       return resolve(res, 400, 'Request missing a secret');
     } else if (webhookSecrets && xHubSignature) {
-      const bodyPayload = JSON.stringify(body);
-      // Verify that our payload is legitimate
-      if (!webhookSecrets.some(webhookSecret => checkGithubSignature(webhookSecret, bodyPayload, xHubSignature))) {
+      if (!webhookSecrets.some(webhookSecret => checkGithubSignature(webhookSecret, req.text, xHubSignature))) {
         // let sentry know about this
         await this.monitor.reportError(new Error('X-hub-signature does not match'), {
           xHubSignature,
