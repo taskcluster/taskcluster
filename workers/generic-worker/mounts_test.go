@@ -12,6 +12,9 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
+	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v115/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v115/internal/slugid"
 	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
 )
@@ -1213,6 +1216,47 @@ func TestIndexedArtifactCacheHitOnSameTaskID(t *testing.T) {
 	if strings.Contains(logtext, "Downloading") {
 		t.Fatalf("Expected no download on cache hit, but log contains 'Downloading'.\nLog:\n%v", logtext)
 	}
+}
+
+func TestIndexedArtifactMountUsesResolvedTask(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	taskID1 := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/indexed-artifact")
+	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID1, 1)
+
+	// Point the namespace at taskID2 as soon as the worker has looked it up.
+	orig := serviceFactory
+	serviceFactory = findTaskHook{orig, func() { indexArtifact(t, namespace, taskID2, 2) }}
+	t.Cleanup(func() { serviceFactory = orig })
+
+	mountTaskID := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+
+	want := getArtifactContent(t, taskID1, "public/indexed-artifact")
+	got := getArtifactContent(t, mountTaskID, "public/republished-artifact")
+	if string(got) != string(want) {
+		t.Fatalf("Expected mount task %v to get the artifact of task %v (%v bytes), got %v bytes", mountTaskID, taskID1, len(want), len(got))
+	}
+}
+
+type findTaskHook struct {
+	tc.ServiceFactory
+	afterFindTask func()
+}
+
+func (h findTaskHook) Index(creds *tcclient.Credentials, rootURL string) tc.Index {
+	return hookedIndex{h.ServiceFactory.Index(creds, rootURL), h.afterFindTask}
+}
+
+type hookedIndex struct {
+	tc.Index
+	afterFindTask func()
+}
+
+func (i hookedIndex) FindTask(namespace string) (*tcindex.IndexedTaskResponse, error) {
+	defer i.afterFindTask()
+	return i.Index.FindTask(namespace)
 }
 
 // TestCachedArtifactMountRequiresScope verifies that a cached non-public
