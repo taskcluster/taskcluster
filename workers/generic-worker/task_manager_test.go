@@ -30,13 +30,13 @@ func TestTaskManagerCapacity(t *testing.T) {
 	require.Equal(t, uint(3), tm.TaskCount())
 
 	// Remove a task
-	tm.RemoveTask("task2")
+	tm.RemoveTask("task2", 0)
 	require.Equal(t, uint(1), tm.AvailableCapacity())
 	require.Equal(t, uint(2), tm.TaskCount())
 
 	// Remove remaining tasks
-	tm.RemoveTask("task1")
-	tm.RemoveTask("task3")
+	tm.RemoveTask("task1", 0)
+	tm.RemoveTask("task3", 0)
 	require.Equal(t, uint(3), tm.AvailableCapacity())
 	require.True(t, tm.IsIdle())
 }
@@ -61,8 +61,8 @@ func TestTaskManagerGetTask(t *testing.T) {
 	task1 := &TaskRun{TaskID: "task1"}
 	tm.AddTask(task1)
 
-	require.Equal(t, task1, tm.GetTask("task1"))
-	require.Nil(t, tm.GetTask("nonexistent"))
+	require.Equal(t, task1, tm.GetTask("task1", 0))
+	require.Nil(t, tm.GetTask("nonexistent", 0))
 }
 
 func TestTaskManagerLastActive(t *testing.T) {
@@ -76,7 +76,7 @@ func TestTaskManagerLastActive(t *testing.T) {
 	require.True(t, afterAdd.After(initialTime))
 
 	time.Sleep(5 * time.Millisecond)
-	tm.RemoveTask("task1")
+	tm.RemoveTask("task1", 0)
 	afterRemove := tm.LastActive()
 	require.True(t, afterRemove.After(afterAdd))
 }
@@ -91,10 +91,27 @@ func TestTaskManagerConcurrentAccess(t *testing.T) {
 			task := &TaskRun{TaskID: fmt.Sprintf("task-%d", i)}
 			tm.AddTask(task)
 			time.Sleep(time.Millisecond)
-			tm.RemoveTask(task.TaskID)
+			tm.RemoveTask(task.TaskID, task.RunID)
 		})
 	}
 	wg.Wait()
 
 	require.True(t, tm.IsIdle())
+}
+
+func TestTaskManagerTracksRunsOfSameTaskSeparately(t *testing.T) {
+	tm := NewTaskManager(2)
+
+	run0 := &TaskRun{TaskID: "task1", RunID: 0, Context: &TaskContext{TaskDir: "/tasks/task_task1_0"}}
+	run1 := &TaskRun{TaskID: "task1", RunID: 1, Context: &TaskContext{TaskDir: "/tasks/task_task1_1"}}
+	tm.AddTask(run0)
+	tm.AddTask(run1)
+	require.Equal(t, uint(2), tm.TaskCount())
+	require.Equal(t, uint(0), tm.AvailableCapacity())
+
+	tm.RemoveTask("task1", 0)
+	require.Equal(t, uint(1), tm.TaskCount())
+	require.Nil(t, tm.GetTask("task1", 0))
+	require.Equal(t, run1, tm.GetTask("task1", 1))
+	require.Equal(t, []string{"task_task1_1"}, tm.RunningTaskDirNames())
 }

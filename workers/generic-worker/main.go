@@ -514,7 +514,7 @@ func RunWorker() (exitCode ExitCode) {
 		completionRebootRequired
 	)
 	recordCompletion := func(result taskCompletionResult) {
-		taskManager.RemoveTask(result.taskID)
+		taskManager.RemoveTask(result.taskID, result.runID)
 		tasksResolved++
 		lastActive = time.Now()
 	}
@@ -702,7 +702,7 @@ mainLoop:
 					log.Printf("ERROR creating reserved artifacts dir for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
 					cleanupTaskSetup(nil)
-					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID, runID: task.RunID}
 					continue
 				}
 				log.Printf("Created dir: %v", ctx.ReservedArtifactsDir)
@@ -713,7 +713,7 @@ mainLoop:
 					log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
 					cleanupTaskSetup(nil)
-					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID, runID: task.RunID}
 					continue
 				}
 				task.pd = pd
@@ -723,17 +723,17 @@ mainLoop:
 					log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
 					cleanupTaskSetup(pd)
-					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID, runID: task.RunID}
 					continue
 				}
 
 				// Allocate ports for this task
-				allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
+				allocatedPorts, err := portManager.AllocatePorts(task.TaskID, task.RunID)
 				if err != nil {
 					log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
 					cleanupTaskSetup(pd)
-					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID, runID: task.RunID}
 					continue
 				}
 				task.AllocatedPorts = allocatedPorts
@@ -757,10 +757,11 @@ mainLoop:
 						if config.CleanUpTaskDirs {
 							removeReservedArtifactsDir(t.GetContext())
 						}
-						portManager.ReleasePorts(t.TaskID)
+						portManager.ReleasePorts(t.TaskID, t.RunID)
 						workerShutdown := errors != nil && errors.WorkerShutdown()
 						taskCompleteChan <- taskCompletionResult{
 							taskID:         t.TaskID,
+							runID:          t.RunID,
 							workerShutdown: workerShutdown,
 						}
 					}()
@@ -848,6 +849,7 @@ mainLoop:
 // taskCompletionResult holds the result of a completed task
 type taskCompletionResult struct {
 	taskID         string
+	runID          uint
 	workerShutdown bool
 }
 

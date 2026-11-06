@@ -17,7 +17,7 @@ var (
 	// The finishTasks value passed to Terminate(), used for late callback registration
 	terminationFinishTasks bool
 
-	// callbacks for graceful termination, keyed by unique ID (e.g., task ID)
+	// callbacks for graceful termination, keyed by unique ID (e.g., task run key)
 	callbacks = make(map[string]GracefulTerminationFunc)
 
 	// callbackWG tracks in-flight callback goroutines launched by Terminate
@@ -38,8 +38,9 @@ func TerminationRequested() bool {
 }
 
 // OnTerminationRequest sets up to call the given function (in a goroutine) when
-// a termination request is received. The id parameter must be unique (e.g.,
-// task ID); registering with an id that's already in use panics, since silently
+// a termination request is received. The id parameter must be unique, for
+// example a task run key, since two runs of the same task can be running at
+// once. Registering with an id that's already in use panics, since silently
 // overwriting would lose the prior caller's callback.
 // Returns a function which, when called, removes the callback and waits for
 // any already-launched callback goroutine to complete before returning.
