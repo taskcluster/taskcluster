@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { string } from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 /**
  * Update the page's tab title to show a custom string, along with the
