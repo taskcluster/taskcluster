@@ -1,6 +1,8 @@
 import React from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import db from '../../../utils/db';
 import NoTaskGroup from './index';
 
 const mockHistory = { push: vi.fn() };
@@ -33,95 +35,56 @@ vi.mock('../../../utils/db', () => ({
       orderBy: vi.fn().mockReturnThis(),
       reverse: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
-      toArray: vi.fn().mockResolvedValue([]),
+      toArray: vi.fn(),
     },
   },
 }));
 
-// NoTaskGroup renders inside <Dashboard>, which is decorated with Material-UI's
-// withWidth; in jsdom (no window.matchMedia) withWidth returns null and the
-// mounted tree is empty, so a full-render assertion would assert nothing.
-// Instead we grab the instance and drive its own helpers (renderTaskGroupRow,
-// renderStatusCell, sortedTaskGroups) directly. vitest.setup.js installs fake
-// timers, so mounting must settle componentDidMount on microtasks only -- a
-// timer-based flush would never fire.
-async function mountNoTaskGroup() {
-  const ref = React.createRef();
-
-  await act(async () => {
-    render(
-      <MemoryRouter keyLength={0}>
-        <NoTaskGroup ref={ref} history={mockHistory} />
-      </MemoryRouter>
-    );
-  });
-  await act(async () => {});
-
-  return ref.current;
-}
-
-async function renderRow(element) {
+// Fake timers are global (see vitest.setup.js), so settle on microtasks.
+async function renderPage(records) {
+  db.taskGroupIdsHistory.toArray.mockResolvedValue(records);
   let container;
 
   await act(async () => {
     ({ container } = render(
-      <MemoryRouter keyLength={0}>
-        <table>
-          <tbody>{element}</tbody>
-        </table>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <NoTaskGroup history={mockHistory} />
+        </MemoryRouter>
+      </HelmetProvider>
     ));
   });
+  await act(async () => {});
 
-  return container;
+  return container.querySelector('table');
 }
 
-async function textOf(element) {
-  let text = '';
-
-  await act(async () => {
-    const { container } = render(<div>{element}</div>);
-
-    text = container.textContent;
-  });
-
-  return text;
-}
+const rows = table => Array.from(table.querySelectorAll('tbody tr'));
+const column = (table, index) =>
+  rows(table).map(row => row.cells[index].textContent);
 
 describe('NoTaskGroup page', () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('renders all stored metadata for a record', async () => {
-    const instance = await mountNoTaskGroup();
-    const container = await renderRow(instance.renderTaskGroupRow(richRecord));
-    const { textContent } = container;
+    const [row] = rows(await renderPage([richRecord]));
+    const { textContent } = row;
 
     expect(textContent).toContain(richRecord.name);
     expect(textContent).toContain(richRecord.taskQueueId);
     expect(textContent).toMatch(/viewed/);
     expect(textContent).toContain('10 tasks');
     expect(textContent).toContain('RUNNING');
-    expect(container.querySelector('code').textContent).toBe(
-      richRecord.taskGroupId
+    expect(row.querySelector('code').textContent).toBe(richRecord.taskGroupId);
+    expect(row.cells[2].getAttribute('title')).toBe(
+      'State recorded at view time; may be stale'
     );
-    const titles = Array.from(container.querySelectorAll('[title]')).map(el =>
-      el.getAttribute('title')
-    );
-
-    expect(titles).toContain('State recorded at view time; may be stale');
   });
 
   it('renders a legacy ID-only record with no viewed label and a linked ID', async () => {
-    const instance = await mountNoTaskGroup();
-    const container = await renderRow(
-      instance.renderTaskGroupRow(legacyRecord)
-    );
+    const [row] = rows(await renderPage([legacyRecord]));
 
-    expect(container.textContent).toContain(legacyRecord.taskGroupId);
-    expect(container.textContent).not.toMatch(/viewed/);
-    const link = container.querySelector('a');
+    expect(row.textContent).toContain(legacyRecord.taskGroupId);
+    expect(row.textContent).not.toMatch(/viewed/);
+    const link = row.querySelector('a');
 
     expect(link.getAttribute('href')).toBe(
       `/tasks/groups/${legacyRecord.taskGroupId}`
@@ -130,95 +93,75 @@ describe('NoTaskGroup page', () => {
   });
 
   it('omits the viewed label for the viewedAt:0 the v1->v2 migration back-fills', async () => {
-    const instance = await mountNoTaskGroup();
-    const container = await renderRow(
-      instance.renderTaskGroupRow({
-        taskGroupId: legacyRecord.taskGroupId,
-        viewedAt: 0,
-      })
+    const [row] = rows(
+      await renderPage([{ taskGroupId: legacyRecord.taskGroupId, viewedAt: 0 }])
     );
 
-    expect(container.textContent).toContain(legacyRecord.taskGroupId);
-    expect(container.textContent).not.toMatch(/viewed/);
+    expect(row.textContent).toContain(legacyRecord.taskGroupId);
+    expect(row.textContent).not.toMatch(/viewed/);
   });
 
   it('resolves the status label from the recorded counts', async () => {
-    const instance = await mountNoTaskGroup();
+    const table = await renderPage([
+      { taskGroupId: 'a', statusCount: statusCount({ completed: 5 }) },
+      {
+        taskGroupId: 'b',
+        statusCount: statusCount({ completed: 5, failed: 2 }),
+      },
+      {
+        taskGroupId: 'c',
+        statusCount: statusCount({ completed: 3, exception: 2 }),
+      },
+      { taskGroupId: 'd', statusCount: statusCount({ failed: 1, pending: 1 }) },
+    ]);
 
-    expect(
-      await textOf(instance.renderStatusCell(statusCount({ completed: 5 })))
-    ).toContain('COMPLETED');
-    expect(
-      await textOf(
-        instance.renderStatusCell(statusCount({ completed: 5, failed: 2 }))
-      )
-    ).toContain('FAILED');
-    expect(
-      await textOf(
-        instance.renderStatusCell(statusCount({ completed: 3, exception: 2 }))
-      )
-    ).toContain('FAILED');
-    expect(
-      await textOf(
-        instance.renderStatusCell(statusCount({ failed: 1, pending: 1 }))
-      )
-    ).toContain('RUNNING');
+    expect(column(table, 2)).toEqual([
+      '5 tasks COMPLETED',
+      '7 tasks FAILED',
+      '5 tasks FAILED',
+      '2 tasks RUNNING',
+    ]);
   });
 
-  it('renders no status cell when there are no counted tasks', async () => {
-    const instance = await mountNoTaskGroup();
+  it('renders an empty status cell when there are no counted tasks', async () => {
+    const table = await renderPage([
+      { taskGroupId: 'a', statusCount: statusCount({}) },
+      { taskGroupId: 'b' },
+    ]);
 
-    expect(instance.renderStatusCell(statusCount({}))).toBeNull();
-    expect(instance.renderStatusCell(undefined)).toBeNull();
+    expect(column(table, 2)).toEqual(['', '']);
   });
 
   it('sorts by the clicked column and toggles direction on a second click', async () => {
-    const instance = await mountNoTaskGroup();
     const groups = [
       { taskGroupId: 'b', name: 'beta' },
       { taskGroupId: 'c', name: 'gamma' },
       { taskGroupId: 'a', name: 'alpha' },
     ];
+    const table = await renderPage(groups);
+    const nameHeader = within(table).getByRole('button', { name: 'Name' });
 
-    act(() => instance.setState({ recentTaskGroups: groups }));
     // Untouched until a header is clicked: recency order from the db query.
-    expect(instance.sortedTaskGroups()).toBe(groups);
+    expect(column(table, 1)).toEqual(['beta', 'gamma', 'alpha']);
 
-    act(() => instance.handleHeaderClick({ id: 'name' }));
-    expect(instance.sortedTaskGroups().map(g => g.name)).toEqual([
-      'gamma',
-      'beta',
-      'alpha',
-    ]);
+    fireEvent.click(nameHeader);
+    expect(column(table, 1)).toEqual(['gamma', 'beta', 'alpha']);
 
-    act(() => instance.handleHeaderClick({ id: 'name' }));
-    expect(instance.sortedTaskGroups().map(g => g.name)).toEqual([
-      'alpha',
-      'beta',
-      'gamma',
-    ]);
-    // Sorting must not reorder the array held in state.
+    fireEvent.click(nameHeader);
+    expect(column(table, 1)).toEqual(['alpha', 'beta', 'gamma']);
+    // Sorting must not reorder the records loaded from the db.
     expect(groups.map(g => g.name)).toEqual(['beta', 'gamma', 'alpha']);
   });
 
   it('sorts the Status column by total task count', async () => {
-    const instance = await mountNoTaskGroup();
-
-    act(() =>
-      instance.setState({
-        recentTaskGroups: [
-          { taskGroupId: 'a', statusCount: statusCount({ completed: 2 }) },
-          { taskGroupId: 'b', statusCount: statusCount({ completed: 9 }) },
-          { taskGroupId: 'c' },
-        ],
-      })
-    );
-    act(() => instance.handleHeaderClick({ id: 'statusCount' }));
-
-    expect(instance.sortedTaskGroups().map(g => g.taskGroupId)).toEqual([
-      'b',
-      'a',
-      'c',
+    const table = await renderPage([
+      { taskGroupId: 'a', statusCount: statusCount({ completed: 2 }) },
+      { taskGroupId: 'b', statusCount: statusCount({ completed: 9 }) },
+      { taskGroupId: 'c' },
     ]);
+
+    fireEvent.click(within(table).getByRole('button', { name: 'Status' }));
+
+    expect(column(table, 0)).toEqual(['b', 'a', 'c']);
   });
 });

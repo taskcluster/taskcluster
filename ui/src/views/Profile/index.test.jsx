@@ -1,13 +1,16 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import Profile from './index';
 
 it('should render Profile page', () => {
   const { asFragment } = render(
-    <MemoryRouter keyLength={0}>
-      <Profile />
-    </MemoryRouter>
+    <HelmetProvider>
+      <MemoryRouter keyLength={0}>
+        <Profile />
+      </MemoryRouter>
+    </HelmetProvider>
   );
 
   expect(asFragment()).toMatchSnapshot();

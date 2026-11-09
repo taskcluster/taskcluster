@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { getClient } from '../../../utils/client';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
 import { resolveLatestArtifactUrl } from '../../../utils/getArtifactUrl';
@@ -29,7 +30,8 @@ vi.mock('../../../utils/db', () => ({
   },
 }));
 
-vi.mock('../../../utils/getArtifactUrl', () => ({
+vi.mock('../../../utils/getArtifactUrl', async importOriginal => ({
+  ...(await importOriginal()),
   resolveLatestArtifactUrl: vi
     .fn()
     .mockResolvedValue('https://tc.example.com/api/queue/v1/actions.json'),
@@ -98,9 +100,14 @@ describe('TaskGroup page', () => {
 
     await act(async () => {
       ({ asFragment } = render(
-        <MemoryRouter keyLength={0}>
-          <TaskGroup match={{ params: { taskGroupId } }} location={location} />
-        </MemoryRouter>
+        <HelmetProvider>
+          <MemoryRouter keyLength={0}>
+            <TaskGroup
+              match={{ params: { taskGroupId } }}
+              location={location}
+            />
+          </MemoryRouter>
+        </HelmetProvider>
       ));
     });
 
@@ -111,10 +118,6 @@ describe('TaskGroup page', () => {
     });
     await act(async () => {});
 
-    // Dashboard renders null under jsdom (withWidth needs matchMedia), so
-    // assert on the data layer: the group, its decision task, and its tasks
-    // were fetched over REST, and live updates were subscribed over the
-    // events WebSocket.
     const queue = getClient.mock.results[0].value;
 
     expect(queue.getTaskGroup).toHaveBeenCalledWith(taskGroupId);
@@ -158,14 +161,16 @@ describe('TaskGroup page', () => {
     });
     const renderWithUser = async user => {
       const tree = auth => (
-        <MemoryRouter keyLength={0}>
-          <AuthContext.Provider value={authValue(auth)}>
-            <TaskGroup
-              match={{ params: { taskGroupId } }}
-              location={{ hash: '' }}
-            />
-          </AuthContext.Provider>
-        </MemoryRouter>
+        <HelmetProvider>
+          <MemoryRouter keyLength={0}>
+            <AuthContext.Provider value={authValue(auth)}>
+              <TaskGroup
+                match={{ params: { taskGroupId } }}
+                location={{ hash: '' }}
+              />
+            </AuthContext.Provider>
+          </MemoryRouter>
+        </HelmetProvider>
       );
       let rerender;
 

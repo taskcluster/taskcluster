@@ -17,8 +17,7 @@ vi.mock('../../../utils/anonymousScopes', async importOriginal => ({
   ...(await importOriginal()),
   withAnonymousScopes: Component => Component,
 }));
-// Dashboard renders null under jsdom (withWidth needs matchMedia); expose the
-// title so the REST-loaded task name can be asserted
+// Expose Dashboard's title so the REST-loaded task name can be asserted
 vi.mock('../../../components/Dashboard', () => ({
   default: ({ title, children }) => {
     return (
