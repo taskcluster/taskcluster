@@ -824,7 +824,7 @@ func (m *fakeMount) Unmount(taskMount *TaskMount) error {
 	return nil
 }
 
-func (m *fakeMount) FSContent() (FSContent, error) {
+func (m *fakeMount) PayloadContent() (PayloadContent, error) {
 	return m.content, nil
 }
 

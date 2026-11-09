@@ -485,20 +485,31 @@ type cachedContent struct {
 type MountEntry interface {
 	Mount(taskMount *TaskMount) error
 	Unmount(taskMount *TaskMount) error
-	FSContent() (FSContent, error)
+	PayloadContent() (PayloadContent, error)
 	RequiredScopes() []string
 	// path is where the mount is placed, relative to the task directory
 	path() string
 }
 
-// FSContent represents file system content - it is based on the auto-generated
-// type Content which is json.RawMessage, which can be ArtifactContent,
-// IndexedContent, URLContent, RawContent or Base64Content concrete types. This
-// is the interface which represents these underlying concrete types.
-type FSContent interface {
+// PayloadContent represents the content of a mount in the task payload - it is
+// based on the auto-generated type Content which is json.RawMessage, which can
+// be ArtifactContent, IndexedContent, URLContent, RawContent or Base64Content
+// concrete types. This is the interface which represents these underlying
+// concrete types.
+type PayloadContent interface {
 	// Keep it simple and just return a []string, rather than scopes.Required
 	// since currently no easy way to "AND" scopes.Required types.
 	RequiredScopes() []string
+	// String representation of where the content comes from
+	String() string
+	TaskDependencies() []string
+}
+
+// FSContent is mount content that can be downloaded. All PayloadContent types
+// are FSContent except IndexedContent, which TaskMount.fsContent resolves to
+// an ArtifactContent.
+type FSContent interface {
+	PayloadContent
 	// Download the content, and return the absolute location of the file. No
 	// archive extraction is performed.
 	Download(taskMount *TaskMount) (file string, sha256 string, err error)
@@ -508,9 +519,6 @@ type FSContent interface {
 	UniqueKey(taskMount *TaskMount) (string, error)
 	// SHA256 of the content.
 	RequiredSHA256() string
-	// String representation of where the content comes from
-	String() string
-	TaskDependencies() []string
 }
 
 // No scopes required to mount files/dirs in a task
@@ -628,14 +636,14 @@ func (taskMount *TaskMount) initRequiredScopes() {
 	requiredScopes := []string{}
 	for _, mount := range taskMount.mounts {
 		requiredScopes = append(requiredScopes, mount.RequiredScopes()...)
-		fsContent, err := mount.FSContent()
+		content, err := mount.PayloadContent()
 		if err != nil {
 			taskMount.payloadError = err
 			return
 		}
 		// A writable cache might not be preloaded so might have no initial content
-		if fsContent != nil {
-			requiredScopes = append(requiredScopes, fsContent.RequiredScopes()...)
+		if content != nil {
+			requiredScopes = append(requiredScopes, content.RequiredScopes()...)
 		}
 	}
 	taskMount.requiredScopes = scopes.Required{requiredScopes}
@@ -645,14 +653,14 @@ func (taskMount *TaskMount) initRequiredScopes() {
 func (taskMount *TaskMount) initReferencedTaskIDs() {
 	taskMount.referencedTaskIDs = map[string]bool{}
 	for _, mount := range taskMount.mounts {
-		fsContent, err := mount.FSContent()
+		content, err := mount.PayloadContent()
 		if err != nil {
 			taskMount.payloadError = err
 			return
 		}
 		// A writable cache might not be preloaded so might have no initial content
-		if fsContent != nil {
-			for _, taskID := range fsContent.TaskDependencies() {
+		if content != nil {
+			for _, taskID := range content.TaskDependencies() {
 				taskMount.referencedTaskIDs[taskID] = true
 			}
 		}
@@ -863,7 +871,7 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 		}
 		e := mount.Unmount(taskMount)
 		if e != nil {
-			fsc, errfsc := mount.FSContent()
+			fsc, errfsc := mount.PayloadContent()
 			if errfsc != nil {
 				taskMount.Errorf("Could not unmount mount entry %v (description not available due to '%v') due to: '%v'", i, errfsc, e)
 			} else {
@@ -980,13 +988,13 @@ func (w *WritableDirectoryCache) RequiredScopes() []string {
 	return []string{"generic-worker:cache:" + w.CacheName}
 }
 
-// FSContent returns either a *ArtifactContent, *IndexedContent, *URLContent,
+// PayloadContent returns either a *ArtifactContent, *IndexedContent, *URLContent,
 // *RawContent or *Base64Content that is listed in the given
 // *WritableDirectoryCache
-func (w *WritableDirectoryCache) FSContent() (FSContent, error) {
+func (w *WritableDirectoryCache) PayloadContent() (PayloadContent, error) {
 	// no content if an empty cache folder, e.g. object directory
 	if w.Content != nil {
-		return FSContentFrom(w.Content)
+		return PayloadContentFrom(w.Content)
 	}
 	return nil, nil
 }
@@ -1001,10 +1009,10 @@ func (r *ReadOnlyDirectory) RequiredScopes() []string {
 	return []string{}
 }
 
-// FSContent returns either a *ArtifactContent, *IndexedContent, *URLContent,
+// PayloadContent returns either a *ArtifactContent, *IndexedContent, *URLContent,
 // *RawContent or *Base64Content that is listed in the given *ReadOnlyDirectory
-func (r *ReadOnlyDirectory) FSContent() (FSContent, error) {
-	return FSContentFrom(r.Content)
+func (r *ReadOnlyDirectory) PayloadContent() (PayloadContent, error) {
+	return PayloadContentFrom(r.Content)
 }
 
 func (r *ReadOnlyDirectory) path() string {
@@ -1017,10 +1025,10 @@ func (f *FileMount) RequiredScopes() []string {
 	return []string{}
 }
 
-// FSContent returns either a *ArtifactContent, *IndexedContent, *URLContent,
+// PayloadContent returns either a *ArtifactContent, *IndexedContent, *URLContent,
 // *RawContent or *Base64Content that is listed in the given *FileMount
-func (f *FileMount) FSContent() (FSContent, error) {
-	return FSContentFrom(f.Content)
+func (f *FileMount) PayloadContent() (PayloadContent, error) {
+	return PayloadContentFrom(f.Content)
 }
 
 func (f *FileMount) path() string {
@@ -1531,10 +1539,10 @@ func decompress(mount *FileMount, fsContent FSContent, file string, taskMount *T
 	return nil
 }
 
-// FSContentFrom returns either a *ArtifactContent, *IndexedContent,
+// PayloadContentFrom returns either a *ArtifactContent, *IndexedContent,
 // *URLContent, *RawContent or *Base64Content based on the content
 // (json.RawMessage)
-func FSContentFrom(c json.RawMessage) (FSContent, error) {
+func PayloadContentFrom(c json.RawMessage) (PayloadContent, error) {
 	// c must be one of:
 	//   * ArtifactContent
 	//   * IndexedContent
@@ -1567,10 +1575,10 @@ func FSContentFrom(c json.RawMessage) (FSContent, error) {
 
 // Utility method to unmarshal Content (json.RawMessage) into *ArtifactContent,
 // *IndexedContent, *URLContent, *RawContent or *Base64Content (anything that
-// implements FSContent interface)
-func UnmarshalInto(c json.RawMessage, fsContent FSContent) (FSContent, error) {
-	err := json.Unmarshal(c, fsContent)
-	return fsContent, err
+// implements PayloadContent interface)
+func UnmarshalInto(c json.RawMessage, content PayloadContent) (PayloadContent, error) {
+	err := json.Unmarshal(c, content)
+	return content, err
 }
 
 // Downloads ArtifactContent to a file inside the downloads directory specified
@@ -1601,13 +1609,13 @@ func (ac *ArtifactContent) Download(taskMount *TaskMount) (file string, sha256 s
 }
 
 func (taskMount *TaskMount) fsContent(mount MountEntry) (FSContent, error) {
-	c, err := mount.FSContent()
+	c, err := mount.PayloadContent()
 	if err != nil {
 		return nil, err
 	}
 	ic, ok := c.(*IndexedContent)
 	if !ok {
-		return c, nil
+		return c.(FSContent), nil
 	}
 
 	taskID, ok := taskMount.indexed[ic.Namespace]
@@ -1624,12 +1632,6 @@ func (taskMount *TaskMount) fsContent(mount MountEntry) (FSContent, error) {
 	return &ArtifactContent{Artifact: ic.Artifact, TaskID: taskID}, nil
 }
 
-var errUnresolvedIndexedContent = errors.New("IndexedContent must be resolved with TaskMount.fsContent before use")
-
-func (ic *IndexedContent) Download(taskMount *TaskMount) (file string, sha256 string, err error) {
-	return "", "", errUnresolvedIndexedContent
-}
-
 func (ac *ArtifactContent) String() string {
 	return "task " + ac.TaskID + " artifact " + ac.Artifact
 }
@@ -1642,16 +1644,8 @@ func (ac *ArtifactContent) UniqueKey(taskMount *TaskMount) (string, error) {
 	return "artifact:" + ac.TaskID + ":" + ac.Artifact, nil
 }
 
-func (ic *IndexedContent) UniqueKey(taskMount *TaskMount) (string, error) {
-	return "", errUnresolvedIndexedContent
-}
-
 func (ac *ArtifactContent) RequiredSHA256() string {
 	return ac.SHA256
-}
-
-func (ic *IndexedContent) RequiredSHA256() string {
-	return ""
 }
 
 func (ac *ArtifactContent) TaskDependencies() []string {
