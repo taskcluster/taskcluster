@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import db from '../../../utils/db';
 import NoTask from './index';
 
 const mockHistory = { push: vi.fn() };
@@ -25,115 +26,86 @@ vi.mock('../../../utils/db', () => ({
       orderBy: vi.fn().mockReturnThis(),
       reverse: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
-      toArray: vi.fn().mockResolvedValue([]),
+      toArray: vi.fn(),
     },
   },
 }));
 
 // Fake timers are global (see vitest.setup.js), so settle on microtasks.
-async function mountNoTask() {
-  const ref = React.createRef();
-
-  await act(async () => {
-    render(
-      <HelmetProvider>
-        <MemoryRouter keyLength={0}>
-          <NoTask ref={ref} history={mockHistory} />
-        </MemoryRouter>
-      </HelmetProvider>
-    );
-  });
-  await act(async () => {});
-
-  return ref.current;
-}
-
-async function renderRow(element) {
+async function renderPage(records) {
+  db.taskIdsHistory.toArray.mockResolvedValue(records);
   let container;
 
   await act(async () => {
     ({ container } = render(
-      <MemoryRouter keyLength={0}>
-        <table>
-          <tbody>{element}</tbody>
-        </table>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <NoTask history={mockHistory} />
+        </MemoryRouter>
+      </HelmetProvider>
     ));
   });
+  await act(async () => {});
 
-  return container;
+  return container.querySelector('table');
 }
 
-describe('NoTask page', () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
+const rows = table => Array.from(table.querySelectorAll('tbody tr'));
+const names = table => rows(table).map(row => row.cells[1].textContent);
 
+describe('NoTask page', () => {
   it('renders all stored metadata for a record', async () => {
-    const instance = await mountNoTask();
-    const container = await renderRow(instance.renderTaskRow(richRecord));
-    const { textContent } = container;
+    const [row] = rows(await renderPage([richRecord]));
+    const { textContent } = row;
 
     expect(textContent).toContain(richRecord.name);
     expect(textContent).toContain(richRecord.taskQueueId);
     expect(textContent).toContain(richRecord.state);
     expect(textContent).toMatch(/viewed/);
-    expect(container.querySelector('code').textContent).toBe(richRecord.taskId);
-    const titles = Array.from(container.querySelectorAll('[title]')).map(el =>
-      el.getAttribute('title')
+    expect(row.querySelector('code').textContent).toBe(richRecord.taskId);
+    expect(row.cells[2].getAttribute('title')).toBe(
+      'State recorded at view time; may be stale'
     );
-
-    expect(titles).toContain('State recorded at view time; may be stale');
   });
 
   it('renders a legacy ID-only record with no viewed label and a linked ID', async () => {
-    const instance = await mountNoTask();
-    const container = await renderRow(instance.renderTaskRow(legacyRecord));
+    const [row] = rows(await renderPage([legacyRecord]));
 
-    expect(container.textContent).toContain(legacyRecord.taskId);
-    expect(container.textContent).not.toMatch(/viewed/);
-    const link = container.querySelector('a');
+    expect(row.textContent).toContain(legacyRecord.taskId);
+    expect(row.textContent).not.toMatch(/viewed/);
+    const link = row.querySelector('a');
 
     expect(link.getAttribute('href')).toBe(`/tasks/${legacyRecord.taskId}`);
     expect(link.textContent).toBe(legacyRecord.taskId);
   });
 
   it('omits the viewed label for the viewedAt:0 the v1->v2 migration back-fills', async () => {
-    const instance = await mountNoTask();
-    const container = await renderRow(
-      instance.renderTaskRow({ taskId: legacyRecord.taskId, viewedAt: 0 })
+    const [row] = rows(
+      await renderPage([{ taskId: legacyRecord.taskId, viewedAt: 0 }])
     );
 
-    expect(container.textContent).toContain(legacyRecord.taskId);
-    expect(container.textContent).not.toMatch(/viewed/);
+    expect(row.textContent).toContain(legacyRecord.taskId);
+    expect(row.textContent).not.toMatch(/viewed/);
   });
 
   it('sorts by the clicked column and toggles direction on a second click', async () => {
-    const instance = await mountNoTask();
     const tasks = [
       { taskId: 'b', name: 'beta' },
       { taskId: 'c', name: 'gamma' },
       { taskId: 'a', name: 'alpha' },
     ];
+    const table = await renderPage(tasks);
+    const nameHeader = within(table).getByRole('button', { name: 'Name' });
 
-    act(() => instance.setState({ recentTasks: tasks }));
     // Untouched until a header is clicked: recency order from the db query.
-    expect(instance.sortedTasks()).toBe(tasks);
+    expect(names(table)).toEqual(['beta', 'gamma', 'alpha']);
 
-    act(() => instance.handleHeaderClick({ id: 'name' }));
-    expect(instance.sortedTasks().map(t => t.name)).toEqual([
-      'gamma',
-      'beta',
-      'alpha',
-    ]);
+    fireEvent.click(nameHeader);
+    expect(names(table)).toEqual(['gamma', 'beta', 'alpha']);
 
-    act(() => instance.handleHeaderClick({ id: 'name' }));
-    expect(instance.sortedTasks().map(t => t.name)).toEqual([
-      'alpha',
-      'beta',
-      'gamma',
-    ]);
-    // Sorting must not reorder the array held in state.
+    fireEvent.click(nameHeader);
+    expect(names(table)).toEqual(['alpha', 'beta', 'gamma']);
+    // Sorting must not reorder the records loaded from the db.
     expect(tasks.map(t => t.name)).toEqual(['beta', 'gamma', 'alpha']);
   });
 });
