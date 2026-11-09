@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
-import Hidden from '@material-ui/core/Hidden';
 import Typography from '@material-ui/core/Typography';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import Button from '../Button';
@@ -21,6 +21,17 @@ import SignInDialog from '../SignInDialog';
     [theme.breakpoints.down('sm')]: {
       marginBottom: theme.spacing(2),
       fontSize: 40,
+    },
+  },
+  largeHeadline: {
+    display: 'none',
+    [theme.breakpoints.up('sm')]: {
+      display: 'block',
+    },
+  },
+  smallHeadline: {
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
     },
   },
   actions: {
@@ -61,16 +72,16 @@ export default class HomePage extends Component {
 
     return (
       <Landing className={classes.root}>
-        <Hidden xsDown implementation="css">
-          <Typography variant="h1" className={classes.headline}>
-            {window.env.APPLICATION_NAME}
-          </Typography>
-        </Hidden>
-        <Hidden smUp implementation="css">
-          <Typography variant="h2" className={classes.headline}>
-            {window.env.APPLICATION_NAME}
-          </Typography>
-        </Hidden>
+        <Typography
+          variant="h1"
+          className={classNames(classes.headline, classes.largeHeadline)}>
+          {window.env.APPLICATION_NAME}
+        </Typography>
+        <Typography
+          variant="h2"
+          className={classNames(classes.headline, classes.smallHeadline)}>
+          {window.env.APPLICATION_NAME}
+        </Typography>
         <Typography variant="h5" className={classes.ciDescription}>
           A task execution framework that supports Mozilla&apos;s continuous
           integration and release processes.
