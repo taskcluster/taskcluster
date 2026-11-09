@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { TaskclusterClientContext } from '../../../utils/TaskclusterClient';
 import { subscribeToNamedEvents } from '../../../utils/pulseListener';
 import { resolveLatestArtifactUrl } from '../../../utils/getArtifactUrl';
@@ -24,7 +25,8 @@ vi.mock('../../../utils/db', () => ({
   },
 }));
 
-vi.mock('../../../utils/getArtifactUrl', () => ({
+vi.mock('../../../utils/getArtifactUrl', async importOriginal => ({
+  ...(await importOriginal()),
   resolveLatestArtifactUrl: vi
     .fn()
     .mockResolvedValue('https://tc.example.com/api/queue/v1/actions.json'),
@@ -125,14 +127,16 @@ const renderPage = async ({ queue, runId } = {}) => {
 
   await act(async () => {
     ({ asFragment } = render(
-      <MemoryRouter keyLength={0}>
-        <TaskclusterClientContext.Provider value={() => queue}>
-          <ViewTask
-            match={{ params: { taskId, runId } }}
-            location={{ hash: '' }}
-          />
-        </TaskclusterClientContext.Provider>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <TaskclusterClientContext.Provider value={() => queue}>
+            <ViewTask
+              match={{ params: { taskId, runId } }}
+              location={{ hash: '' }}
+            />
+          </TaskclusterClientContext.Provider>
+        </MemoryRouter>
+      </HelmetProvider>
     ));
   });
   // flush the resource fetches, including those keyed on the loaded task

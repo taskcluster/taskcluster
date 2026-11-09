@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import NoTask from './index';
 
 const mockHistory = { push: vi.fn() };
@@ -37,9 +38,11 @@ async function mountNoTask() {
 
   await act(async () => {
     render(
-      <MemoryRouter keyLength={0}>
-        <NoTask ref={ref} history={mockHistory} />
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <NoTask ref={ref} history={mockHistory} />
+        </MemoryRouter>
+      </HelmetProvider>
     );
   });
   await act(async () => {});
