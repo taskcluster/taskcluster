@@ -1,13 +1,15 @@
 import { omit } from 'ramda';
-import merge from 'deepmerge';
 import cloneDeep from 'lodash.clonedeep';
 import fromNowJSON from './fromNowJSON';
 import { TASK_ADDED_FIELDS } from './constants';
 
 // Transform task to an interactive task
-export default task =>
-  merge(
-    omit(
+export default task => {
+  const clone = cloneDeep(task);
+  const payload = omit(['artifacts', 'cache'], clone.payload || {});
+
+  return {
+    ...omit(
       [
         ...TASK_ADDED_FIELDS,
         'taskGroupId',
@@ -17,23 +19,19 @@ export default task =>
         'scopes',
         'payload',
       ],
-      cloneDeep(task)
+      clone
     ),
-    {
-      retries: 0,
-      deadline: fromNowJSON('12 hours'),
-      created: fromNowJSON(),
-      expires: fromNowJSON('7 days'),
-      // Delete cache scopes
-      scopes: task.scopes.filter(scope => !/^docker-worker:cache:/.test(scope)),
-      payload: merge(omit(['artifacts', 'cache'], task.payload || {}), {
-        maxRunTime: Math.max(task.payload?.maxRunTime, 3 * 60 * 60),
-        features: {
-          interactive: true,
-        },
-        env: {
-          TASKCLUSTER_INTERACTIVE: 'true',
-        },
-      }),
-    }
-  );
+    retries: 0,
+    deadline: fromNowJSON('12 hours'),
+    created: fromNowJSON(),
+    expires: fromNowJSON('7 days'),
+    // Delete cache scopes
+    scopes: task.scopes.filter(scope => !/^docker-worker:cache:/.test(scope)),
+    payload: {
+      ...payload,
+      maxRunTime: Math.max(payload.maxRunTime, 3 * 60 * 60),
+      features: { ...payload.features, interactive: true },
+      env: { ...payload.env, TASKCLUSTER_INTERACTIVE: 'true' },
+    },
+  };
+};
