@@ -227,7 +227,7 @@ exports[`should render TaskRunsCard 1`] = `
                                   class="TaskRunsCard-artifactNameWrapper-13"
                                 >
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-6 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-artifactLabel-6 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"
@@ -381,7 +381,7 @@ exports[`should render TaskRunsCard 1`] = `
                                   class="TaskRunsCard-artifactNameWrapper-13"
                                 >
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-6 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-artifactLabel-6 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"

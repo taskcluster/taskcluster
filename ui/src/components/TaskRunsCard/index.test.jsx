@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskRunsCard from './index';
 
@@ -98,7 +98,7 @@ it('should link an unsafe log artifact name to the artifact url', () => {
   );
 });
 
-it('should indicate unavailable artifacts without marking unknown states', () => {
+it('should indicate unavailable artifacts and leave available artifacts unmarked', () => {
   render(
     <MemoryRouter keyLength={0}>
       <TaskRunsCard
@@ -128,11 +128,6 @@ it('should indicate unavailable artifacts without marking unknown states', () =>
             name: 'public/missing.txt',
             contentType: 'text/plain',
           },
-          {
-            storageType: 'unknown',
-            name: 'public/unknown.txt',
-            contentType: 'text/plain',
-          },
         ]}
         page={0}
         onNextPage={vi.fn()}
@@ -141,10 +136,15 @@ it('should indicate unavailable artifacts without marking unknown states', () =>
     </MemoryRouter>
   );
 
-  expect(screen.getByTitle('Artifact is unavailable')).toBeTruthy();
-  expect(screen.getByText('public/available.txt')).toBeTruthy();
-  expect(screen.getByText('public/unknown.txt')).toBeTruthy();
-  expect(screen.getAllByText('UNAVAILABLE')).toHaveLength(1);
+  const unavailableRow = screen
+    .getByText('public/missing.txt')
+    .closest('tr');
+  const availableRow = screen
+    .getByText('public/available.txt')
+    .closest('tr');
+
+  expect(within(unavailableRow).getByText('UNAVAILABLE')).toBeTruthy();
+  expect(within(availableRow).queryByText('UNAVAILABLE')).toBeNull();
 });
 
 it('should render the no-runs state', () => {

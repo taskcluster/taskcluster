@@ -72,7 +72,7 @@ const DOTS_VARIANT_LIMIT = 5;
     pointer: {
       cursor: 'pointer',
     },
-    logButton: {
+    artifactLabel: {
       marginRight: theme.spacing(1),
     },
     artifactsListItemContainer: {
@@ -329,13 +329,12 @@ export default class TaskRunsCard extends Component {
                 <Label
                   status="error"
                   mini
-                  className={classes.logButton}
-                  title="Artifact is unavailable">
+                  className={classes.artifactLabel}>
                   UNAVAILABLE
                 </Label>
               )}
               {isLogFile && (
-                <Label status="info" mini className={classes.logButton}>
+                <Label status="info" mini className={classes.artifactLabel}>
                   LOG
                 </Label>
               )}
