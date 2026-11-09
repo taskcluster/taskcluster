@@ -156,7 +156,8 @@ The credentials must correspond to an IAM user with the following permissions:
                 "ec2:CreateTags",
                 "ec2:RunInstances",
                 "ec2:DescribeInstanceStatus",
-                "ec2:DescribeRegions"
+                "ec2:DescribeRegions",
+                "ec2:DescribeVolumes"
             ],
             "Resource": "*"
         }
@@ -231,7 +232,8 @@ Add the role under your subscription -> "IAM" -> "Create a Custom Role", and sta
     "Microsoft.Network/virtualNetworks/read",
     "Microsoft.Network/virtualNetworks/subnets/join/action",
     "Microsoft.Resources/deployments/*",
-    "Microsoft.Resources/subscriptions/resourceGroups/read"
+    "Microsoft.Resources/subscriptions/resourceGroups/read",
+    "Microsoft.Resources/subscriptions/resources/read"
   ],
   "AssignableScopes": [
     "/subscriptions/your-subscription-id"
