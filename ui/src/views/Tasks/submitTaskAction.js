@@ -1,4 +1,3 @@
-import merge from 'deepmerge';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
 import cloneDeep from 'lodash.clonedeep';
 import jsone from 'json-e';
@@ -40,15 +39,13 @@ export default async ({ task, form, action, getCredentials, taskActions }) => {
     throw new Error(ajv.errorsText(validate.errors));
   }
 
-  const context = merge(
-    {
-      taskGroupId: task.taskGroupId,
-      taskId: task.taskId,
-      task,
-      input,
-    },
-    actions.variables
-  );
+  const context = {
+    taskGroupId: task.taskGroupId,
+    taskId: task.taskId,
+    task,
+    input,
+    ...actions.variables,
+  };
 
   if (action.kind === 'task') {
     const ownTaskId = nice();
