@@ -29,7 +29,7 @@ export default task => {
     scopes: task.scopes.filter(scope => !/^docker-worker:cache:/.test(scope)),
     payload: {
       ...payload,
-      maxRunTime: Math.max(payload.maxRunTime, 3 * 60 * 60),
+      maxRunTime: Math.max(payload.maxRunTime ?? 0, 3 * 60 * 60),
       features: { ...payload.features, interactive: true },
       env: { ...payload.env, TASKCLUSTER_INTERACTIVE: 'true' },
     },
