@@ -226,19 +226,6 @@ func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 	)
 }
 
-func (tsm *TaskStatusManager) Cancel() error {
-	return tsm.updateStatus(
-		cancelled,
-		func(task *TaskRun) error {
-			//TODO: implement cancelling of tasks
-			return nil
-		},
-		claimed,
-		reclaimed,
-		aborted,
-	)
-}
-
 func (tsm *TaskStatusManager) LastKnownStatus() TaskStatus {
 	tsm.Lock()
 	defer tsm.Unlock()

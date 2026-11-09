@@ -152,15 +152,14 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func purgeOldTasks(skipDirs ...string) error {
+func purgeOldTasks(skipDirs ...string) {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
-		return nil
+		return
 	}
 	// skipDirs contains all task directories to preserve (running tasks, etc.)
 	deleteTaskDirs(config.TasksDir, skipDirs...)
 	deleteTaskDirs(config.ReservedArtifactsDir, skipDirs...)
-	return nil
 }
 
 func install(arguments map[string]any) (err error) {

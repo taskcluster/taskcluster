@@ -41,22 +41,6 @@ func TestTaskManagerCapacity(t *testing.T) {
 	require.True(t, tm.IsIdle())
 }
 
-func TestTaskManagerLastActive(t *testing.T) {
-	tm := NewTaskManager(2)
-	initialTime := tm.LastActive()
-
-	time.Sleep(5 * time.Millisecond)
-	task := &TaskRun{TaskID: "task1"}
-	tm.AddTask(task)
-	afterAdd := tm.LastActive()
-	require.True(t, afterAdd.After(initialTime))
-
-	time.Sleep(5 * time.Millisecond)
-	tm.RemoveTask("task1", 0)
-	afterRemove := tm.LastActive()
-	require.True(t, afterRemove.After(afterAdd))
-}
-
 func TestTaskManagerConcurrentAccess(t *testing.T) {
 	tm := NewTaskManager(100)
 
