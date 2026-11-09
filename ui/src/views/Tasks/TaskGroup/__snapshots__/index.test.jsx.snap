@@ -193,7 +193,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2"
       >
         <button
-          class="MuiButtonBase-root TaskGroupProgress-completedButton-69 TaskGroupProgress-statusButton-65"
+          class="MuiButtonBase-root TaskGroupProgress-completedButton-71 TaskGroupProgress-statusButton-67"
           name="COMPLETED"
           tabindex="0"
           type="button"
@@ -201,7 +201,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-68"
+              class="mdi-icon TaskGroupProgress-statusIcon-70"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -214,12 +214,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-66 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
             >
               1
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-67 TaskGroupProgress-statusButtonTypography-66 MuiTypography-caption"
+              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
             >
               COMPLETED
             </span>
@@ -229,7 +229,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-runningButton-74 TaskGroupProgress-statusButton-65 TaskGroupProgress-noTasksButton-75"
+          class="MuiButtonBase-root TaskGroupProgress-runningButton-76 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
           name="RUNNING"
           tabindex="0"
           type="button"
@@ -237,7 +237,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-68"
+              class="mdi-icon TaskGroupProgress-statusIcon-70"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -250,12 +250,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-66 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-67 TaskGroupProgress-statusButtonTypography-66 MuiTypography-caption"
+              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
             >
               RUNNING
             </span>
@@ -265,7 +265,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-failedButton-70 TaskGroupProgress-statusButton-65 TaskGroupProgress-noTasksButton-75"
+          class="MuiButtonBase-root TaskGroupProgress-failedButton-72 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
           name="FAILED"
           tabindex="0"
           type="button"
@@ -273,7 +273,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-68"
+              class="mdi-icon TaskGroupProgress-statusIcon-70"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -286,12 +286,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-66 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-67 TaskGroupProgress-statusButtonTypography-66 MuiTypography-caption"
+              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
             >
               FAILED
             </span>
@@ -301,7 +301,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-pendingButton-72 TaskGroupProgress-statusButton-65 TaskGroupProgress-noTasksButton-75"
+          class="MuiButtonBase-root TaskGroupProgress-pendingButton-74 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
           name="PENDING"
           tabindex="0"
           type="button"
@@ -309,7 +309,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-68"
+              class="mdi-icon TaskGroupProgress-statusIcon-70"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -322,12 +322,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-66 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-67 TaskGroupProgress-statusButtonTypography-66 MuiTypography-caption"
+              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
             >
               PENDING
             </span>
@@ -337,7 +337,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-exceptionButton-73 TaskGroupProgress-statusButton-65 TaskGroupProgress-noTasksButton-75"
+          class="MuiButtonBase-root TaskGroupProgress-exceptionButton-75 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
           name="EXCEPTION"
           tabindex="0"
           type="button"
@@ -345,7 +345,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-68"
+              class="mdi-icon TaskGroupProgress-statusIcon-70"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -358,12 +358,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-66 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-67 TaskGroupProgress-statusButtonTypography-66 MuiTypography-caption"
+              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
             >
               EXCEPTION
             </span>
@@ -373,7 +373,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-unscheduledButton-71 TaskGroupProgress-statusButton-65 TaskGroupProgress-noTasksButton-75"
+          class="MuiButtonBase-root TaskGroupProgress-unscheduledButton-73 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
           name="UNSCHEDULED"
           tabindex="0"
           type="button"
@@ -381,7 +381,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-68"
+              class="mdi-icon TaskGroupProgress-statusIcon-70"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -394,12 +394,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-66 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-67 TaskGroupProgress-statusButtonTypography-66 MuiTypography-caption"
+              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
             >
               UNSCHEDULED
             </span>
@@ -417,7 +417,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-77 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2027-08-30T00:00:00.000Z (Copy)"
@@ -529,19 +529,19 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         role="table"
       >
         <div
-          class="MuiTable-root TaskGroupTable-table-80"
+          class="MuiTable-root TaskGroupTable-table-82"
           role="table"
         >
           <div
-            class="MuiTableHead-root TaskGroupTable-tableHead-81"
+            class="MuiTableHead-root TaskGroupTable-tableHead-83"
             role="rowgroup"
           >
             <div
-              class="MuiTableRow-root TaskGroupTable-tableHeadRow-82 MuiTableRow-head"
+              class="MuiTableRow-root TaskGroupTable-tableHeadRow-84 MuiTableRow-head"
               role="row"
             >
               <div
-                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableFirstCell-88 TaskGroupTable-tableHeadCell-83 MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableFirstCell-90 TaskGroupTable-tableHeadCell-85 MuiTableCell-sizeSmall"
                 role="columnheader"
                 scope="col"
               >
@@ -566,13 +566,13 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                 </span>
               </div>
               <div
-                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableSecondHeadCell-84 MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableSecondHeadCell-86 MuiTableCell-sizeSmall"
                 role="columnheader"
                 scope="col"
               >
                 <span
                   aria-disabled="false"
-                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-83"
+                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-85"
                   id="Duration"
                   role="button"
                   tabindex="0"
@@ -591,13 +591,13 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                 </span>
               </div>
               <div
-                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableThirdHeadCell-86 MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableThirdHeadCell-88 MuiTableCell-sizeSmall"
                 role="columnheader"
                 scope="col"
               >
                 <span
                   aria-disabled="false"
-                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-83"
+                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-85"
                   id="Status"
                   role="button"
                   tabindex="0"
@@ -619,13 +619,13 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
         </div>
         <p
-          class="MuiTypography-root TaskGroupTable-noTasksText-93 MuiTypography-body2"
+          class="MuiTypography-root TaskGroupTable-noTasksText-95 MuiTypography-body2"
         >
           No tasks available
         </p>
       </div>
       <div
-        class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-95"
+        class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-97"
         history="[object Object]"
         match="[object Object]"
         role="presentation"
@@ -685,7 +685,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             id="speed-dial-action-0"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabel-98"
+              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabel-100"
               id="speed-dial-action-0-label"
               style="transition-delay: 90ms;"
             >
@@ -693,7 +693,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             </span>
             <button
               aria-describedby="speed-dial-action-0-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-96 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall"
+              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-98 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall"
               role="menuitem"
               style="transition-delay: 90ms;"
               tabindex="-1"
@@ -725,7 +725,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             id="speed-dial-action-1"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-97"
+              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-99"
               id="speed-dial-action-1-label"
               style="transition-delay: 60ms;"
             >
@@ -733,7 +733,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             </span>
             <button
               aria-describedby="speed-dial-action-1-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-96 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-98 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
               disabled=""
               role="menuitem"
               style="transition-delay: 60ms;"
@@ -763,7 +763,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             id="speed-dial-action-2"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-97"
+              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-99"
               id="speed-dial-action-2-label"
               style="transition-delay: 30ms;"
             >
@@ -771,7 +771,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             </span>
             <button
               aria-describedby="speed-dial-action-2-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-96 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-98 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
               disabled=""
               role="menuitem"
               style="transition-delay: 30ms;"
