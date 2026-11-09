@@ -470,6 +470,8 @@ type TaskMount struct {
 	// downloads holds the content that downloadContent fetched ahead of
 	// mounting, keyed by the mount entry it is for.
 	downloads map[MountEntry]cachedContent
+	// indexed holds the task ID each index namespace resolved to.
+	indexed map[string]string
 }
 
 // cachedContent is a file in the file cache holding the content of a mount.
@@ -556,6 +558,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 		mounts:      []MountEntry{},
 		mounted:     []MountEntry{},
 		poolEntries: make(map[*WritableDirectoryCache]*Cache),
+		indexed:     map[string]string{},
 	}
 	for i, taskMount := range task.Payload.Mounts {
 		// Each mount must be one of:
@@ -793,9 +796,9 @@ func (taskMount *TaskMount) downloadContent() error {
 		if _, ok := mount.(*WritableDirectoryCache); ok {
 			continue
 		}
-		fsContent, err := mount.FSContent()
-		if err != nil || fsContent == nil {
-			// leave it to Mount to report
+		fsContent, err := taskMount.fsContent(mount)
+		if err != nil {
+			results[i] = &result{err: err}
 			continue
 		}
 		if seen[fsContent.String()] {
@@ -1100,7 +1103,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 	} else {
 		taskMount.Infof("No existing writable directory cache '%v' - creating %v", w.CacheName, target)
 		if w.Content != nil {
-			c, fsErr := FSContentFrom(w.Content)
+			c, fsErr := taskMount.fsContent(w)
 			if fsErr != nil {
 				_ = evictEntry()
 				return fmt.Errorf("not able to retrieve FSContent: %v", fsErr)
@@ -1158,7 +1161,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 }
 
 func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
-	c, err := FSContentFrom(r.Content)
+	c, err := taskMount.fsContent(r)
 	if err != nil {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
@@ -1172,7 +1175,7 @@ func (r *ReadOnlyDirectory) Unmount(taskMount *TaskMount) error {
 }
 
 func (f *FileMount) Mount(taskMount *TaskMount) error {
-	fsContent, err := FSContentFrom(f.Content)
+	fsContent, err := taskMount.fsContent(f)
 	if err != nil {
 		return err
 	}
@@ -1253,12 +1256,6 @@ func isCallerRejected(err error) bool {
 // A task that shared another task's download retries when that download was
 // rejected for the caller. Its own 401 or 403 is final.
 func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha256 string, err error) {
-	if ic, ok := fsContent.(*IndexedContent); ok {
-		fsContent, err = ic.artifactContent(taskMount)
-		if err != nil {
-			return "", "", err
-		}
-	}
 	cacheKey, err := fsContent.UniqueKey(taskMount)
 	if err != nil {
 		return "", "", err
@@ -1603,16 +1600,31 @@ func (ac *ArtifactContent) Download(taskMount *TaskMount) (file string, sha256 s
 	return
 }
 
-func (ic *IndexedContent) artifactContent(taskMount *TaskMount) (*ArtifactContent, error) {
-	itr, err := taskMount.index.FindTask(ic.Namespace)
+func (taskMount *TaskMount) fsContent(mount MountEntry) (FSContent, error) {
+	c, err := mount.FSContent()
 	if err != nil {
-		return nil, fmt.Errorf("cannot find task in index namespace %v: %w", ic.Namespace, err)
+		return nil, err
 	}
-	taskMount.Infof("Index namespace %v resolved to task %v", ic.Namespace, itr.TaskID)
-	return &ArtifactContent{Artifact: ic.Artifact, TaskID: itr.TaskID}, nil
+	ic, ok := c.(*IndexedContent)
+	if !ok {
+		return c, nil
+	}
+
+	taskID, ok := taskMount.indexed[ic.Namespace]
+	if !ok {
+		itr, err := taskMount.index.FindTask(ic.Namespace)
+		if err != nil {
+			return nil, fmt.Errorf("cannot find task in index namespace %v: %w", ic.Namespace, err)
+		}
+		taskMount.Infof("Index namespace %v resolved to task %v", ic.Namespace, itr.TaskID)
+		taskID = itr.TaskID
+		taskMount.indexed[ic.Namespace] = taskID
+	}
+
+	return &ArtifactContent{Artifact: ic.Artifact, TaskID: taskID}, nil
 }
 
-var errUnresolvedIndexedContent = errors.New("IndexedContent must be resolved with artifactContent before use")
+var errUnresolvedIndexedContent = errors.New("IndexedContent must be resolved with TaskMount.fsContent before use")
 
 func (ic *IndexedContent) Download(taskMount *TaskMount) (file string, sha256 string, err error) {
 	return "", "", errUnresolvedIndexedContent
