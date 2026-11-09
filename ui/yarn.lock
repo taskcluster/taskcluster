@@ -1078,7 +1078,6 @@ __metadata:
     cross-env: "npm:^7.0.0"
     date-fns: "npm:^2.30.0"
     deep-sort-object: "npm:^1.0.2"
-    deepmerge: "npm:^4.3.1"
     dexie: "npm:^3.2.6"
     fast-memoize: "npm:^2.5.1"
     highlight.js: "npm:^11.12.0"
@@ -2176,13 +2175,6 @@ __metadata:
   dependencies:
     is-plain-object: "npm:^2.0.1"
   checksum: 10c0/a1dcb479b806cfdecd554d890233a73af909f402e90bdc64b8f6f0bfffc7839730950549395915dea8d1cffd9169cbfa3cc92ae4286987a2e1b3cfb4766dc3be
-  languageName: node
-  linkType: hard
-
-"deepmerge@npm:^4.3.1":
-  version: 4.3.1
-  resolution: "deepmerge@npm:4.3.1"
-  checksum: 10c0/e53481aaf1aa2c4082b5342be6b6d8ad9dfe387bc92ce197a66dea08bd4265904a087e75e464f14d1347cf2ac8afe1e4c16b266e0561cc5df29382d3c5f80044
   languageName: node
   linkType: hard
 
