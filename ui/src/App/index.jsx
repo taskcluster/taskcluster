@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
 import { ErrorBoundary } from 'react-error-boundary';
+import { HelmetProvider } from 'react-helmet-async';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -128,31 +129,33 @@ export default class App extends Component {
     // error with all of those things in place, but as a consequence can't
     // catch errors in those components.
     return (
-      <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
-        <AuthContext.Provider value={auth}>
-          <TaskclusterClientContext.Provider
-            value={this.createTaskclusterClient}>
-            <ToggleThemeContext.Provider value={this.toggleTheme}>
-              <MuiThemeProvider theme={theme}>
-                <CssBaseline />
-                <ErrorBoundary
-                  FallbackComponent={ErrorPanel}
-                  onError={reportError}>
-                  <Main
-                    error={error}
-                    key={
-                      auth.user?.credentials
-                        ? auth.user.credentials.clientId
-                        : ''
-                    }
-                    routes={routes}
-                  />
-                </ErrorBoundary>
-              </MuiThemeProvider>
-            </ToggleThemeContext.Provider>
-          </TaskclusterClientContext.Provider>
-        </AuthContext.Provider>
-      </ErrorBoundary>
+      <HelmetProvider>
+        <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
+          <AuthContext.Provider value={auth}>
+            <TaskclusterClientContext.Provider
+              value={this.createTaskclusterClient}>
+              <ToggleThemeContext.Provider value={this.toggleTheme}>
+                <MuiThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <ErrorBoundary
+                    FallbackComponent={ErrorPanel}
+                    onError={reportError}>
+                    <Main
+                      error={error}
+                      key={
+                        auth.user?.credentials
+                          ? auth.user.credentials.clientId
+                          : ''
+                      }
+                      routes={routes}
+                    />
+                  </ErrorBoundary>
+                </MuiThemeProvider>
+              </ToggleThemeContext.Provider>
+            </TaskclusterClientContext.Provider>
+          </AuthContext.Provider>
+        </ErrorBoundary>
+      </HelmetProvider>
     );
   }
 }
