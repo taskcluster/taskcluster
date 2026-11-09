@@ -293,6 +293,7 @@ export default class TaskRunsCard extends Component {
     const { classes } = this.props;
     const { isCopy } = this.state;
     const { name } = artifact;
+    const isMissing = artifact.storageType === 'error';
     const {
       icon: Icon,
       isLogFile,
@@ -324,6 +325,15 @@ export default class TaskRunsCard extends Component {
               <Icon />
             </div>
             <div className={classes.artifactNameWrapper}>
+              {isMissing && (
+                <Label
+                  status="error"
+                  mini
+                  className={classes.logButton}
+                  title="Artifact is unavailable">
+                  UNAVAILABLE
+                </Label>
+              )}
               {isLogFile && (
                 <Label status="info" mini className={classes.logButton}>
                   LOG

@@ -98,6 +98,55 @@ it('should link an unsafe log artifact name to the artifact url', () => {
   );
 });
 
+it('should indicate unavailable artifacts without marking unknown states', () => {
+  render(
+    <MemoryRouter keyLength={0}>
+      <TaskRunsCard
+        taskId="taskId"
+        taskQueueId="task/queueId"
+        selectedRunId={0}
+        runs={[
+          {
+            runId: 0,
+            state: 'completed',
+            reasonCreated: 'scheduled',
+            reasonResolved: 'completed',
+            scheduled: '2022-02-03T14:41:19.706Z',
+            started: '2022-02-03T14:43:54.086Z',
+            resolved: '2022-02-03T14:45:28.396Z',
+            takenUntil: '2022-02-03T15:03:54.082Z',
+          },
+        ]}
+        artifacts={[
+          {
+            storageType: 'object',
+            name: 'public/available.txt',
+            contentType: 'text/plain',
+          },
+          {
+            storageType: 'error',
+            name: 'public/missing.txt',
+            contentType: 'text/plain',
+          },
+          {
+            storageType: 'unknown',
+            name: 'public/unknown.txt',
+            contentType: 'text/plain',
+          },
+        ]}
+        page={0}
+        onNextPage={vi.fn()}
+        onPreviousPage={vi.fn()}
+      />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByTitle('Artifact is unavailable')).toBeTruthy();
+  expect(screen.getByText('public/available.txt')).toBeTruthy();
+  expect(screen.getByText('public/unknown.txt')).toBeTruthy();
+  expect(screen.getAllByText('UNAVAILABLE')).toHaveLength(1);
+});
+
 it('should render the no-runs state', () => {
   const { getByText } = render(
     <MemoryRouter keyLength={0}>
