@@ -30,9 +30,7 @@ vi.mock('../../../utils/db', () => ({
   },
 }));
 
-// Dashboard's withWidth renders null in jsdom, so assert against the instance's
-// own helpers rather than the mounted tree. Fake timers are global (see
-// vitest.setup.js), so mounting must settle on microtasks, not a timer.
+// Fake timers are global (see vitest.setup.js), so settle on microtasks.
 async function mountNoTask() {
   const ref = React.createRef();
 

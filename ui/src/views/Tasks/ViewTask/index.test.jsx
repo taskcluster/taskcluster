@@ -173,10 +173,6 @@ describe('ViewTask page', () => {
   it('should render ViewTask page', async () => {
     const asFragment = await renderPage({ queue });
 
-    // Dashboard renders null under jsdom (withWidth needs matchMedia), so
-    // assert on the data layer: the task, its status, the latest run's
-    // artifacts and its dependents were fetched over REST, and live updates
-    // were subscribed over the events WebSocket.
     expect(queue.task).toHaveBeenCalledWith(taskId);
     expect(queue.status).toHaveBeenCalledWith(taskId);
     expect(queue.listArtifacts).toHaveBeenCalledWith(taskId, 1, {

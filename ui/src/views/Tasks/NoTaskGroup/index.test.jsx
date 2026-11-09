@@ -39,13 +39,7 @@ vi.mock('../../../utils/db', () => ({
   },
 }));
 
-// NoTaskGroup renders inside <Dashboard>, which is decorated with Material-UI's
-// withWidth; in jsdom (no window.matchMedia) withWidth returns null and the
-// mounted tree is empty, so a full-render assertion would assert nothing.
-// Instead we grab the instance and drive its own helpers (renderTaskGroupRow,
-// renderStatusCell, sortedTaskGroups) directly. vitest.setup.js installs fake
-// timers, so mounting must settle componentDidMount on microtasks only -- a
-// timer-based flush would never fire.
+// Fake timers are global (see vitest.setup.js), so settle on microtasks.
 async function mountNoTaskGroup() {
   const ref = React.createRef();
 

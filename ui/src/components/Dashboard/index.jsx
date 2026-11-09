@@ -3,12 +3,12 @@ import { bool, node, string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { titleCase } from 'title-case';
-import { withStyles } from '@material-ui/core/styles';
+import { useTheme, withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import withWidth from '@material-ui/core/withWidth';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Divider from '@material-ui/core/Divider';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
@@ -37,8 +37,19 @@ import DocsSidebarList from './DocsSidebarList';
 import SkipNavigation from '../SkipNavigation';
 import versionInfo from '../../../../version.json';
 
+const withMobileView = Wrapped =>
+  // biome-ignore lint/correctness/noComponentHookFactories: decorator
+  function MobileViewComponent(props) {
+    const theme = useTheme();
+    const isMobileView = !useMediaQuery(theme.breakpoints.up('md'), {
+      noSsr: true,
+    });
+
+    return <Wrapped {...props} isMobileView={isMobileView} />;
+  };
+
 @withRouter
-@withWidth()
+@withMobileView
 @withStyles(
   theme => ({
     root: {
@@ -254,7 +265,7 @@ export default class Dashboard extends Component {
       onToggleTheme,
       docs,
       history,
-      width,
+      isMobileView,
       staticContext: _,
       disableTitleFormatting,
       disableAppbar,
@@ -312,7 +323,6 @@ export default class Dashboard extends Component {
       </nav>
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
-    const isMobileView = width === 'sm' || width === 'xs';
     const pageTitle = disableTitleFormatting ? title : titleCase(title);
 
     return (

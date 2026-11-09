@@ -118,10 +118,6 @@ describe('TaskGroup page', () => {
     });
     await act(async () => {});
 
-    // Dashboard renders null under jsdom (withWidth needs matchMedia), so
-    // assert on the data layer: the group, its decision task, and its tasks
-    // were fetched over REST, and live updates were subscribed over the
-    // events WebSocket.
     const queue = getClient.mock.results[0].value;
 
     expect(queue.getTaskGroup).toHaveBeenCalledWith(taskGroupId);
