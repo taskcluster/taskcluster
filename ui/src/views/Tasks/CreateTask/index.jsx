@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { parse, stringify } from 'qs';
 import storage from 'localforage';
-import merge from 'deepmerge';
+import cloneDeep from 'lodash.clonedeep';
 import { load, dump } from 'js-yaml';
 import { bool } from 'prop-types';
 import {
@@ -164,13 +164,12 @@ export default class CreateTask extends Component {
   }
 
   makeInteractive(payload) {
-    const task = merge(payload, {
-      payload: {
-        features: {
-          interactive: true,
-        },
-      },
-    });
+    const task = cloneDeep(payload);
+
+    task.payload = {
+      ...task.payload,
+      features: { ...task.payload?.features, interactive: true },
+    };
 
     if (task.payload.caches) {
       delete task.payload.caches;
