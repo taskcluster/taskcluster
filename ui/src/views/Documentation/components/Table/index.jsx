@@ -6,7 +6,7 @@ const styles = theme => ({
   container: {
     width: '100%',
     overflow: 'auto',
-    marginBottom: 4 * theme.spacing(1),
+    marginBottom: theme.spacing(4),
   },
   table: {
     display: 'table',

@@ -13,7 +13,7 @@ import ListItem from '@material-ui/core/ListItem';
     width: '100%',
   },
   listItem: {
-    marginLeft: -theme.spacing(1),
+    marginLeft: theme.spacing(-1),
     padding: theme.spacing(1),
     width: 'auto',
   },

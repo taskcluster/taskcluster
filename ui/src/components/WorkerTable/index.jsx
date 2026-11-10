@@ -18,7 +18,7 @@ import Link from '../../utils/Link';
 @withRouter
 @withStyles(theme => ({
   dateListItem: {
-    marginLeft: -theme.spacing(1),
+    marginLeft: theme.spacing(-1),
     padding: theme.spacing(1),
   },
   taskName: {
@@ -31,7 +31,7 @@ import Link from '../../utils/Link';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
   },
 }))

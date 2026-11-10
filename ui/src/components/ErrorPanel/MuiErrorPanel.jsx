@@ -13,10 +13,10 @@ import Markdown from '../Markdown';
 
     return {
       panel: {
-        marginBottom: 3 * theme.spacing(1),
+        marginBottom: theme.spacing(3),
       },
       paper: {
-        padding: `0 ${2 * theme.spacing(1)}px`,
+        padding: `0 ${theme.spacing(2)}px`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',

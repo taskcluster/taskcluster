@@ -29,7 +29,7 @@ const COUNT_COLUMNS = ['pendingTasks', 'claimedTasks', 'workerTypeCount'];
 @withRouter
 @withStyles(theme => ({
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
     borderRadius: 4,
   },

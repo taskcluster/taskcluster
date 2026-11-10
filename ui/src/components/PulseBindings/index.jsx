@@ -23,7 +23,7 @@ import TextField from '../TextField';
     marginTop: theme.spacing(5),
   },
   deleteIcon: {
-    marginRight: -theme.spacing(2),
+    marginRight: theme.spacing(-2),
   },
   inputWrapper: {
     display: 'flex',
