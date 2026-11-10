@@ -370,11 +370,12 @@ export default (cfg, db, strategies, auth, monitor) => {
     ensureLoggedIn(),
     server.decision((req, done) => {
       const { scope, description, expires, clientId } = req.body;
+      const expiresDate = new Date(expires);
 
       return done(null, {
         scope: scope ? scope.split(' ') : [],
         description,
-        expires: new Date(expires),
+        expires: Number.isNaN(expiresDate.getTime()) ? undefined : expiresDate,
         clientId,
       });
     }),
