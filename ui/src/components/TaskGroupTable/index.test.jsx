@@ -1,18 +1,7 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import render from '../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import TaskGroupTable from './index';
-
-vi.mock('@material-ui/core/styles', () => ({
-  withStyles: () => Component => {
-    function StyledComponent(props) {
-      return <Component {...props} classes={{}} />;
-    }
-
-    return StyledComponent;
-  },
-  alpha: (color, opacity) => `rgba(${color}, ${opacity})`,
-}));
 
 let capturedItemKey = null;
 let capturedItemData = null;
