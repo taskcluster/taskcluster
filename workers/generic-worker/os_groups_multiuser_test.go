@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v115/internal/slugid"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/host"
 )
 
 func TestMissingScopesOSGroups(t *testing.T) {

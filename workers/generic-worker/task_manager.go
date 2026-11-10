@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
 )
 
 // TaskManager manages concurrent task execution and tracks running tasks.

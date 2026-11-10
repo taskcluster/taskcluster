@@ -3,6 +3,90 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v116.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.27.4 [SECURITY].
+
+Release notes [here](https://go.dev/doc/devel/release#go1.27.4).
+
+### DEPLOYERS
+
+▶ [patch] [#9436](https://github.com/taskcluster/taskcluster/issues/9436)
+The enforces the `taskMaxDependencies` limit in `createTask` again
+
+▶ [patch]
+The worker-manager deployment docs now list the cloud permissions needed by the `check-dangling-resources` cron job (added in v115.0.0): `ec2:DescribeVolumes` in the AWS IAM policy example, and `Microsoft.Resources/subscriptions/resources/read` in the Azure custom role example. The Azure role must be assigned at subscription scope, as the docs already describe. GCP needs no change, since `roles/compute.admin` already covers it. Deployments whose credentials only have the previously documented permissions report `listErrors: 1` for that provider in the job's summary.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 2072178](http://bugzil.la/2072178)
+**Breaking change:** livelog now refuses to start, exiting with code 68, if the `ACCESS_TOKEN` environment variable is unset or empty. Previously it started anyway and served logs to any client that requested `/log/`. If you run the standalone livelog binary or the `taskcluster/livelog` Docker image, set `ACCESS_TOKEN` to a non-empty url-safe string before upgrading. Generic Worker always sets a per-task token, so it is not affected.
+
+Livelog and Generic Worker no longer write the livelog URL, which contains the access token, to their logs. Livelog's startup exit codes are documented in its README.
+
+▶ [patch] [bug 2084232](http://bugzil.la/2084232)
+Generic Worker (multiuser, posix) no longer runs `chmod -R u+w` on leftover task directories before deleting them with `rm -rf`. The worker runs as root, so the `chmod` was never needed.
+
+▶ [patch] [bug 2084230](http://bugzil.la/2084230)
+Generic Worker now looks up an `IndexedContent` mount's index namespace once, and uses that task ID for both the download cache entry and the artifact download.
+
+▶ [patch]
+Generic Worker with `capacity` > 1 no longer deletes a running task's directory and task user when a new run of the same task is claimed before the previous run finishes.
+
+▶ [patch] [#9424](https://github.com/taskcluster/taskcluster/issues/9424)
+Worker-manager's Azure provider no longer leaks network interfaces and public IPs for resource-based (non-ARM) launch configs. The provisioner used to create a worker's first resource itself, racing the worker scanner. Slow create could land after the scanner had already torn the worker down. Already-leaked resources need manual cleanup.
+
+For ARM template launch configs, the scanner now waits up to 10 minutes for a new worker's deployment to appear instead of removing the worker right away.
+
+### USERS
+
+▶ [MAJOR]
+The index rank returned by `index.findTask`, `index.insertTask`, `index.findTasksAtIndex`, `index.listTasks` and `index.listTasksPost` is now an integer. The generated Go client now returns it as an `int64` instead of a `float64`.
+
+▶ [MAJOR]
+`index.insertTask` now ensures that the rank is an integer that fits a postgres `Int4` (-2147483648 / 2147483647) instead of returning a 500 when the passed rank did not fit.
+
+The generated clients now expect the rank passed to `index.insertTask` to be an integer instead of a float.
+
+▶ [MAJOR]
+`queue.createTask` now rejects tasks with an `index.*` route whose `extra.index` contains values the index service would reject, silently skip indexing. `rank` must be an integer fitting in a postgres `int4`, `expires` must be a date in the future, `data` must be an object.
+
+▶ [patch]
+Disable the save button when creating a client if the current expiration date in the form is invalid
+
+▶ [patch] [#9435](https://github.com/taskcluster/taskcluster/issues/9435)
+Fix an environment variable leak in generic-worker POSIX tasks where environment variables declared on earlier commands accumulated into subsequent commands.
+
+▶ [patch]
+Generic Worker now resolves each index namespace once per task, so all `IndexedContent` mounts of the same namespace in a task use artifacts from the same task.
+
+▶ [patch]
+Native browser widgets (scrollbars, `<select>` and other native inputs) will now
+follow the taskcluster theme instead of always being light themed
+
+▶ [patch]
+Switch the date pickers to browser native ones in the UI
+
+▶ [patch]
+The github service now verifies webhook signatures against the raw received
+body instead of a reserialization of the parsed JSON. This fixes events not
+being processed when certain characters that needed escaping were present in
+events
+
+▶ [patch]
+The index service no longer fails to process a task completion message when `task.extra.index.data` is `null`
+
+▶ [patch]
+The oauth2 consent decision endpoint now defaults to the registered client's
+`maxExpires` when passed in an invalid `expires`
+
+▶ [patch] [#5278](https://github.com/taskcluster/taskcluster/issues/5278)
+The third-party login consent page no longer shows "Invalid request" for valid
+OAuth2 requests
+
 ## v115.0.1
 
 ### DEPLOYERS

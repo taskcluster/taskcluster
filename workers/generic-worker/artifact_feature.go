@@ -12,10 +12,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v115/internal/scopes"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v116/internal/scopes"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/process"
 	"golang.org/x/sync/errgroup"
 )
 

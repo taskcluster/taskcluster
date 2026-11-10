@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
-	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcindex"
-	"github.com/taskcluster/taskcluster/v115/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v115/internal/slugid"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
+	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v116/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {

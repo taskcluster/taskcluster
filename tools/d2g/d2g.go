@@ -13,10 +13,10 @@ import (
 	"testing"
 
 	"github.com/distribution/reference"
-	"github.com/taskcluster/taskcluster/v115/internal/scopes"
-	"github.com/taskcluster/taskcluster/v115/internal/slugid"
-	"github.com/taskcluster/taskcluster/v115/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v115/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v116/internal/scopes"
+	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	"github.com/taskcluster/taskcluster/v116/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v116/tools/d2g/genericworker"
 
 	"slices"
 

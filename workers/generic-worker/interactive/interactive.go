@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v115/internal/slugid"
+	"github.com/taskcluster/taskcluster/v116/internal/slugid"
 )
 
 type CreateInteractiveProcess func() (InteractiveCmdType, error)

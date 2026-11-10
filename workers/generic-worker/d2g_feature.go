@@ -15,11 +15,11 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/taskcluster/taskcluster/v115/internal/scopes"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/process"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v116/internal/scopes"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/safefs"
 )
 
 // Concurrency model (capacity > 1):

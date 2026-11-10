@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/win32"
 )
 
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1360539

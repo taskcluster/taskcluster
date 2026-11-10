@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/gwconfig"
 )
 
 func shaOf(content string) string {
