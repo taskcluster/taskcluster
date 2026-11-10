@@ -18,6 +18,14 @@ import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 import './index.css';
 
+function OuterErrorPanel(props) {
+  return (
+    <MuiThemeProvider theme={theme.darkTheme}>
+      <ErrorPanel {...props} />
+    </MuiThemeProvider>
+  );
+}
+
 export default class App extends Component {
   static propTypes = {
     routes: arrayOf(route).isRequired,
@@ -124,13 +132,15 @@ export default class App extends Component {
     const { auth, error, theme } = this.state;
 
     // Note that there are two error boundaries here.  The first will catch
-    // errors in the stack of providers, but presents its error panel without
-    // the MUI theme, fonts, css baseline, and so on.  The second renders the
-    // error with all of those things in place, but as a consequence can't
-    // catch errors in those components.
+    // errors in the stack of providers, and presents its error panel with the
+    // dark theme but without fonts, css baseline, and so on. The second
+    // renders the error with all of those things in place, but as a
+    // consequence can't catch errors in those components.
     return (
       <HelmetProvider>
-        <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
+        <ErrorBoundary
+          FallbackComponent={OuterErrorPanel}
+          onError={reportError}>
           <AuthContext.Provider value={auth}>
             <TaskclusterClientContext.Provider
               value={this.createTaskclusterClient}>
