@@ -50,7 +50,7 @@ const getBindingsFromProps = props => {
     ...theme.mixins.errorIcon,
   },
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
   },
   drawerContainer: {

@@ -61,7 +61,7 @@ const abbreviatedHeader = (id, short) => ({
 @withRouter
 @withStyles(theme => ({
   button: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
     borderRadius: 4,
   },

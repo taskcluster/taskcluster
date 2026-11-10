@@ -13,8 +13,8 @@ import username from '../../utils/username';
 @withAuth
 @withStyles(theme => ({
   avatarButton: {
-    height: 6 * theme.spacing(1),
-    width: 6 * theme.spacing(1),
+    height: theme.spacing(6),
+    width: theme.spacing(6),
     padding: 0,
   },
 }))

@@ -29,11 +29,11 @@ const markdownHtml = parser({ html: true, linkify: true });
       margin: 0,
     },
     '& .anchor-link': {
-      marginTop: -theme.spacing(1) * 12, // Offset for the anchor.
+      marginTop: theme.spacing(-12), // Offset for the anchor.
       position: 'absolute',
     },
     '& pre, & pre[class*="language-"]': {
-      margin: `${3 * theme.spacing(1)}px 0`,
+      margin: `${theme.spacing(3)}px 0`,
       padding: '12px 18px',
       borderRadius: 3,
       overflow: 'auto',
@@ -136,16 +136,16 @@ const markdownHtml = parser({ html: true, linkify: true });
     },
     '& td': {
       borderBottom: `1px solid ${theme.palette.divider}`,
-      padding: `${theme.spacing(1)}px ${2 * theme.spacing(1)}px ${theme.spacing(
+      padding: `${theme.spacing(1)}px ${theme.spacing(2)}px ${theme.spacing(
         1
       )}px ${theme.spacing(1)}px`,
       textAlign: 'left',
     },
     '& td:last-child': {
-      paddingRight: 3 * theme.spacing(1),
+      paddingRight: theme.spacing(3),
     },
     '& td compact': {
-      paddingRight: 3 * theme.spacing(1),
+      paddingRight: theme.spacing(3),
     },
     '& td code': {
       fontSize: '.8125em',
@@ -155,11 +155,11 @@ const markdownHtml = parser({ html: true, linkify: true });
       whiteSpace: 'pre',
       borderBottom: `1px solid ${theme.palette.divider}`,
       fontWeight: theme.typography.fontWeightMedium,
-      padding: `0 ${theme.spacing(1) * 2}px 0 ${theme.spacing(1)}px`,
+      padding: `0 ${theme.spacing(2)}px 0 ${theme.spacing(1)}px`,
       textAlign: 'left',
     },
     '& th:last-child': {
-      paddingRight: 3 * theme.spacing(1),
+      paddingRight: theme.spacing(3),
     },
     '& tr': {
       height: 48,
@@ -172,8 +172,8 @@ const markdownHtml = parser({ html: true, linkify: true });
     },
     '& blockquote': {
       borderLeft: `5px solid ${theme.palette.text.hint}`,
-      padding: `${theme.spacing(1) / 2}px ${3 * theme.spacing(1)}px`,
-      margin: `${3 * theme.spacing(1)}px 0`,
+      padding: `${theme.spacing(0.5)}px ${theme.spacing(3)}px`,
+      margin: `${theme.spacing(3)}px 0`,
     },
     '& img': {
       maxWidth: '100%',

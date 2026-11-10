@@ -27,7 +27,7 @@ const iconSize = 16;
 
 @withStyles(theme => ({
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
     borderRadius: 4,
   },
