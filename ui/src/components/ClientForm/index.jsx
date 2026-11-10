@@ -363,7 +363,7 @@ export default class ClientForm extends Component {
             spanProps={{ className: classes.fab }}
             tooltipProps={{ title: 'Save' }}
             requiresAuth
-            disabled={loading || !isClientDirty}
+            disabled={loading || !isClientDirty || !expires}
             variant="circular"
             onClick={this.handleSaveClient}
             classes={{ root: classes.saveIcon }}>
@@ -378,7 +378,7 @@ export default class ClientForm extends Component {
                 className: classNames(classes.fab, classes.saveClientSpan),
               }}
               tooltipProps={{ title: 'Save' }}
-              disabled={loading || !isClientDirty}
+              disabled={loading || !isClientDirty || !expires}
               classes={{ root: classes.saveIcon }}>
               <ContentSaveIcon />
             </Button>
