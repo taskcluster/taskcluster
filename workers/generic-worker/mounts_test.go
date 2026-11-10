@@ -1231,12 +1231,28 @@ func TestIndexedArtifactMountUsesResolvedTask(t *testing.T) {
 	serviceFactory = findTaskHook{orig, func() { indexArtifact(t, namespace, taskID2, 2) }}
 	t.Cleanup(func() { serviceFactory = orig })
 
-	mountTaskID := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+	content := json.RawMessage(`{"namespace": "` + namespace + `", "artifact": "public/indexed-artifact"}`)
+	mounts := []MountEntry{
+		&FileMount{File: "first.zip", Content: content},
+		&FileMount{File: "second.zip", Content: content},
+	}
+	payload := GenericWorkerPayload{
+		Mounts: toMountArray(t, &mounts),
+		Artifacts: []Artifact{
+			{Name: "public/first", Path: "first.zip", Type: "file"},
+			{Name: "public/second", Path: "second.zip", Type: "file"},
+		},
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+	mountTaskID := submitAndAssert(t, testTask(t), payload, "completed", "completed")
 
 	want := getArtifactContent(t, taskID1, "public/indexed-artifact")
-	got := getArtifactContent(t, mountTaskID, "public/republished-artifact")
-	if string(got) != string(want) {
-		t.Fatalf("Expected mount task %v to get the artifact of task %v (%v bytes), got %v bytes", mountTaskID, taskID1, len(want), len(got))
+	for _, name := range []string{"public/first", "public/second"} {
+		if got := getArtifactContent(t, mountTaskID, name); string(got) != string(want) {
+			t.Errorf("Expected %v of mount task %v to be the artifact of task %v (%v bytes), got %v bytes", name, mountTaskID, taskID1, len(want), len(got))
+		}
 	}
 }
 
