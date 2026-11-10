@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, act, fireEvent, within } from '@testing-library/react';
+import { act, fireEvent, within } from '@testing-library/react';
+import render from '../../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import db from '../../../utils/db';
