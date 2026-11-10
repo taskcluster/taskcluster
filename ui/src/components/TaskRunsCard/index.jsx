@@ -326,10 +326,7 @@ export default class TaskRunsCard extends Component {
             </div>
             <div className={classes.artifactNameWrapper}>
               {isMissing && (
-                <Label
-                  status="error"
-                  mini
-                  className={classes.artifactLabel}>
+                <Label status="error" mini className={classes.artifactLabel}>
                   UNAVAILABLE
                 </Label>
               )}

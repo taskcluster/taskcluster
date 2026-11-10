@@ -136,12 +136,8 @@ it('should indicate unavailable artifacts and leave available artifacts unmarked
     </MemoryRouter>
   );
 
-  const unavailableRow = screen
-    .getByText('public/missing.txt')
-    .closest('tr');
-  const availableRow = screen
-    .getByText('public/available.txt')
-    .closest('tr');
+  const unavailableRow = screen.getByText('public/missing.txt').closest('tr');
+  const availableRow = screen.getByText('public/available.txt').closest('tr');
 
   expect(within(unavailableRow).getByText('UNAVAILABLE')).toBeTruthy();
   expect(within(availableRow).queryByText('UNAVAILABLE')).toBeNull();
