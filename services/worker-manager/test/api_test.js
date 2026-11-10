@@ -384,11 +384,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     assert.notDeepEqual(updated.config.launchConfigs, created.config.launchConfigs);
 
-    assert.equal(created.config.launchConfigs[0].workerManager.maxCapacity, 5);
-    assert.equal(updated.config.launchConfigs[0].workerManager.maxCapacity, 9);
+    const inRegion = (wp, region) => wp.config.launchConfigs.find(lc => lc.region === region);
+    assert.equal(inRegion(created, 'us-west-1').workerManager.maxCapacity, 5);
+    assert.equal(inRegion(updated, 'us-west-1').workerManager.maxCapacity, 9);
 
-    assert.equal(created.config.launchConfigs[1].workerManager.capacityPerInstance, 3);
-    assert.equal(updated.config.launchConfigs[1].workerManager.capacityPerInstance, 8);
+    assert.equal(inRegion(created, 'us-west-2').workerManager.capacityPerInstance, 3);
+    assert.equal(inRegion(updated, 'us-west-2').workerManager.capacityPerInstance, 8);
   });
 
   test('launchConfigIds should be unique across worker pool - create worker pool', async () => {
