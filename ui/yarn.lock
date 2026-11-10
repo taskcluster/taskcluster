@@ -96,7 +96,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.6.0, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.7":
+"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.7":
   version: 7.29.2
   resolution: "@babel/runtime@npm:7.29.2"
   checksum: 10c0/30b80a0140d16467792e1bbeb06f655b0dab70407da38dfac7fedae9c859f9ae9d846ef14ad77bd3814c064295fe9b1bc551f1541ea14646ae9f22b71a8bc17a
@@ -316,24 +316,6 @@ __metadata:
   version: 4.0.2
   resolution: "@csstools/css-tokenizer@npm:4.0.2"
   checksum: 10c0/748b42450064cca6a54d2bb8a719cb765c6433b8988ed8855f39c9814b8ef30c4daab235ffee9dacb0388916d6e250ec6bee454e8353d06161228e129e4272ae
-  languageName: node
-  linkType: hard
-
-"@date-io/core@npm:1.x, @date-io/core@npm:^1.3.13":
-  version: 1.3.13
-  resolution: "@date-io/core@npm:1.3.13"
-  checksum: 10c0/7f099234a6fff74c5510197de577c2402ba399ce45341978e59252452192988aa41e0157d29a478b293513f68a18fc1674c408fa8b6f1c6a1f26b181581df3b2
-  languageName: node
-  linkType: hard
-
-"@date-io/date-fns@npm:1.3.13":
-  version: 1.3.13
-  resolution: "@date-io/date-fns@npm:1.3.13"
-  dependencies:
-    "@date-io/core": "npm:^1.3.13"
-  peerDependencies:
-    date-fns: ^2.0.0
-  checksum: 10c0/5ab31d2e007389dd22f04a474b4a90c67d2a878c1981dca5926fde96733fc51b1379dd5d5b8ba39267ccbbd2625e76dc86a5838db091b55d99853af143e4b691
   languageName: node
   linkType: hard
 
@@ -639,26 +621,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10c0/54bf943096107cacae95b20c116220812ba6e2fd29f09c38179d6ed09f689b59b1005fd8b3f36a2be75ef147a87be0ba868af768ed150c0ffc0d507b3a10e8a9
-  languageName: node
-  linkType: hard
-
-"@material-ui/pickers@npm:3.3.11":
-  version: 3.3.11
-  resolution: "@material-ui/pickers@npm:3.3.11"
-  dependencies:
-    "@babel/runtime": "npm:^7.6.0"
-    "@date-io/core": "npm:1.x"
-    "@types/styled-jsx": "npm:^2.2.8"
-    clsx: "npm:^1.0.2"
-    react-transition-group: "npm:^4.0.0"
-    rifm: "npm:^0.7.0"
-  peerDependencies:
-    "@date-io/core": ^1.3.6
-    "@material-ui/core": ^4.0.0
-    prop-types: ^15.6.0
-    react: ^16.8.0 || ^17.0.0
-    react-dom: ^16.8.0 || ^17.0.0
-  checksum: 10c0/6b6cfe445ba9ecd9996839a5d1d1ef315dfa05d5dba9b0be20df2c63589ba0ea3b455d1fab38ad6ffe847daaa76f7adbdf0df6c1850c4fd522a979e0e000a22a
   languageName: node
   linkType: hard
 
@@ -1054,12 +1016,10 @@ __metadata:
   resolution: "@taskcluster/ui@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^2.6.4"
-    "@date-io/date-fns": "npm:1.3.13"
     "@fontsource/roboto": "npm:^5.3.0"
     "@material-ui/core": "npm:^4.8.3"
     "@material-ui/icons": "npm:^4.5.1"
     "@material-ui/lab": "npm:4.0.0-alpha.61"
-    "@material-ui/pickers": "npm:3.3.11"
     "@mdx-js/mdx": "npm:^3.1.1"
     "@mdx-js/react": "npm:^3.1.1"
     "@mdx-js/rollup": "npm:^3.1.1"
@@ -1299,15 +1259,6 @@ __metadata:
   version: 0.16.2
   resolution: "@types/scheduler@npm:0.16.2"
   checksum: 10c0/89a3a922f03609b61c270d534226791edeedcb1b06f0225d5543ac17830254624ef9d8a97ad05418e4ce549dd545bddf1ff28cb90658ff10721ad14556ca68a5
-  languageName: node
-  linkType: hard
-
-"@types/styled-jsx@npm:^2.2.8":
-  version: 2.2.9
-  resolution: "@types/styled-jsx@npm:2.2.9"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10c0/5c673ad5331b189470b8ac55c419419fbf1a2bfe2f3e3d7a684cfc5d781cace89bc86521786589b22b9c1144998464dc1b93c72a7b42523af479b0afbff3cf27
   languageName: node
   linkType: hard
 
@@ -1870,7 +1821,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^1.0.2, clsx@npm:^1.0.4":
+"clsx@npm:^1.0.4":
   version: 1.1.1
   resolution: "clsx@npm:1.1.1"
   checksum: 10c0/5c34e1d5623e3dce0dbf22eedd4f3cc7cd0dee6b1b1ef3ad49d042c9d86372a1dc7788c2ca3213ec08e65ad0e91572ae7cb77183a478c9977bd5327e8f43ffe5
@@ -5227,7 +5178,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-transition-group@npm:^4.0.0, react-transition-group@npm:^4.4.0":
+"react-transition-group@npm:^4.4.0":
   version: 4.4.2
   resolution: "react-transition-group@npm:4.4.2"
   dependencies:
@@ -5512,17 +5463,6 @@ __metadata:
   bin:
     resolve: bin/resolve
   checksum: 10c0/e12af106e16e652bd83060e8afacece4ee3dcbd0f4cf028e3d9ad178e6ced9ecb1c87ee60158b239582313902a717f8adc57a9b76ea54b1994141ba15f420c65
-  languageName: node
-  linkType: hard
-
-"rifm@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "rifm@npm:0.7.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.3.1"
-  peerDependencies:
-    react: ">=16.8"
-  checksum: 10c0/91fcaf188c2800901357a905fc10d1702c3b6354e9a1ba1f915707961dd1c4ed96098c8c24c57f1190fb825a4d402971726a74b3356cfa30eb6ceea268b02d3b
   languageName: node
   linkType: hard
 

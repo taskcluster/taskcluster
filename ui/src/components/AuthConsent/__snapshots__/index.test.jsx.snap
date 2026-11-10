@@ -167,48 +167,26 @@ exports[`should render AuthConsent page 1`] = `
                         </span>
                         <p
                           class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
-                        />
+                        >
+                          <input
+                            name="expires"
+                            type="hidden"
+                            value="2022-02-02T00:00:00.000Z"
+                          />
+                        </p>
                         <div
-                          class="MuiFormControl-root MuiTextField-root DatePicker-datePicker-6"
+                          class="MuiFormControl-root MuiTextField-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInput-colorSecondary MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
+                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInput-colorSecondary MuiInputBase-formControl MuiInput-formControl"
                           >
                             <input
                               aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
-                              name="expires"
-                              type="text"
-                              value="2022/02/02 01:00 AM"
+                              class="MuiInputBase-input MuiInput-input"
+                              max="3023-02-17T13:00"
+                              type="datetime-local"
+                              value="2022-02-02T01:00"
                             />
-                            <div
-                              class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-                            >
-                              <button
-                                class="MuiButtonBase-root MuiIconButton-root"
-                                tabindex="0"
-                                type="button"
-                              >
-                                <span
-                                  class="MuiIconButton-label"
-                                >
-                                  <svg
-                                    class="mdi-icon "
-                                    fill="currentColor"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    width="24"
-                                  >
-                                    <path
-                                      d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"
-                                    />
-                                  </svg>
-                                </span>
-                                <span
-                                  class="MuiTouchRipple-root"
-                                />
-                              </button>
-                            </div>
                           </div>
                         </div>
                         <p />
