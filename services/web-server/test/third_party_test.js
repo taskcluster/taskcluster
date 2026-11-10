@@ -1022,6 +1022,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const expires = query.get('expires');
       const clientId = query.get('clientId');
       assert.equal(query.get('client_id'), registeredClientId);
+      assert.equal(query.get('redirect_uri'), 'https://test.example.com/cb');
+      assert(!query.has('response_type'));
       assert.equal(expires, '3 days');
       assert.equal(scope, 'tags:get:*');
       assert(clientId.startsWith(`test/test/${registeredClientId}-`));
