@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import render from '../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import TaskRunsCard from './index';
 

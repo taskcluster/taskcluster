@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import render from '../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import AuthConsent from './index';
 
