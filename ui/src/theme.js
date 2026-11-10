@@ -265,6 +265,13 @@ const themeOptions = isDarkTheme => {
       },
     },
     overrides: {
+      MuiCssBaseline: {
+        '@global': {
+          html: {
+            colorScheme: isDarkTheme ? 'dark' : 'light',
+          },
+        },
+      },
       MuiSelect: {
         root: {
           paddingLeft: '7px',
