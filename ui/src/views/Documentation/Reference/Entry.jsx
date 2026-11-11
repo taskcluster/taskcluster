@@ -780,7 +780,7 @@ export default class Entry extends Component {
       <Accordion
         defaultExpanded={expanded}
         onChange={this.handlePanelChange(entryHashKey)}
-        CollapseProps={{ unmountOnExit: true }}
+        TransitionProps={{ unmountOnExit: true }}
         elevation={2}>
         <AccordionSummary
           classes={{
