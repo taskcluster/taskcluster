@@ -81,6 +81,26 @@ export function getTaskGroupSchema() {
 }
 
 /**
+ * Marker schema for the number of running and pending task runs over time.
+ * It has no `display` locations; its `graphs` render it as a graph track.
+ */
+export function getConcurrencySchema() {
+  return {
+    name: 'Concurrency',
+    tooltipLabel: 'Running: {marker.data.running}, pending: {marker.data.pending}',
+    display: [],
+    data: [
+      { key: 'running', label: 'Running tasks', format: 'integer' },
+      { key: 'pending', label: 'Pending tasks', format: 'integer' },
+    ],
+    graphs: [
+      { key: 'running', color: 'blue', type: 'line-filled' },
+      { key: 'pending', color: 'orange', type: 'line' },
+    ],
+  };
+}
+
+/**
  * Marker schema for log rows in task log profiles.
  */
 export function getLiveLogRowSchema() {

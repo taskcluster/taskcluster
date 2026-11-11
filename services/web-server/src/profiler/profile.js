@@ -1,6 +1,6 @@
 // @ts-check
 import libUrls from 'taskcluster-lib-urls';
-import { getTaskGroupCategories, getTaskGroupTaskSchema, getTaskGroupSchema } from './schemas.js';
+import { getConcurrencySchema, getTaskGroupCategories, getTaskGroupTaskSchema, getTaskGroupSchema } from './schemas.js';
 
 export function getEmptyThread() {
   return {
@@ -76,7 +76,7 @@ export function getEmptyProfile() {
       logicalCPUs: 0,
       symbolicationNotSupported: true,
       usesOnlyOneStackType: true,
-      markerSchema: [getTaskGroupTaskSchema(), getTaskGroupSchema()],
+      markerSchema: [getTaskGroupTaskSchema(), getTaskGroupSchema(), getConcurrencySchema()],
       categories: getTaskGroupCategories(),
     },
     libs: [],
@@ -141,26 +141,82 @@ export function getRunColor(run) {
   }
 }
 
+/**
+ * Computes how many task runs were running and pending over time.
+ *
+ * Returns a list of consecutive intervals `{ start, end, running, pending }`
+ * (epoch ms), one per period where both counts stay constant. A run is pending
+ * from `scheduled` until `started` (or `resolved`, if it never started), and
+ * running from `started` until `resolved`. Unresolved runs extend to `now`.
+ *
+ * @param {Array} tasks - task group tasks, each with `status.runs`
+ * @param {number} now - end time for runs that are not resolved yet
+ */
+export function getConcurrency(tasks, now = Date.now()) {
+  const deltas = new Map();
+  const add = (time, key, delta) => {
+    let entry = deltas.get(time);
+    if (!entry) {
+      entry = { running: 0, pending: 0 };
+      deltas.set(time, entry);
+    }
+    entry[key] += delta;
+  };
+  const ms = date => (date ? new Date(date).valueOf() : null);
+
+  for (const { status } of tasks) {
+    for (const run of status.runs ?? []) {
+      const scheduled = ms(run.scheduled);
+      const started = ms(run.started);
+      const resolved = ms(run.resolved);
+      if (scheduled !== null) {
+        add(scheduled, 'pending', 1);
+        add(started ?? resolved ?? now, 'pending', -1);
+      }
+      if (started !== null) {
+        add(started, 'running', 1);
+        add(resolved ?? now, 'running', -1);
+      }
+    }
+  }
+
+  const times = [...deltas.keys()].sort((a, b) => a - b);
+  const intervals = [];
+  let running = 0;
+  let pending = 0;
+  for (let i = 0; i < times.length - 1; i += 1) {
+    const delta = deltas.get(times[i]);
+    running += delta.running;
+    pending += delta.pending;
+    intervals.push({ start: times[i], end: times[i + 1], running, pending });
+  }
+  return intervals;
+}
+
 function getTaskGroupTimeRanges(taskGroups, filterTask = () => true) {
   return taskGroups.map(taskGroup => {
     let start = null;
     let end = null;
+    // true if any run is still pending or running
+    let unresolved = false;
     for (const taskAndStatus of taskGroup.tasks) {
       const { runs } = taskAndStatus.status;
       if (runs && filterTask(taskAndStatus)) {
         for (const run of runs) {
-          const startedMS = new Date(run.started ?? run.resolved ?? '').valueOf();
+          const startedMS = new Date(run.scheduled ?? run.started ?? run.resolved ?? '').valueOf();
           const resolvedMS = new Date(run.resolved ?? '').valueOf();
           if (!Number.isNaN(startedMS)) {
             start = start === null ? startedMS : Math.min(start, startedMS);
           }
           if (!Number.isNaN(resolvedMS)) {
             end = end === null ? resolvedMS : Math.max(end, resolvedMS);
+          } else {
+            unresolved = true;
           }
         }
       }
     }
-    return { start, end };
+    return { start, end, unresolved };
   });
 }
 
@@ -240,7 +296,8 @@ export function getProfile(taskGroups, rootUrl) {
       thread.unregisterTime = -1;
     }
 
-    if (taskGroupTimeRange.end !== null) {
+    // Keep the thread open while runs are unresolved: their markers extend to now.
+    if (taskGroupTimeRange.end !== null && !taskGroupTimeRange.unresolved) {
       thread.unregisterTime = taskGroupTimeRange.end - profileStartTime;
     }
 
@@ -330,6 +387,17 @@ export function getProfile(taskGroups, rootUrl) {
           markers.length += 1;
         }
       }
+    }
+
+    const concurrencyName = stringArray.indexForString('Concurrency');
+    for (const { start, end, running, pending } of getConcurrency(taskGroup.tasks)) {
+      markers.startTime.push(start - profileStartTime);
+      markers.endTime.push(end - profileStartTime);
+      markers.phase.push(1);
+      markers.category.push(0);
+      markers.name.push(concurrencyName);
+      markers.data.push({ type: 'Concurrency', running, pending });
+      markers.length += 1;
     }
 
     thread.stringArray = stringArray.serializeToArray();

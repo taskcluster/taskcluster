@@ -3,6 +3,7 @@ import {
   getProfile,
   getEmptyProfile,
   getEmptyThread,
+  getConcurrency,
   getRunColor,
   UniqueStringArray,
 } from '../../src/profiler/profile.js';
@@ -131,6 +132,50 @@ suite('profiler/profile', () => {
       assert.equal(getRunColor({ state: 'exception', reasonResolved: 'canceled' }), 'grey');
       assert.equal(getRunColor({ state: 'exception', reasonResolved: 'claim-expired' }), 'red');
       assert.equal(getRunColor({ state: 'running' }), 'blue');
+    });
+
+    test('computes running and pending task counts over time', () => {
+      const t = ms => new Date(ms).toISOString();
+      const run = (scheduled, started, resolved) => ({
+        scheduled: t(scheduled),
+        started: started === null ? undefined : t(started),
+        resolved: resolved === null ? undefined : t(resolved),
+      });
+      const tasks = [
+        { status: { runs: [run(0, 10, 30)] } },
+        { status: { runs: [run(5, 20, 40)] } },
+        { status: { runs: [run(35, null, null)] } }, // still pending
+      ];
+      assert.deepEqual(getConcurrency(tasks, 50), [
+        { start: 0, end: 5, running: 0, pending: 1 },
+        { start: 5, end: 10, running: 0, pending: 2 },
+        { start: 10, end: 20, running: 1, pending: 1 },
+        { start: 20, end: 30, running: 2, pending: 0 },
+        { start: 30, end: 35, running: 1, pending: 0 },
+        { start: 35, end: 40, running: 1, pending: 1 },
+        { start: 40, end: 50, running: 0, pending: 1 },
+      ]);
+
+      const profile = getProfile([mockTaskGroup], 'https://taskcluster.net');
+      assert(profile.meta.markerSchema.find(s => s.name === 'Concurrency').graphs.length > 0);
+      assert(profile.threads[0].markers.data.some(d => d.type === 'Concurrency' && d.running === 1));
+    });
+
+    test('profile range covers pending and running runs', () => {
+      const group = {
+        ...mockTaskGroup,
+        tasks: [
+          {
+            task: mockTaskGroup.tasks[0].task,
+            status: { taskId: 'task-1', runs: [{ runId: 0, state: 'pending', scheduled: '2024-01-01T09:55:00.000Z' }] },
+          },
+        ],
+      };
+      const profile = getProfile([group], 'https://taskcluster.net');
+      assert.equal(profile.meta.startTime, new Date('2024-01-01T09:55:00.000Z').valueOf());
+      assert.equal(profile.threads[0].registerTime, 0);
+      assert.equal(profile.threads[0].unregisterTime, null);
+      assert.equal(profile.threads[0].markers.data.find(d => d.type === 'Concurrency').pending, 1);
     });
 
     test('handles task groups with no runs', () => {
