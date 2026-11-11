@@ -203,7 +203,7 @@ export default class IndexedEntry extends Component {
           <ListItemText primary="Namespace" secondary={indexedTask.namespace} />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Rank" secondary={indexedTask.rank} />
+          <ListItemText primary="Rank" secondary={String(indexedTask.rank)} />
         </ListItem>
         <ListItem>
           <ListItemText

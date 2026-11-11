@@ -179,7 +179,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
           <ListItem>
             <ListItemText
               primary="Total Errors"
-              secondary={launchConfig.totalErrors}
+              secondary={String(launchConfig.totalErrors)}
             />
           </ListItem>
           <ListItem>
