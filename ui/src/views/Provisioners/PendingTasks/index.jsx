@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Queue, WorkerManager } from '@taskcluster/client-web';
-import { TableRow, TableCell, Box, Typography } from '@material-ui/core';
+import { TableRow, TableCell, Box, Typography } from '@mui/material';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';

@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import { Auth } from '@taskcluster/client-web';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import { withStyles } from '@material-ui/core/styles';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import withStyles from '@mui/styles/withStyles';
 import Spinner from '../../components/Spinner';
 import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';

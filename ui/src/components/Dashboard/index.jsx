@@ -3,15 +3,16 @@ import { bool, node, string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { titleCase } from 'title-case';
-import { useTheme, withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import Divider from '@material-ui/core/Divider';
-import Tooltip from '@material-ui/core/Tooltip';
-import Typography from '@material-ui/core/Typography';
+import { useTheme } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import MenuIcon from 'mdi-react/MenuIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import HelpIcon from 'mdi-react/HelpIcon';
@@ -99,13 +100,13 @@ const withMobileView = Wrapped =>
     },
     docsDrawerPaper: {
       width: theme.docsDrawerWidth,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('sm')]: {
         width: theme.spacing(30),
       },
     },
     helpDrawerPaper: {
       width: '40vw',
-      [theme.breakpoints.down('sm')]: {
+      [theme.breakpoints.down('md')]: {
         width: '90vw',
       },
       backgroundColor: theme.palette.primary.main,
@@ -343,7 +344,8 @@ export default class Dashboard extends Component {
                     aria-label="toggle drawer"
                     onClick={this.handleDrawerToggle}
                     id="toggle-drawer"
-                    className={classes.navIconHide}>
+                    className={classes.navIconHide}
+                    size="large">
                     <MenuIcon className={classes.appIcon} />
                   </IconButton>
                 )}
@@ -354,8 +356,9 @@ export default class Dashboard extends Component {
                 <Tooltip placement="bottom" title="Toggle light/dark theme">
                   <IconButton
                     className={classes.leftAppBarButton}
-                    onClick={onToggleTheme}>
-                    {theme.palette.type === 'dark' ? (
+                    onClick={onToggleTheme}
+                    size="large">
+                    {theme.palette.mode === 'dark' ? (
                       <LightBulbOn className={classes.appIcon} />
                     ) : (
                       <LightBulbOnOutline className={classes.appIcon} />
@@ -364,14 +367,16 @@ export default class Dashboard extends Component {
                 </Tooltip>
                 <Link to={DOCS_PATH_PREFIX}>
                   <Tooltip placement="bottom" title="Documentation">
-                    <IconButton>
+                    <IconButton size="large">
                       <BookOpenPageVariantIcon className={classes.appIcon} />
                     </IconButton>
                   </Tooltip>
                 </Link>
                 {helpView && (
                   <Tooltip placement="bottom" title="Page Information">
-                    <IconButton onClick={this.handleHelpViewToggle}>
+                    <IconButton
+                      onClick={this.handleHelpViewToggle}
+                      size="large">
                       <HelpIcon className={classes.appIcon} />
                     </IconButton>
                   </Tooltip>
@@ -416,7 +421,8 @@ export default class Dashboard extends Component {
               }}>
               <IconButton
                 onClick={this.handleHelpViewToggle}
-                className={classes.helpCloseIcon}>
+                className={classes.helpCloseIcon}
+                size="large">
                 <CloseIcon />
               </IconButton>
               {helpView}

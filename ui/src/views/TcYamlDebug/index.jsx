@@ -1,14 +1,14 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component } from 'react';
 import { Github } from '@taskcluster/client-web';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 import { dump, load } from 'js-yaml';
 import debounce from 'lodash.debounce';
-import { Grid, MenuItem } from '@material-ui/core';
+import { Grid, MenuItem } from '@mui/material';
 import TextField from '../../components/TextField';
 import CodeEditor from '../../components/CodeEditor';
 import Dashboard from '../../components/Dashboard';

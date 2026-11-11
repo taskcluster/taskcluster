@@ -3,15 +3,10 @@ import { bool, func, shape, number, string } from 'prop-types';
 import { sum } from 'ramda';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import amber from '@material-ui/core/colors/amber';
-import blue from '@material-ui/core/colors/blue';
-import grey from '@material-ui/core/colors/grey';
-import green from '@material-ui/core/colors/green';
-import purple from '@material-ui/core/colors/purple';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import ButtonBase from '@material-ui/core/ButtonBase';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import ButtonBase from '@mui/material/ButtonBase';
 import CheckIcon from 'mdi-react/CheckIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import CalendarClockIcon from 'mdi-react/CalendarClockIcon';
@@ -24,12 +19,14 @@ import { taskState } from '../../utils/prop-types';
 import { TASK_STATE, THEME } from '../../utils/constants';
 import Helmet from '../Helmet';
 
+import { amber, blue, grey, green, purple } from '@mui/material/colors';
+
 @withStyles(theme => ({
   statusButton: {
     display: 'flex',
     flexGrow: 1,
     flexBasis: 0,
-    padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing(1)} ${theme.spacing(1)}`,
     justifyContent: 'space-around',
     cursor: 'pointer',
     margin: theme.spacing(1),

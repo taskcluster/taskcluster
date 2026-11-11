@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { bool, func, object, string } from 'prop-types';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsStats';
 import StatusGroup from '../StatusDashboard/StatusGroup';
 import Button from '../Button';

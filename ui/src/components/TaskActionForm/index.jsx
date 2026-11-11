@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { string, object, func } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import CodeEditor from '../CodeEditor';
 import JsonDisplay from '../JsonDisplay';
 import ErrorPanel from '../ErrorPanel';

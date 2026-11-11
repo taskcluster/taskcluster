@@ -1,6 +1,6 @@
 import { func, string } from 'prop-types';
 import { format, isValid } from 'date-fns';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import { date } from '../../utils/prop-types';
 
 const toDate = value => {

@@ -2,11 +2,11 @@ import React, { Component, Fragment } from 'react';
 import { arrayOf, object } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { parse, stringify } from 'qs';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import IconButton from '@material-ui/core/IconButton';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import {
   Drawer,
@@ -14,7 +14,7 @@ import {
   List,
   ListItem,
   ListItemText,
-} from '@material-ui/core';
+} from '@mui/material';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
 import DataTable from '../DataTable';
@@ -142,7 +142,8 @@ export default class ProvisionerDetailsTable extends Component {
           <IconButton
             className={classes.infoButton}
             name={provisioner.provisionerId}
-            onClick={() => this.handleDrawerOpen(provisioner)}>
+            onClick={() => this.handleDrawerOpen(provisioner)}
+            size="large">
             <InformationVariantIcon size={iconSize} />
           </IconButton>
           <Link

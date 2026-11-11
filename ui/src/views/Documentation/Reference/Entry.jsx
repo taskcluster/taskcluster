@@ -3,22 +3,22 @@ import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { path } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import Grid from '@material-ui/core/Grid';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Box from '@material-ui/core/Box';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Grid from '@mui/material/Grid';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Box from '@mui/material/Box';
 import DataTable from '../../../components/DataTable';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
@@ -62,7 +62,7 @@ const primaryTypographyProps = { variant: 'body1' };
     },
     boxTop: {
       display: 'inline-block',
-      padding: `0 ${theme.spacing(0.5)}px 0 0`,
+      padding: `0 ${theme.spacing(0.5)} 0 0`,
     },
     subScopeBox: {
       borderLeft: '1px solid #888',
@@ -70,12 +70,12 @@ const primaryTypographyProps = { variant: 'body1' };
       paddingLeft: 24,
     },
     scopeItself: {
-      margin: `${theme.spacing(1)}px 0`,
+      margin: `${theme.spacing(1)} 0`,
     },
     statusLabel: {
       display: 'block',
       fontSize: '0.6rem',
-      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${theme.spacing(-2)}px`,
+      margin: `${theme.spacing(1)} 0 ${theme.spacing(1)} ${theme.spacing(-2)}`,
     },
     functionStatusLabel: {
       textAlign: 'center',

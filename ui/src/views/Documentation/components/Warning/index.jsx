@@ -1,14 +1,15 @@
 import React from 'react';
 import { node } from 'prop-types';
-import { alpha, withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
+import { alpha } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
 
 const styles = withStyles(theme => ({
   root: {
     borderLeft: `5px solid ${theme.palette.warning.dark}`,
     backgroundColor: alpha(theme.palette.warning.main, 0.2),
-    padding: `${theme.spacing(1)}px ${theme.spacing(3)}px`,
-    margin: `${theme.spacing(3)}px 0`,
+    padding: `${theme.spacing(1)} ${theme.spacing(3)}`,
+    margin: `${theme.spacing(3)} 0`,
     '& > :first-child': {
       marginTop: 0,
     },

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import Typography from '@material-ui/core/Typography';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import withStyles from '@mui/styles/withStyles';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
+import ListSubheader from '@mui/material/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';

@@ -10,7 +10,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
-} from '@material-ui/core';
+} from '@mui/material';
 import CloseIcon from 'mdi-react/CloseIcon';
 import DateDistance from '../../../components/DateDistance';
 import JsonDisplay from '../../../components/JsonDisplay';
@@ -22,7 +22,10 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
 
   return (
     <Fragment>
-      <IconButton onClick={onClose} className={classes.drawerCloseIcon}>
+      <IconButton
+        onClick={onClose}
+        className={classes.drawerCloseIcon}
+        size="large">
         <CloseIcon />
       </IconButton>
       <div className={classes.metadataContainer}>

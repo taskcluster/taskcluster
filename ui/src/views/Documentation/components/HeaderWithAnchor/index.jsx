@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { string, oneOf } from 'prop-types';
 import { kebabCase } from 'change-case';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 const childrenToText = node => {
   if (typeof node === 'string' || typeof node === 'number') {
@@ -36,7 +36,7 @@ const childrenToText = node => {
     '&:hover .anchor-link-style': {
       display: 'inline-block',
       opacity: 1,
-      padding: `0 ${theme.spacing(1)}px`,
+      padding: `0 ${theme.spacing(1)}`,
       color: theme.palette.text.hint,
       '&:hover': {
         color: theme.palette.text.primary,

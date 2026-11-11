@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, node, string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Collapse from '@material-ui/core/Collapse';
-import List from '@material-ui/core/List';
-import Divider from '@material-ui/core/Divider';
+import withStyles from '@mui/styles/withStyles';
+import Collapse from '@mui/material/Collapse';
+import List from '@mui/material/List';
+import Divider from '@mui/material/Divider';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import SidebarListItem from './SidebarListItem';

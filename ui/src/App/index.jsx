@@ -3,8 +3,8 @@ import { arrayOf } from 'prop-types';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { init as initSentry } from '@sentry/browser';
-import { MuiThemeProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
@@ -20,9 +20,9 @@ import './index.css';
 
 function OuterErrorPanel(props) {
   return (
-    <MuiThemeProvider theme={theme.darkTheme}>
+    <ThemeProvider theme={theme.darkTheme}>
       <ErrorPanel {...props} />
-    </MuiThemeProvider>
+    </ThemeProvider>
   );
 }
 
@@ -114,16 +114,16 @@ export default class App extends Component {
   toggleTheme = () => {
     this.setState({
       theme:
-        this.state.theme.palette.type === 'dark'
+        this.state.theme.palette.mode === 'dark'
           ? theme.lightTheme
           : theme.darkTheme,
     });
     const newTheme =
-      this.state.theme && this.state.theme.palette.type === 'dark'
+      this.state.theme && this.state.theme.palette.mode === 'dark'
         ? theme.lightTheme
         : theme.darkTheme;
 
-    db.userPreferences.put(newTheme.palette.type, 'theme');
+    db.userPreferences.put(newTheme.palette.mode, 'theme');
     this.setState({ theme: newTheme });
   };
 
@@ -145,22 +145,24 @@ export default class App extends Component {
             <TaskclusterClientContext.Provider
               value={this.createTaskclusterClient}>
               <ToggleThemeContext.Provider value={this.toggleTheme}>
-                <MuiThemeProvider theme={theme}>
-                  <CssBaseline />
-                  <ErrorBoundary
-                    FallbackComponent={ErrorPanel}
-                    onError={reportError}>
-                    <Main
-                      error={error}
-                      key={
-                        auth.user?.credentials
-                          ? auth.user.credentials.clientId
-                          : ''
-                      }
-                      routes={routes}
-                    />
-                  </ErrorBoundary>
-                </MuiThemeProvider>
+                <StyledEngineProvider injectFirst>
+                  <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <ErrorBoundary
+                      FallbackComponent={ErrorPanel}
+                      onError={reportError}>
+                      <Main
+                        error={error}
+                        key={
+                          auth.user?.credentials
+                            ? auth.user.credentials.clientId
+                            : ''
+                        }
+                        routes={routes}
+                      />
+                    </ErrorBoundary>
+                  </ThemeProvider>
+                </StyledEngineProvider>
               </ToggleThemeContext.Provider>
             </TaskclusterClientContext.Provider>
           </AuthContext.Provider>

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { WorkerManager } from '@taskcluster/client-web';
-import { Typography, Box, Button } from '@material-ui/core';
+import { Typography, Box, Button } from '@mui/material';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';

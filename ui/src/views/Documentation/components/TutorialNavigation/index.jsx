@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
 import { arrayOf, node, string, shape } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import Divider from '@material-ui/core/Divider';
-import Typography from '@material-ui/core/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 import HeaderWithAnchor from '../HeaderWithAnchor';
 import Anchor from '../Anchor';
 import List from '../List';
@@ -12,7 +12,7 @@ import ListItem from '../ListItem';
 // sections.
 const useStyles = makeStyles(theme => ({
   divider: {
-    margin: `${theme.spacing(3)}px 0`,
+    margin: `${theme.spacing(3)} 0`,
   },
 }));
 

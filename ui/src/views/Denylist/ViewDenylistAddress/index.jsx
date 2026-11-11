@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Notify } from '@taskcluster/client-web';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import DenylistForm from '../../../components/DenylistForm';

@@ -9,7 +9,7 @@ import {
   TableRow,
   TableCell,
   Tooltip,
-} from '@material-ui/core';
+} from '@mui/material';
 import DateDistance from '../DateDistance';
 import Label from '../Label';
 import StatusLabel from '../StatusLabel';

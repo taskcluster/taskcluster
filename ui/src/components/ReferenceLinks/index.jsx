@@ -1,8 +1,8 @@
 import React from 'react';
 import { boolean } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
 import { useLocation } from 'react-router-dom';
 import Link from '../../utils/Link';
 

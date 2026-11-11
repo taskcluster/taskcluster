@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { withRouter } from 'react-router-dom';
 import { titleCase } from 'title-case';
-import Grid from '@material-ui/core/Grid';
-import Autocomplete from '@material-ui/lab/Autocomplete/Autocomplete';
+import Grid from '@mui/material/Grid';
+import Autocomplete from '@mui/material/Autocomplete';
 import { compareVersions, validate } from 'compare-versions';
-import Switch from '@material-ui/core/Switch';
-import { Chip, FormControlLabel } from '@material-ui/core';
+import Switch from '@mui/material/Switch';
+import { Chip, FormControlLabel } from '@mui/material';
 import { memoize } from '../../../utils/memoize';
 import Markdown from '../../../components/Markdown';
 import ChangelogMd from '../../../../../CHANGELOG.md?raw';

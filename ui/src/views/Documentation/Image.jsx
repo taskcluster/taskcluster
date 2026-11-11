@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
 import { string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 
 @withStyles(theme => ({
   // Not all images sit nicely on a dark theme (e..g, images with dark text)
   imageWrapper: {
     textAlign: 'center',
-    background: theme.palette.type === 'dark' ? '#ffffffcc' : 'none',
+    background: theme.palette.mode === 'dark' ? '#ffffffcc' : 'none',
   },
 }))
 export default class Image extends PureComponent {

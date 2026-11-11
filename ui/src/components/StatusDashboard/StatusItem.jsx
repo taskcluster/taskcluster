@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, Typography } from '@material-ui/core';
+import { Paper, Typography } from '@mui/material';
 
 const getLength = value => String(value).length;
 const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {

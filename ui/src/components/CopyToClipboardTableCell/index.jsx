@@ -1,8 +1,8 @@
 import React from 'react';
 import { node, string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import TableCell from '@material-ui/core/TableCell';
+import TableCell from '@mui/material/TableCell';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import TableCellItem from '../TableCellItem';

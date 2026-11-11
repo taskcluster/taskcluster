@@ -1,10 +1,10 @@
 import React from 'react';
 import { func, array } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import withStyles from '@mui/styles/withStyles';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import { titleCase } from 'title-case';
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
@@ -66,7 +66,8 @@ function HookLastFiredTable({ classes, ...props }) {
               <IconButton
                 className={classes.informationIcon}
                 name={hookFire.taskId}
-                onClick={onErrorClick}>
+                onClick={onErrorClick}
+                size="large">
                 <InformationVariantIcon size={iconSize} />
               </IconButton>
             )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import MuiTextField from '@material-ui/core/TextField';
+import MuiTextField from '@mui/material/TextField';
 
 function TextField({ ...props }) {
   return <MuiTextField color="secondary" {...props} />;

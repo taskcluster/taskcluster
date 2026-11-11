@@ -4,7 +4,6 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import {
   ButtonBase,
   Switch,
-  withStyles,
   Paper,
   FormGroup,
   FormControlLabel,
@@ -14,14 +13,12 @@ import {
   ListItem,
   ListSubheader,
   List,
-} from '@material-ui/core';
+} from '@mui/material';
+import withStyles from '@mui/styles/withStyles';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import RunIcon from 'mdi-react/RunIcon';
 import TimerSandIcon from 'mdi-react/TimerSandIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
-import green from '@material-ui/core/colors/green';
-import purple from '@material-ui/core/colors/purple';
-import red from '@material-ui/core/colors/red';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
@@ -52,6 +49,8 @@ import {
 } from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
 import SpeedDial from '../SpeedDial';
+
+import { green, purple, red } from '@mui/material/colors';
 
 @withRouter
 @withStyles(theme => ({
@@ -92,7 +91,7 @@ import SpeedDial from '../SpeedDial';
     alignItems: 'center',
     padding: theme.spacing(2),
     paddingBottom: theme.spacing(1),
-    margin: `0 0 ${theme.spacing(1)}px 0`,
+    margin: `0 0 ${theme.spacing(1)} 0`,
     display: 'flex',
     flexWrap: 'wrap',
     listStyle: 'none',

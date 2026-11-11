@@ -1,13 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import Drawer from '@material-ui/core/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Drawer from '@mui/material/Drawer';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import { arrayOf, bool, object } from 'prop-types';
 import { camelCase } from 'change-case';
@@ -135,7 +135,8 @@ export default class WorkerTypesTable extends Component {
                 <IconButton
                   className={classes.infoButton}
                   name={workerType.workerType}
-                  onClick={() => this.handleDrawerOpen(workerType)}>
+                  onClick={() => this.handleDrawerOpen(workerType)}
+                  size="large">
                   <InformationVariantIcon size={iconSize} />
                 </IconButton>
                 <Link

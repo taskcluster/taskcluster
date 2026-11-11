@@ -1,6 +1,6 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import MuiSpeedDialAction from '@material-ui/lab/SpeedDialAction';
+import withStyles from '@mui/styles/withStyles';
+import MuiSpeedDialAction from '@mui/material/SpeedDialAction';
 import { string, bool } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 

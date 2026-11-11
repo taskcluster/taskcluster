@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { THEME } from '../../../../utils/constants';
 
 const styles = theme => ({
@@ -35,7 +35,7 @@ const styles = theme => ({
       fontSize: theme.typography.pxToRem(13),
       fontWeight: theme.typography.fontWeightRegular,
       borderBottom: `1px solid ${
-        theme.palette.type === 'dark'
+        theme.palette.mode === 'dark'
           ? THEME.TEN_PERCENT_WHITE
           : THEME.TEN_PERCENT_BLACK
       }`,

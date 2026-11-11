@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { WorkerManager } from '@taskcluster/client-web';
-import { TableRow, TableCell, Typography } from '@material-ui/core';
+import { TableRow, TableCell, Typography } from '@mui/material';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';

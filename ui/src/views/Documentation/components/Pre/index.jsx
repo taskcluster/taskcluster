@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { THEME } from '../../../../utils/constants';
 
 const styles = theme => ({
@@ -13,7 +13,7 @@ const styles = theme => ({
       },
     },
     '&, & pre[class*="language-"]': {
-      margin: `${theme.spacing(3)}px 0`,
+      margin: `${theme.spacing(3)} 0`,
       padding: '12px 18px',
       backgroundColor: THEME.PRIMARY_DARK,
       borderRadius: 3,

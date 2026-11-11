@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import classNames from 'classnames';
 import { array } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles(theme => ({
   wrapper: {
@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
   cell: {
     float: 'left',
     boxSizing: 'border-box',
-    borderTop: `${theme.spacing(0.125)}px solid ${theme.palette.divider}`,
+    borderTop: `${theme.spacing(0.125)} solid ${theme.palette.divider}`,
     overflowX: 'auto',
   },
   left: {

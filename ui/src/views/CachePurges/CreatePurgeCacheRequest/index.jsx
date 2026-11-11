@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { PurgeCache } from '@taskcluster/client-web';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import TextField from '../../../components/TextField';
 import Dashboard from '../../../components/Dashboard';

@@ -1,9 +1,9 @@
 import React from 'react';
 import { oneOf, func, object } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import ExpandIcon from 'mdi-react/MenuRightIcon';
 import ShrinkIcon from 'mdi-react/MenuDownIcon';
 import WarningIcon from 'mdi-react/AlertOutlineIcon';
@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme => ({
   code: {
     backgroundColor: theme.palette.text.primary,
     color: theme.palette.getContrastText(theme.palette.text.primary),
-    padding: `0 ${theme.spacing(0.5)}px`,
+    padding: `0 ${theme.spacing(0.5)}`,
     fontSize: theme.typography.subtitle2.fontSize,
     fontWeight: theme.typography.subtitle2.fontWeight,
     fontFamily: 'monospace',
@@ -77,7 +77,7 @@ const useStyles = makeStyles(theme => ({
    */
   prefix: {
     color: theme.palette.error.main,
-    padding: `0 ${theme.spacing(0.5)}px`,
+    padding: `0 ${theme.spacing(0.5)}`,
   },
   /**
    * Button used to expand or shrink a $ref.

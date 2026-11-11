@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { bool, func } from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Grid from '@material-ui/core/Grid';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import Typography from '@material-ui/core/Typography';
-import Avatar from '@material-ui/core/Avatar';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import CardActionArea from '@mui/material/CardActionArea';
+import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
 import Anchor from '../components/Anchor';
 import contributorsJson from '../../../../../.all-contributorsrc';
 
@@ -21,7 +21,7 @@ import contributorsJson from '../../../../../.all-contributorsrc';
   avatar: {
     height: 80,
     width: 80,
-    margin: `0 auto ${theme.spacing(1)}px auto`,
+    margin: `0 auto ${theme.spacing(1)} auto`,
     boxShadow: '0px 0px 4px rgba(2,2,2,0.2)',
   },
   gutterTop: {

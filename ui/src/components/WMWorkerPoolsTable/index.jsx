@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { withStyles } from '@material-ui/core';
+import withStyles from '@mui/styles/withStyles';
 import { func, arrayOf, string, bool } from 'prop-types';
 import { camelCase } from 'change-case';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import WorkerIcon from 'mdi-react/WorkerIcon';
@@ -305,7 +305,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               className={classes.button}
               name={`${workerPool.workerPoolId}`}
               onClick={this.handleDialogActionOpen(workerPool)}
-              disabled={actionLoading}>
+              disabled={actionLoading}
+              size="large">
               <DeleteIcon size={iconSize} />
             </IconButton>
           ) : (

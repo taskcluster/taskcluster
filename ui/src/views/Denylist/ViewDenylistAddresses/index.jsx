@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Notify } from '@taskcluster/client-web';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs from 'qs';
 import Spinner from '../../../components/Spinner';

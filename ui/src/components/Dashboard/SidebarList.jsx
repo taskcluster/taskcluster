@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import List from '@material-ui/core/List';
+import List from '@mui/material/List';
 import FeatureSearchIcon from 'mdi-react/FeatureSearchIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
