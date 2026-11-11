@@ -124,6 +124,23 @@ export class UniqueStringArray {
   }
 }
 
+/**
+ * Marker color for a task run, based on its outcome.
+ * Must be one of the Firefox Profiler graph colors.
+ */
+export function getRunColor(run) {
+  switch (run.state) {
+    case 'completed':
+      return 'green';
+    case 'failed':
+      return 'orange';
+    case 'exception':
+      return ['canceled', 'superseded'].includes(run.reasonResolved) ? 'grey' : 'red';
+    default:
+      return 'blue';
+  }
+}
+
 function getTaskGroupTimeRanges(taskGroups, filterTask = () => true) {
   return taskGroups.map(taskGroup => {
     let start = null;
@@ -246,7 +263,7 @@ export function getProfile(taskGroups, rootUrl) {
         markers.name.push(stringArray.indexForString(markerName));
         markers.data.push({
           type: 'TaskGroup',
-          startTime: new Date(profile.meta.startTime + profileStartTime).toLocaleTimeString(),
+          startTime: new Date(runStart).toISOString(),
           name: taskGroup.taskGroupId,
           expires: taskGroup.expires,
           tasks: taskGroup.tasks.length,
@@ -294,7 +311,7 @@ export function getProfile(taskGroups, rootUrl) {
 
           markers.data.push({
             type: 'Task',
-            startTime: new Date(profile.meta.startTime + profileStartTime).toLocaleTimeString(),
+            startTime: new Date(runStart).toISOString(),
             name,
             taskId,
             owner: task.task.metadata.owner,
@@ -308,6 +325,7 @@ export function getProfile(taskGroups, rootUrl) {
             taskGroup: libUrls.ui(rootUrl, `/tasks/groups/${task.task.taskGroupId}`),
             liveLog: libUrls.ui(rootUrl, `/tasks/${taskId}/runs/${runId}/logs/live/public/logs/live.log`),
             taskProfile: libUrls.ui(rootUrl, `/tasks/${taskId}/profiler`),
+            color: getRunColor(run),
           });
           markers.length += 1;
         }

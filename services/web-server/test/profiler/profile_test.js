@@ -1,5 +1,11 @@
 import assert from 'node:assert';
-import { getProfile, getEmptyProfile, getEmptyThread, UniqueStringArray } from '../../src/profiler/profile.js';
+import {
+  getProfile,
+  getEmptyProfile,
+  getEmptyThread,
+  getRunColor,
+  UniqueStringArray,
+} from '../../src/profiler/profile.js';
 
 suite('profiler/profile', () => {
   const mockTaskGroup = {
@@ -106,6 +112,25 @@ suite('profiler/profile', () => {
       const thread = profile.threads[0];
       const taskMarkerData = thread.markers.data.find(d => d.type === 'Task' && d.taskId);
       assert(taskMarkerData.taskProfile.includes('/profiler'));
+    });
+
+    test('marker startTime field is the run start time', () => {
+      const profile = getProfile([mockTaskGroup], 'https://taskcluster.net');
+      const data = profile.threads[0].markers.data;
+      assert.equal(data.find(d => d.taskId === 'task-2').startTime, '2024-01-01T10:05:00.000Z');
+      assert.equal(data.find(d => d.type === 'TaskGroup').startTime, '2024-01-01T10:00:00.000Z');
+    });
+
+    test('colors task markers by run result', () => {
+      const profile = getProfile([mockTaskGroup], 'https://taskcluster.net');
+      const taskSchema = profile.meta.markerSchema.find(s => s.name === 'Task');
+      assert.equal(taskSchema.colorField, 'color');
+      assert.equal(profile.threads[0].markers.data.find(d => d.taskId === 'task-1').color, 'green');
+
+      assert.equal(getRunColor({ state: 'failed' }), 'orange');
+      assert.equal(getRunColor({ state: 'exception', reasonResolved: 'canceled' }), 'grey');
+      assert.equal(getRunColor({ state: 'exception', reasonResolved: 'claim-expired' }), 'red');
+      assert.equal(getRunColor({ state: 'running' }), 'blue');
     });
 
     test('handles task groups with no runs', () => {

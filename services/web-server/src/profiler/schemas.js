@@ -42,6 +42,7 @@ export function getTaskGroupTaskSchema() {
     tableLabel: '{marker.data.name}',
     chartLabel: '{marker.data.name}',
     display: ['marker-chart', 'marker-table', 'timeline-overview'],
+    colorField: 'color',
     data: [
       { key: 'startTime', label: 'Start time', format: 'string' },
       { key: 'name', label: 'Task Name', format: 'string', searchable: true },
@@ -57,6 +58,7 @@ export function getTaskGroupTaskSchema() {
       { key: 'taskGroup', label: 'Task Group URL', format: 'url' },
       { key: 'liveLog', label: 'Live Log', format: 'url' },
       { key: 'taskProfile', label: 'Task Profile', format: 'url' },
+      { key: 'color', label: 'Color', format: 'string', hidden: true },
     ],
   };
 }
