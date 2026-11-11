@@ -57,12 +57,6 @@ import { green, purple, red } from '@mui/material/colors';
   saveIcon: {
     ...theme.mixins.successIcon,
   },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
-  deleteTooltipLabel: {
-    backgroundColor: theme.mixins.errorIcon.backgroundColor,
-  },
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -647,10 +641,7 @@ export default class WMWorkerPoolEditor extends Component {
               icon={<DeleteIcon />}
               onClick={onDialogActionOpen}
               tooltipTitle="Delete"
-              classes={{
-                icon: classes.deleteIcon,
-                staticTooltipLabel: classes.deleteTooltipLabel,
-              }}
+              color="error"
               FabProps={{ disabled: actionLoading }}
             />
           </SpeedDial>

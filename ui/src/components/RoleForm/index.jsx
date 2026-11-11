@@ -44,9 +44,6 @@ import scopeLink from '../../utils/scopeLink';
   saveIcon: {
     ...theme.mixins.successIcon,
   },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
   roleDescriptionListItem: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(3),
@@ -293,7 +290,7 @@ export default class RoleForm extends Component {
                 onClick={onDialogActionOpen}
                 icon={<DeleteIcon />}
                 tooltipTitle="Delete"
-                className={classes.deleteIcon}
+                color="error"
                 FabProps={{
                   disabled: loading,
                 }}

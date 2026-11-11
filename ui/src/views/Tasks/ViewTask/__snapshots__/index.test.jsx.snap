@@ -1526,13 +1526,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           role="menu"
         >
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-0"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-0-label"
               style="transition-delay: 270ms;"
             >
@@ -1540,7 +1539,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-0-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 270ms;"
@@ -1561,13 +1560,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-1"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-1-label"
               style="transition-delay: 240ms;"
             >
@@ -1575,7 +1573,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-1-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 240ms;"
@@ -1596,13 +1594,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-2"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-2-label"
               style="transition-delay: 210ms;"
             >
@@ -1610,7 +1607,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-2-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 210ms;"
@@ -1631,13 +1628,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-3"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-3-label"
               style="transition-delay: 180ms;"
             >
@@ -1645,7 +1641,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-3-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 180ms;"
@@ -1666,13 +1662,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-4"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-4-label"
               style="transition-delay: 150ms;"
             >
@@ -1680,7 +1675,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-4-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 150ms;"
@@ -1701,13 +1696,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-5"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-5-label"
               style="transition-delay: 120ms;"
             >
@@ -1715,7 +1709,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-5-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 120ms;"
@@ -1736,13 +1730,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-6"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-6-label"
               style="transition-delay: 90ms;"
             >
@@ -1750,7 +1743,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-6-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 90ms;"
@@ -1771,13 +1764,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-7"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-7-label"
               style="transition-delay: 60ms;"
             >
@@ -1785,7 +1777,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-7-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 60ms;"
@@ -1806,13 +1798,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
-            classes="[object Object]"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-8"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-108 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-8-label"
               style="transition-delay: 30ms;"
             >
@@ -1820,7 +1811,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-8-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-107 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 30ms;"

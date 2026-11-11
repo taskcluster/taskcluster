@@ -56,12 +56,6 @@ import scopeLink from '../../utils/scopeLink';
   saveIcon: {
     ...theme.mixins.successIcon,
   },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
-  deleteTooltipLabel: {
-    backgroundColor: theme.mixins.errorIcon.backgroundColor,
-  },
   clientDescriptionListItem: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(3),
@@ -393,10 +387,7 @@ export default class ClientForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogActionOpen}
-                classes={{
-                  icon: classes.deleteIcon,
-                  staticTooltipLabel: classes.deleteTooltipLabel,
-                }}
+                color="error"
                 tooltipTitle="Delete"
                 FabProps={{ disabled: loading }}
               />

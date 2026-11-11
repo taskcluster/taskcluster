@@ -46,12 +46,6 @@ import yamlSchema from '../../utils/yamlSchema';
   saveIcon: {
     ...theme.mixins.successIcon,
   },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
-  deleteTooltipLabel: {
-    backgroundColor: theme.mixins.errorIcon.backgroundColor,
-  },
   secretSubheader: {
     display: 'flex',
   },
@@ -274,10 +268,7 @@ export default class SecretForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogActionOpen}
-                classes={{
-                  icon: classes.deleteIcon,
-                  staticTooltipLabel: classes.deleteTooltipLabel,
-                }}
+                color="error"
                 tooltipTitle="Delete Secret"
                 FabProps={{
                   disabled: loading,
