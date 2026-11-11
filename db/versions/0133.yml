@@ -1,0 +1,36 @@
+version: 133
+description: return worker pool launch configs in a consistent order
+methods:
+  collect_launch_configs_if_exist:
+    description: |-
+      Assemble the launch configurations for a worker pool and set them in the config.
+      This is useful at the moment to maintain backwards compatibility.
+      Launch configs are ordered by launch_config_id.
+    mode: write
+    serviceName: worker_manager
+    args: config_in jsonb, worker_pool_id_in text
+    returns: jsonb
+    body: |-
+      declare
+        launch_configs jsonb;
+      begin
+        -- also make sure launchConfigId is set in the returned configuration
+        select coalesce(jsonb_agg(
+          case
+            when configuration ? 'workerManager' then
+              jsonb_set(configuration, '{workerManager,launchConfigId}', to_jsonb(launch_config_id))
+            else
+              configuration || jsonb_build_object('workerManager', jsonb_build_object('launchConfigId', launch_config_id))
+          end
+          order by launch_config_id
+        ), null) into launch_configs
+        from worker_pool_launch_configs
+        where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+          and worker_pool_launch_configs.is_archived = false;
+
+        if launch_configs is not null then
+          return jsonb_set(config_in, '{launchConfigs}', launch_configs);
+        end if;
+
+        return config_in;
+      end
