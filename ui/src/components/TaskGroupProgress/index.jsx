@@ -22,6 +22,10 @@ import Helmet from '../Helmet';
 import { amber, blue, grey, green, purple } from '@mui/material/colors';
 
 @withStyles(theme => ({
+  container: {
+    margin: theme.spacing(-1),
+    width: `calc(100% + ${theme.spacing(2)})`,
+  },
   statusButton: {
     display: 'flex',
     flexGrow: 1,
@@ -184,7 +188,7 @@ export default class TaskGroupProgress extends Component {
     const taskGroupState = this.getTaskGroupState();
 
     return (
-      <Grid container spacing={2}>
+      <Grid container className={classes.container}>
         <Helmet state={taskGroupState} />
         {Object.keys(TASK_STATE).map(status => {
           const Icon = this.getStatusIcon(status);

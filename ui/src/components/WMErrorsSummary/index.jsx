@@ -82,7 +82,7 @@ export default class WorkerManagerErrorsSummary extends Component {
         {!loading && errorWidgets && (
           <Fragment>
             <StatusGroup widgets={errorWidgets} tiny />
-            <Grid container spacing={2} style={{ marginBottom: 20 }}>
+            <Grid container spacing={2} style={{ marginBottom: 28 }}>
               <Grid item xs={12} md={4}>
                 <MiniTable
                   data={stats?.totals?.title}

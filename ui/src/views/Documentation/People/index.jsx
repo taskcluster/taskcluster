@@ -25,10 +25,10 @@ import contributorsJson from '../../../../../.all-contributorsrc';
     boxShadow: '0px 0px 4px rgba(2,2,2,0.2)',
   },
   gutterTop: {
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing(0.5),
   },
   gutterBottom: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1.5),
   },
 }))
 export default class People extends Component {

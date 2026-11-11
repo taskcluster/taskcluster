@@ -6,10 +6,11 @@ import { StatusItem } from './StatusItem';
 
 const styles = theme => ({
   grid: {
-    marginTop: theme.spacing(4),
+    marginTop: theme.spacing(3),
   },
   tinyGrid: {
-    marginTop: theme.spacing(0),
+    marginTop: theme.spacing(-1),
+    marginBottom: theme.spacing(1),
   },
   item: {
     backgroundColor: theme.palette.mode === 'dark' ? '#444' : '#eee',

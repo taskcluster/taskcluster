@@ -60,7 +60,7 @@ const getCellColors = scopesetDiff => {
     backgroundColor: 'rgba(255, 255, 0, 0.25)',
   },
   editorGrid: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1.5),
   },
   cellGrid: {
     padding: `0 ${theme.spacing(1)}`,
