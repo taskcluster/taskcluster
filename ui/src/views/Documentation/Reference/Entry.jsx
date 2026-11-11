@@ -502,13 +502,12 @@ export default class Entry extends Component {
               primary={<Typography variant="body1">Examples</Typography>}
               secondary={
                 <Box sx={{ width: '100%' }}>
-                  <FormControl size="small" sx={{ minWidth: 150, mb: 1 }}>
+                  <FormControl color="secondary" sx={{ minWidth: 150, mb: 1 }}>
                     <Select
                       value={selectedLanguage}
                       onChange={e =>
                         this.setState({ selectedLanguage: e.target.value })
                       }
-                      variant="outlined"
                       sx={{ fontSize: '0.875rem' }}>
                       {exampleLanguages.map(({ key, label }) => (
                         <MenuItem key={key} value={key}>
