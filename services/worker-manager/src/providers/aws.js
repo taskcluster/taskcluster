@@ -460,13 +460,19 @@ export class AwsProvider extends Provider {
       return;
     }
 
-    result.TerminatingInstances.forEach(ti => {
-      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
-        throw new Error(
-          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
-        );
+    for (const ti of result.TerminatingInstances) {
+      if (ti.InstanceId !== worker.workerId || !['shutting-down', 'terminated'].includes(ti.CurrentState.Name)) {
+        const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
+        if (workerPool) {
+          await this.reportError({
+            workerPool,
+            kind: 'termination-error',
+            title: 'Instance Termination Error',
+            description: `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`,
+          });
+        }
       }
-    });
+    }
   }
 
   rootUrlTagValue() {
