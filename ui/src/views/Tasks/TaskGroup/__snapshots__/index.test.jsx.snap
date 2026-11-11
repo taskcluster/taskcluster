@@ -6,54 +6,46 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
     class="ToggleableThemeComponent-root-8"
   >
     <header
-      class="MuiPaper-root MuiAppBar-root MuiAppBar-positionFixed MuiAppBar-colorPrimary ToggleableThemeComponent-appBar-9 mui-fixed MuiPaper-elevation4"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorPrimary MuiAppBar-positionFixed ToggleableThemeComponent-appBar-9 mui-fixed css-v9gvnt-MuiPaper-root-MuiAppBar-root"
     >
       <div
-        class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"
+        class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-hyum1k-MuiToolbar-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained SkipNavigation-skipButton-27"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit SkipNavigation-skipButton-27 css-rrlhcq-MuiButtonBase-root-MuiButton-root"
           selector="main"
           tabindex="0"
           type="button"
         >
+          Skip to main content
           <span
-            class="MuiButton-label"
-          >
-            Skip to main content
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
           aria-label="toggle drawer"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeLarge css-v52rcf-MuiButtonBase-root-MuiIconButton-root"
           id="toggle-drawer"
           tabindex="0"
           type="button"
         >
-          <span
-            class="MuiIconButton-label"
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-22"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-22"
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <h6
-          class="MuiTypography-root ToggleableThemeComponent-appBarTitle-11 MuiTypography-h6 MuiTypography-noWrap"
+          class="MuiTypography-root MuiTypography-h6 MuiTypography-noWrap ToggleableThemeComponent-appBarTitle-11 css-3l2ww3-MuiTypography-root"
         >
           Task Group - Decision Task
         </h6>
@@ -61,7 +53,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           class="Search-root-28"
         >
           <div
-            class="MuiFormControl-root Search-formControl-29"
+            class="MuiFormControl-root Search-formControl-29 css-1nrlq1o-MuiFormControl-root"
           >
             <div
               class="Search-search-30"
@@ -89,67 +81,36 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
         </form>
         <button
-          class="MuiButtonBase-root MuiIconButton-root ToggleableThemeComponent-leftAppBarButton-21"
+          aria-label="Toggle light/dark theme"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge ToggleableThemeComponent-leftAppBarButton-21 css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
           tabindex="0"
-          title="Toggle light/dark theme"
           type="button"
         >
-          <span
-            class="MuiIconButton-label"
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-22"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-22"
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <a
           href="/docs"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root"
+            aria-label="Documentation"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+            data-mui-internal-clone-element="true"
             tabindex="0"
-            title="Documentation"
             type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                class="mdi-icon ToggleableThemeComponent-appIcon-22"
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V13L12,8.5V6.5C10.55,5.4 8.45,5 6.5,5V5Z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </a>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          tabindex="0"
-          title="Page Information"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
           >
             <svg
               class="mdi-icon ToggleableThemeComponent-appIcon-22"
@@ -159,27 +120,45 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
               width="24"
             >
               <path
-                d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"
+                d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V13L12,8.5V6.5C10.55,5.4 8.45,5 6.5,5V5Z"
               />
             </svg>
-          </span>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </a>
+        <button
+          aria-label="Page Information"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-22"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+          >
+            <path
+              d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained UserMenu-userMenuButton-33 MuiButton-containedPrimary UserMenu-buttonContainedPrimary-35 MuiButton-containedSizeSmall MuiButton-sizeSmall"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-35 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-35 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary UserMenu-userMenuButton-33 css-jiae46-MuiButtonBase-root-MuiButton-root"
           id="sign-in-button"
           tabindex="0"
           type="button"
         >
+          Sign in
           <span
-            class="MuiButton-label"
-          >
-            Sign in
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
       </div>
@@ -190,10 +169,10 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
       match="[object Object]"
     >
       <div
-        class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2"
+        class="MuiGrid-root MuiGrid-container TaskGroupProgress-container-67 css-11lq3yg-MuiGrid-root"
       >
         <button
-          class="MuiButtonBase-root TaskGroupProgress-completedButton-71 TaskGroupProgress-statusButton-67"
+          class="MuiButtonBase-root TaskGroupProgress-completedButton-72 TaskGroupProgress-statusButton-68 css-10d1a0h-MuiButtonBase-root"
           name="COMPLETED"
           tabindex="0"
           type="button"
@@ -201,7 +180,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-70"
+              class="mdi-icon TaskGroupProgress-statusIcon-71"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -214,22 +193,22 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignRight TaskGroupProgress-statusButtonTypography-69 css-yzhbcn-MuiTypography-root"
             >
               1
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
+              class="MuiTypography-root MuiTypography-caption TaskGroupProgress-statusTitle-70 TaskGroupProgress-statusButtonTypography-69 css-1sltw02-MuiTypography-root"
             >
               COMPLETED
             </span>
           </div>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-runningButton-76 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
+          class="MuiButtonBase-root TaskGroupProgress-runningButton-77 TaskGroupProgress-statusButton-68 TaskGroupProgress-noTasksButton-78 css-10d1a0h-MuiButtonBase-root"
           name="RUNNING"
           tabindex="0"
           type="button"
@@ -237,7 +216,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-70"
+              class="mdi-icon TaskGroupProgress-statusIcon-71"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -250,22 +229,22 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignRight TaskGroupProgress-statusButtonTypography-69 css-yzhbcn-MuiTypography-root"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
+              class="MuiTypography-root MuiTypography-caption TaskGroupProgress-statusTitle-70 TaskGroupProgress-statusButtonTypography-69 css-1sltw02-MuiTypography-root"
             >
               RUNNING
             </span>
           </div>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-failedButton-72 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
+          class="MuiButtonBase-root TaskGroupProgress-failedButton-73 TaskGroupProgress-statusButton-68 TaskGroupProgress-noTasksButton-78 css-10d1a0h-MuiButtonBase-root"
           name="FAILED"
           tabindex="0"
           type="button"
@@ -273,7 +252,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-70"
+              class="mdi-icon TaskGroupProgress-statusIcon-71"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -286,22 +265,22 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignRight TaskGroupProgress-statusButtonTypography-69 css-yzhbcn-MuiTypography-root"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
+              class="MuiTypography-root MuiTypography-caption TaskGroupProgress-statusTitle-70 TaskGroupProgress-statusButtonTypography-69 css-1sltw02-MuiTypography-root"
             >
               FAILED
             </span>
           </div>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-pendingButton-74 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
+          class="MuiButtonBase-root TaskGroupProgress-pendingButton-75 TaskGroupProgress-statusButton-68 TaskGroupProgress-noTasksButton-78 css-10d1a0h-MuiButtonBase-root"
           name="PENDING"
           tabindex="0"
           type="button"
@@ -309,7 +288,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-70"
+              class="mdi-icon TaskGroupProgress-statusIcon-71"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -322,22 +301,22 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignRight TaskGroupProgress-statusButtonTypography-69 css-yzhbcn-MuiTypography-root"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
+              class="MuiTypography-root MuiTypography-caption TaskGroupProgress-statusTitle-70 TaskGroupProgress-statusButtonTypography-69 css-1sltw02-MuiTypography-root"
             >
               PENDING
             </span>
           </div>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-exceptionButton-75 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
+          class="MuiButtonBase-root TaskGroupProgress-exceptionButton-76 TaskGroupProgress-statusButton-68 TaskGroupProgress-noTasksButton-78 css-10d1a0h-MuiButtonBase-root"
           name="EXCEPTION"
           tabindex="0"
           type="button"
@@ -345,7 +324,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-70"
+              class="mdi-icon TaskGroupProgress-statusIcon-71"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -358,22 +337,22 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignRight TaskGroupProgress-statusButtonTypography-69 css-yzhbcn-MuiTypography-root"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
+              class="MuiTypography-root MuiTypography-caption TaskGroupProgress-statusTitle-70 TaskGroupProgress-statusButtonTypography-69 css-1sltw02-MuiTypography-root"
             >
               EXCEPTION
             </span>
           </div>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root TaskGroupProgress-unscheduledButton-73 TaskGroupProgress-statusButton-67 TaskGroupProgress-noTasksButton-77"
+          class="MuiButtonBase-root TaskGroupProgress-unscheduledButton-74 TaskGroupProgress-statusButton-68 TaskGroupProgress-noTasksButton-78 css-10d1a0h-MuiButtonBase-root"
           name="UNSCHEDULED"
           tabindex="0"
           type="button"
@@ -381,7 +360,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         >
           <div>
             <svg
-              class="mdi-icon TaskGroupProgress-statusIcon-70"
+              class="mdi-icon TaskGroupProgress-statusIcon-71"
               fill="white"
               height="32"
               viewBox="0 0 24 24"
@@ -394,44 +373,43 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
           <div>
             <h4
-              class="MuiTypography-root TaskGroupProgress-statusButtonTypography-68 MuiTypography-h4 MuiTypography-alignRight"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignRight TaskGroupProgress-statusButtonTypography-69 css-yzhbcn-MuiTypography-root"
             >
               0
             </h4>
             <span
-              class="MuiTypography-root TaskGroupProgress-statusTitle-69 TaskGroupProgress-statusButtonTypography-68 MuiTypography-caption"
+              class="MuiTypography-root MuiTypography-caption TaskGroupProgress-statusTitle-70 TaskGroupProgress-statusButtonTypography-69 css-1sltw02-MuiTypography-root"
             >
               UNSCHEDULED
             </span>
           </div>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
       </div>
       <div
-        class="MuiGrid-root TaskGroup-firstGrid-2 MuiGrid-container"
+        class="MuiGrid-root MuiGrid-container TaskGroup-firstGrid-2 css-11lq3yg-MuiGrid-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1hhgieh-MuiGrid-root"
         >
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-80 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2027-08-30T00:00:00.000Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Task Group Expires
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 in 6 years
               </p>
@@ -448,25 +426,25 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1hhgieh-MuiGrid-root"
         />
       </div>
       <div
-        class="MuiGrid-root MuiGrid-container"
+        class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
       >
         <div
-          class="MuiGrid-root TaskGroup-firstGrid-2 MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-8"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-8 TaskGroup-firstGrid-2 css-r0umuq-MuiGrid-root"
         >
           <form
             class="Search-root-28 TaskGroup-taskNameFormSearch-4"
           >
             <div
-              class="MuiFormControl-root Search-formControl-29"
+              class="MuiFormControl-root Search-formControl-29 css-1nrlq1o-MuiFormControl-root"
             >
               <div
                 class="Search-search-30"
@@ -495,31 +473,27 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </form>
         </div>
         <div
-          class="MuiGrid-root TaskGroup-secondGrid-3 MuiGrid-item MuiGrid-grid-xs-9 MuiGrid-grid-sm-4"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-9 MuiGrid-grid-sm-4 TaskGroup-secondGrid-3 css-1drr59-MuiGrid-root"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined TaskGroup-statsButton-6 MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedInherit MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorInherit MuiButton-root MuiButton-outlined MuiButton-outlinedInherit MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorInherit TaskGroup-statsButton-6 css-1y9wtqi-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
-            <span
-              class="MuiButton-label"
+            <svg
+              class="mdi-icon TaskGroup-bellIcon-7"
+              fill="currentColor"
+              height="16"
+              viewBox="0 0 24 24"
+              width="16"
             >
-              <svg
-                class="mdi-icon TaskGroup-bellIcon-7"
-                fill="currentColor"
-                height="16"
-                viewBox="0 0 24 24"
-                width="16"
-              >
-                <path
-                  d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
-                />
-              </svg>
-              Stats
-            </span>
+              <path
+                d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+              />
+            </svg>
+            Stats
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </button>
         </div>
@@ -529,25 +503,24 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         role="table"
       >
         <div
-          class="MuiTable-root TaskGroupTable-table-82"
+          class="MuiTable-root TaskGroupTable-table-83 css-6cj1nx-MuiTable-root"
           role="table"
         >
           <div
-            class="MuiTableHead-root TaskGroupTable-tableHead-83"
+            class="MuiTableHead-root TaskGroupTable-tableHead-84 css-4dv9im-MuiTableHead-root"
             role="rowgroup"
           >
             <div
-              class="MuiTableRow-root TaskGroupTable-tableHeadRow-84 MuiTableRow-head"
+              class="MuiTableRow-root MuiTableRow-head TaskGroupTable-tableHeadRow-85 css-1wosaja-MuiTableRow-root"
               role="row"
             >
               <div
-                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableFirstCell-90 TaskGroupTable-tableHeadCell-85 MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall TaskGroupTable-tableFirstCell-91 TaskGroupTable-tableHeadCell-86 css-13h64e6-MuiTableCell-root"
                 role="columnheader"
                 scope="col"
               >
                 <span
-                  aria-disabled="false"
-                  class="MuiButtonBase-root MuiTableSortLabel-root MuiTableSortLabel-active"
+                  class="MuiButtonBase-root MuiTableSortLabel-root Mui-active css-xdkkwq-MuiButtonBase-root-MuiTableSortLabel-root"
                   id="Name"
                   role="button"
                   tabindex="0"
@@ -555,7 +528,8 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                   Name
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-198ung5-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                    data-testid="ArrowDownwardIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -566,13 +540,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                 </span>
               </div>
               <div
-                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableSecondHeadCell-86 MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall TaskGroupTable-tableSecondHeadCell-87 css-13h64e6-MuiTableCell-root"
                 role="columnheader"
                 scope="col"
               >
                 <span
-                  aria-disabled="false"
-                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-85"
+                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-86 css-xdkkwq-MuiButtonBase-root-MuiTableSortLabel-root"
                   id="Duration"
                   role="button"
                   tabindex="0"
@@ -580,7 +553,8 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                   Duration
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-198ung5-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                    data-testid="ArrowDownwardIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -591,13 +565,12 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                 </span>
               </div>
               <div
-                class="MuiTableCell-root MuiTableCell-head TaskGroupTable-tableThirdHeadCell-88 MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall TaskGroupTable-tableThirdHeadCell-89 css-13h64e6-MuiTableCell-root"
                 role="columnheader"
                 scope="col"
               >
                 <span
-                  aria-disabled="false"
-                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-85"
+                  class="MuiButtonBase-root MuiTableSortLabel-root TaskGroupTable-tableHeadCell-86 css-xdkkwq-MuiButtonBase-root-MuiTableSortLabel-root"
                   id="Status"
                   role="button"
                   tabindex="0"
@@ -605,7 +578,8 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                   Status
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-198ung5-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                    data-testid="ArrowDownwardIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -619,13 +593,13 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
         </div>
         <p
-          class="MuiTypography-root TaskGroupTable-noTasksText-95 MuiTypography-body2"
+          class="MuiTypography-root MuiTypography-body2 TaskGroupTable-noTasksText-96 css-cuh330-MuiTypography-root"
         >
           No tasks available
         </p>
       </div>
       <div
-        class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-97"
+        class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-98 css-h0fz3e-MuiSpeedDial-root"
         history="[object Object]"
         match="[object Object]"
         role="presentation"
@@ -635,164 +609,151 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           aria-expanded="false"
           aria-haspopup="true"
           aria-label="speed-dial"
-          class="MuiButtonBase-root MuiFab-root MuiSpeedDial-fab MuiFab-secondary"
+          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiSpeedDial-fab css-nlq5i3-MuiButtonBase-root-MuiFab-root-MuiSpeedDial-fab"
           style="transform: none; -webkit-transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
           tabindex="0"
           type="button"
         >
           <span
-            class="MuiFab-label"
+            class="MuiSpeedDialIcon-root css-ohncnb-MuiSpeedDialIcon-root"
           >
-            <span
-              class="MuiSpeedDialIcon-root"
+            <svg
+              class="mdi-icon MuiSpeedDialIcon-openIcon"
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
             >
-              <svg
-                class="mdi-icon MuiSpeedDialIcon-openIcon"
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-                />
-              </svg>
-              <svg
-                class="mdi-icon MuiSpeedDialIcon-icon"
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
-                />
-              </svg>
-            </span>
+              <path
+                d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+              />
+            </svg>
+            <svg
+              class="mdi-icon MuiSpeedDialIcon-icon"
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
+              />
+            </svg>
           </span>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <div
           aria-orientation="vertical"
-          class="MuiSpeedDial-actions MuiSpeedDial-actionsClosed"
+          class="MuiSpeedDial-actions MuiSpeedDial-actionsClosed css-1s28u9o-MuiSpeedDial-actions"
           id="speed-dial-actions"
           role="menu"
         >
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
+            classes="[object Object]"
             id="speed-dial-action-0"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabel-100"
+              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabel-101 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-0-label"
               style="transition-delay: 90ms;"
             >
               Open in Profiler
             </span>
             <button
-              aria-describedby="speed-dial-action-0-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-98 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall"
+              aria-labelledby="speed-dial-action-0-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-99 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               role="menuitem"
               style="transition-delay: 90ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+                />
+              </svg>
               <span
-                class="MuiTouchRipple-root"
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
+            classes="[object Object]"
             component="span"
             id="speed-dial-action-1"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-99"
+              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-100 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-1-label"
               style="transition-delay: 60ms;"
             >
               Seal Task Group (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-1-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-98 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-1-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-99 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 60ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M2 19.63L13.43 8.2L12.72 7.5L14.14 6.07L12 3.89C13.2 2.7 15.09 2.7 16.27 3.89L19.87 7.5L18.45 8.91H21.29L22 9.62L18.45 13.21L17.74 12.5V9.62L16.27 11.04L15.56 10.33L4.13 21.76L2 19.63Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M2 19.63L13.43 8.2L12.72 7.5L14.14 6.07L12 3.89C13.2 2.7 15.09 2.7 16.27 3.89L19.87 7.5L18.45 8.91H21.29L22 9.62L18.45 13.21L17.74 12.5V9.62L16.27 11.04L15.56 10.33L4.13 21.76L2 19.63Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-12w19fr-MuiSpeedDialAction-staticTooltip"
+            classes="[object Object]"
             component="span"
             id="speed-dial-action-2"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-99"
+              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-100 css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-2-label"
               style="transition-delay: 30ms;"
             >
               Cancel Task Group (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-2-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-98 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-2-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab SpeedDialAction-icon-99 MuiSpeedDialAction-fabClosed css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 30ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M2 19.63L13.43 8.2L12.72 7.5L14.14 6.07L12 3.89C13.2 2.7 15.09 2.7 16.27 3.89L19.87 7.5L18.45 8.91H21.29L22 9.62L18.45 13.21L17.74 12.5V9.62L16.27 11.04L15.56 10.33L4.13 21.76L2 19.63Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M2 19.63L13.43 8.2L12.72 7.5L14.14 6.07L12 3.89C13.2 2.7 15.09 2.7 16.27 3.89L19.87 7.5L18.45 8.91H21.29L22 9.62L18.45 13.21L17.74 12.5V9.62L16.27 11.04L15.56 10.33L4.13 21.76L2 19.63Z"
+                />
+              </svg>
             </button>
           </span>
         </div>
