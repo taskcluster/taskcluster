@@ -41,7 +41,8 @@ export function getTaskGroupTaskSchema() {
     tooltipLabel: '{marker.data.name}',
     tableLabel: '{marker.data.name}',
     chartLabel: '{marker.data.name}',
-    display: ['marker-chart', 'marker-table', 'timeline-overview'],
+    // Not in 'timeline-overview': thousands of tasks there drown out the summary markers.
+    display: ['marker-chart', 'marker-table'],
     colorField: 'color',
     data: [
       { key: 'startTime', label: 'Start time', format: 'string' },
@@ -76,6 +77,29 @@ export function getTaskGroupSchema() {
       { key: 'expires', label: 'Expires', format: 'string' },
       { key: 'tasks', label: 'Tasks', format: 'integer' },
       { key: 'url', label: 'URL', format: 'url' },
+    ],
+  };
+}
+
+/**
+ * Marker schema for the high-level phases of a task group (decision task,
+ * initial tasks and tasks added later). See getSummaryPhases().
+ */
+export function getSummarySchema() {
+  return {
+    name: 'Summary',
+    tooltipLabel: '{marker.data.name}',
+    tableLabel: '{marker.data.name}',
+    chartLabel: '{marker.data.name}',
+    display: ['marker-chart', 'marker-table', 'timeline-overview'],
+    colorField: 'color',
+    data: [
+      { key: 'startTime', label: 'Start time', format: 'string' },
+      { key: 'name', label: 'Phase', format: 'string', searchable: true },
+      { key: 'tasks', label: 'Tasks', format: 'integer' },
+      { key: 'taskId', label: 'Task ID', format: 'string' },
+      { key: 'taskURL', label: 'Task URL', format: 'url' },
+      { key: 'color', label: 'Color', format: 'string', hidden: true },
     ],
   };
 }

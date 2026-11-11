@@ -1,6 +1,12 @@
 // @ts-check
 import libUrls from 'taskcluster-lib-urls';
-import { getConcurrencySchema, getTaskGroupCategories, getTaskGroupTaskSchema, getTaskGroupSchema } from './schemas.js';
+import {
+  getConcurrencySchema,
+  getSummarySchema,
+  getTaskGroupCategories,
+  getTaskGroupSchema,
+  getTaskGroupTaskSchema,
+} from './schemas.js';
 
 export function getEmptyThread() {
   return {
@@ -76,7 +82,7 @@ export function getEmptyProfile() {
       logicalCPUs: 0,
       symbolicationNotSupported: true,
       usesOnlyOneStackType: true,
-      markerSchema: [getTaskGroupTaskSchema(), getTaskGroupSchema(), getConcurrencySchema()],
+      markerSchema: [getTaskGroupTaskSchema(), getTaskGroupSchema(), getSummarySchema(), getConcurrencySchema()],
       categories: getTaskGroupCategories(),
     },
     libs: [],
@@ -141,16 +147,15 @@ export function getRunColor(run) {
   }
 }
 
+const toMS = date => (date ? new Date(date).valueOf() : null);
+
 /**
  * Computes how many task runs were running and pending over time.
  *
- * Returns a list of consecutive intervals `{ start, end, running, pending }`
- * (epoch ms), one per period where both counts stay constant. A run is pending
- * from `scheduled` until `started` (or `resolved`, if it never started), and
- * running from `started` until `resolved`. Unresolved runs extend to `now`.
- *
- * @param {Array} tasks - task group tasks, each with `status.runs`
- * @param {number} now - end time for runs that are not resolved yet
+ * Returns consecutive intervals `{ start, end, running, pending }` (epoch ms)
+ * in which both counts stay constant. A run is pending from `scheduled` until
+ * `started` (or `resolved`), and running from `started` until `resolved`.
+ * Unresolved runs extend to `now`.
  */
 export function getConcurrency(tasks, now = Date.now()) {
   const deltas = new Map();
@@ -162,13 +167,12 @@ export function getConcurrency(tasks, now = Date.now()) {
     }
     entry[key] += delta;
   };
-  const ms = date => (date ? new Date(date).valueOf() : null);
 
   for (const { status } of tasks) {
     for (const run of status.runs ?? []) {
-      const scheduled = ms(run.scheduled);
-      const started = ms(run.started);
-      const resolved = ms(run.resolved);
+      const scheduled = toMS(run.scheduled);
+      const started = toMS(run.started);
+      const resolved = toMS(run.resolved);
       if (scheduled !== null) {
         add(scheduled, 'pending', 1);
         add(started ?? resolved ?? now, 'pending', -1);
@@ -193,7 +197,99 @@ export function getConcurrency(tasks, now = Date.now()) {
   return intervals;
 }
 
-function getTaskGroupTimeRanges(taskGroups, filterTask = () => true) {
+/**
+ * Time span of all runs of the given tasks, from the first scheduled (or
+ * started) run to the last resolved run. Unresolved runs extend to `now`.
+ * Returns null if no run has any timestamps.
+ */
+function getRunsSpan(tasks, now) {
+  let start = null;
+  let end = null;
+  for (const { status } of tasks) {
+    for (const run of status.runs ?? []) {
+      const runStart = toMS(run.scheduled ?? run.started ?? run.resolved);
+      if (runStart === null) {
+        continue;
+      }
+      const runEnd = toMS(run.resolved) ?? now;
+      start = start === null ? runStart : Math.min(start, runStart);
+      end = end === null ? runEnd : Math.max(end, runEnd);
+    }
+  }
+  return start === null ? null : { start, end };
+}
+
+// Tasks created more than this far apart belong to separate creation bursts.
+const BURST_GAP_MS = 60 * 1000;
+
+/**
+ * High-level phases of a task group, for the "Summary" markers. Only uses
+ * generic Taskcluster data (task IDs and creation times):
+ *
+ *  - Decision: the task whose taskId equals the taskGroupId, by convention the
+ *    task that created the rest of the group.
+ *  - Initial tasks: tasks created before the decision task's first completed
+ *    run resolved (or its first resolved run, if none completed). Without a
+ *    resolved decision task, the first burst of task creation.
+ *  - One marker per later burst of task creation (tasks created less than
+ *    BURST_GAP_MS apart), e.g. an action task and the tasks it created.
+ *    It is labelled with the name of the first task created in the burst.
+ *
+ * @param {object} taskGroup
+ * @param {number} now - end time for runs that are not resolved yet
+ * @returns {Array<{ name: string, start: number, end: number, tasks: number, taskId?: string, color: string }>}
+ */
+export function getSummaryPhases(taskGroup, now = Date.now()) {
+  const phases = [];
+  const addPhase = (name, tasks, color, taskId) => {
+    const span = getRunsSpan(tasks, now);
+    if (span) {
+      phases.push({ name, ...span, tasks: tasks.length, ...(taskId ? { taskId } : {}), color });
+    }
+  };
+
+  const created = ({ task }) => toMS(task.created) ?? -Infinity;
+  const byCreated = [...taskGroup.tasks].sort((a, b) => created(a) - created(b));
+  const bursts = [];
+  for (const t of byCreated) {
+    const last = bursts.at(-1)?.at(-1);
+    if (!last || created(t) - created(last) > BURST_GAP_MS) {
+      bursts.push([]);
+    }
+    bursts.at(-1).push(t);
+  }
+
+  const decision = taskGroup.tasks.find(({ status }) => status.taskId === taskGroup.taskGroupId);
+  // The first completed run created the task graph; later reruns of the
+  // decision task must not reclassify tasks added in the meantime.
+  const decisionRuns = decision?.status.runs ?? [];
+  const decisionEnd = toMS(
+    (decisionRuns.find(run => run.state === 'completed') ?? decisionRuns.find(run => run.resolved))?.resolved
+  );
+  const initialEnd = decisionEnd ?? (bursts.length ? created(bursts[0].at(-1)) : Infinity);
+
+  if (decision) {
+    addPhase('Decision', [decision], 'purple', decision.status.taskId);
+  }
+  addPhase(
+    'Initial tasks',
+    byCreated.filter(t => created(t) <= initialEnd),
+    'blue'
+  );
+
+  for (const burst of bursts) {
+    const tasks = burst.filter(t => created(t) > initialEnd);
+    if (tasks.length) {
+      const [first] = tasks;
+      const name = tasks.length > 1 ? `${first.task.metadata.name} (+${tasks.length - 1})` : first.task.metadata.name;
+      addPhase(name, tasks, 'yellow', first.status.taskId);
+    }
+  }
+
+  return phases;
+}
+
+function getTaskGroupTimeRanges(taskGroups) {
   return taskGroups.map(taskGroup => {
     let start = null;
     let end = null;
@@ -201,7 +297,7 @@ function getTaskGroupTimeRanges(taskGroups, filterTask = () => true) {
     let unresolved = false;
     for (const taskAndStatus of taskGroup.tasks) {
       const { runs } = taskAndStatus.status;
-      if (runs && filterTask(taskAndStatus)) {
+      if (runs) {
         for (const run of runs) {
           const startedMS = new Date(run.scheduled ?? run.started ?? run.resolved ?? '').valueOf();
           const resolvedMS = new Date(run.resolved ?? '').valueOf();
@@ -230,11 +326,7 @@ function getTaskGroupTimeRanges(taskGroups, filterTask = () => true) {
 export function getProfile(taskGroups, rootUrl) {
   const profile = getEmptyProfile();
   let profileStartTime = Infinity;
-  const taskGroupTimeRanges = getTaskGroupTimeRanges(taskGroups, () => true);
-  const taskGroupTimeRangesNoActions = getTaskGroupTimeRanges(
-    taskGroups,
-    ({ task }) => !task.metadata.name.startsWith('Action:')
-  );
+  const taskGroupTimeRanges = getTaskGroupTimeRanges(taskGroups);
 
   for (const { start } of taskGroupTimeRanges) {
     if (start !== null) {
@@ -260,7 +352,6 @@ export function getProfile(taskGroups, rootUrl) {
   profile.threads = taskGroups.map((taskGroup, i) => {
     const stringArray = new UniqueStringArray();
     const taskGroupTimeRange = taskGroupTimeRanges[i];
-    const taskGroupTimeRangeNoActions = taskGroupTimeRangesNoActions[i];
 
     const sortedTasks = taskGroup.tasks.map(task => {
       const { runs } = task.status;
@@ -301,33 +392,46 @@ export function getProfile(taskGroups, rootUrl) {
       thread.unregisterTime = taskGroupTimeRange.end - profileStartTime;
     }
 
-    for (const { timeRange, markerName } of [
-      { timeRange: taskGroupTimeRange, markerName: 'TaskGroup' },
-      { timeRange: taskGroupTimeRangeNoActions, markerName: 'TaskGroup (no actions)' },
-    ]) {
-      if (timeRange.start) {
-        const runStart = timeRange.start;
-        const runEnd = timeRange.end;
-        markers.startTime.push(runStart - profileStartTime);
-        if (runEnd === null) {
-          markers.endTime.push(null);
-          markers.phase.push(2);
-        } else {
-          markers.endTime.push(runEnd - profileStartTime);
-          markers.phase.push(1);
-        }
-        markers.category.push(5);
-        markers.name.push(stringArray.indexForString(markerName));
-        markers.data.push({
-          type: 'TaskGroup',
-          startTime: new Date(runStart).toISOString(),
-          name: taskGroup.taskGroupId,
-          expires: taskGroup.expires,
-          tasks: taskGroup.tasks.length,
-          url: libUrls.ui(rootUrl, `/tasks/groups/${taskGroup.taskGroupId}`),
-        });
-        markers.length += 1;
+    if (taskGroupTimeRange.start) {
+      const runStart = taskGroupTimeRange.start;
+      const runEnd = taskGroupTimeRange.end;
+      markers.startTime.push(runStart - profileStartTime);
+      if (runEnd === null) {
+        markers.endTime.push(null);
+        markers.phase.push(2);
+      } else {
+        markers.endTime.push(runEnd - profileStartTime);
+        markers.phase.push(1);
       }
+      markers.category.push(5);
+      markers.name.push(stringArray.indexForString('TaskGroup'));
+      markers.data.push({
+        type: 'TaskGroup',
+        startTime: new Date(runStart).toISOString(),
+        name: taskGroup.taskGroupId,
+        expires: taskGroup.expires,
+        tasks: taskGroup.tasks.length,
+        url: libUrls.ui(rootUrl, `/tasks/groups/${taskGroup.taskGroupId}`),
+      });
+      markers.length += 1;
+    }
+
+    const summaryName = stringArray.indexForString('Summary');
+    for (const phase of getSummaryPhases(taskGroup)) {
+      markers.startTime.push(phase.start - profileStartTime);
+      markers.endTime.push(phase.end - profileStartTime);
+      markers.phase.push(1);
+      markers.category.push(5);
+      markers.name.push(summaryName);
+      markers.data.push({
+        type: 'Summary',
+        name: phase.name,
+        startTime: new Date(phase.start).toISOString(),
+        tasks: phase.tasks,
+        color: phase.color,
+        ...(phase.taskId ? { taskId: phase.taskId, taskURL: libUrls.ui(rootUrl, `/tasks/${phase.taskId}`) } : {}),
+      });
+      markers.length += 1;
     }
 
     if (taskGroupTimeRange.start !== null) {

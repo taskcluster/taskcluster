@@ -5,6 +5,7 @@ import {
   getEmptyThread,
   getConcurrency,
   getRunColor,
+  getSummaryPhases,
   UniqueStringArray,
 } from '../../src/profiler/profile.js';
 
@@ -176,6 +177,60 @@ suite('profiler/profile', () => {
       assert.equal(profile.threads[0].registerTime, 0);
       assert.equal(profile.threads[0].unregisterTime, null);
       assert.equal(profile.threads[0].markers.data.find(d => d.type === 'Concurrency').pending, 1);
+    });
+
+    test('summarizes decision, initial tasks and later creation bursts', () => {
+      const t = sec => new Date(sec * 1000).toISOString();
+      const task = (taskId, name, created, scheduled, resolved) => ({
+        task: { metadata: { name }, created: t(created) },
+        status: { taskId, runs: [{ scheduled: t(scheduled), started: t(scheduled), resolved: t(resolved) }] },
+      });
+      const tasks = [
+        task('decision', 'Decision Task', 0, 0, 10),
+        task('build', 'build', 5, 10, 30),
+        task('action', 'Action: Retrigger', 100, 100, 130),
+        task('retriggered', 'build', 120, 130, 200),
+        task('manual', 'test', 400, 400, 450),
+      ];
+      const summarize = group =>
+        getSummaryPhases(group).map(({ name, start, end, tasks }) => ({
+          name,
+          start: start / 1000,
+          end: end / 1000,
+          tasks,
+        }));
+
+      assert.deepEqual(summarize({ taskGroupId: 'decision', tasks }), [
+        { name: 'Decision', start: 0, end: 10, tasks: 1 },
+        { name: 'Initial tasks', start: 0, end: 30, tasks: 2 },
+        { name: 'Action: Retrigger (+1)', start: 100, end: 200, tasks: 2 },
+        { name: 'test', start: 400, end: 450, tasks: 1 },
+      ]);
+      // rerunning the decision task later does not reclassify earlier bursts
+      const rerun = {
+        ...tasks[0],
+        status: {
+          taskId: 'decision',
+          runs: [
+            { state: 'completed', scheduled: t(0), started: t(0), resolved: t(10) },
+            { state: 'completed', scheduled: t(200), started: t(200), resolved: t(210) },
+          ],
+        },
+      };
+      assert.deepEqual(
+        summarize({ taskGroupId: 'decision', tasks: [rerun, ...tasks.slice(1)] }).map(p => p.name),
+        ['Decision', 'Initial tasks', 'Action: Retrigger (+1)', 'test']
+      );
+      // without a decision task, the first creation burst is the initial set
+      assert.deepEqual(
+        summarize({ taskGroupId: 'no-such-task', tasks }).map(p => p.name),
+        ['Initial tasks', 'Action: Retrigger (+1)', 'test']
+      );
+
+      const profile = getProfile([{ taskGroupId: 'decision', tasks }], 'https://taskcluster.net');
+      const taskSchema = profile.meta.markerSchema.find(s => s.name === 'Task');
+      assert(!taskSchema.display.includes('timeline-overview'));
+      assert.equal(profile.threads[0].markers.data.filter(d => d.type === 'Summary').length, 4);
     });
 
     test('handles task groups with no runs', () => {
