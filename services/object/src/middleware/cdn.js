@@ -1,6 +1,11 @@
 import assert from 'node:assert';
 import { Middleware } from './base.js';
 
+const isAddressableName = name => !name.split('/').some(segment => segment === '.' || segment === '..');
+
+// also encode `?` and `#`
+const encodeName = name => encodeURI(name).replace(/[?#]/g, encodeURIComponent);
+
 export class CdnMiddleware extends Middleware {
   constructor(options) {
     super(options);
@@ -14,9 +19,10 @@ export class CdnMiddleware extends Middleware {
 
   async downloadRequest(_req, res, object) {
     // If the regular expression matches, then redirect to the CDN URL instead of
-    // allowing the backend URL to serve this request.
-    if (this.regexp.test(object.name)) {
-      res.redirect(303, this.baseUrl + object.name);
+    // allowing the backend URL to serve this request.  Names with `.` or `..`
+    // segments are left to the backend, as URL parsers would resolve them.
+    if (this.regexp.test(object.name) && isAddressableName(object.name)) {
+      res.redirect(303, this.baseUrl + encodeName(object.name));
       return false;
     }
 
