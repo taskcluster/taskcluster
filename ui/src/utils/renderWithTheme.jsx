@@ -1,12 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { MuiThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme';
 
 function Wrapper({ children }) {
-  return (
-    <MuiThemeProvider theme={theme.darkTheme}>{children}</MuiThemeProvider>
-  );
+  return <ThemeProvider theme={theme.darkTheme}>{children}</ThemeProvider>;
 }
 
 export default function renderWithTheme(ui, options) {

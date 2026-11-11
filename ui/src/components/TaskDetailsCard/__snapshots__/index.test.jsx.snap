@@ -3,66 +3,61 @@
 exports[`should render TaskDetailsCard 1`] = `
 <DocumentFragment>
   <div
-    class="MuiPaper-root MuiCard-root MuiPaper-elevation8 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-60sbsj-MuiPaper-root-MuiCard-root"
   >
     <div>
       <div
-        class="MuiCardContent-root TaskDetailsCard-cardContent-2"
+        class="MuiCardContent-root TaskDetailsCard-cardContent-2 css-46bh2p-MuiCardContent-root"
       >
         <h5
-          class="MuiTypography-root TaskDetailsCard-headline-1 MuiTypography-h5"
+          class="MuiTypography-root MuiTypography-h5 TaskDetailsCard-headline-1 css-m1s8pb-MuiTypography-root"
         >
           Task Details
         </h5>
         <ul
-          class="MuiList-root MuiList-padding"
+          class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
         >
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 State
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-17 Mui-disabled Label-info-24 Label-disabled-19 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-24 Label-disabled-19 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-18 css-wogk46-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    RUNNING
-                  </span>
+                  RUNNING
                 </button>
               </p>
             </div>
           </li>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="taskId (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Task ID
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 taskId
               </p>
@@ -79,26 +74,25 @@ exports[`should render TaskDetailsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2022-02-15T12:00:00.000Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Created
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 2 days ago
               </p>
@@ -115,29 +109,28 @@ exports[`should render TaskDetailsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <a
             href="/provisioners/task/worker-types/queue"
           >
             <div
-              aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
               role="button"
               tabindex="0"
               title="View Workers"
             >
               <div
-                class="MuiListItemText-root MuiListItemText-multiline"
+                class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
               >
                 <span
-                  class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                 >
                   Task Queue ID
                 </span>
                 <p
-                  class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                 >
                   task/queue/id
                 </p>
@@ -154,21 +147,20 @@ exports[`should render TaskDetailsCard 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root"
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
             </div>
           </a>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
           >
             <div
-              class="MuiListItemText-root"
+              class="MuiListItemText-root css-tlelie-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Payload
               </span>
@@ -185,99 +177,92 @@ exports[`should render TaskDetailsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <div
-            class="MuiCollapse-root MuiCollapse-hidden"
+            class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-bz4dnt-MuiCollapse-root"
             style="min-height: 0px;"
           >
             <div
-              class="MuiCollapse-wrapper"
+              class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
             >
               <div
-                class="MuiCollapse-wrapperInner"
+                class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
               >
                 <div
-                  class="MuiList-root"
+                  class="MuiList-root css-1mk9mw3-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root"
+                      class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                     >
                       <div
-                        class="MuiGrid-root MuiGrid-container"
+                        class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
                       >
                         <div
-                          class="MuiTypography-root MuiTypography-body1"
+                          class="MuiTypography-root MuiTypography-body1 css-1ru42py-MuiTypography-root"
                         >
                           <label
-                            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+                            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 css-7ldjcq-MuiGrid-root"
                           >
                             <div
-                              class="MuiGrid-root MuiGrid-item"
+                              class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                             >
                               YAML
                             </div>
                             <div
-                              class="MuiGrid-root MuiGrid-item"
+                              class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                             >
                               <span
-                                class="MuiSwitch-root"
+                                class="MuiSwitch-root MuiSwitch-sizeMedium css-tnsvld-MuiSwitch-root"
                               >
                                 <span
-                                  aria-disabled="false"
-                                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-26 MuiSwitch-switchBase MuiSwitch-colorSecondary"
+                                  class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary PrivateSwitchBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary css-q2rvhc-MuiButtonBase-root-MuiSwitchBase-root-MuiSwitch-switchBase"
                                 >
+                                  <input
+                                    class="PrivateSwitchBase-input MuiSwitch-input css-1p3z7et-MuiSwitchBase-root"
+                                    name="yaml_json_switch"
+                                    type="checkbox"
+                                  />
                                   <span
-                                    class="MuiIconButton-label"
-                                  >
-                                    <input
-                                      class="PrivateSwitchBase-input-29 MuiSwitch-input"
-                                      name="yaml_json_switch"
-                                      type="checkbox"
-                                      value=""
-                                    />
-                                    <span
-                                      class="MuiSwitch-thumb"
-                                    />
-                                  </span>
+                                    class="MuiSwitch-thumb css-jsexje-MuiSwitch-thumb"
+                                  />
                                   <span
-                                    class="MuiTouchRipple-root"
+                                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                                   />
                                 </span>
                                 <span
-                                  class="MuiSwitch-track"
+                                  class="MuiSwitch-track css-dnkzfa-MuiSwitch-track"
                                 />
                               </span>
                             </div>
                             <div
-                              class="MuiGrid-root MuiGrid-item"
+                              class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                             >
                               JSON
                             </div>
                           </label>
                         </div>
                         <div
-                          class="MuiGrid-root MuiGrid-item"
+                          class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                         >
                           <div
-                            aria-disabled="false"
-                            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
+                            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                             role="button"
                             tabindex="0"
                             title=" (Copy)"
                           >
                             <div
-                              class="MuiListItemText-root MuiListItemText-multiline"
+                              class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                             >
                               <span
-                                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                               />
                               <p
-                                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                               />
                             </div>
                             <svg
@@ -292,7 +277,7 @@ exports[`should render TaskDetailsCard 1`] = `
                               />
                             </svg>
                             <span
-                              class="MuiTouchRipple-root"
+                              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                             />
                           </div>
                         </div>
@@ -433,44 +418,42 @@ exports[`should render TaskDetailsCard 1`] = `
             href="/tasks/taskId/definition"
           >
             <div
-              aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
               role="button"
               tabindex="0"
             >
               <div
-                class="MuiListItemText-root"
+                class="MuiListItemText-root css-tlelie-MuiListItemText-root"
               >
                 <span
-                  class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                 >
                   Full Task Definition
                 </span>
               </div>
               <span
-                class="MuiTouchRipple-root"
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
             </div>
           </a>
           <a
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             href="https://test.taskcluster-dev.net/task/taskId"
             rel="noopener noreferrer"
             tabindex="0"
             target="_blank"
           >
             <div
-              class="MuiListItemText-root TaskDetailsCard-sourceHeadlineText-4 MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline TaskDetailsCard-sourceHeadlineText-4 css-konndc-MuiListItemText-root"
               title="https://test.taskcluster-dev.net/task/taskId"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Source
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary TaskDetailsCard-sourceHeadline-3 MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary TaskDetailsCard-sourceHeadline-3 css-e28pe8-MuiTypography-root"
               >
                 https://test.taskcluster-dev.net/task/taskId
               </p>
@@ -487,44 +470,43 @@ exports[`should render TaskDetailsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </a>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Retries Left
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 5 of 5
               </p>
             </div>
           </li>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2022-05-15T12:00:00.000Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Deadline
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 in 3 months (3 months later)
               </p>
@@ -541,26 +523,25 @@ exports[`should render TaskDetailsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2023-02-15T12:00:00.000Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Expires
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 in 1 year
               </p>
@@ -577,51 +558,47 @@ exports[`should render TaskDetailsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Priority
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-17 Mui-disabled Label-info-24 Label-disabled-19 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-24 Label-disabled-19 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-18 css-wogk46-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    very-high
-                  </span>
+                  very-high
                 </button>
               </p>
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Dependencies
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <em>
                   n/a
@@ -630,18 +607,18 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Dependents
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <em>
                   n/a
@@ -650,49 +627,49 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Project ID
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 none
               </p>
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Scheduler ID
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 test-scheduler
               </p>
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <h6
-                class="MuiTypography-root MuiTypography-subtitle1"
+                class="MuiTypography-root MuiTypography-subtitle1 css-1mpnbun-MuiTypography-root"
               >
                 Scopes
               </h6>
@@ -701,7 +678,7 @@ exports[`should render TaskDetailsCard 1`] = `
               >
                 <li>
                   <span
-                    class="MuiTypography-root MuiTypography-body2 MuiTypography-colorTextSecondary"
+                    class="MuiTypography-root MuiTypography-body2 css-1iw016g-MuiTypography-root"
                   >
                     scopes
                   </span>
@@ -710,13 +687,13 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <h6
-                class="MuiTypography-root MuiTypography-subtitle1"
+                class="MuiTypography-root MuiTypography-subtitle1 css-1mpnbun-MuiTypography-root"
               >
                 Routes
               </h6>

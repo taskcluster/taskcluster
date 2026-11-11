@@ -148,7 +148,7 @@ it('sorts by the worker count columns and marks the column it sorts by', async (
 
   await act(async () => header.click());
   expect(order()).toEqual(['lc-b', 'lc-c', 'lc-a']);
-  expect(header.classList.contains('MuiTableSortLabel-active')).toBe(true);
+  expect(header.classList.contains('Mui-active')).toBe(true);
 
   await act(async () => header.click());
   expect(order()).toEqual(['lc-a', 'lc-c', 'lc-b']);

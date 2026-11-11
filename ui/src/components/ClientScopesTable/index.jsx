@@ -1,13 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { FixedSizeList } from 'react-window';
-import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Typography from '@mui/material/Typography';
 import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';

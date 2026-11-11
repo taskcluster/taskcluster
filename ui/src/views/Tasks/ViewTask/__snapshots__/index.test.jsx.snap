@@ -6,54 +6,46 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
     class="ToggleableThemeComponent-root-6"
   >
     <header
-      class="MuiPaper-root MuiAppBar-root MuiAppBar-positionFixed MuiAppBar-colorPrimary ToggleableThemeComponent-appBar-7 mui-fixed MuiPaper-elevation4"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorPrimary MuiAppBar-positionFixed ToggleableThemeComponent-appBar-7 mui-fixed css-v9gvnt-MuiPaper-root-MuiAppBar-root"
     >
       <div
-        class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"
+        class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-hyum1k-MuiToolbar-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained SkipNavigation-skipButton-25"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit SkipNavigation-skipButton-25 css-rrlhcq-MuiButtonBase-root-MuiButton-root"
           selector="main"
           tabindex="0"
           type="button"
         >
+          Skip to main content
           <span
-            class="MuiButton-label"
-          >
-            Skip to main content
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
           aria-label="toggle drawer"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeLarge css-v52rcf-MuiButtonBase-root-MuiIconButton-root"
           id="toggle-drawer"
           tabindex="0"
           type="button"
         >
-          <span
-            class="MuiIconButton-label"
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-20"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-20"
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <h6
-          class="MuiTypography-root ToggleableThemeComponent-appBarTitle-9 MuiTypography-h6 MuiTypography-noWrap"
+          class="MuiTypography-root MuiTypography-h6 MuiTypography-noWrap ToggleableThemeComponent-appBarTitle-9 css-3l2ww3-MuiTypography-root"
         >
           Task "a task"
         </h6>
@@ -61,7 +53,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           class="Search-root-26"
         >
           <div
-            class="MuiFormControl-root Search-formControl-27"
+            class="MuiFormControl-root Search-formControl-27 css-1nrlq1o-MuiFormControl-root"
           >
             <div
               class="Search-search-28"
@@ -89,67 +81,36 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           </div>
         </form>
         <button
-          class="MuiButtonBase-root MuiIconButton-root ToggleableThemeComponent-leftAppBarButton-19"
+          aria-label="Toggle light/dark theme"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge ToggleableThemeComponent-leftAppBarButton-19 css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
           tabindex="0"
-          title="Toggle light/dark theme"
           type="button"
         >
-          <span
-            class="MuiIconButton-label"
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-20"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-20"
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <a
           href="/docs"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root"
+            aria-label="Documentation"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+            data-mui-internal-clone-element="true"
             tabindex="0"
-            title="Documentation"
             type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                class="mdi-icon ToggleableThemeComponent-appIcon-20"
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V13L12,8.5V6.5C10.55,5.4 8.45,5 6.5,5V5Z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </a>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          tabindex="0"
-          title="Page Information"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
           >
             <svg
               class="mdi-icon ToggleableThemeComponent-appIcon-20"
@@ -159,27 +120,45 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
               width="24"
             >
               <path
-                d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"
+                d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V13L12,8.5V6.5C10.55,5.4 8.45,5 6.5,5V5Z"
               />
             </svg>
-          </span>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </a>
+        <button
+          aria-label="Page Information"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-20"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+          >
+            <path
+              d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained UserMenu-userMenuButton-31 MuiButton-containedPrimary UserMenu-buttonContainedPrimary-33 MuiButton-containedSizeSmall MuiButton-sizeSmall"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-33 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-33 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary UserMenu-userMenuButton-31 css-jiae46-MuiButtonBase-root-MuiButton-root"
           id="sign-in-button"
           tabindex="0"
           type="button"
         >
+          Sign in
           <span
-            class="MuiButton-label"
-          >
-            Sign in
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
       </div>
@@ -190,14 +169,14 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
       match="[object Object]"
     >
       <div
-        class="MuiPaper-root Breadcrumbs-paper-53 MuiPaper-elevation2 MuiPaper-rounded"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation2 Breadcrumbs-paper-53 css-1pvaxdt-MuiPaper-root"
       >
         <nav
           aria-label="Breadcrumb"
-          class="MuiTypography-root MuiBreadcrumbs-root MuiTypography-body1 MuiTypography-colorTextSecondary"
+          class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-1rglgu1-MuiTypography-root-MuiBreadcrumbs-root"
         >
           <ol
-            class="MuiBreadcrumbs-ol"
+            class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
           >
             <li
               class="MuiBreadcrumbs-li"
@@ -206,7 +185,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                 href="/tasks/groups/aI8bvUB2SDmpHVqTUOFCWw"
               >
                 <p
-                  class="MuiTypography-root ResourceComponent-link-5 MuiTypography-body2"
+                  class="MuiTypography-root MuiTypography-body2 ResourceComponent-link-5 css-cuh330-MuiTypography-root"
                 >
                   Task Group
                 </p>
@@ -214,7 +193,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </li>
             <li
               aria-hidden="true"
-              class="MuiBreadcrumbs-separator"
+              class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
             >
               <svg
                 class="mdi-icon "
@@ -232,7 +211,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
               class="MuiBreadcrumbs-li"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 MuiTypography-colorTextSecondary"
+                class="MuiTypography-root MuiTypography-body2 css-1iw016g-MuiTypography-root"
               >
                 a task
               </p>
@@ -242,7 +221,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
       </div>
       <br />
       <h6
-        class="MuiTypography-root MuiTypography-subtitle1"
+        class="MuiTypography-root MuiTypography-subtitle1 css-1mpnbun-MuiTypography-root"
       >
         <span
           class="Markdown-root-54"
@@ -256,10 +235,10 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
       </h6>
       <div>
         <div
-          class="MuiChip-root ResourceComponent-tag-3"
+          class="MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-filledDefault ResourceComponent-tag-3 css-u9h5un-MuiChip-root"
         >
           <span
-            class="MuiChip-label"
+            class="MuiChip-label MuiChip-labelMedium css-tudtfd-MuiChip-label"
           >
             owned by:  
             <em>
@@ -271,72 +250,67 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
       <br />
       <br />
       <div
-        class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3"
+        class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-zow5z4-MuiGrid-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-md-6"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-md-6 css-1m6pi2w-MuiGrid-root"
         >
           <div
-            class="MuiPaper-root MuiCard-root MuiPaper-elevation8 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-60sbsj-MuiPaper-root-MuiCard-root"
           >
             <div>
               <div
-                class="MuiCardContent-root TaskDetailsCard-cardContent-56"
+                class="MuiCardContent-root TaskDetailsCard-cardContent-56 css-46bh2p-MuiCardContent-root"
               >
                 <h5
-                  class="MuiTypography-root TaskDetailsCard-headline-55 MuiTypography-h5"
+                  class="MuiTypography-root MuiTypography-h5 TaskDetailsCard-headline-55 css-m1s8pb-MuiTypography-root"
                 >
                   Task Details
                 </h5>
                 <ul
-                  class="MuiList-root MuiList-padding"
+                  class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         State
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-info-78 Label-disabled-73 Mui-disabled"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                           disabled=""
                           tabindex="-1"
                           type="button"
                         >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            RUNNING
-                          </span>
+                          RUNNING
                         </button>
                       </p>
                     </div>
                   </li>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="bI8bvUB2SDmpHVqTUOFCWw (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Task ID
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         bI8bvUB2SDmpHVqTUOFCWw
                       </p>
@@ -353,26 +327,25 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:00:00.000Z (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Created
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         in 5 years
                       </p>
@@ -389,29 +362,28 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <a
                     href="/provisioners/proj/worker-types/worker"
                   >
                     <div
-                      aria-disabled="false"
-                      class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-59 MuiListItem-gutters MuiListItem-button"
+                      class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-59 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                       role="button"
                       tabindex="0"
                       title="View Workers"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline"
+                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           Task Queue ID
                         </span>
                         <p
-                          class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           proj/worker
                         </p>
@@ -428,21 +400,20 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                         />
                       </svg>
                       <span
-                        class="MuiTouchRipple-root"
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
                     </div>
                   </a>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-59 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-59 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                   >
                     <div
-                      class="MuiListItemText-root"
+                      class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Payload
                       </span>
@@ -459,99 +430,92 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <div
-                    class="MuiCollapse-root MuiCollapse-hidden"
+                    class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-bz4dnt-MuiCollapse-root"
                     style="min-height: 0px;"
                   >
                     <div
-                      class="MuiCollapse-wrapper"
+                      class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
                     >
                       <div
-                        class="MuiCollapse-wrapperInner"
+                        class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
                       >
                         <div
-                          class="MuiList-root"
+                          class="MuiList-root css-1mk9mw3-MuiList-root"
                         >
                           <li
-                            class="MuiListItem-root MuiListItem-gutters"
+                            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                           >
                             <div
-                              class="MuiListItemText-root"
+                              class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                             >
                               <div
-                                class="MuiGrid-root MuiGrid-container"
+                                class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
                               >
                                 <div
-                                  class="MuiTypography-root MuiTypography-body1"
+                                  class="MuiTypography-root MuiTypography-body1 css-1ru42py-MuiTypography-root"
                                 >
                                   <label
-                                    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+                                    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 css-7ldjcq-MuiGrid-root"
                                   >
                                     <div
-                                      class="MuiGrid-root MuiGrid-item"
+                                      class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                                     >
                                       YAML
                                     </div>
                                     <div
-                                      class="MuiGrid-root MuiGrid-item"
+                                      class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                                     >
                                       <span
-                                        class="MuiSwitch-root"
+                                        class="MuiSwitch-root MuiSwitch-sizeMedium css-tnsvld-MuiSwitch-root"
                                       >
                                         <span
-                                          aria-disabled="false"
-                                          class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-80 MuiSwitch-switchBase MuiSwitch-colorSecondary"
+                                          class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary PrivateSwitchBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary css-q2rvhc-MuiButtonBase-root-MuiSwitchBase-root-MuiSwitch-switchBase"
                                         >
+                                          <input
+                                            class="PrivateSwitchBase-input MuiSwitch-input css-1p3z7et-MuiSwitchBase-root"
+                                            name="yaml_json_switch"
+                                            type="checkbox"
+                                          />
                                           <span
-                                            class="MuiIconButton-label"
-                                          >
-                                            <input
-                                              class="PrivateSwitchBase-input-83 MuiSwitch-input"
-                                              name="yaml_json_switch"
-                                              type="checkbox"
-                                              value=""
-                                            />
-                                            <span
-                                              class="MuiSwitch-thumb"
-                                            />
-                                          </span>
+                                            class="MuiSwitch-thumb css-jsexje-MuiSwitch-thumb"
+                                          />
                                           <span
-                                            class="MuiTouchRipple-root"
+                                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                                           />
                                         </span>
                                         <span
-                                          class="MuiSwitch-track"
+                                          class="MuiSwitch-track css-dnkzfa-MuiSwitch-track"
                                         />
                                       </span>
                                     </div>
                                     <div
-                                      class="MuiGrid-root MuiGrid-item"
+                                      class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                                     >
                                       JSON
                                     </div>
                                   </label>
                                 </div>
                                 <div
-                                  class="MuiGrid-root MuiGrid-item"
+                                  class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                                 >
                                   <div
-                                    aria-disabled="false"
-                                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                                     role="button"
                                     tabindex="0"
                                     title=" (Copy)"
                                   >
                                     <div
-                                      class="MuiListItemText-root MuiListItemText-multiline"
+                                      class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                                     >
                                       <span
-                                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                                       />
                                       <p
-                                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                                       />
                                     </div>
                                     <svg
@@ -566,7 +530,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                       />
                                     </svg>
                                     <span
-                                      class="MuiTouchRipple-root"
+                                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                                     />
                                   </div>
                                 </div>
@@ -608,44 +572,42 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/tasks/bI8bvUB2SDmpHVqTUOFCWw/definition"
                   >
                     <div
-                      aria-disabled="false"
-                      class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-59 MuiListItem-gutters MuiListItem-button"
+                      class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-59 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                       role="button"
                       tabindex="0"
                     >
                       <div
-                        class="MuiListItemText-root"
+                        class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           Full Task Definition
                         </span>
                       </div>
                       <span
-                        class="MuiTouchRipple-root"
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
                     </div>
                   </a>
                   <a
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-59 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-59 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     href="https://example.com"
                     rel="noopener noreferrer"
                     tabindex="0"
                     target="_blank"
                   >
                     <div
-                      class="MuiListItemText-root TaskDetailsCard-sourceHeadlineText-58 MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline TaskDetailsCard-sourceHeadlineText-58 css-konndc-MuiListItemText-root"
                       title="https://example.com"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Source
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary TaskDetailsCard-sourceHeadline-57 MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary TaskDetailsCard-sourceHeadline-57 css-e28pe8-MuiTypography-root"
                       >
                         https://example.com
                       </p>
@@ -662,44 +624,43 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </a>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Retries Left
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         5 of 5
                       </p>
                     </div>
                   </li>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T03:00:00.000Z (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Deadline
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         in 5 years (3 hours later)
                       </p>
@@ -716,26 +677,25 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="2027-08-30T03:00:00.000Z (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Expires
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         in 6 years
                       </p>
@@ -752,51 +712,47 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Priority
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-info-78 Label-disabled-73 Mui-disabled"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                           disabled=""
                           tabindex="-1"
                           type="button"
                         >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            very-high
-                          </span>
+                          very-high
                         </button>
                       </p>
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Dependencies
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <em>
                           n/a
@@ -805,42 +761,41 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Dependents
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         The following tasks depend on this task resolving successfully.
                       </p>
                     </div>
                   </li>
                   <div
-                    class="makeStyles-tableWrapper-85 makeStyles-tableWrapperWithMaxHeight-86"
+                    class="makeStyles-tableWrapper-81 makeStyles-tableWrapperWithMaxHeight-82"
                   >
                     <table
-                      class="MuiTable-root"
+                      class="MuiTable-root css-6cj1nx-MuiTable-root"
                     >
                       <thead
-                        class="MuiTableHead-root"
+                        class="MuiTableHead-root css-4dv9im-MuiTableHead-root"
                       >
                         <tr
-                          class="MuiTableRow-root MuiTableRow-head"
+                          class="MuiTableRow-root MuiTableRow-head css-1wosaja-MuiTableRow-root"
                         >
                           <th
-                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall"
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-13h64e6-MuiTableCell-root"
                             scope="col"
                           >
                             <span
-                              aria-disabled="false"
-                              class="MuiButtonBase-root MuiTableSortLabel-root makeStyles-sortHeader-88 MuiTableSortLabel-active"
+                              class="MuiButtonBase-root MuiTableSortLabel-root Mui-active makeStyles-sortHeader-84 css-xdkkwq-MuiButtonBase-root-MuiTableSortLabel-root"
                               id="Name"
                               role="button"
                               tabindex="0"
@@ -848,7 +803,8 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                               Name
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-198ung5-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                                data-testid="ArrowDownwardIcon"
                                 focusable="false"
                                 viewBox="0 0 24 24"
                               >
@@ -861,13 +817,13 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                         </tr>
                       </thead>
                       <tbody
-                        class="MuiTableBody-root"
+                        class="MuiTableBody-root css-1dyjss2-MuiTableBody-root"
                       >
                         <tr
-                          class="MuiTableRow-root TaskDetailsCard-listItemButton-59 TaskDetailsCard-dependentsTableRow-67 MuiTableRow-hover"
+                          class="MuiTableRow-root MuiTableRow-hover TaskDetailsCard-listItemButton-59 TaskDetailsCard-dependentsTableRow-67 css-1wosaja-MuiTableRow-root"
                         >
                           <td
-                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
                             title="View Task"
                           >
                             <a
@@ -879,23 +835,19 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                               >
                                 <div>
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskDetailsCard-dependentsStatus-65 Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-default-77 Label-disabled-73 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-default-77 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit TaskDetailsCard-dependentsStatus-65 Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"
                                   >
-                                    <span
-                                      class="MuiButton-label"
-                                    >
-                                      UNSCHEDULED
-                                    </span>
+                                    UNSCHEDULED
                                   </button>
                                 </div>
                                 <div
                                   class="TaskDetailsCard-dependentsName-66"
                                 >
                                   <p
-                                    class="MuiTypography-root MuiTypography-body2 MuiTypography-noWrap"
+                                    class="MuiTypography-root MuiTypography-body2 MuiTypography-noWrap css-ts0pz2-MuiTypography-root"
                                   >
                                     a dependent task
                                   </p>
@@ -921,49 +873,49 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </table>
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Project ID
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         none
                       </p>
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Scheduler ID
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         test-scheduler
                       </p>
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <h6
-                        class="MuiTypography-root MuiTypography-subtitle1"
+                        class="MuiTypography-root MuiTypography-subtitle1 css-1mpnbun-MuiTypography-root"
                       >
                         Scopes
                       </h6>
@@ -973,13 +925,13 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <h6
-                        class="MuiTypography-root MuiTypography-subtitle1"
+                        class="MuiTypography-root MuiTypography-subtitle1 css-1mpnbun-MuiTypography-root"
                       >
                         Routes
                       </h6>
@@ -994,110 +946,98 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-md-6"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-md-6 css-1m6pi2w-MuiGrid-root"
         >
           <div
-            class="MuiPaper-root MuiCard-root MuiPaper-elevation8 MuiPaper-rounded"
+            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-60sbsj-MuiPaper-root-MuiCard-root"
           >
             <div>
               <div
-                class="MuiCardContent-root TaskRunsCard-cardContent-91"
+                class="MuiCardContent-root TaskRunsCard-cardContent-87 css-46bh2p-MuiCardContent-root"
               >
                 <div
-                  class="MuiPaper-root MuiMobileStepper-root MuiMobileStepper-positionStatic MuiPaper-elevation0"
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation0 MuiMobileStepper-root MuiMobileStepper-positionStatic css-150xdiz-MuiPaper-root-MuiMobileStepper-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-previousPageArrow-105 MuiButton-textSizeSmall MuiButton-sizeSmall"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-previousPageArrow-101 css-wogk46-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
-                    <span
-                      class="MuiButton-label"
+                    <svg
+                      class="mdi-icon "
+                      fill="currentColor"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
                     >
-                      <svg
-                        class="mdi-icon "
-                        fill="currentColor"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                      >
-                        <path
-                          d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"
-                        />
-                      </svg>
-                      Previous
-                    </span>
+                      <path
+                        d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"
+                      />
+                    </svg>
+                    Previous
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </button>
                   <div
-                    class="MuiMobileStepper-dots"
+                    class="MuiMobileStepper-dots css-1384nzf-MuiMobileStepper-dots"
                   >
                     <div
-                      class="MuiMobileStepper-dot"
+                      class="MuiMobileStepper-dot css-1j2dgmj-MuiMobileStepper-dot"
                     />
                     <div
-                      class="MuiMobileStepper-dot MuiMobileStepper-dotActive"
+                      class="MuiMobileStepper-dot MuiMobileStepper-dotActive css-1o0df2g-MuiMobileStepper-dot"
                     />
                   </div>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-nextPageArrow-106 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-nextPageArrow-102 css-wogk46-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
                   >
-                    <span
-                      class="MuiButton-label"
+                    Next
+                    <svg
+                      class="mdi-icon "
+                      fill="currentColor"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
                     >
-                      Next
-                      <svg
-                        class="mdi-icon "
-                        fill="currentColor"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                      >
-                        <path
-                          d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
-                        />
-                      </svg>
-                    </span>
+                      <path
+                        d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                      />
+                    </svg>
                   </button>
                 </div>
                 <h5
-                  class="MuiTypography-root TaskRunsCard-headline-90 MuiTypography-h5"
+                  class="MuiTypography-root MuiTypography-h5 TaskRunsCard-headline-86 css-m1s8pb-MuiTypography-root"
                 >
                   Task Run 1
                 </h5>
                 <ul
-                  class="MuiList-root MuiList-padding"
+                  class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         State
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-info-78 Label-disabled-73 Mui-disabled"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                           disabled=""
                           tabindex="-1"
                           type="button"
                         >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            RUNNING
-                          </span>
+                          RUNNING
                         </button>
                       </p>
                     </div>
@@ -1106,33 +1046,28 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/tasks/bI8bvUB2SDmpHVqTUOFCWw/runs/1/logs/live/public/logs/live.log"
                   >
                     <div
-                      aria-disabled="false"
-                      class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-93 MuiListItem-gutters MuiListItem-button"
+                      class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskRunsCard-listItemButton-89 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                       role="button"
                       tabindex="0"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline"
+                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           View Live Log 
                           <button
-                            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-liveLogLabel-104 Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-info-78 Label-disabled-73 Mui-disabled"
+                            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-liveLogLabel-100 Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                             disabled=""
                             tabindex="-1"
                             type="button"
                           >
-                            <span
-                              class="MuiButton-label"
-                            >
-                              LOG
-                            </span>
+                            LOG
                           </button>
                         </span>
                         <p
-                          class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           public/logs/live.log
                         </p>
@@ -1149,66 +1084,65 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                         />
                       </svg>
                       <span
-                        class="MuiTouchRipple-root"
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
                     </div>
                   </a>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-93 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskRunsCard-listItemButton-89 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                   >
                     <div
-                      class="MuiListItemText-root"
+                      class="MuiListItemText-root css-tlelie-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Artifacts (1)
                       </span>
                     </div>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <div
-                    class="MuiCollapse-root MuiCollapse-entered"
+                    class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
                     style="min-height: 0px;"
                   >
                     <div
-                      class="MuiCollapse-wrapper"
+                      class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
                     >
                       <div
-                        class="MuiCollapse-wrapperInner"
+                        class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
                       >
                         <div
-                          class="MuiList-root"
+                          class="MuiList-root css-1mk9mw3-MuiList-root"
                         >
                           <div
-                            class="MuiListItem-root TaskRunsCard-artifactsListItemContainer-96"
+                            class="MuiListItem-root MuiListItem-padding TaskRunsCard-artifactsListItemContainer-92 css-1dqoii2-MuiListItem-root"
                           >
                             <div
-                              class="makeStyles-tableWrapper-85"
+                              class="makeStyles-tableWrapper-81"
                             >
                               <table
-                                class="MuiTable-root"
+                                class="MuiTable-root css-6cj1nx-MuiTable-root"
                               >
                                 <tbody
-                                  class="MuiTableBody-root"
+                                  class="MuiTableBody-root css-1dyjss2-MuiTableBody-root"
                                 >
                                   <tr
-                                    class="MuiTableRow-root TaskRunsCard-listItemButton-93 TaskRunsCard-artifactTableRow-101 TaskRunsCard-pointer-94 MuiTableRow-hover"
+                                    class="MuiTableRow-root MuiTableRow-hover TaskRunsCard-listItemButton-89 TaskRunsCard-artifactTableRow-97 TaskRunsCard-pointer-90 css-1wosaja-MuiTableRow-root"
                                   >
                                     <td
-                                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
                                     >
                                       <a
-                                        class="TaskRunsCard-artifactLink-100"
+                                        class="TaskRunsCard-artifactLink-96"
                                         href="/tasks/bI8bvUB2SDmpHVqTUOFCWw/runs/1/logs/live/public/logs/live.log"
                                       >
                                         <div
-                                          class="TaskRunsCard-iconDiv-107"
+                                          class="TaskRunsCard-iconDiv-103"
                                         >
                                           <svg
                                             class="mdi-icon "
@@ -1223,28 +1157,24 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                           </svg>
                                         </div>
                                         <div
-                                          class="TaskRunsCard-artifactNameWrapper-102"
+                                          class="TaskRunsCard-artifactNameWrapper-98"
                                         >
                                           <button
-                                            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-95 Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-info-78 Label-disabled-73 Mui-disabled"
+                                            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-logButton-91 Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                                             disabled=""
                                             tabindex="-1"
                                             type="button"
                                           >
-                                            <span
-                                              class="MuiButton-label"
-                                            >
-                                              LOG
-                                            </span>
+                                            LOG
                                           </button>
                                           <div
-                                            class="TaskRunsCard-artifactName-103"
+                                            class="TaskRunsCard-artifactName-99"
                                           >
                                             public/logs/live.log
                                           </div>
                                         </div>
                                         <div
-                                          class="TaskRunsCard-sizeCell-109"
+                                          class="TaskRunsCard-sizeCell-105"
                                         >
                                           10 B
                                         </div>
@@ -1264,7 +1194,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                       </a>
                                     </td>
                                     <td
-                                      class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-108 MuiTableCell-sizeSmall"
+                                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall TaskRunsCard-copyButton-104 css-1uncx7k-MuiTableCell-root"
                                     >
                                       <svg
                                         class="mdi-icon "
@@ -1284,7 +1214,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                               </table>
                             </div>
                             <hr
-                              class="MuiDivider-root"
+                              class="MuiDivider-root MuiDivider-fullWidth css-rr7dug-MuiDivider-root"
                             />
                           </div>
                         </div>
@@ -1292,18 +1222,18 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Reason Resolved
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <em>
                           n/a
@@ -1312,22 +1242,21 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:02:00.000Z (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Scheduled
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         in 5 years
                       </p>
@@ -1344,26 +1273,25 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:03:00.000Z (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Started
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         in 5 years (1 minute later)
                       </p>
@@ -1380,26 +1308,25 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="undefined (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Resolved
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <em>
                           n/a
@@ -1418,55 +1345,51 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                 </ul>
                 <div
-                  class="MuiList-root"
+                  class="MuiList-root css-1mk9mw3-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Reason Created
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-72 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-71 Mui-disabled Label-default-77 Label-disabled-73 Mui-disabled"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-default-77 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                           disabled=""
                           tabindex="-1"
                           type="button"
                         >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            RETRY
-                          </span>
+                          RETRY
                         </button>
                       </p>
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Worker Group
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         wg
                       </p>
@@ -1476,22 +1399,21 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/provisioners/proj/worker-types/worker/workers/wg/w1"
                   >
                     <div
-                      aria-disabled="false"
-                      class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-93 MuiListItem-gutters MuiListItem-button"
+                      class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskRunsCard-listItemButton-89 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                       role="button"
                       tabindex="0"
                       title="View Worker"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline"
+                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           Worker ID
                         </span>
                         <p
-                          class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           w1
                         </p>
@@ -1508,27 +1430,26 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                         />
                       </svg>
                       <span
-                        class="MuiTouchRipple-root"
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
                     </div>
                   </a>
                   <div
-                    aria-disabled="false"
-                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-button"
+                    class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-79 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:23:00.000Z (Copy)"
                   >
                     <div
-                      class="MuiListItemText-root MuiListItemText-multiline"
+                      class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                     >
                       <span
-                        class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                       >
                         Taken Until
                       </span>
                       <p
-                        class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                       >
                         in 5 years
                       </p>
@@ -1545,7 +1466,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                       />
                     </svg>
                     <span
-                      class="MuiTouchRipple-root"
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </div>
                 </div>
@@ -1555,9 +1476,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
         </div>
       </div>
       <div
-        class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-110"
-        history="[object Object]"
-        match="[object Object]"
+        class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-106 css-h0fz3e-MuiSpeedDial-root"
         role="presentation"
       >
         <button
@@ -1565,19 +1484,70 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           aria-expanded="false"
           aria-haspopup="true"
           aria-label="speed-dial"
-          class="MuiButtonBase-root MuiFab-root MuiSpeedDial-fab MuiFab-secondary"
+          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiSpeedDial-fab css-nlq5i3-MuiButtonBase-root-MuiFab-root-MuiSpeedDial-fab"
           style="transform: none; -webkit-transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
           tabindex="0"
           type="button"
         >
           <span
-            class="MuiFab-label"
+            class="MuiSpeedDialIcon-root css-ohncnb-MuiSpeedDialIcon-root"
+          >
+            <svg
+              class="mdi-icon MuiSpeedDialIcon-openIcon"
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+              />
+            </svg>
+            <svg
+              class="mdi-icon MuiSpeedDialIcon-icon"
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path
+                d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+        <div
+          aria-orientation="vertical"
+          class="MuiSpeedDial-actions MuiSpeedDial-actionsClosed css-1s28u9o-MuiSpeedDial-actions"
+          id="speed-dial-actions"
+          role="menu"
+        >
+          <span
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
+            component="span"
+            id="speed-dial-action-0"
           >
             <span
-              class="MuiSpeedDialIcon-root"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
+              id="speed-dial-action-0-label"
+              style="transition-delay: 270ms;"
+            >
+              Cancel (Auth Required)
+            </span>
+            <button
+              aria-labelledby="speed-dial-action-0-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
+              disabled=""
+              role="menuitem"
+              style="transition-delay: 270ms;"
+              tabindex="-1"
+              type="button"
             >
               <svg
-                class="mdi-icon MuiSpeedDialIcon-openIcon"
+                class="mdi-icon "
                 fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
@@ -1587,369 +1557,278 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                   d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
                 />
               </svg>
-              <svg
-                class="mdi-icon MuiSpeedDialIcon-icon"
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
-                />
-              </svg>
-            </span>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
-        <div
-          aria-orientation="vertical"
-          class="MuiSpeedDial-actions MuiSpeedDial-actionsClosed"
-          id="speed-dial-actions"
-          role="menu"
-        >
-          <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
-            component="span"
-            id="speed-dial-action-0"
-          >
-            <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
-              id="speed-dial-action-0-label"
-              style="transition-delay: 270ms;"
-            >
-              Cancel (Auth Required)
-            </span>
-            <button
-              aria-describedby="speed-dial-action-0-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
-              disabled=""
-              role="menuitem"
-              style="transition-delay: 270ms;"
-              tabindex="-1"
-              type="button"
-            >
-              <span
-                class="MuiFab-label"
-              >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-                  />
-                </svg>
-              </span>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-1"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-1-label"
               style="transition-delay: 240ms;"
             >
               Retrigger (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-1-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-1-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 240ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-2"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-2-label"
               style="transition-delay: 210ms;"
             >
               Rerun (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-2-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-2-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 210ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-3"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-3-label"
               style="transition-delay: 180ms;"
             >
               Schedule (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-3-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-3-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 180ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-4"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-4-label"
               style="transition-delay: 150ms;"
             >
               Purge Worker Cache (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-4-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-4-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 150ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M7,2V13H10V22L17,10H13L17,2H7Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M7,2V13H10V22L17,10H13L17,2H7Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-5"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-5-label"
               style="transition-delay: 120ms;"
             >
               Change Priority (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-5-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-5-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 120ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M10,13V11H18V13H10M10,19V17H14V19H10M10,7V5H22V7H10M6,17H8.5L5,20.5L1.5,17H4V7H1.5L5,3.5L8.5,7H6V17Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M10,13V11H18V13H10M10,19V17H14V19H10M10,7V5H22V7H10M6,17H8.5L5,20.5L1.5,17H4V7H1.5L5,3.5L8.5,7H6V17Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-6"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-6-label"
               style="transition-delay: 90ms;"
             >
               Edit (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-6-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-6-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 90ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-7"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-7-label"
               style="transition-delay: 60ms;"
             >
               Create with SSH/VNC (Auth Required)
             </span>
             <button
-              aria-describedby="speed-dial-action-7-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-7-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 60ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M13,19V16H21V19H13M8.5,13L2.47,7H6.71L11.67,11.95C12.25,12.54 12.25,13.5 11.67,14.07L6.74,19H2.5L8.5,13Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M13,19V16H21V19H13M8.5,13L2.47,7H6.71L11.67,11.95C12.25,12.54 12.25,13.5 11.67,14.07L6.74,19H2.5L8.5,13Z"
+                />
+              </svg>
             </button>
           </span>
           <span
-            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed"
+            class="MuiSpeedDialAction-staticTooltip MuiSpeedDialAction-tooltipPlacementLeft MuiSpeedDialAction-staticTooltipClosed css-14sg8sw-MuiSpeedDialAction-staticTooltip"
             component="span"
             id="speed-dial-action-8"
           >
             <span
-              class="MuiSpeedDialAction-staticTooltipLabel SpeedDialAction-staticTooltipLabelDisabled-112"
+              class="MuiSpeedDialAction-staticTooltipLabel css-hvspvn-MuiSpeedDialAction-staticTooltipLabel"
               id="speed-dial-action-8-label"
               style="transition-delay: 30ms;"
             >
               Profile Task Log
             </span>
             <button
-              aria-describedby="speed-dial-action-8-label"
-              class="MuiButtonBase-root MuiFab-root MuiSpeedDialAction-fab SpeedDialAction-icon-111 MuiSpeedDialAction-fabClosed MuiFab-sizeSmall Mui-disabled Mui-disabled"
+              aria-labelledby="speed-dial-action-8-label"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed SpeedDialAction-secondary-107 css-5zvroh-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab"
               disabled=""
               role="menuitem"
               style="transition-delay: 30ms;"
               tabindex="-1"
               type="button"
             >
-              <span
-                class="MuiFab-label"
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
               >
-                <svg
-                  class="mdi-icon "
-                  fill="currentColor"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
-                  />
-                </svg>
-              </span>
+                <path
+                  d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+                />
+              </svg>
             </button>
           </span>
         </div>

@@ -6,9 +6,8 @@ import { buildLogViewerUrl } from '../../../utils/artifactNames';
 import TaskLog from './index';
 
 vi.mock('../../../utils/Auth', () => ({ withAuth: Component => Component }));
-vi.mock('@material-ui/core/styles', async importOriginal => ({
-  ...(await importOriginal()),
-  withStyles: () => Component => Component,
+vi.mock('@mui/styles/withStyles', () => ({
+  default: () => Component => Component,
 }));
 vi.mock('../../../utils/TaskclusterClient', () => ({
   withTaskclusterClient: Component => Component,

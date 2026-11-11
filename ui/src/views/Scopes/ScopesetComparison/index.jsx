@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { equals } from 'ramda';
 import { scopeUnion, scopeIntersection } from 'taskcluster-lib-scopes';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
 import { parse, stringify } from 'qs';
 import CodeEditor from '../../../components/CodeEditor';
@@ -60,10 +60,10 @@ const getCellColors = scopesetDiff => {
     backgroundColor: 'rgba(255, 255, 0, 0.25)',
   },
   editorGrid: {
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1.5),
   },
   cellGrid: {
-    padding: `0 ${theme.spacing(1)}px`,
+    padding: `0 ${theme.spacing(1)}`,
   },
 }))
 export default class ScopesetComparison extends Component {

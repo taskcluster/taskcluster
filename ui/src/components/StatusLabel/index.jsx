@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { oneOf, bool, string } from 'prop-types';
-import purple from '@material-ui/core/colors/purple';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import Label from '../Label';
 import labels from '../../utils/labels';
+import { purple } from '@mui/material/colors';
 
 @withStyles(theme => ({
   pending: {

@@ -3,14 +3,14 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { dump, load } from 'js-yaml';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Typography from '@mui/material/Typography';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import CodeEditor from '../CodeEditor';
@@ -45,12 +45,6 @@ import yamlSchema from '../../utils/yamlSchema';
   },
   saveIcon: {
     ...theme.mixins.successIcon,
-  },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
-  deleteTooltipLabel: {
-    backgroundColor: theme.mixins.errorIcon.backgroundColor,
   },
   secretSubheader: {
     display: 'flex',
@@ -274,10 +268,7 @@ export default class SecretForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogActionOpen}
-                classes={{
-                  icon: classes.deleteIcon,
-                  staticTooltipLabel: classes.deleteTooltipLabel,
-                }}
+                color="error"
                 tooltipTitle="Delete Secret"
                 FabProps={{
                   disabled: loading,

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Queue } from '@taskcluster/client-web';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Dashboard from '../../../components/Dashboard';

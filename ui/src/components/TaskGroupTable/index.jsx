@@ -2,15 +2,15 @@ import React, { Fragment, Component } from 'react';
 import { string, arrayOf, shape, bool } from 'prop-types';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { FixedSizeList as List } from 'react-window';
 import { WindowScroller } from 'react-virtualized';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
-import Table from '@material-ui/core/Table';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import TableHead from '@mui/material/TableHead';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { memoize } from '../../utils/memoize';
 import StatusLabel from '../StatusLabel';
@@ -173,7 +173,7 @@ const ItemRendererMemo = React.memo(ItemRenderer);
     flex: 1,
     justifyContent: 'flex-end',
     width: '12%',
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down('lg')]: {
       display: 'none',
     },
   },
@@ -192,7 +192,7 @@ const ItemRendererMemo = React.memo(ItemRenderer);
   },
   tableFirstShortCell: {
     width: '52%',
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down('lg')]: {
       width: '76%',
     },
   },
@@ -212,7 +212,7 @@ const ItemRendererMemo = React.memo(ItemRenderer);
     '& abbr': {
       textDecoration: 'none',
     },
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down('lg')]: {
       display: 'none',
     },
   },

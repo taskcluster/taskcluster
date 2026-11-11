@@ -1,17 +1,17 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component, Fragment } from 'react';
 import { Github } from '@taskcluster/client-web';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormLabel from '@material-ui/core/FormLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import Checkbox from '@mui/material/Checkbox';
+import FormLabel from '@mui/material/FormLabel';
+import FormControl from '@mui/material/FormControl';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
@@ -189,7 +189,7 @@ const imageForLanguage = {
   taskShouldRunFlex: {
     display: 'flex',
     width: '100%',
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       flexDirection: 'column',
     },
   },

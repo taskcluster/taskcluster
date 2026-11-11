@@ -23,10 +23,10 @@ exports[`should render AuthConsent page 1`] = `
     />
     <div>
       <div
-        class="MuiCardHeader-root AuthConsent-header-1"
+        class="MuiCardHeader-root AuthConsent-header-1 css-185gdzj-MuiCardHeader-root"
       >
         <div
-          class="MuiCardHeader-avatar"
+          class="MuiCardHeader-avatar css-1ssile9-MuiCardHeader-avatar"
         >
           <img
             alt="Logo"
@@ -35,15 +35,15 @@ exports[`should render AuthConsent page 1`] = `
           />
         </div>
         <div
-          class="MuiCardHeader-content"
+          class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root MuiCardHeader-title MuiTypography-body2 MuiTypography-displayBlock"
+            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-title css-17w1um2-MuiTypography-root"
           >
             registeredClientId
           </span>
           <span
-            class="MuiTypography-root MuiCardHeader-subheader MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-subheader css-e28pe8-MuiTypography-root"
           >
             <span>
               is requesting access to client ID 
@@ -55,118 +55,118 @@ exports[`should render AuthConsent page 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiAccordion-root Mui-expanded MuiAccordion-rounded MuiPaper-elevation2 MuiPaper-rounded"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation2 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-o0y1ey-MuiPaper-root-MuiAccordion-root"
       >
         <div
           aria-controls="panel1a-content"
-          aria-disabled="false"
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-hs236p-MuiButtonBase-root-MuiAccordionSummary-root"
           id="panel1a-header"
           role="button"
           tabindex="0"
         >
           <div
-            class="MuiAccordionSummary-content Mui-expanded"
+            class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
           >
             <p
-              class="MuiTypography-root MuiTypography-body2"
+              class="MuiTypography-root MuiTypography-body2 css-cuh330-MuiTypography-root"
             >
               Client Details
             </p>
           </div>
           <div
-            aria-disabled="false"
-            aria-hidden="true"
-            class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon Mui-expanded MuiIconButton-edgeEnd"
+            class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-9lgt8n-MuiAccordionSummary-expandIconWrapper"
           >
-            <span
-              class="MuiIconButton-label"
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
             >
-              <svg
-                class="mdi-icon "
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
+              <path
+                d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+              />
+            </svg>
           </div>
         </div>
         <div
-          class="MuiCollapse-root MuiCollapse-entered"
+          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
           style="min-height: 0px;"
         >
           <div
-            class="MuiCollapse-wrapper"
+            class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
           >
             <div
-              class="MuiCollapse-wrapperInner"
+              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
             >
               <div
                 aria-labelledby="panel1a-header"
+                class="MuiAccordion-region"
                 id="panel1a-content"
                 role="region"
               >
                 <div
-                  class="MuiAccordionDetails-root"
+                  class="MuiAccordionDetails-root css-15v22id-MuiAccordionDetails-root"
                 >
                   <ul
-                    class="MuiList-root AuthConsent-list-2 MuiList-padding"
+                    class="MuiList-root MuiList-padding AuthConsent-list-2 css-h4y409-MuiList-root"
                   >
                     <li
-                      class="MuiListItem-root MuiListItem-gutters"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline"
+                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           Description
                         </span>
                         <p
-                          class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         />
                         <div
-                          class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInput-colorSecondary MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-multiline MuiInput-multiline"
+                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
                           >
                             <textarea
                               aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInput-inputMultiline"
+                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                              id="mui-1"
                               name="description"
                               rows="5"
+                              style="height: 0px; overflow: hidden;"
                             >
                               description
                             </textarea>
+                            <textarea
+                              aria-hidden="true"
+                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                              readonly=""
+                              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
+                              tabindex="-1"
+                            />
                           </div>
                         </div>
                         <p />
                       </div>
                     </li>
                     <li
-                      class="MuiListItem-root MuiListItem-gutters"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline"
+                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           Expires
                         </span>
                         <p
-                          class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           <input
                             name="expires"
@@ -175,14 +175,15 @@ exports[`should render AuthConsent page 1`] = `
                           />
                         </p>
                         <div
-                          class="MuiFormControl-root MuiTextField-root"
+                          class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInput-colorSecondary MuiInputBase-formControl MuiInput-formControl"
+                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-18jm956-MuiInputBase-root-MuiInput-root"
                           >
                             <input
                               aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input"
+                              class="MuiInputBase-input MuiInput-input css-ume8vi-MuiInputBase-input-MuiInput-input"
+                              id="mui-2"
                               max="3023-02-17T13:00"
                               type="datetime-local"
                               value="2022-02-02T01:00"
@@ -193,45 +194,47 @@ exports[`should render AuthConsent page 1`] = `
                       </div>
                     </li>
                     <li
-                      class="MuiListItem-root MuiListItem-gutters"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline"
+                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                         >
                           Scopes
                         </span>
                         <p
-                          class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         />
                         <div
-                          class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                           spellcheck="false"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInput-colorSecondary MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-multiline MuiInput-multiline"
+                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
                           >
                             <textarea
+                              aria-describedby="mui-3-helper-text"
                               aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInput-inputMultiline"
+                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                              id="mui-3"
                               placeholder="new-scope:for-something:*"
-                              rows="1"
                               style="height: 0px; overflow: hidden;"
                             >
                               scopes
                             </textarea>
                             <textarea
                               aria-hidden="true"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline MuiInput-inputMultiline"
+                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
                               readonly=""
-                              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); width: 100%;"
+                              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
                               tabindex="-1"
                             />
                           </div>
                           <p
-                            class="MuiFormHelperText-root MuiFormHelperText-filled"
+                            class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-filled css-17wsglc-MuiFormHelperText-root"
+                            id="mui-3-helper-text"
                           >
                             Enter each scope on its own line
                           </p>
@@ -248,62 +251,56 @@ exports[`should render AuthConsent page 1`] = `
       </div>
     </div>
     <span
+      aria-label="Deny"
       class="AuthConsent-fab-3 AuthConsent-denySpanProps-5"
-      title="Deny"
+      data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root MuiFab-secondary"
+        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary css-17m3dpp-MuiButtonBase-root-MuiFab-root"
         name="cancel"
         tabindex="0"
         type="submit"
         value="Deny"
       >
-        <span
-          class="MuiFab-label"
+        <svg
+          class="mdi-icon "
+          fill="secondary"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
         >
-          <svg
-            class="mdi-icon "
-            fill="secondary"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-            />
-          </svg>
-        </span>
+          <path
+            d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+          />
+        </svg>
         <span
-          class="MuiTouchRipple-root"
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
         />
       </button>
     </span>
     <span
+      aria-label="Allow"
       class="AuthConsent-fab-3"
-      title="Allow"
+      data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root AuthConsent-allowIcon-4"
+        class="MuiButtonBase-root MuiFab-root AuthConsent-allowIcon-4 MuiFab-circular MuiFab-sizeLarge MuiFab-default MuiFab-root AuthConsent-allowIcon-4 MuiFab-circular MuiFab-sizeLarge MuiFab-default css-1n8sh0e-MuiButtonBase-root-MuiFab-root"
         tabindex="0"
         type="submit"
       >
-        <span
-          class="MuiFab-label"
+        <svg
+          class="mdi-icon "
+          fill="currentColor"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
         >
-          <svg
-            class="mdi-icon "
-            fill="currentColor"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <path
-              d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
-            />
-          </svg>
-        </span>
+          <path
+            d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+          />
+        </svg>
         <span
-          class="MuiTouchRipple-root"
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
         />
       </button>
     </span>

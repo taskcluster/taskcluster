@@ -11,19 +11,19 @@ import {
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
-import Drawer from '@material-ui/core/Drawer';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Switch from '@material-ui/core/Switch';
+import Drawer from '@mui/material/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
 import { load, dump } from 'js-yaml';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -99,15 +99,6 @@ const initialHook = {
   successIcon: {
     ...theme.mixins.successIcon,
   },
-  successTooltipLabel: {
-    backgroundColor: theme.mixins.successIcon.backgroundColor,
-  },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
-  deleteTooltipLabel: {
-    backgroundColor: theme.mixins.errorIcon.backgroundColor,
-  },
   code: {
     maxHeight: '70vh',
     margin: 0,
@@ -140,7 +131,7 @@ const initialHook = {
   },
   drawerPaper: {
     width: '40vw',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       width: '90vw',
     },
   },
@@ -683,7 +674,8 @@ export default class HookForm extends Component {
               <Tooltip title="Add Schedule">
                 <IconButton
                   className={classes.iconButton}
-                  onClick={this.handleNewCronJob}>
+                  onClick={this.handleNewCronJob}
+                  size="large">
                   <PlusIcon />
                 </IconButton>
               </Tooltip>
@@ -696,7 +688,8 @@ export default class HookForm extends Component {
                     <IconButton
                       className={classes.iconButton}
                       name={cronJob}
-                      onClick={this.handleDeleteCronJob}>
+                      onClick={this.handleDeleteCronJob}
+                      size="large">
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
@@ -869,10 +862,7 @@ export default class HookForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogDeleteHook}
-                classes={{
-                  icon: classes.deleteIcon,
-                  staticTooltipLabel: classes.deleteTooltipLabel,
-                }}
+                color="error"
                 FabProps={{
                   disabled: actionLoading,
                 }}
@@ -883,10 +873,7 @@ export default class HookForm extends Component {
                 tooltipOpen
                 icon={<FlashIcon />}
                 onClick={onDialogOpen}
-                classes={{
-                  icon: classes.successIcon,
-                  staticTooltipLabel: classes.successTooltipLabel,
-                }}
+                color="success"
                 FabProps={{
                   disabled: !this.validHook() || actionLoading,
                 }}

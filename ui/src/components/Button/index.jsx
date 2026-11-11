@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import MuiButton from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import Tooltip from '@material-ui/core/Tooltip';
+import MuiButton from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import Tooltip from '@mui/material/Tooltip';
 import { object, node, bool, oneOf, string } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 

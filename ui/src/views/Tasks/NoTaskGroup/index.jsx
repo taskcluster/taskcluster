@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { sum, values } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import ListSubheader from '@mui/material/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';

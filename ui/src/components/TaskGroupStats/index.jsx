@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { shape, arrayOf, string } from 'prop-types';
-import { Paper, Grid, withStyles } from '@material-ui/core';
+import { Paper, Grid } from '@mui/material';
+import withStyles from '@mui/styles/withStyles';
 import { taskState, pageInfo, task } from '../../utils/prop-types';
 import { THEME } from '../../utils/constants';
 import Link from '../../utils/Link';

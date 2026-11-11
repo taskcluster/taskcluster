@@ -6,54 +6,46 @@ exports[`should render ListHookGroupss page 1`] = `
     class="ToggleableThemeComponent-root-5"
   >
     <header
-      class="MuiPaper-root MuiAppBar-root MuiAppBar-positionFixed MuiAppBar-colorPrimary ToggleableThemeComponent-appBar-6 mui-fixed MuiPaper-elevation4"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorPrimary MuiAppBar-positionFixed ToggleableThemeComponent-appBar-6 mui-fixed css-v9gvnt-MuiPaper-root-MuiAppBar-root"
     >
       <div
-        class="MuiToolbar-root MuiToolbar-regular MuiToolbar-gutters"
+        class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-hyum1k-MuiToolbar-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained SkipNavigation-skipButton-24"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit SkipNavigation-skipButton-24 css-rrlhcq-MuiButtonBase-root-MuiButton-root"
           selector="main"
           tabindex="0"
           type="button"
         >
+          Skip to main content
           <span
-            class="MuiButton-label"
-          >
-            Skip to main content
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
           aria-label="toggle drawer"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeLarge css-v52rcf-MuiButtonBase-root-MuiIconButton-root"
           id="toggle-drawer"
           tabindex="0"
           type="button"
         >
-          <span
-            class="MuiIconButton-label"
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-19"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-19"
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <h6
-          class="MuiTypography-root ToggleableThemeComponent-appBarTitle-8 MuiTypography-h6 MuiTypography-noWrap"
+          class="MuiTypography-root MuiTypography-h6 MuiTypography-noWrap ToggleableThemeComponent-appBarTitle-8 css-3l2ww3-MuiTypography-root"
         >
           Hooks Groups
         </h6>
@@ -61,7 +53,7 @@ exports[`should render ListHookGroupss page 1`] = `
           class="Search-root-25"
         >
           <div
-            class="MuiFormControl-root Search-formControl-26"
+            class="MuiFormControl-root Search-formControl-26 css-1nrlq1o-MuiFormControl-root"
           >
             <div
               class="Search-search-27"
@@ -89,67 +81,36 @@ exports[`should render ListHookGroupss page 1`] = `
           </div>
         </form>
         <button
-          class="MuiButtonBase-root MuiIconButton-root ToggleableThemeComponent-leftAppBarButton-18"
+          aria-label="Toggle light/dark theme"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge ToggleableThemeComponent-leftAppBarButton-18 css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
           tabindex="0"
-          title="Toggle light/dark theme"
           type="button"
         >
-          <span
-            class="MuiIconButton-label"
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-19"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-19"
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <a
           href="/docs"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root"
+            aria-label="Documentation"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+            data-mui-internal-clone-element="true"
             tabindex="0"
-            title="Documentation"
             type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                class="mdi-icon ToggleableThemeComponent-appIcon-19"
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V13L12,8.5V6.5C10.55,5.4 8.45,5 6.5,5V5Z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </a>
-        <button
-          class="MuiButtonBase-root MuiIconButton-root"
-          tabindex="0"
-          title="Page Information"
-          type="button"
-        >
-          <span
-            class="MuiIconButton-label"
           >
             <svg
               class="mdi-icon ToggleableThemeComponent-appIcon-19"
@@ -159,27 +120,45 @@ exports[`should render ListHookGroupss page 1`] = `
               width="24"
             >
               <path
-                d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"
+                d="M19,2L14,6.5V17.5L19,13V2M6.5,5C4.55,5 2.45,5.4 1,6.5V21.16C1,21.41 1.25,21.66 1.5,21.66C1.6,21.66 1.65,21.59 1.75,21.59C3.1,20.94 5.05,20.5 6.5,20.5C8.45,20.5 10.55,20.9 12,22C13.35,21.15 15.8,20.5 17.5,20.5C19.15,20.5 20.85,20.81 22.25,21.56C22.35,21.61 22.4,21.59 22.5,21.59C22.75,21.59 23,21.34 23,21.09V6.5C22.4,6.05 21.75,5.75 21,5.5V7.5L21,13V19C19.9,18.65 18.7,18.5 17.5,18.5C15.8,18.5 13.35,19.15 12,20V13L12,8.5V6.5C10.55,5.4 8.45,5 6.5,5V5Z"
               />
             </svg>
-          </span>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </a>
+        <button
+          aria-label="Page Information"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            class="mdi-icon ToggleableThemeComponent-appIcon-19"
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+          >
+            <path
+              d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained UserMenu-userMenuButton-30 MuiButton-containedPrimary UserMenu-buttonContainedPrimary-32 MuiButton-containedSizeSmall MuiButton-sizeSmall"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-32 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-32 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary UserMenu-userMenuButton-30 css-jiae46-MuiButtonBase-root-MuiButton-root"
           id="sign-in-button"
           tabindex="0"
           type="button"
         >
+          Sign in
           <span
-            class="MuiButton-label"
-          >
-            Sign in
-          </span>
-          <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
       </div>
@@ -193,28 +172,28 @@ exports[`should render ListHookGroupss page 1`] = `
         class="DataTable-tableWrapper-52"
       >
         <table
-          class="MuiTable-root"
+          class="MuiTable-root css-6cj1nx-MuiTable-root"
         >
           <thead
-            class="MuiTableHead-root"
+            class="MuiTableHead-root css-4dv9im-MuiTableHead-root"
           >
             <tr
-              class="MuiTableRow-root MuiTableRow-head"
+              class="MuiTableRow-root MuiTableRow-head css-1wosaja-MuiTableRow-root"
             >
               <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-13h64e6-MuiTableCell-root"
                 scope="col"
               >
                 <span
-                  aria-disabled="false"
-                  class="MuiButtonBase-root MuiTableSortLabel-root DataTable-sortHeader-53"
+                  class="MuiButtonBase-root MuiTableSortLabel-root DataTable-sortHeader-53 css-xdkkwq-MuiButtonBase-root-MuiTableSortLabel-root"
                   role="button"
                   tabindex="0"
                 >
                   Hook Group ID
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionDesc"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionDesc css-13eoz4m-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                    data-testid="ArrowDownwardIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -227,13 +206,13 @@ exports[`should render ListHookGroupss page 1`] = `
             </tr>
           </thead>
           <tbody
-            class="MuiTableBody-root"
+            class="MuiTableBody-root css-1dyjss2-MuiTableBody-root"
           >
             <tr
-              class="MuiTableRow-root"
+              class="MuiTableRow-root css-1wosaja-MuiTableRow-root"
             >
               <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
               >
                 <a
                   href="/hooks/hg1"
@@ -243,10 +222,10 @@ exports[`should render ListHookGroupss page 1`] = `
               </td>
             </tr>
             <tr
-              class="MuiTableRow-root"
+              class="MuiTableRow-root css-1wosaja-MuiTableRow-root"
             >
               <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
               >
                 <a
                   href="/hooks/hg2"
@@ -259,31 +238,28 @@ exports[`should render ListHookGroupss page 1`] = `
         </table>
       </div>
       <span
+        aria-label="Create Hook"
         class="ListHookGroups-actionButton-1"
-        title="Create Hook"
+        data-mui-internal-clone-element="true"
       >
         <button
-          class="MuiButtonBase-root MuiFab-root MuiFab-secondary"
+          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary css-17m3dpp-MuiButtonBase-root-MuiFab-root"
           tabindex="0"
           type="button"
         >
-          <span
-            class="MuiFab-label"
+          <svg
+            class="mdi-icon "
+            fill="currentColor"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
           >
-            <svg
-              class="mdi-icon "
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path
-                d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
-              />
-            </svg>
-          </span>
+            <path
+              d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+            />
+          </svg>
           <span
-            class="MuiTouchRipple-root"
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
         </button>
       </span>

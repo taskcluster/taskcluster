@@ -1,8 +1,8 @@
 import React from 'react';
 import { bool, func } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
+import makeStyles from '@mui/styles/makeStyles';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import Markdown from '../Markdown';
 import { schema } from '../../utils/prop-types';
 
@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
   container: {
     backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.primary,
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(1)}px`,
+    padding: `${theme.spacing(1.5)} ${theme.spacing(1)}`,
   },
   title: {
     color: theme.palette.text.primary,

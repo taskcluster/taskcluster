@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react';
-import Avatar from '@material-ui/core/Avatar';
-import List from '@material-ui/core/List';
-import { withStyles } from '@material-ui/core/styles';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import Avatar from '@mui/material/Avatar';
+import List from '@mui/material/List';
+import withStyles from '@mui/styles/withStyles';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
@@ -18,7 +18,7 @@ import username from '../../utils/username';
   },
   userMenu: {
     [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing(0.5)}px ${theme.spacing(2)}px`,
+      padding: `${theme.spacing(0.5)} ${theme.spacing(2)}`,
     },
   },
   text: {

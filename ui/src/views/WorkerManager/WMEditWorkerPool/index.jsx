@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { bool } from 'prop-types';
-import { Typography, Box } from '@material-ui/core';
+import { Typography, Box } from '@mui/material';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';

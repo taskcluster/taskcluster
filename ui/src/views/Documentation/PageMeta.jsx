@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { join } from 'path';
 import { func } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import PageNavigation from '../../components/PageNavigation';
 import { docsPageInfo } from '../../utils/prop-types';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
@@ -10,7 +10,7 @@ import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
 @withStyles(theme => ({
   divider: {
-    margin: `${theme.spacing(3)}px 0`,
+    margin: `${theme.spacing(3)} 0`,
   },
   pageNavigation: {
     display: 'flex',
@@ -19,8 +19,8 @@ import { DOCS_PATH_PREFIX } from '../../utils/constants';
     left: 0,
     right: 0,
     position: 'absolute',
-    [theme.breakpoints.down('sm')]: {
-      width: `calc(100% - ${theme.spacing(6)}px)`,
+    [theme.breakpoints.down('md')]: {
+      width: `calc(100% - ${theme.spacing(6)})`,
       left: theme.spacing(3),
     },
   },

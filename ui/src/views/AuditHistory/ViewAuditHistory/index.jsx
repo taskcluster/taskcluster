@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import { formatDistanceStrict } from 'date-fns';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';

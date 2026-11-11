@@ -1,13 +1,13 @@
 import React, { Fragment, Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Divider from '@material-ui/core/Divider';
-import Collapse from '@material-ui/core/Collapse';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Divider from '@mui/material/Divider';
+import Collapse from '@mui/material/Collapse';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import { join } from 'path';
@@ -39,13 +39,13 @@ const getDocsSectionFromPathname = pathname => {
   },
   ul: {
     listStyle: 'none',
-    paddingInlineStart: `${theme.spacing(2)}px`,
+    paddingInlineStart: theme.spacing(2),
     marginTop: theme.spacing(0.5),
     marginBottom: theme.spacing(1),
   },
   link: {
     textDecoration: 'none',
-    padding: `0 ${theme.spacing(1)}px`,
+    padding: `0 ${theme.spacing(1)}`,
     display: 'block',
   },
   linkActive: {
@@ -68,8 +68,8 @@ const getDocsSectionFromPathname = pathname => {
     justifyContent: 'space-between',
   },
   collapse: {
-    margin: `${theme.spacing(1)}px 0 ${theme.spacing(2)}px 0`,
-    padding: `0 ${theme.spacing(2)}px`,
+    margin: `${theme.spacing(1)} 0 ${theme.spacing(2)} 0`,
+    padding: `0 ${theme.spacing(2)}`,
     overflowY: 'auto',
     maxHeight: '48vh',
   },
@@ -77,7 +77,7 @@ const getDocsSectionFromPathname = pathname => {
     listStyle: 'none',
   },
   divider: {
-    margin: `${theme.spacing(1)}px 0`,
+    margin: `${theme.spacing(1)} 0`,
   },
   inlineLink: {
     display: 'inline-block',

@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { object } from 'prop-types';
-import Avatar from '@material-ui/core/Avatar';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import Avatar from '@mui/material/Avatar';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import Button from '../Button';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
@@ -76,7 +76,8 @@ export default class UserMenuButton extends Component {
         aria-label="user menu"
         id="user-menu-button"
         onClick={onMenuClick}
-        {...props}>
+        {...props}
+        size="large">
         {avatarSrc ? (
           <Avatar alt={profileName} src={avatarSrc} {...avatarProps} />
         ) : (

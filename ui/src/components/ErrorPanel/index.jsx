@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import classNames from 'classnames';
 import { bool, oneOfType, string, object } from 'prop-types';
 import MuiErrorPanel from './MuiErrorPanel';
@@ -26,11 +26,11 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     maxHeight: '85vh',
   },
   fixedDocs: {
-    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${theme.spacing(6)}px)`,
-    [theme.breakpoints.down('md')]: {
-      width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6)}px)`,
+    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${theme.spacing(6)})`,
+    [theme.breakpoints.down('lg')]: {
+      width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6)})`,
     },
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       width: '92%',
     },
   },

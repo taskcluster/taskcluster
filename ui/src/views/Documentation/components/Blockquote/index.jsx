@@ -1,11 +1,11 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 
 const styles = theme => ({
   blockquote: {
     borderLeft: `5px solid ${theme.palette.text.hint}`,
-    padding: `${theme.spacing(0.5)}px ${theme.spacing(3)}px`,
-    margin: `${theme.spacing(3)}px 0`,
+    padding: `${theme.spacing(0.5)} ${theme.spacing(3)}`,
+    margin: `${theme.spacing(3)} 0`,
   },
 });
 

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Hooks } from '@taskcluster/client-web';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HookForm from '../../../components/HookForm';

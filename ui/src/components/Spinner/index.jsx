@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
 import { bool, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
 
 @withStyles({
   center: {

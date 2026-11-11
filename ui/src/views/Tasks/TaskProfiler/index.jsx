@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { parse, stringify } from 'qs';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { Auth } from '@taskcluster/client-web';
 import Spinner from '../../../components/Spinner';

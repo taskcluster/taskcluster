@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { object, string, func, number } from 'prop-types';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
-import TextField from '@material-ui/core/TextField';
-import { alpha, withStyles } from '@material-ui/core/styles';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { alpha } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
 import Markdown from '../Markdown';
 
 @withStyles(theme => {
   const borderColor =
-    theme.palette.type === 'light'
+    theme.palette.mode === 'light'
       ? alpha(theme.palette.common.black, 0.23)
       : alpha(theme.palette.common.white, 0.23);
 

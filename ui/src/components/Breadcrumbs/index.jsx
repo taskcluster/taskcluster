@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import { node, object } from 'prop-types';
 import classNames from 'classnames';
 import { omit } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import MuiBreadcrumbs from '@material-ui/core/Breadcrumbs';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import MuiBreadcrumbs from '@mui/material/Breadcrumbs';
 import NavigateNextIcon from 'mdi-react/NavigateNextIcon';
 
 @withStyles(theme => ({
   paper: {
-    padding: `${theme.spacing(2)}px ${theme.spacing(2)}px`,
+    padding: `${theme.spacing(2)} ${theme.spacing(2)}`,
   },
 }))
 export default class Breadcrumbs extends Component {

@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { parse, stringify } from 'qs';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
-import { Box } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
+import MenuItem from '@mui/material/MenuItem';
+import { Box } from '@mui/material';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import WorkersTable from '../../../components/WorkersTable';
