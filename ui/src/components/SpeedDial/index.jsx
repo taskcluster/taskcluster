@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import MuiSpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -18,7 +18,8 @@ const styles = withStyles(theme => ({
  * Render a dynamically expanding set of floating action buttons.
  */
 function SpeedDial(props) {
-  const { classes, children, className, location, ...rest } = props;
+  const { classes, children, className, ...rest } = props;
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const timeout = useRef(null);
   const resetTimeout = useCallback(() => {
@@ -93,4 +94,4 @@ SpeedDial.propTypes = {
   children: oneOfType([arrayOf(node), node]).isRequired,
 };
 
-export default withRouter(styles(SpeedDial));
+export default styles(SpeedDial);

@@ -1477,8 +1477,6 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
       </div>
       <div
         class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-106 css-h0fz3e-MuiSpeedDial-root"
-        history="[object Object]"
-        match="[object Object]"
         role="presentation"
       >
         <button

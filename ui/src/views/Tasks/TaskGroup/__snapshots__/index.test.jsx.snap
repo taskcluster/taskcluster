@@ -600,8 +600,6 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
       </div>
       <div
         class="MuiSpeedDial-root MuiSpeedDial-directionUp SpeedDial-speedDial-98 css-h0fz3e-MuiSpeedDial-root"
-        history="[object Object]"
-        match="[object Object]"
         role="presentation"
       >
         <button
