@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:26.13.0 AS build
+FROM node:26.13.1 AS build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -62,7 +62,7 @@ RUN /bin/bash -c "\
 ##
 # build the final image
 
-FROM node:26.13.0-alpine AS image
+FROM node:26.13.1-alpine AS image
 RUN apk --no-cache add --update bash nginx nginx-mod-http-brotli
 # node:26 images no longer ship yarn; yarn classic defers to the vendored
 # release in .yarnrc.yml's yarnPath
