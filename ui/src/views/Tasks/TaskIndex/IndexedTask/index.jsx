@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Index, Queue } from '@taskcluster/client-web';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import Spinner from '../../../../components/Spinner';
 import Dashboard from '../../../../components/Dashboard';

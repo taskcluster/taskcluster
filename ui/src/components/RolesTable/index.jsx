@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, func, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import DeleteIcon from 'mdi-react/DeleteIcon';

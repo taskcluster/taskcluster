@@ -3,14 +3,14 @@ import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Link from '../../utils/Link';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme, _props, classes) => ({
   listLinkCell: {
     ...theme.mixins.hover,
   },
@@ -19,10 +19,10 @@ import Link from '../../utils/Link';
     '&:hover': {
       backgroundColor: theme.palette.secondary.dark,
     },
-    '& $text': {
+    [`& .${classes.text}`]: {
       color: theme.palette.common.white,
     },
-    '& $icon': {
+    [`& .${classes.icon}`]: {
       fill: alpha(theme.palette.common.white, 0.9),
       '& svg': {
         fill: alpha(theme.palette.common.white, 0.9),

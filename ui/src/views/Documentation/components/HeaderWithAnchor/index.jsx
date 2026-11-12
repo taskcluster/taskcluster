@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import { string, oneOf } from 'prop-types';
 import { kebabCase } from 'change-case';
 import Typography from '@mui/material/Typography';

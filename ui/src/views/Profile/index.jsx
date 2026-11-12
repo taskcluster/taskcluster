@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Spinner from '../../components/Spinner';
 import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { parse, stringify } from 'qs';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
 import Spinner from '../../../components/Spinner';

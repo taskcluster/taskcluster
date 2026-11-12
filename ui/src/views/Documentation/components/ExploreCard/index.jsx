@@ -1,6 +1,6 @@
 import React from 'react';
 import { element, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';

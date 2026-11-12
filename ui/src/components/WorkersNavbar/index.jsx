@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { string, bool } from 'prop-types';
 import { Chip } from '@mui/material';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import HourglassIcon from 'mdi-react/HourglassIcon';

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
 import { object, arrayOf } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import RouteWithProps from '../components/RouteWithProps';
 import ErrorPanel from '../components/ErrorPanel';
 import StatusBanner from '../components/StatusBanner';
@@ -10,43 +10,42 @@ import { withAuth } from '../utils/Auth';
 import isThirdPartyLogin from '../utils/isThirdPartyLogin';
 import { AUTH_STARTED } from '../utils/constants';
 
-@withStyles(theme => ({
-  '@global': {
-    [[
-      'input:-webkit-autofill',
-      'input:-webkit-autofill:hover',
-      'input:-webkit-autofill:focus',
-      'input:-webkit-autofill:active',
-    ].join(',')]: {
-      transition:
-        'background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s',
-      transitionDelay: 'background-color 5000s, color 5000s',
-    },
-    '.mdi-icon': {
-      fill: theme.palette.text.primary,
-    },
-    '.CodeMirror': {
-      fontSize: 13,
-      height: '100% !important',
-    },
-    '[disabled] .mdi-icon': {
-      fill: theme.palette.primary.light,
-    },
-    a: {
-      color: theme.palette.text.primary,
-      textDecoration: 'inherit',
-    },
-    'html, body': {
-      color: theme.palette.text.secondary,
-    },
-    pre: {
-      overflowX: 'auto',
-    },
-    ':not(pre) > code': {
-      ...theme.mixins.highlight,
-    },
+const globalStyles = theme => ({
+  [[
+    'input:-webkit-autofill',
+    'input:-webkit-autofill:hover',
+    'input:-webkit-autofill:focus',
+    'input:-webkit-autofill:active',
+  ].join(',')]: {
+    transition:
+      'background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s',
+    transitionDelay: 'background-color 5000s, color 5000s',
   },
-}))
+  '.mdi-icon': {
+    fill: theme.palette.text.primary,
+  },
+  '.CodeMirror': {
+    fontSize: 13,
+    height: '100% !important',
+  },
+  '[disabled] .mdi-icon': {
+    fill: theme.palette.primary.light,
+  },
+  a: {
+    color: theme.palette.text.primary,
+    textDecoration: 'inherit',
+  },
+  'html, body': {
+    color: theme.palette.text.secondary,
+  },
+  pre: {
+    overflowX: 'auto',
+  },
+  ':not(pre) > code': {
+    ...theme.mixins.highlight,
+  },
+});
+
 @withAuth
 export default class Main extends Component {
   static propTypes = {
@@ -123,6 +122,7 @@ export default class Main extends Component {
 
     return (
       <Fragment>
+        <GlobalStyles styles={globalStyles} />
         <StatusBanner message={window.env.BANNER_MESSAGE} />
         <ErrorPanel fixed error={error} />
         <BrowserRouter>

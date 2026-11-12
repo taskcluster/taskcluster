@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { string, arrayOf, shape, bool } from 'prop-types';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { FixedSizeList as List } from 'react-window';
 import { WindowScroller } from 'react-virtualized';
 import TableRow from '@mui/material/TableRow';

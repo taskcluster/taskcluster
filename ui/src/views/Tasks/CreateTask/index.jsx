@@ -12,7 +12,7 @@ import {
   addMilliseconds,
   addHours,
 } from 'date-fns';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';

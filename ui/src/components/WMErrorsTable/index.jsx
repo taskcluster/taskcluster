@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { camelCase } from 'change-case';
 import { arrayOf, string, func, number, bool } from 'prop-types';
 import IconButton from '@mui/material/IconButton';

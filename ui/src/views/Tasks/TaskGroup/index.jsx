@@ -4,7 +4,7 @@ import { kebabCase } from 'change-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Badge from '@mui/material/Badge';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';

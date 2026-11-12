@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';

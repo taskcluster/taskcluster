@@ -1,6 +1,6 @@
 import React from 'react';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 
 const styles = theme => ({
   text: {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { PurgeCache } from '@taskcluster/client-web';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';

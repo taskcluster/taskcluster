@@ -1,21 +1,21 @@
 import React from 'react';
 import { node, string, object } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   listItemButtonRoot: {
     ...theme.mixins.listItemButton,
   },
 }));
 
 function CopyToClipboardListItem(props) {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { isCopy, onCopyClick } = useCopyToClipboard();
   const {
     tooltipTitle,

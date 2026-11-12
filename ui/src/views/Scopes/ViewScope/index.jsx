@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { parse, stringify } from 'qs';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Auth } from '@taskcluster/client-web';

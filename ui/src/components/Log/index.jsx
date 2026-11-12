@@ -5,7 +5,8 @@ import { withRouter } from 'react-router-dom';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import storage from 'localforage';
 import { omit } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import withStyles from '../../utils/withStyles';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
@@ -15,8 +16,7 @@ import { THEME } from '../../utils/constants';
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
 
-@withRouter
-@withStyles(theme => {
+const globalStyles = theme => {
   const filterStyles = {
     borderRadius: 4,
     padding: '4px 8px',
@@ -28,100 +28,102 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
   };
 
   return {
-    '@global': {
-      'div.react-lazylog': {
-        backgroundColor: theme.palette.background.default,
-        fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-        fontSize: 13,
-        paddingTop: 4,
-        paddingBottom: theme.spacing(1),
-        color: theme.palette.text.primary,
-        '-webkit-font-smoothing': 'auto',
-      },
-      'div.react-lazylog-searchbar': {
-        backgroundColor: theme.palette.background.default,
-        fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-        fontSize: 13,
-        padding: 10,
-        ...(theme.palette.mode === 'light'
-          ? {
-              '& > .react-lazylog-searchbar-input': {
-                height: theme.spacing(3),
-                backgroundColor: theme.palette.grey['300'],
-                color: theme.palette.common.black,
-                borderColor: theme.palette.grey['300'],
+    'div.react-lazylog': {
+      backgroundColor: theme.palette.background.default,
+      fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
+      fontSize: 13,
+      paddingTop: 4,
+      paddingBottom: theme.spacing(1),
+      color: theme.palette.text.primary,
+      '-webkit-font-smoothing': 'auto',
+    },
+    'div.react-lazylog-searchbar': {
+      backgroundColor: theme.palette.background.default,
+      fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
+      fontSize: 13,
+      padding: 10,
+      ...(theme.palette.mode === 'light'
+        ? {
+            '& > .react-lazylog-searchbar-input': {
+              height: theme.spacing(3),
+              backgroundColor: theme.palette.grey['300'],
+              color: theme.palette.common.black,
+              borderColor: theme.palette.grey['300'],
+            },
+            '& > .react-lazylog-searchbar-filter': {
+              ...filterStyles,
+              '&.inactive': {
+                fill: theme.palette.text.disabled,
               },
-              '& > .react-lazylog-searchbar-filter': {
-                ...filterStyles,
-                '&.inactive': {
-                  fill: theme.palette.text.disabled,
-                },
+            },
+            '& > .react-lazylog-searchbar-matches': {
+              '&.active': {
+                color: theme.palette.text.active,
               },
-              '& > .react-lazylog-searchbar-matches': {
-                '&.active': {
-                  color: theme.palette.text.active,
-                },
-                '&.inactive': {
-                  color: theme.palette.text.disabled,
-                },
+              '&.inactive': {
+                color: theme.palette.text.disabled,
               },
-            }
-          : {
-              '& > .react-lazylog-searchbar-input': {
-                height: theme.spacing(3),
-              },
-              '& > .react-lazylog-searchbar-filter': filterStyles,
-            }),
-      },
-    },
-    highlight: {
-      backgroundColor: `${theme.palette.action.selected} !important`,
-    },
-    line: {
-      '& > a': {
-        transition: theme.transitions.create('color'),
-        color: theme.palette.text.inactive,
-      },
-      '&:hover > a': {
-        color: `${theme.palette.text.primary} !important`,
-      },
-      '&$highlight > a': {
-        color: theme.palette.text.primary,
-      },
-      '&:hover': {
-        backgroundColor: `${theme.palette.action.hover} !important`,
-      },
-    },
-    logActions: {
-      position: 'absolute',
-      top: 8,
-      right: 380,
-    },
-    followButtonFollowing: {
-      ...theme.mixins.successIcon,
-    },
-    followLogIconFollowing: {
-      fill: THEME.PRIMARY_TEXT_DARK,
-    },
-    fabIcon: {
-      ...theme.mixins.fabIcon,
-    },
-    logSpeedDial: {
-      ...theme.mixins.fab,
-      ...theme.mixins.actionButton,
-      bottom: theme.spacing(3),
-    },
-    logToolbarButton: {
-      width: 31,
-      height: 25,
-      minWidth: 'unset',
-      padding: '0 6px',
-    },
-    goToLineButton: {
-      marginRight: theme.spacing(1),
+            },
+          }
+        : {
+            '& > .react-lazylog-searchbar-input': {
+              height: theme.spacing(3),
+            },
+            '& > .react-lazylog-searchbar-filter': filterStyles,
+          }),
     },
   };
-})
+};
+
+@withRouter
+@withStyles((theme, _props, classes) => ({
+  highlight: {
+    backgroundColor: `${theme.palette.action.selected} !important`,
+  },
+  line: {
+    '& > a': {
+      transition: theme.transitions.create('color'),
+      color: theme.palette.text.inactive,
+    },
+    '&:hover > a': {
+      color: `${theme.palette.text.primary} !important`,
+    },
+    [`&.${classes.highlight} > a`]: {
+      color: theme.palette.text.primary,
+    },
+    '&:hover': {
+      backgroundColor: `${theme.palette.action.hover} !important`,
+    },
+  },
+  logActions: {
+    position: 'absolute',
+    top: 8,
+    right: 380,
+  },
+  followButtonFollowing: {
+    ...theme.mixins.successIcon,
+  },
+  followLogIconFollowing: {
+    fill: THEME.PRIMARY_TEXT_DARK,
+  },
+  fabIcon: {
+    ...theme.mixins.fabIcon,
+  },
+  logSpeedDial: {
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing(3),
+  },
+  logToolbarButton: {
+    width: 31,
+    height: 25,
+    minWidth: 'unset',
+    padding: '0 6px',
+  },
+  goToLineButton: {
+    marginRight: theme.spacing(1),
+  },
+}))
 /**
  * Render a lazy-loading log viewer.
  */
@@ -285,6 +287,7 @@ export default class Log extends Component {
         startFollowing={this.shouldStartFollowing()}
         render={({ follow }) => (
           <Fragment>
+            <GlobalStyles styles={globalStyles} />
             <LazyLog
               enableSearch
               caseInsensitive

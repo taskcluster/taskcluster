@@ -1,7 +1,7 @@
 import React, { createContext } from 'react';
 import { arrayOf, node, string } from 'prop-types';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Paper from '@mui/material/Paper';
 import {
   siteSpecificVariables,

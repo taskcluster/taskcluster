@@ -1,5 +1,5 @@
 import React from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import { THEME } from '../../../../utils/constants';
 
 const styles = theme => ({

@@ -1,9 +1,9 @@
 import React from 'react';
 import { node } from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import MuiTooltip from '@mui/material/Tooltip';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   root: {
     display: 'inline',
   },
@@ -14,7 +14,7 @@ const useStyles = makeStyles({
  * used to display chips, so its display mode is 'inline'
  */
 function Tooltip({ title, children }) {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   return (
     <MuiTooltip

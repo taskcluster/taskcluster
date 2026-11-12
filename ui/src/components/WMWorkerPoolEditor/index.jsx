@@ -14,7 +14,7 @@ import {
   ListSubheader,
   List,
 } from '@mui/material';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import RunIcon from 'mdi-react/RunIcon';
 import TimerSandIcon from 'mdi-react/TimerSandIcon';

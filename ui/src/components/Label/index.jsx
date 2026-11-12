@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { bool, node, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Button from '@mui/material/Button';
 
 @withStyles(theme => ({

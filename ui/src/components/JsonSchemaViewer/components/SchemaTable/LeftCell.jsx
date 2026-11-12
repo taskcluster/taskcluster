@@ -1,6 +1,6 @@
 import React from 'react';
 import { oneOf, func, object } from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import classNames from 'classnames';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -19,7 +19,7 @@ import {
   TOOLTIP_DESCRIPTIONS,
 } from '../../utils/constants';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme, indent) => ({
   /**
    * Dynamically generate styles for indentations to be used for
    * displaying the data structure of the schemas.
@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
   indentation: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
-    marginLeft: indent => theme.spacing(indent * 2),
+    marginLeft: theme.spacing(indent * 2),
   },
 
   /**
@@ -101,7 +101,7 @@ function LeftCell({
    * (length of path = depth of the current treeNode)
    */
   const indentSize = path.length;
-  const classes = useStyles(indentSize);
+  const { classes } = useStyles(indentSize);
   /**
    * Create a text for the name of the schema.
    */

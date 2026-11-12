@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { object } from 'prop-types';
 import Avatar from '@mui/material/Avatar';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import IconButton from '@mui/material/IconButton';
 import Button from '../Button';
 import SignInDialog from '../SignInDialog';

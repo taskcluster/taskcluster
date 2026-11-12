@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { parse } from 'qs';
 import { omit } from 'ramda';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';

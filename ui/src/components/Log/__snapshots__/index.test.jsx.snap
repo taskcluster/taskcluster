@@ -47,11 +47,11 @@ exports[`should render Log 1`] = `
     />
   </div>
   <div
-    class="Log-logActions-3"
+    class="css-1bcgc6r-Log-logActions"
   >
     <span
       aria-label="Go to Line"
-      class="Log-logToolbarButton-8 Log-goToLineButton-9"
+      class="css-1kgpbzw-Log-logToolbarButton css-1v7vgx8-Log-goToLineButton"
       data-mui-internal-clone-element="true"
     >
       <button
@@ -81,12 +81,12 @@ exports[`should render Log 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary Log-logToolbarButton-8 Log-followButtonFollowing-4 css-1a0eldf-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-x06mw3-MuiButtonBase-root-MuiButton-root-Log-logToolbarButton-Log-followButtonFollowing"
         tabindex="0"
         type="button"
       >
         <svg
-          class="mdi-icon Log-followLogIconFollowing-5"
+          class="mdi-icon css-1x1x2q3-Log-followLogIconFollowing"
           fill="currentColor"
           height="24"
           viewBox="0 0 24 24"
@@ -166,11 +166,11 @@ exports[`should render without following 1`] = `
     />
   </div>
   <div
-    class="Log-logActions-13"
+    class="css-1bcgc6r-Log-logActions"
   >
     <span
       aria-label="Go to Line"
-      class="Log-logToolbarButton-18 Log-goToLineButton-19"
+      class="css-1kgpbzw-Log-logToolbarButton css-1v7vgx8-Log-goToLineButton"
       data-mui-internal-clone-element="true"
     >
       <button
@@ -200,7 +200,7 @@ exports[`should render without following 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary Log-logToolbarButton-18 css-1a0eldf-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-1fho499-MuiButtonBase-root-MuiButton-root-Log-logToolbarButton"
         tabindex="0"
         type="button"
       >

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { object, string, func } from 'prop-types';
 import { Controlled } from 'react-codemirror2';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
 import 'codemirror/mode/javascript/javascript';

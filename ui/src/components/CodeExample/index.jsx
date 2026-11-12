@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';

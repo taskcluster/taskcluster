@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import { bool, func } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import Card from '@mui/material/Card';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { node } from 'prop-types';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import Paper from '@mui/material/Paper';
 import { FIRST_CHILD } from '../../../../utils/constants';
 

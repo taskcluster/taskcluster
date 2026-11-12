@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import classNames from 'classnames';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';

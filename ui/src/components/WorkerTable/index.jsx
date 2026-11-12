@@ -4,7 +4,7 @@ import { parse, stringify } from 'qs';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { memoize } from '../../utils/memoize';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import TableCellItem from '../TableCellItem';

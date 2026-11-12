@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, node, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';

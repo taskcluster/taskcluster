@@ -8,7 +8,7 @@ import ArchiveIcon from 'mdi-react/ArchiveIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import InformationIcon from 'mdi-react/InformationOutlineIcon';
 import { camelCase } from 'change-case';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import { memoize } from '../../../utils/memoize';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';

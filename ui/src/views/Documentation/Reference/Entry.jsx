@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { path } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { bool } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import Emoticon from './Emoticon';
 

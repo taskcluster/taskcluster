@@ -1,8 +1,8 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import { schema } from '../../utils/prop-types';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   view: {
     backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.primary,
@@ -16,7 +16,7 @@ function SourceView({ schema }) {
   /**
    * Generate classes to define overall style for the schema table.
    */
-  const classes = useStyles();
+  const { classes } = useStyles();
   const source = JSON.stringify(schema, undefined, 2);
 
   return (

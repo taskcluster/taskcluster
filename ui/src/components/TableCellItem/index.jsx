@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { node, bool, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 

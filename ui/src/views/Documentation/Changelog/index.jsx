@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import { withRouter } from 'react-router-dom';
 import { titleCase } from 'title-case';
 import Grid from '@mui/material/Grid';

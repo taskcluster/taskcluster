@@ -3,7 +3,7 @@ import { arrayOf, bool, func, object } from 'prop-types';
 import classNames from 'classnames';
 import { equals } from 'ramda';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';

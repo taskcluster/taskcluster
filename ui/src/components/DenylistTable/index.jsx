@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { arrayOf, bool, string } from 'prop-types';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';

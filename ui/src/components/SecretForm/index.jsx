@@ -3,7 +3,7 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { dump, load } from 'js-yaml';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Typography from '@mui/material/Typography';

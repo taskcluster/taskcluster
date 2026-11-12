@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { string } from 'prop-types';
 import { hterm, lib } from 'hterm-umdjs';
 import withAlertOnClose from '../../utils/withAlertOnClose';

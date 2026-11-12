@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { string, object, func } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import CodeEditor from '../CodeEditor';

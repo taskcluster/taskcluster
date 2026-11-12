@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';

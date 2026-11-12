@@ -12,7 +12,7 @@ import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Drawer from '@mui/material/Drawer';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';

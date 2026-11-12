@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { FixedSizeList } from 'react-window';
 import Divider from '@mui/material/Divider';

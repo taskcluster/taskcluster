@@ -3,7 +3,7 @@ import { arrayOf, bool, func, object, string } from 'prop-types';
 import { parse, stringify } from 'qs';
 import { withRouter } from 'react-router-dom';
 import { formatDistanceStrict, parseISO } from 'date-fns';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { TableCell, TableRow, Typography } from '@mui/material';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';

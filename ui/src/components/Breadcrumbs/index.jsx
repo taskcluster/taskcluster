@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { node, object } from 'prop-types';
 import classNames from 'classnames';
 import { omit } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Paper from '@mui/material/Paper';
 import MuiBreadcrumbs from '@mui/material/Breadcrumbs';
 import NavigateNextIcon from 'mdi-react/NavigateNextIcon';

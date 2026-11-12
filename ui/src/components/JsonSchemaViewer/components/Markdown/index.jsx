@@ -1,10 +1,10 @@
 import React from 'react';
 import { string, bool } from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import classNames from 'classnames';
 import parser from 'markdown-it';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   /** Default styles applied to markdown content. */
   markdown: {
     '& code': {
@@ -27,7 +27,7 @@ function Markdown({ children = '', inverse = false }) {
   /**
    * Generate classes to define overall style for the schema table.
    */
-  const classes = useStyles();
+  const { classes } = useStyles();
   const markdown = parser({ linkify: true });
 
   return (
