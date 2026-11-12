@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import classNames from 'classnames';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -43,9 +43,6 @@ import scopeLink from '../../utils/scopeLink';
   },
   saveIcon: {
     ...theme.mixins.successIcon,
-  },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
   },
   roleDescriptionListItem: {
     marginTop: theme.spacing(1),
@@ -293,7 +290,7 @@ export default class RoleForm extends Component {
                 onClick={onDialogActionOpen}
                 icon={<DeleteIcon />}
                 tooltipTitle="Delete"
-                className={classes.deleteIcon}
+                color="error"
                 FabProps={{
                   disabled: loading,
                 }}

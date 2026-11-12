@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
-import { Helmet as ReactHelmet } from 'react-helmet';
+import { Helmet as ReactHelmet } from 'react-helmet-async';
 import { TASK_STATE } from '../../utils/constants';
 import Logo from '../../images/logo.png';
 import LogoCompleted from '../../images/logoCompleted.png';

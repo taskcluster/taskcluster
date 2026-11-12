@@ -1,17 +1,17 @@
 import React, { Component, Fragment } from 'react';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { camelCase } from 'change-case';
 import { arrayOf, string, func, number, bool } from 'prop-types';
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 import CloseIcon from 'mdi-react/CloseIcon';
-import TableRow from '@material-ui/core/TableRow';
-import Drawer from '@material-ui/core/Drawer';
-import TableCell from '@material-ui/core/TableCell';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
+import TableRow from '@mui/material/TableRow';
+import Drawer from '@mui/material/Drawer';
+import TableCell from '@mui/material/TableCell';
+import List from '@mui/material/List';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import Typography from '@mui/material/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { memoize } from '../../utils/memoize';
 import JsonDisplay from '../JsonDisplay';
@@ -35,7 +35,7 @@ import Link from '../../utils/Link';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
     borderRadius: 4,
   },
@@ -54,7 +54,7 @@ import Link from '../../utils/Link';
   },
   drawerPaper: {
     width: '40vw',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       width: '90vw',
     },
   },
@@ -243,7 +243,8 @@ export default class WorkerManagerErrorsTable extends Component {
             <Fragment>
               <IconButton
                 onClick={this.handleDrawerClose}
-                className={classes.drawerCloseIcon}>
+                className={classes.drawerCloseIcon}
+                size="large">
                 <CloseIcon />
               </IconButton>
               <div className={classes.metadataContainer}>

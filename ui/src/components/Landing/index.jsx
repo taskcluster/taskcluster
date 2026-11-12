@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { ErrorBoundary } from 'react-error-boundary';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';

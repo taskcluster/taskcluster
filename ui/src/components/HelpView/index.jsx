@@ -1,13 +1,13 @@
 import React, { PureComponent, Fragment } from 'react';
 import { node, string, object, oneOfType } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 
 @withStyles(theme => ({
   divider: {
-    margin: `${theme.spacing(1)}px 0`,
+    margin: `${theme.spacing(1)} 0`,
   },
   hasNoDescription: {
     marginTop: 45,

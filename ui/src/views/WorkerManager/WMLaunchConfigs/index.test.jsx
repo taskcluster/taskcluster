@@ -1,14 +1,10 @@
 import React from 'react';
-import { render, act } from '@testing-library/react';
+import { act } from '@testing-library/react';
+import render from '../../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { TaskclusterClientContext } from '../../../utils/TaskclusterClient';
 import WMLaunchConfigs from './index';
-
-// Dashboard renders null under jsdom (withWidth needs matchMedia), so render
-// its children directly to assert on the table
-vi.mock('../../../components/Dashboard', () => ({
-  default: ({ children }) => <div>{children}</div>,
-}));
 
 const workerPoolId = 'proj/worker';
 const launchConfigId = 'lc-1';
@@ -46,16 +42,18 @@ it('shows worker counts that load after the launch configs', async () => {
 
   await act(async () => {
     ({ container } = render(
-      <MemoryRouter keyLength={0}>
-        <TaskclusterClientContext.Provider value={() => client}>
-          <WMLaunchConfigs
-            match={{
-              params: { workerPoolId: encodeURIComponent(workerPoolId) },
-            }}
-            location={{ search: '' }}
-          />
-        </TaskclusterClientContext.Provider>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <TaskclusterClientContext.Provider value={() => client}>
+            <WMLaunchConfigs
+              match={{
+                params: { workerPoolId: encodeURIComponent(workerPoolId) },
+              }}
+              location={{ search: '' }}
+            />
+          </TaskclusterClientContext.Provider>
+        </MemoryRouter>
+      </HelmetProvider>
     ));
   });
   const countFor = state =>
@@ -126,16 +124,18 @@ it('sorts by the worker count columns and marks the column it sorts by', async (
 
   await act(async () => {
     ({ container } = render(
-      <MemoryRouter keyLength={0}>
-        <TaskclusterClientContext.Provider value={() => client}>
-          <WMLaunchConfigs
-            match={{
-              params: { workerPoolId: encodeURIComponent(workerPoolId) },
-            }}
-            location={{ search: '' }}
-          />
-        </TaskclusterClientContext.Provider>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <TaskclusterClientContext.Provider value={() => client}>
+            <WMLaunchConfigs
+              match={{
+                params: { workerPoolId: encodeURIComponent(workerPoolId) },
+              }}
+              location={{ search: '' }}
+            />
+          </TaskclusterClientContext.Provider>
+        </MemoryRouter>
+      </HelmetProvider>
     ));
   });
   const order = () =>
@@ -148,7 +148,7 @@ it('sorts by the worker count columns and marks the column it sorts by', async (
 
   await act(async () => header.click());
   expect(order()).toEqual(['lc-b', 'lc-c', 'lc-a']);
-  expect(header.classList.contains('MuiTableSortLabel-active')).toBe(true);
+  expect(header.classList.contains('Mui-active')).toBe(true);
 
   await act(async () => header.click());
   expect(order()).toEqual(['lc-a', 'lc-c', 'lc-b']);

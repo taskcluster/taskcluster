@@ -1,5 +1,6 @@
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
+import render from '../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import TaskDetailsCard from './index';
 

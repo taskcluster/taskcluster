@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	gwruntime "github.com/taskcluster/taskcluster/v115/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v116/workers/generic-worker/runtime"
 )
 
 func TestRunAfterUserCreation(t *testing.T) {
@@ -50,12 +50,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 	}
 	ctx := PostRebootSetup(taskUser)
 
-	defer func() {
-		err := purgeOldTasks()
-		if err != nil {
-			t.Fatalf("Problem deleting old tasks: %v", err)
-		}
-	}()
+	defer purgeOldTasks()
 	fileContents, err := os.ReadFile(filepath.Join(ctx.TaskDir, "run-after-user.txt"))
 	if err != nil {
 		t.Fatalf("Got error when looking for file run-after-user.txt: %v", err)

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { WorkerManager } from '@taskcluster/client-web';
-import Tab from '@material-ui/core/Tab/Tab';
-import Tabs from '@material-ui/core/Tabs/Tabs';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import {
   TableCell,
   TableRow,
@@ -9,7 +9,7 @@ import {
   Typography,
   Box,
   Button,
-} from '@material-ui/core';
+} from '@mui/material';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';

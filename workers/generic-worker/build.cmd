@@ -28,4 +28,4 @@ set GORACE=history_size=7
 :: infrastructure/tooling/src/release/tasks.js
 :: when a new major release is made.
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-go test -ldflags "-X github.com/taskcluster/taskcluster/v115/workers/generic-worker.revision=%REVISION%" ./... || exit /b %ERRORLEVEL%
+go test -ldflags "-X github.com/taskcluster/taskcluster/v116/workers/generic-worker.revision=%REVISION%" ./... || exit /b %ERRORLEVEL%

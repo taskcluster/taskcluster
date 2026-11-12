@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { oneOf, string, arrayOf, shape } from 'prop-types';
-import { alpha, withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import { alpha } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import ListSubheader from '@mui/material/ListSubheader';
+import Autocomplete from '@mui/material/Autocomplete';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
 import TextField from '../TextField';
 import Link from '../../utils/Link';
@@ -89,14 +90,11 @@ export default class DocSearch extends Component {
 
   renderGroup = params => {
     const { classes } = this.props;
-    const listKey = `${params.children[0].props.children.key.split('-')[0]}-${
-      params.key
-    }`;
 
     return (
-      <li key={listKey}>
+      <li key={params.key}>
         <ListSubheader className={classes.groupLabel} component="div">
-          {params.key}
+          {params.group}
         </ListSubheader>
         <ul className={classes.groupUl}>{params.children}</ul>
       </li>
@@ -121,12 +119,9 @@ export default class DocSearch extends Component {
         disableClearable
         options={options}
         style={{ width: 300 }}
-        renderOption={option => {
-          // handleRenderGroup relies on option.path showing up first
-          // in Link's key prop
-          return (
+        renderOption={({ key, ...props }, option) => (
+          <li key={this.linkFromOption(option)} {...props}>
             <Link
-              key={`${option.path}-${option.title}-${option.subtitle}`}
               className={classes.autoCompleteItem}
               to={this.linkFromOption(option)}>
               <Typography
@@ -136,8 +131,8 @@ export default class DocSearch extends Component {
                 {option.subtitle || option.title}
               </Typography>
             </Link>
-          );
-        }}
+          </li>
+        )}
         renderInput={params => {
           return (
             <TextField

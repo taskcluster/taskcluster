@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/logging"
-	loggingCommon "github.com/taskcluster/taskcluster/v115/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/logging"
+	loggingCommon "github.com/taskcluster/taskcluster/v116/tools/worker-runner/logging/logging"
 )
 
 func buildFakeGenericWorker(workerPath string) error {

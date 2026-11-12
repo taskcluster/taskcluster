@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
-	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
+	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcqueue"
 )
 
 // Enumerate task status to aid life-cycle decision making
@@ -222,19 +222,6 @@ func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 		// stopped reclaiming as soon as we had a task abortion, if the task
 		// abortion took too long to complete, the claim might expire before
 		// the task finally gets resolved after the task abortion completes.
-		aborted,
-	)
-}
-
-func (tsm *TaskStatusManager) Cancel() error {
-	return tsm.updateStatus(
-		cancelled,
-		func(task *TaskRun) error {
-			//TODO: implement cancelling of tasks
-			return nil
-		},
-		claimed,
-		reclaimed,
 		aborted,
 	)
 }

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, func, string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import withStyles from '@mui/styles/withStyles';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import Button from '../Button';
 import PaginatedDataTable from '../PaginatedDataTable';

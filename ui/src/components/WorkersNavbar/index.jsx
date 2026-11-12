@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { string, bool } from 'prop-types';
-import { Chip } from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
+import { Chip } from '@mui/material';
+import withStyles from '@mui/styles/withStyles';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import HourglassIcon from 'mdi-react/HourglassIcon';
@@ -16,7 +16,7 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
     flexWrap: 'wrap',
     flex: 1,
 
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       marginTop: theme.spacing(1),
     },
 

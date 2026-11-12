@@ -1,11 +1,5 @@
-import { alpha, createTheme } from '@material-ui/core/styles';
-import { lighten } from '@material-ui/core/styles/colorManipulator';
-import transitions from '@material-ui/core/styles/transitions';
-import red from '@material-ui/core/colors/red';
-import amber from '@material-ui/core/colors/amber';
-import blue from '@material-ui/core/colors/blue';
-import green from '@material-ui/core/colors/green';
-import purple from '@material-ui/core/colors/purple';
+import { alpha, createTheme, lighten } from '@mui/material/styles';
+import { red, amber, blue, green, grey, purple } from '@mui/material/colors';
 import { THEME } from './utils/constants';
 
 const Roboto300 = { fontFamily: 'Roboto, sans-serif', fontWeight: 300 };
@@ -78,8 +72,17 @@ const themeOptions = isDarkTheme => {
   });
 
   return {
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 600,
+        md: 960,
+        lg: 1280,
+        xl: 1920,
+      },
+    },
     palette: {
-      type: isDarkTheme ? 'dark' : 'light',
+      mode: isDarkTheme ? 'dark' : 'light',
       background: {
         default: isDarkTheme ? THEME.DARK_THEME_BACKGROUND : '#fff',
         paper: primaryMain,
@@ -178,7 +181,7 @@ const themeOptions = isDarkTheme => {
       },
       listItemButton: {
         '& svg': {
-          transition: transitions.create('fill'),
+          transition: theme.transitions.create('fill'),
           fill: lighten(
             isDarkTheme ? THEME.PRIMARY_TEXT_LIGHT : THEME.PRIMARY_TEXT_LIGHT,
             0.4
@@ -264,263 +267,274 @@ const themeOptions = isDarkTheme => {
         zIndex: 1050,
       },
     },
-    overrides: {
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          html: {
+            colorScheme: isDarkTheme ? 'dark' : 'light',
+          },
+          body: {
+            color: textSecondary,
+            fontSize: '0.875rem',
+            lineHeight: 1.43,
+          },
+        },
+      },
+      MuiTextField: {
+        defaultProps: {
+          variant: 'standard',
+        },
+      },
+      MuiFormControl: {
+        defaultProps: {
+          variant: 'standard',
+        },
+      },
       MuiSelect: {
-        root: {
-          paddingLeft: '7px',
+        defaultProps: {
+          variant: 'standard',
+        },
+        styleOverrides: {
+          select: {
+            paddingLeft: '7px',
+          },
         },
       },
       MuiTypography: {
-        root: {
-          color: textPrimary,
+        styleOverrides: {
+          root: {
+            color: textPrimary,
+          },
         },
       },
       MuiTableSortLabel: {
-        icon: {
-          fontSize: '1rem',
+        styleOverrides: {
+          icon: {
+            fontSize: '1rem',
+          },
         },
       },
       MuiFormLabel: {
-        filled: {
-          ...Roboto500,
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+        styleOverrides: {
+          filled: {
+            ...Roboto500,
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
+          },
         },
       },
       MuiListSubheader: {
-        root: {
-          ...Roboto500,
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+        styleOverrides: {
+          root: {
+            backgroundColor: 'inherit',
+            ...Roboto500,
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
+          },
         },
       },
       MuiButton: {
-        sizeSmall: {
-          minWidth: 36,
+        defaultProps: {
+          color: 'inherit',
+        },
+        styleOverrides: {
+          sizeSmall: {
+            minWidth: 36,
+          },
+          textInherit: {
+            color: textPrimary,
+          },
+          outlinedInherit: {
+            color: textPrimary,
+            borderColor: isDarkTheme
+              ? 'rgba(255, 255, 255, 0.23)'
+              : 'rgba(0, 0, 0, 0.23)',
+          },
+          containedInherit: {
+            color: 'rgba(0, 0, 0, 0.87)',
+            backgroundColor: grey[300],
+            '&:hover': {
+              backgroundColor: grey.A100,
+            },
+          },
         },
       },
       MuiFab: {
-        sizeSmall: {
-          minWidth: 36,
-        },
-        extended: {
-          height: 36,
+        styleOverrides: {
+          sizeSmall: {
+            minWidth: 36,
+          },
+          extended: {
+            height: 36,
+          },
         },
       },
       MuiCircularProgress: {
-        colorPrimary: {
-          color: isDarkTheme ? THEME.PRIMARY_LIGHT : THEME.PRIMARY_DARK,
+        styleOverrides: {
+          colorPrimary: {
+            color: isDarkTheme ? THEME.PRIMARY_LIGHT : THEME.PRIMARY_DARK,
+          },
         },
       },
       MuiMobileStepper: {
-        dotActive: {
-          backgroundColor: isDarkTheme ? 'white' : '#000',
+        styleOverrides: {
+          dotActive: {
+            backgroundColor: isDarkTheme ? 'white' : '#000',
+          },
         },
       },
       MuiTableHead: {
-        root: {
-          width: '100%',
-          [theme.breakpoints.down('md')]: {
-            display: 'block',
-            position: 'absolute',
-            top: '-9999px',
-            left: '-9999px',
+        styleOverrides: {
+          root: {
+            width: '100%',
+            [theme.breakpoints.down('lg')]: {
+              display: 'block',
+              position: 'absolute',
+              top: '-9999px',
+              left: '-9999px',
+            },
           },
         },
       },
       MuiTableRow: {
-        root: {
-          width: '100%',
-          [theme.breakpoints.down('md')]: {
-            display: 'block',
-            borderRadius: '5%',
-            borderCollapse: 'separate',
+        styleOverrides: {
+          root: {
+            width: '100%',
+            [theme.breakpoints.down('lg')]: {
+              display: 'block',
+              borderRadius: '5%',
+              borderCollapse: 'separate',
+            },
           },
         },
       },
       MuiTableBody: {
-        root: {
-          width: '100%',
-          [theme.breakpoints.down('md')]: {
-            display: 'block',
+        styleOverrides: {
+          root: {
+            width: '100%',
+            [theme.breakpoints.down('lg')]: {
+              display: 'block',
+            },
           },
         },
       },
       MuiTableCell: {
-        root: {
-          [theme.breakpoints.down('md')]: {
-            display: 'block',
-            position: 'relative',
-            paddingLeft: '50%',
-          },
-          borderBottom: `1px solid ${
-            isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
-          }`,
-          whiteSpace: 'nowrap',
-        },
-      },
-      MuiPickersToolbar: {
-        toolbar: {
-          backgroundColor: THEME.SECONDARY,
-        },
-      },
-      MuiPickersToolbarText: {
-        toolbarTxt: {
-          color: 'rgba(255, 255, 255, 0.54)',
-        },
-        toolbarBtnSelected: {
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-      },
-      MuiPickersToolbarButton: {
-        toolbarBtn: {
-          '&:hover, &:focus': {
-            textDecoration: 'none',
-            backgroundColor: alpha(textPrimary, 0.08),
-            // Reset on touch devices, it doesn't add specificity
-            '@media (hover: none)': {
-              backgroundColor: 'transparent',
+        styleOverrides: {
+          root: {
+            [theme.breakpoints.down('lg')]: {
+              display: 'block',
+              position: 'relative',
+              paddingLeft: '50%',
             },
-            '&:disabled': {
-              backgroundColor: 'transparent',
+            borderBottom: `1px solid ${
+              isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
+            }`,
+            whiteSpace: 'nowrap',
+          },
+          sizeSmall: {
+            padding: '6px 24px 6px 16px',
+            '&:last-child': {
+              paddingRight: 16,
             },
-            // Rely on background color instead
-            outline: 'none',
-          },
-        },
-      },
-      MuiPickersYear: {
-        root: {
-          '&:focus': {
-            color: isDarkTheme
-              ? THEME.PRIMARY_TEXT_DARK
-              : THEME.PRIMARY_TEXT_LIGHT,
-          },
-          '&$yearSelected': {
-            color: isDarkTheme
-              ? THEME.PRIMARY_TEXT_DARK
-              : THEME.PRIMARY_TEXT_LIGHT,
-          },
-        },
-      },
-      MuiPickersClock: {
-        pin: {
-          backgroundColor: THEME.SECONDARY,
-        },
-      },
-      MuiPickersClockPointer: {
-        pointer: {
-          backgroundColor: THEME.SECONDARY,
-        },
-        thumb: {
-          borderColor: THEME.SECONDARY,
-          backgroundColor: THEME.PRIMARY_TEXT_DARK,
-        },
-        noPoint: {
-          backgroundColor: THEME.SECONDARY,
-        },
-      },
-      MuiPickersClockNumber: {
-        clockNumberSelected: {
-          color: '#fff',
-        },
-      },
-      MuiPickerDTTabs: {
-        tabs: {
-          color: '#fff',
-          backgroundColor: THEME.SECONDARY,
-          '& .MuiTabs-indicator': {
-            backgroundColor: isDarkTheme ? '#fff' : '#000',
+            [theme.breakpoints.down('lg')]: {
+              paddingLeft: 16,
+            },
           },
         },
       },
       MuiListItem: {
-        root: {
-          userSelect: 'text',
+        styleOverrides: {
+          root: {
+            userSelect: 'text',
+          },
         },
       },
       MuiChip: {
-        label: {
-          userSelect: 'text',
-        },
-        root: {
-          userSelect: 'text',
-        },
-      },
-      MuiPickersCalendarHeader: {
-        iconButton: {
-          backgroundColor: 'transparent',
-          '& span': {
-            backgroundColor: 'transparent',
+        styleOverrides: {
+          label: {
+            userSelect: 'text',
+          },
+          root: {
+            userSelect: 'text',
           },
         },
       },
-      MuiPickersDay: {
-        daySelected: {
-          backgroundColor: THEME.SECONDARY,
-          color: THEME.PRIMARY_TEXT_DARK,
-          '&:hover': {
-            backgroundColor: THEME.SECONDARY,
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
           },
-        },
-        current: {
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
         },
       },
-      MuiPickersModal: {
-        dialogAction: {
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
-          '&:hover': {
-            backgroundColor: isDarkTheme
-              ? THEME.TEN_PERCENT_WHITE
-              : THEME.TEN_PERCENT_BLACK,
-          },
+      MuiTabs: {
+        defaultProps: {
+          textColor: 'inherit',
+          indicatorColor: 'secondary',
         },
-        withAdditionalAction: {
-          '& button': {
-            color: isDarkTheme
-              ? THEME.PRIMARY_TEXT_DARK
-              : THEME.PRIMARY_TEXT_LIGHT,
-            '&:hover': {
-              backgroundColor: isDarkTheme
-                ? THEME.TEN_PERCENT_WHITE
-                : THEME.TEN_PERCENT_BLACK,
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            [theme.breakpoints.up('sm')]: {
+              minWidth: 160,
             },
           },
+          textColorInherit: {
+            opacity: 0.7,
+          },
+        },
+      },
+      MuiSwitch: {
+        defaultProps: {
+          color: 'secondary',
+        },
+        styleOverrides: {
+          switchBase: {
+            color: isDarkTheme ? grey[400] : grey[50],
+          },
+        },
+      },
+      MuiCheckbox: {
+        defaultProps: {
+          color: 'secondary',
         },
       },
       MuiDrawer: {
-        paper: {
-          maxWidth: 500,
+        styleOverrides: {
+          paper: {
+            maxWidth: 500,
+          },
         },
       },
       MuiAccordionSummary: {
-        root: {
-          '&$focused': {
-            backgroundColor: THEME.TEN_PERCENT_WHITE,
+        styleOverrides: {
+          root: {
+            '&.Mui-focusVisible': {
+              backgroundColor: THEME.TEN_PERCENT_WHITE,
+            },
+          },
+          expandIconWrapper: {
+            padding: '0 12px',
+            marginRight: -12,
           },
         },
       },
       MuiMenuItem: {
-        root: {
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+        styleOverrides: {
+          root: {
+            color: isDarkTheme
+              ? THEME.PRIMARY_TEXT_DARK
+              : THEME.PRIMARY_TEXT_LIGHT,
+          },
         },
       },
     },
   };
 };
 
-const theme = createTheme(themeOptions(true));
-
 export default {
   lightTheme: createTheme(themeOptions(false)),
-  darkTheme: theme,
+  darkTheme: createTheme(themeOptions(true)),
 };

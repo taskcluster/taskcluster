@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { Queue } from '@taskcluster/client-web';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
+import MenuItem from '@mui/material/MenuItem';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import WorkerTypesTable from '../../../components/WorkerTypesTable';

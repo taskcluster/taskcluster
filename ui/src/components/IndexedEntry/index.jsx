@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, string } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import withStyles from '@mui/styles/withStyles';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import JsonDisplay from '../JsonDisplay';
@@ -203,7 +203,7 @@ export default class IndexedEntry extends Component {
           <ListItemText primary="Namespace" secondary={indexedTask.namespace} />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Rank" secondary={indexedTask.rank} />
+          <ListItemText primary="Rank" secondary={String(indexedTask.rank)} />
         </ListItem>
         <ListItem>
           <ListItemText

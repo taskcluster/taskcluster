@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/taskcluster/taskcluster/v115/internal/scopes"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v116/internal/scopes"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/process"
 )
 
 type (

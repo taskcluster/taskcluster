@@ -2,18 +2,19 @@ import React, { Fragment, Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { arrayOf, bool, number, string } from 'prop-types';
-import { alpha, withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Collapse from '@material-ui/core/Collapse';
-import MobileStepper from '@material-ui/core/MobileStepper';
-import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import { alpha } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Collapse from '@mui/material/Collapse';
+import MobileStepper from '@mui/material/MobileStepper';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
@@ -271,7 +272,9 @@ export default class TaskRunsCard extends Component {
   getLiveLogArtifact = () => {
     const { artifacts, liveLogName = 'public/logs/live.log' } = this.props;
 
-    return artifacts.find(({ name }) => name === liveLogName);
+    return artifacts.find(
+      ({ name, storageType }) => name === liveLogName && storageType !== 'error'
+    );
   };
 
   onCopyClick(url) {
@@ -293,7 +296,34 @@ export default class TaskRunsCard extends Component {
     const { classes } = this.props;
     const { isCopy } = this.state;
     const { name } = artifact;
-    const isMissing = artifact.storageType === 'error';
+    if (artifact.storageType === 'error') {
+      const Icon = getIconFromMime(artifact.contentType);
+
+      return (
+        <TableRow key={name} className={classes.artifactTableRow}>
+          <TableCell>
+            <div className={classes.artifactLink}>
+              <div className={classes.iconDiv}>
+                <Icon />
+              </div>
+              <div className={classes.artifactNameWrapper}>
+                <Label
+                  component="span"
+                  role="status"
+                  status="error"
+                  mini
+                  className={classes.artifactLabel}>
+                  UNAVAILABLE
+                </Label>
+                <div className={classes.artifactName}>{name}</div>
+              </div>
+            </div>
+          </TableCell>
+          <TableCell />
+        </TableRow>
+      );
+    }
+
     const {
       icon: Icon,
       isLogFile,
@@ -325,11 +355,6 @@ export default class TaskRunsCard extends Component {
               <Icon />
             </div>
             <div className={classes.artifactNameWrapper}>
-              {isMissing && (
-                <Label status="error" mini className={classes.artifactLabel}>
-                  UNAVAILABLE
-                </Label>
-              )}
               {isLogFile && (
                 <Label status="info" mini className={classes.artifactLabel}>
                   LOG

@@ -1,14 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import { WorkerManager } from '@taskcluster/client-web';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import { Typography, Box, Button, Drawer } from '@material-ui/core';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import { Typography, Box, Button, Drawer } from '@mui/material';
 import LinkIcon from 'mdi-react/LinkIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import InformationIcon from 'mdi-react/InformationOutlineIcon';
 import { camelCase } from 'change-case';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { memoize } from '../../../utils/memoize';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
@@ -79,7 +79,7 @@ const styles = theme => ({
   },
   drawerPaper: {
     width: '50vw',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       width: '90vw',
     },
   },

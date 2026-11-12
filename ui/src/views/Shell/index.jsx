@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import ShellConsole from '../../components/Shell';
 import Dashboard from '../../components/Dashboard';
 

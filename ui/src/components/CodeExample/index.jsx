@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import ContentCopyIcon from '@material-ui/icons/FileCopy';
-import CheckIcon from '@material-ui/icons/Check';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import ContentCopyIcon from '@mui/icons-material/FileCopy';
+import CheckIcon from '@mui/icons-material/Check';
 import Code from '../Code';
 
 @withStyles(theme => ({
@@ -28,8 +28,8 @@ import Code from '../Code';
     fontSize: '0.875rem',
     '& pre': {
       margin: 0,
-      padding: `${theme.spacing(2)}px !important`,
-      paddingRight: `${theme.spacing(6)}px !important`, // Make room for copy button
+      padding: `${theme.spacing(2)} !important`,
+      paddingRight: `${theme.spacing(6)} !important`, // Make room for copy button
     },
   },
 }))

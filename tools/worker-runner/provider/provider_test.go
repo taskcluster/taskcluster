@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/provider/aws"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/provider/azure"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/provider/google"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/provider/standalone"
-	"github.com/taskcluster/taskcluster/v115/tools/worker-runner/provider/static"
-	ptesting "github.com/taskcluster/taskcluster/v115/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/provider/aws"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/provider/azure"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/provider/google"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/provider/standalone"
+	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/provider/static"
+	ptesting "github.com/taskcluster/taskcluster/v116/tools/workerproto/testing"
 )
 
 func TestShouldWorkerTerminateCapability(t *testing.T) {

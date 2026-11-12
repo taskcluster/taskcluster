@@ -1,14 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { arrayOf, func, object, string } from 'prop-types';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Tooltip from '@material-ui/core/Tooltip';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
+import Autocomplete from '@mui/material/Autocomplete';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import TextField from '../TextField';
@@ -23,7 +23,7 @@ import TextField from '../TextField';
     marginTop: theme.spacing(5),
   },
   deleteIcon: {
-    marginRight: -theme.spacing(2),
+    marginRight: theme.spacing(-2),
   },
   inputWrapper: {
     display: 'flex',
@@ -113,7 +113,8 @@ export default class PulseBindings extends Component {
           <Tooltip title="Add Binding">
             <IconButton
               className={classNames(classes.iconButton, classes.plusIcon)}
-              onClick={onBindingAdd}>
+              onClick={onBindingAdd}
+              size="large">
               <PlusIcon />
             </IconButton>
           </Tooltip>
@@ -138,7 +139,8 @@ export default class PulseBindings extends Component {
                 <IconButton
                   className={classNames(classes.iconButton, classes.deleteIcon)}
                   name={binding}
-                  onClick={() => onBindingRemove(binding)}>
+                  onClick={() => onBindingRemove(binding)}
+                  size="large">
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>

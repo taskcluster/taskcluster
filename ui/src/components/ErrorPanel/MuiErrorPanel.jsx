@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { bool, func, instanceOf, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Paper from '@material-ui/core/Paper';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
 import CloseIcon from 'mdi-react/CloseIcon';
 import Markdown from '../Markdown';
 
@@ -13,10 +13,10 @@ import Markdown from '../Markdown';
 
     return {
       panel: {
-        marginBottom: 3 * theme.spacing(1),
+        marginBottom: theme.spacing(3),
       },
       paper: {
-        padding: `0 ${2 * theme.spacing(1)}px`,
+        padding: `0 ${theme.spacing(2)}`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
@@ -105,7 +105,7 @@ export default class ErrorPanel extends Component {
         )}>
         {markdown}
         {onClose && (
-          <IconButton onClick={onClose}>
+          <IconButton onClick={onClose} size="large">
             <CloseIcon color={iconColor} />
           </IconButton>
         )}

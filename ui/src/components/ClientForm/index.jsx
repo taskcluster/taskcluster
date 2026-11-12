@@ -3,15 +3,15 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import { parse } from 'qs';
 import { addYears } from 'date-fns';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import classNames from 'classnames';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import CancelIcon from 'mdi-react/CancelIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -55,12 +55,6 @@ import scopeLink from '../../utils/scopeLink';
   },
   saveIcon: {
     ...theme.mixins.successIcon,
-  },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
-  deleteTooltipLabel: {
-    backgroundColor: theme.mixins.errorIcon.backgroundColor,
   },
   clientDescriptionListItem: {
     marginTop: theme.spacing(1),
@@ -363,7 +357,7 @@ export default class ClientForm extends Component {
             spanProps={{ className: classes.fab }}
             tooltipProps={{ title: 'Save' }}
             requiresAuth
-            disabled={loading || !isClientDirty}
+            disabled={loading || !isClientDirty || !expires}
             variant="circular"
             onClick={this.handleSaveClient}
             classes={{ root: classes.saveIcon }}>
@@ -378,7 +372,7 @@ export default class ClientForm extends Component {
                 className: classNames(classes.fab, classes.saveClientSpan),
               }}
               tooltipProps={{ title: 'Save' }}
-              disabled={loading || !isClientDirty}
+              disabled={loading || !isClientDirty || !expires}
               classes={{ root: classes.saveIcon }}>
               <ContentSaveIcon />
             </Button>
@@ -393,10 +387,7 @@ export default class ClientForm extends Component {
                 tooltipOpen
                 icon={<DeleteIcon />}
                 onClick={onDialogActionOpen}
-                classes={{
-                  icon: classes.deleteIcon,
-                  staticTooltipLabel: classes.deleteTooltipLabel,
-                }}
+                color="error"
                 tooltipTitle="Delete"
                 FabProps={{ disabled: loading }}
               />

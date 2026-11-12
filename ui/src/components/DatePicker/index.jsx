@@ -1,57 +1,59 @@
-import React, { Component } from 'react';
-import { func } from 'prop-types';
-import classNames from 'classnames';
-import {
-  KeyboardDateTimePicker,
-  MuiPickersUtilsProvider,
-} from '@material-ui/pickers';
-import { withStyles } from '@material-ui/core/styles';
-import DateFnsUtils from '@date-io/date-fns';
-import ChevronRightIcon from 'mdi-react/ChevronRightIcon';
-import CalendarIcon from 'mdi-react/CalendarIcon';
-import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
+import { func, string } from 'prop-types';
+import { format, isValid } from 'date-fns';
+import TextField from '@mui/material/TextField';
 import { date } from '../../utils/prop-types';
 
-@withStyles({
-  datePicker: {
-    '& > div': {
-      alignItems: 'center',
-    },
-  },
-})
+const toDate = value => {
+  const parsed = value ? new Date(value) : null;
+
+  return isValid(parsed) ? parsed : null;
+};
+
+const toInputValue = value =>
+  value ? format(value, "yyyy-MM-dd'T'HH:mm") : '';
+
 /**
- * Display a date picker modal to select a date.
+ * Display a native datetime picker
  */
-export default class DatePicker extends Component {
-  static defaultProps = {
-    value: null,
-  };
+export default function DatePicker({
+  name,
+  value,
+  maxDate,
+  onChange,
+  inputProps,
+  ...props
+}) {
+  const parsed = toDate(value);
+  const handleChange = e => onChange(toDate(e.target.value));
 
-  static propTypes = {
-    /** Picker value */
-    value: date,
-    /** Callback function fired when the calendar date is changed. */
-    onChange: func.isRequired,
-  };
-
-  render() {
-    const { classes, className, value, onChange, ...props } = this.props;
-
-    return (
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <KeyboardDateTimePicker
-          color="secondary"
-          className={classNames(classes.datePicker, className)}
-          showTodayButton
-          keyboardIcon={<CalendarIcon />}
-          rightArrowIcon={<ChevronRightIcon />}
-          leftArrowIcon={<ChevronLeftIcon />}
-          value={value}
-          onChange={onChange}
-          format="yyyy/MM/dd hh:mm a"
-          {...props}
+  return (
+    <>
+      {name && (
+        <input
+          type="hidden"
+          name={name}
+          value={parsed ? parsed.toISOString() : ''}
         />
-      </MuiPickersUtilsProvider>
-    );
-  }
+      )}
+      <TextField
+        type="datetime-local"
+        color="secondary"
+        InputLabelProps={{ shrink: true }}
+        value={toInputValue(parsed)}
+        onChange={handleChange}
+        inputProps={{
+          max: toInputValue(toDate(maxDate)) || undefined,
+          ...inputProps,
+        }}
+        {...props}
+      />
+    </>
+  );
 }
+
+DatePicker.propTypes = {
+  name: string,
+  value: date,
+  maxDate: date,
+  onChange: func.isRequired,
+};

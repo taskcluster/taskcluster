@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"sync"
 
-	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
 )
 
 type (
@@ -303,9 +303,4 @@ func (cf *File) UpdateConfig(c *Config) error {
 		return fmt.Errorf("Error overlaying config file %v on top of defaults: %v", cf.Path, err)
 	}
 	return nil
-}
-
-func (cf *File) DoesNotExist() bool {
-	_, err := os.Stat(cf.Path)
-	return err != nil && os.IsNotExist(err)
 }

@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
-	"time"
 
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
 )
 
 // TaskManager manages concurrent task execution and tracks running tasks.
@@ -16,7 +15,6 @@ type TaskManager struct {
 	sync.RWMutex
 	runningTasks map[string]*TaskRun // taskRunKey -> task run
 	capacity     uint8
-	lastActive   time.Time
 }
 
 // NewTaskManager creates a new TaskManager with the given capacity.
@@ -24,7 +22,6 @@ func NewTaskManager(capacity uint8) *TaskManager {
 	return &TaskManager{
 		runningTasks: make(map[string]*TaskRun),
 		capacity:     capacity,
-		lastActive:   time.Now(),
 	}
 }
 
@@ -46,7 +43,6 @@ func (tm *TaskManager) AddTask(task *TaskRun) {
 	tm.Lock()
 	defer tm.Unlock()
 	tm.runningTasks[taskRunKey(task.TaskID, task.RunID)] = task
-	tm.lastActive = time.Now()
 	tm.updateWorkerStatusLocked()
 }
 
@@ -58,7 +54,6 @@ func (tm *TaskManager) RemoveTask(taskID string, runID uint) {
 	defer tm.Unlock()
 	if _, exists := tm.runningTasks[key]; exists {
 		delete(tm.runningTasks, key)
-		tm.lastActive = time.Now()
 		tm.updateWorkerStatusLocked()
 	}
 }
@@ -73,13 +68,6 @@ func (tm *TaskManager) TaskCount() uint {
 // IsIdle returns true if no tasks are running.
 func (tm *TaskManager) IsIdle() bool {
 	return tm.TaskCount() == 0
-}
-
-// LastActive returns the time when a task was last added or removed.
-func (tm *TaskManager) LastActive() time.Time {
-	tm.RLock()
-	defer tm.RUnlock()
-	return tm.lastActive
 }
 
 // RunningTaskDirNames returns the base names of all running task directories.

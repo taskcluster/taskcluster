@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { parse, stringify } from 'qs';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { memoize } from '../../utils/memoize';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import TableCellItem from '../TableCellItem';
@@ -18,7 +18,7 @@ import Link from '../../utils/Link';
 @withRouter
 @withStyles(theme => ({
   dateListItem: {
-    marginLeft: -theme.spacing(1),
+    marginLeft: theme.spacing(-1),
     padding: theme.spacing(1),
   },
   taskName: {
@@ -31,7 +31,7 @@ import Link from '../../utils/Link';
     display: 'inline-block',
   },
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
   },
 }))

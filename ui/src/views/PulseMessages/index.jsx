@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Drawer from '@material-ui/core/Drawer';
-import Toolbar from '@material-ui/core/Toolbar';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Drawer from '@mui/material/Drawer';
+import Toolbar from '@mui/material/Toolbar';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import { parse, stringify } from 'qs';
 import PlayIcon from 'mdi-react/PlayIcon';
 import DownloadIcon from 'mdi-react/DownloadIcon';
@@ -50,7 +50,7 @@ const getBindingsFromProps = props => {
     ...theme.mixins.errorIcon,
   },
   infoButton: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
   },
   drawerContainer: {
@@ -63,7 +63,7 @@ const getBindingsFromProps = props => {
   },
   drawerPaper: {
     width: '40vw',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       width: '90vw',
     },
   },
@@ -292,7 +292,8 @@ export default class PulseMessages extends Component {
                 <TableCell>
                   <IconButton
                     className={classes.infoButton}
-                    onClick={() => this.handleMessageDrawerOpen(message)}>
+                    onClick={() => this.handleMessageDrawerOpen(message)}
+                    size="large">
                     <InformationVariantIcon size={iconSize} />
                   </IconButton>
                   {message.exchange}
@@ -341,7 +342,8 @@ export default class PulseMessages extends Component {
           onClose={this.handleMessageDrawerClose}>
           <IconButton
             onClick={this.handleMessageDrawerClose}
-            className={classes.drawerCloseIcon}>
+            className={classes.drawerCloseIcon}
+            size="large">
             <CloseIcon />
           </IconButton>
           <div className={classes.drawerContainer}>

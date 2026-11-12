@@ -1,4 +1,4 @@
-import { alpha } from '@material-ui/core/styles';
+import { alpha } from '@mui/material/styles';
 import GestureTapIcon from 'mdi-react/GestureTapIcon';
 import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
 import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';

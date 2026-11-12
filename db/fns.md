@@ -7222,10 +7222,11 @@ end
   * `config_in jsonb`
   * `worker_pool_id_in text`
 * *Returns*: `jsonb`
-* *Last defined on version*: 105
+* *Last defined on version*: 133
 
 Assemble the launch configurations for a worker pool and set them in the config.
 This is useful at the moment to maintain backwards compatibility.
+Launch configs are ordered by launch_config_id.
 
 <details><summary>Function Body</summary>
 
@@ -7241,6 +7242,7 @@ begin
       else
         configuration || jsonb_build_object('workerManager', jsonb_build_object('launchConfigId', launch_config_id))
     end
+    order by launch_config_id
   ), null) into launch_configs
   from worker_pool_launch_configs
   where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in

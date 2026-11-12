@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Hooks } from '@taskcluster/client-web';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';

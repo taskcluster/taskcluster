@@ -1,12 +1,12 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { THEME } from '../../../../utils/constants';
 
 const styles = theme => ({
   container: {
     width: '100%',
     overflow: 'auto',
-    marginBottom: 4 * theme.spacing(1),
+    marginBottom: theme.spacing(4),
   },
   table: {
     display: 'table',
@@ -35,7 +35,7 @@ const styles = theme => ({
       fontSize: theme.typography.pxToRem(13),
       fontWeight: theme.typography.fontWeightRegular,
       borderBottom: `1px solid ${
-        theme.palette.type === 'dark'
+        theme.palette.mode === 'dark'
           ? THEME.TEN_PERCENT_WHITE
           : THEME.TEN_PERCENT_BLACK
       }`,

@@ -1,13 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
-import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Checkbox from '@material-ui/core/Checkbox';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Checkbox from '@mui/material/Checkbox';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
 import { PurgeCache, Queue } from '@taskcluster/client-web';
@@ -114,10 +114,10 @@ const selectedRunId = ({ match, statusResource }) => {
     marginBottom: theme.spacing(1),
   },
   divider: {
-    margin: `${theme.spacing(3)}px 0`,
+    margin: `${theme.spacing(3)} 0`,
   },
   tag: {
-    margin: `${theme.spacing(1)}px ${theme.spacing(1)}px 0 0`,
+    margin: `${theme.spacing(1)} ${theme.spacing(1)} 0 0`,
   },
   dialogListItem: {
     paddingTop: 0,

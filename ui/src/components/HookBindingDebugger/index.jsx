@@ -2,14 +2,15 @@ import React, { Component, Fragment } from 'react';
 import { arrayOf, bool, func, object } from 'prop-types';
 import classNames from 'classnames';
 import { equals } from 'ramda';
-import { alpha, withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Collapse from '@material-ui/core/Collapse';
+import { alpha } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
 import CloseIcon from 'mdi-react/CloseIcon';
 import PlayIcon from 'mdi-react/PlayIcon';
 import StopIcon from 'mdi-react/StopIcon';
@@ -37,7 +38,7 @@ const MISSING_SCOPE_MESSAGE =
 @withStyles(theme => ({
   drawerPaper: {
     width: '40vw',
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       width: '90vw',
     },
   },
@@ -420,7 +421,10 @@ export default class HookBindingDebugger extends Component {
         open={open}
         classes={{ paper: classes.drawerPaper }}
         onClose={onClose}>
-        <IconButton onClick={onClose} className={classes.drawerCloseIcon}>
+        <IconButton
+          onClick={onClose}
+          className={classes.drawerCloseIcon}
+          size="large">
           <CloseIcon />
         </IconButton>
         <div className={classes.drawerContainer}>

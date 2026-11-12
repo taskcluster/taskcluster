@@ -3,102 +3,90 @@
 exports[`should render TaskRunsCard 1`] = `
 <DocumentFragment>
   <div
-    class="MuiPaper-root MuiCard-root MuiPaper-elevation8 MuiPaper-rounded"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root css-60sbsj-MuiPaper-root-MuiCard-root"
   >
     <div>
       <div
-        class="MuiCardContent-root TaskRunsCard-cardContent-2"
+        class="MuiCardContent-root TaskRunsCard-cardContent-2 css-46bh2p-MuiCardContent-root"
       >
         <div
-          class="MuiPaper-root MuiMobileStepper-root MuiMobileStepper-positionStatic MuiPaper-elevation0"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation0 MuiMobileStepper-root MuiMobileStepper-positionStatic css-150xdiz-MuiPaper-root-MuiMobileStepper-root"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-previousPageArrow-16 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-previousPageArrow-16 css-wogk46-MuiButtonBase-root-MuiButton-root"
             disabled=""
             tabindex="-1"
             type="button"
           >
-            <span
-              class="MuiButton-label"
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
             >
-              <svg
-                class="mdi-icon "
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"
-                />
-              </svg>
-              Previous
-            </span>
+              <path
+                d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"
+              />
+            </svg>
+            Previous
           </button>
           <div
-            class="MuiMobileStepper-dots"
+            class="MuiMobileStepper-dots css-1384nzf-MuiMobileStepper-dots"
           >
             <div
-              class="MuiMobileStepper-dot MuiMobileStepper-dotActive"
+              class="MuiMobileStepper-dot MuiMobileStepper-dotActive css-1o0df2g-MuiMobileStepper-dot"
             />
           </div>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-nextPageArrow-17 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-nextPageArrow-17 css-wogk46-MuiButtonBase-root-MuiButton-root"
             disabled=""
             tabindex="-1"
             type="button"
           >
-            <span
-              class="MuiButton-label"
+            Next
+            <svg
+              class="mdi-icon "
+              fill="currentColor"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
             >
-              Next
-              <svg
-                class="mdi-icon "
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-              >
-                <path
-                  d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
-                />
-              </svg>
-            </span>
+              <path
+                d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+              />
+            </svg>
           </button>
         </div>
         <h5
-          class="MuiTypography-root TaskRunsCard-headline-1 MuiTypography-h5"
+          class="MuiTypography-root MuiTypography-h5 TaskRunsCard-headline-1 css-m1s8pb-MuiTypography-root"
         >
           Task Run 0
         </h5>
         <ul
-          class="MuiList-root MuiList-padding"
+          class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
         >
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 State
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-success-26 Label-disabled-24 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-success-26 Label-disabled-24 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-23 css-wogk46-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    COMPLETED
-                  </span>
+                  COMPLETED
                 </button>
               </p>
             </div>
@@ -107,33 +95,28 @@ exports[`should render TaskRunsCard 1`] = `
             href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/apple/banana.log"
           >
             <div
-              aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskRunsCard-listItemButton-4 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
               role="button"
               tabindex="0"
             >
               <div
-                class="MuiListItemText-root MuiListItemText-multiline"
+                class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
               >
                 <span
-                  class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                 >
                   View Live Log 
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-liveLogLabel-15 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-29 Label-disabled-24 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-liveLogLabel-15 Label-mini-23 css-wogk46-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
                   >
-                    <span
-                      class="MuiButton-label"
-                    >
-                      LOG
-                    </span>
+                    LOG
                   </button>
                 </span>
                 <p
-                  class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                 >
                   apple/banana.log
                 </p>
@@ -150,59 +133,58 @@ exports[`should render TaskRunsCard 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root"
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
             </div>
           </a>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskRunsCard-listItemButton-4 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
           >
             <div
-              class="MuiListItemText-root"
+              class="MuiListItemText-root css-tlelie-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Artifacts (3)
               </span>
             </div>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <div
-            class="MuiCollapse-root MuiCollapse-entered"
+            class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
             style="min-height: 0px;"
           >
             <div
-              class="MuiCollapse-wrapper"
+              class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
             >
               <div
-                class="MuiCollapse-wrapperInner"
+                class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
               >
                 <div
-                  class="MuiList-root"
+                  class="MuiList-root css-1mk9mw3-MuiList-root"
                 >
                   <div
-                    class="MuiListItem-root TaskRunsCard-artifactsListItemContainer-7"
+                    class="MuiListItem-root MuiListItem-padding TaskRunsCard-artifactsListItemContainer-7 css-1dqoii2-MuiListItem-root"
                   >
                     <div
                       class="makeStyles-tableWrapper-31"
                     >
                       <table
-                        class="MuiTable-root"
+                        class="MuiTable-root css-6cj1nx-MuiTable-root"
                       >
                         <tbody
-                          class="MuiTableBody-root"
+                          class="MuiTableBody-root css-1dyjss2-MuiTableBody-root"
                         >
                           <tr
-                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                            class="MuiTableRow-root MuiTableRow-hover TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 css-1wosaja-MuiTableRow-root"
                           >
                             <td
-                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
                             >
                               <a
                                 class="TaskRunsCard-artifactLink-11"
@@ -227,16 +209,12 @@ exports[`should render TaskRunsCard 1`] = `
                                   class="TaskRunsCard-artifactNameWrapper-13"
                                 >
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-artifactLabel-6 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-29 Label-disabled-24 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-artifactLabel-6 Label-mini-23 css-wogk46-MuiButtonBase-root-MuiButton-root"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"
                                   >
-                                    <span
-                                      class="MuiButton-label"
-                                    >
-                                      LOG
-                                    </span>
+                                    LOG
                                   </button>
                                   <div
                                     class="TaskRunsCard-artifactName-14"
@@ -263,7 +241,7 @@ exports[`should render TaskRunsCard 1`] = `
                               </a>
                             </td>
                             <td
-                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall TaskRunsCard-copyButton-19 css-1uncx7k-MuiTableCell-root"
                             >
                               <svg
                                 class="mdi-icon "
@@ -280,10 +258,10 @@ exports[`should render TaskRunsCard 1`] = `
                             </td>
                           </tr>
                           <tr
-                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                            class="MuiTableRow-root MuiTableRow-hover TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 css-1wosaja-MuiTableRow-root"
                           >
                             <td
-                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
                             >
                               <a
                                 class="TaskRunsCard-artifactLink-11"
@@ -336,7 +314,7 @@ exports[`should render TaskRunsCard 1`] = `
                               </a>
                             </td>
                             <td
-                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall TaskRunsCard-copyButton-19 css-1uncx7k-MuiTableCell-root"
                             >
                               <svg
                                 class="mdi-icon "
@@ -353,10 +331,10 @@ exports[`should render TaskRunsCard 1`] = `
                             </td>
                           </tr>
                           <tr
-                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                            class="MuiTableRow-root MuiTableRow-hover TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 css-1wosaja-MuiTableRow-root"
                           >
                             <td
-                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1uncx7k-MuiTableCell-root"
                             >
                               <a
                                 class="TaskRunsCard-artifactLink-11"
@@ -381,16 +359,12 @@ exports[`should render TaskRunsCard 1`] = `
                                   class="TaskRunsCard-artifactNameWrapper-13"
                                 >
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-artifactLabel-6 Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-info-29 Label-disabled-24 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-29 Label-disabled-24 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-artifactLabel-6 Label-mini-23 css-wogk46-MuiButtonBase-root-MuiButton-root"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"
                                   >
-                                    <span
-                                      class="MuiButton-label"
-                                    >
-                                      LOG
-                                    </span>
+                                    LOG
                                   </button>
                                   <div
                                     class="TaskRunsCard-artifactName-14"
@@ -417,7 +391,7 @@ exports[`should render TaskRunsCard 1`] = `
                               </a>
                             </td>
                             <td
-                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall TaskRunsCard-copyButton-19 css-1uncx7k-MuiTableCell-root"
                             >
                               <svg
                                 class="mdi-icon "
@@ -437,7 +411,7 @@ exports[`should render TaskRunsCard 1`] = `
                       </table>
                     </div>
                     <hr
-                      class="MuiDivider-root"
+                      class="MuiDivider-root MuiDivider-fullWidth css-rr7dug-MuiDivider-root"
                     />
                   </div>
                 </div>
@@ -445,51 +419,46 @@ exports[`should render TaskRunsCard 1`] = `
             </div>
           </div>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Reason Resolved
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-default-28 Label-disabled-24 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-default-28 Label-disabled-24 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-23 css-wogk46-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    COMPLETED
-                  </span>
+                  COMPLETED
                 </button>
               </p>
             </div>
           </li>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2022-02-03T14:41:19.706Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Scheduled
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 14 days ago
               </p>
@@ -506,26 +475,25 @@ exports[`should render TaskRunsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2022-02-03T14:43:54.086Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Started
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 14 days ago (3 minutes later)
               </p>
@@ -542,26 +510,25 @@ exports[`should render TaskRunsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2022-02-03T14:45:28.396Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Resolved
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 14 days ago (2 minutes later)
               </p>
@@ -578,55 +545,51 @@ exports[`should render TaskRunsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
         </ul>
         <div
-          class="MuiList-root"
+          class="MuiList-root css-1mk9mw3-MuiList-root"
         >
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Reason Created
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-23 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-22 Mui-disabled Label-default-28 Label-disabled-24 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-default-28 Label-disabled-24 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-22 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-23 css-wogk46-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
                 >
-                  <span
-                    class="MuiButton-label"
-                  >
-                    SCHEDULED
-                  </span>
+                  SCHEDULED
                 </button>
               </p>
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Worker Group
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 us-east1
               </p>
@@ -636,22 +599,21 @@ exports[`should render TaskRunsCard 1`] = `
             href="/provisioners/task/worker-types/queueId/workers/us-east1/7421215367664916236"
           >
             <div
-              aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskRunsCard-listItemButton-4 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
               role="button"
               tabindex="0"
               title="View Worker"
             >
               <div
-                class="MuiListItemText-root MuiListItemText-multiline"
+                class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
               >
                 <span
-                  class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                 >
                   Worker ID
                 </span>
                 <p
-                  class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                  class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                 >
                   7421215367664916236
                 </p>
@@ -668,27 +630,26 @@ exports[`should render TaskRunsCard 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root"
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
             </div>
           </a>
           <div
-            aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-36 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
             role="button"
             tabindex="0"
             title="2022-02-03T15:03:54.082Z (Copy)"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline"
+              class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
             >
               <span
-                class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
               >
                 Taken Until
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 14 days ago
               </p>
@@ -705,7 +666,7 @@ exports[`should render TaskRunsCard 1`] = `
               />
             </svg>
             <span
-              class="MuiTouchRipple-root"
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
           </div>
         </div>

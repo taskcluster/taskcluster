@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, func, shape, string } from 'prop-types';
 import { camelCase } from 'change-case';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellItem from '../TableCellItem';

@@ -356,6 +356,7 @@ export default (cfg, db, strategies, auth, monitor) => {
       const query = new URLSearchParams({
         transactionID: req.oauth2.transactionID,
         client_id: req.query.client_id,
+        redirect_uri: req.oauth2.redirectURI,
         expires,
         scope: req.query.scope,
         clientId: `${req.user.identity}/${client.clientId}-${taskcluster.slugid().slice(0, 6)}`,
@@ -370,11 +371,12 @@ export default (cfg, db, strategies, auth, monitor) => {
     ensureLoggedIn(),
     server.decision((req, done) => {
       const { scope, description, expires, clientId } = req.body;
+      const expiresDate = new Date(expires);
 
       return done(null, {
         scope: scope ? scope.split(' ') : [],
         description,
-        expires: new Date(expires),
+        expires: Number.isNaN(expiresDate.getTime()) ? undefined : expiresDate,
         clientId,
       });
     }),

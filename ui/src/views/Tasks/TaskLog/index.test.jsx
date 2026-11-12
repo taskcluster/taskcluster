@@ -6,9 +6,8 @@ import { buildLogViewerUrl } from '../../../utils/artifactNames';
 import TaskLog from './index';
 
 vi.mock('../../../utils/Auth', () => ({ withAuth: Component => Component }));
-vi.mock('@material-ui/core/styles', async importOriginal => ({
-  ...(await importOriginal()),
-  withStyles: () => Component => Component,
+vi.mock('@mui/styles/withStyles', () => ({
+  default: () => Component => Component,
 }));
 vi.mock('../../../utils/TaskclusterClient', () => ({
   withTaskclusterClient: Component => Component,
@@ -17,8 +16,7 @@ vi.mock('../../../utils/anonymousScopes', async importOriginal => ({
   ...(await importOriginal()),
   withAnonymousScopes: Component => Component,
 }));
-// Dashboard renders null under jsdom (withWidth needs matchMedia); expose the
-// title so the REST-loaded task name can be asserted
+// Expose Dashboard's title so the REST-loaded task name can be asserted
 vi.mock('../../../components/Dashboard', () => ({
   default: ({ title, children }) => {
     return (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { node } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import MuiTooltip from '@material-ui/core/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
+import MuiTooltip from '@mui/material/Tooltip';
 
 const useStyles = makeStyles({
   root: {

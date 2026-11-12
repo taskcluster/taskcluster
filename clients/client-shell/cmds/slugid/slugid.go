@@ -7,10 +7,10 @@ import (
 	"regexp"
 	uuidlib "uuid"
 
-	"github.com/taskcluster/taskcluster/v115/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v116/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
-	sluglib "github.com/taskcluster/taskcluster/v115/internal/slugid"
+	sluglib "github.com/taskcluster/taskcluster/v116/internal/slugid"
 )
 
 var (

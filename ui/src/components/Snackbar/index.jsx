@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { func, object, string, oneOf } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import MuiSnackbar from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import MuiSnackbar from '@mui/material/Snackbar';
+import SnackbarContent from '@mui/material/SnackbarContent';
 import CheckCircleIcon from 'mdi-react/CheckCircleIcon';
 import WarningIcon from 'mdi-react/WarningIcon';
 import AlertCircleIcon from 'mdi-react/AlertCircleIcon';
@@ -111,7 +111,7 @@ export default class Snackbar extends Component {
               </div>
               <div className={classes.message}>{message}</div>
               <div className={classes.iconButtonDiv}>
-                <IconButton aria-label="Close" onClick={onClose}>
+                <IconButton aria-label="Close" onClick={onClose} size="large">
                   <CloseIcon />
                 </IconButton>
               </div>

@@ -1,12 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import { withStyles } from '@material-ui/core';
+import withStyles from '@mui/styles/withStyles';
 import { func, arrayOf, string, bool } from 'prop-types';
 import { camelCase } from 'change-case';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Hidden from '@material-ui/core/Hidden';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import WorkerIcon from 'mdi-react/WorkerIcon';
@@ -29,6 +28,25 @@ import {
 } from '../../utils/constants';
 import { splitWorkerPoolId } from '../../utils/workerPool';
 
+const AbbreviatedLabel = withStyles(theme => ({
+  short: {
+    [theme.breakpoints.up('xl')]: {
+      display: 'none',
+    },
+  },
+  full: {
+    display: 'none',
+    [theme.breakpoints.up('xl')]: {
+      display: 'block',
+    },
+  },
+}))(({ classes, short, full }) => (
+  <Fragment>
+    <div className={classes.short}>{short}</div>
+    <div className={classes.full}>{full}</div>
+  </Fragment>
+));
+
 /**
  * The full column names push this table into horizontal scrolling on anything
  * narrower than xl, so below that only the first word is shown. `id` stays the
@@ -37,22 +55,13 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
  */
 const abbreviatedHeader = (id, short) => ({
   id,
-  label: (
-    <Fragment>
-      <Hidden xlUp implementation="css">
-        {short}
-      </Hidden>
-      <Hidden lgDown implementation="css">
-        {id}
-      </Hidden>
-    </Fragment>
-  ),
+  label: <AbbreviatedLabel short={short} full={id} />,
 });
 
 @withRouter
 @withStyles(theme => ({
   button: {
-    marginLeft: -theme.spacing(2),
+    marginLeft: theme.spacing(-2),
     marginRight: theme.spacing(1),
     borderRadius: 4,
   },
@@ -231,25 +240,19 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
-            Current Capacity:
-          </Hidden>
+          <div className={classes.hiddenLabel}>Current Capacity:</div>
           {workerPool.currentCapacity}
         </TableCell>
 
         <TableCell>
-          <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
-            Running Capacity:
-          </Hidden>
+          <div className={classes.hiddenLabel}>Running Capacity:</div>
           {workerPool.runningCapacity}
         </TableCell>
 
         <TableCell>
           <Link to={this.getPendingTasksLink(workerPool.workerPoolId)}>
             <TableCellItem button>
-              <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
-                Pending Tasks:
-              </Hidden>
+              <div className={classes.hiddenLabel}>Pending Tasks:</div>
               {workerPool.pendingTasks === undefined
                 ? '...'
                 : (workerPool.pendingTasks ?? 'n/a')}
@@ -259,9 +262,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
-            Claimed Tasks:
-          </Hidden>
+          <div className={classes.hiddenLabel}>Claimed Tasks:</div>
           {workerPool.claimedTasks === undefined
             ? '...'
             : (workerPool.claimedTasks ?? 'n/a')}
@@ -278,12 +279,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                 className={
                   workerPool.errorsCount > 0 ? classes.errorsPool : ''
                 }>
-                <Hidden
-                  lgUp
-                  implementation="css"
-                  className={classes.hiddenLabel}>
-                  Total Errors:
-                </Hidden>
+                <div className={classes.hiddenLabel}>Total Errors:</div>
                 {errorStatsLoading ? '...' : workerPool.errorsCount}
               </div>
               <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
@@ -309,7 +305,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               className={classes.button}
               name={`${workerPool.workerPoolId}`}
               onClick={this.handleDialogActionOpen(workerPool)}
-              disabled={actionLoading}>
+              disabled={actionLoading}
+              size="large">
               <DeleteIcon size={iconSize} />
             </IconButton>
           ) : (

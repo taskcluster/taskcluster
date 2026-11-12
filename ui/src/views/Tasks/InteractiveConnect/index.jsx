@@ -1,14 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import { Queue } from '@taskcluster/client-web';
 import classNames from 'classnames';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import ConsoleIcon from 'mdi-react/ConsoleIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
@@ -80,7 +80,7 @@ const fetchShellArtifact = async (queue, taskId) => {
     ...theme.mixins.listItemButton,
   },
   divider: {
-    margin: `${theme.spacing(2)}px 0`,
+    margin: `${theme.spacing(2)} 0`,
   },
   warningPanel: {
     marginTop: theme.spacing(2),

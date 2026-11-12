@@ -1,21 +1,23 @@
 import React from 'react';
-import { Grid, withStyles, Typography } from '@material-ui/core';
+import { Grid, Typography } from '@mui/material';
+import withStyles from '@mui/styles/withStyles';
 import { Link } from 'react-router-dom';
 import { StatusItem } from './StatusItem';
 
 const styles = theme => ({
   grid: {
-    marginTop: theme.spacing(4),
+    marginTop: theme.spacing(3),
   },
   tinyGrid: {
-    marginTop: theme.spacing(0),
+    marginTop: theme.spacing(-1),
+    marginBottom: theme.spacing(1),
   },
   item: {
-    backgroundColor: theme.palette.type === 'dark' ? '#444' : '#eee',
+    backgroundColor: theme.palette.mode === 'dark' ? '#444' : '#eee',
     padding: theme.spacing(1),
     textAlign: 'center',
     color:
-      theme.palette.type === 'dark'
+      theme.palette.mode === 'dark'
         ? theme.palette.text.primary
         : theme.palette.text.secondary,
     transition: 'all 0.8s ease-in-out',

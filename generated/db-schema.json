@@ -8129,6 +8129,21 @@
         }
       },
       "version": 132
+    },
+    {
+      "description": "return worker pool launch configs in a consistent order",
+      "methods": {
+        "collect_launch_configs_if_exist": {
+          "args": "config_in jsonb, worker_pool_id_in text",
+          "body": "declare\n  launch_configs jsonb;\nbegin\n  -- also make sure launchConfigId is set in the returned configuration\n  select coalesce(jsonb_agg(\n    case\n      when configuration ? 'workerManager' then\n        jsonb_set(configuration, '{workerManager,launchConfigId}', to_jsonb(launch_config_id))\n      else\n        configuration || jsonb_build_object('workerManager', jsonb_build_object('launchConfigId', launch_config_id))\n    end\n    order by launch_config_id\n  ), null) into launch_configs\n  from worker_pool_launch_configs\n  where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in\n    and worker_pool_launch_configs.is_archived = false;\n\n  if launch_configs is not null then\n    return jsonb_set(config_in, '{launchConfigs}', launch_configs);\n  end if;\n\n  return config_in;\nend",
+          "deprecated": false,
+          "description": "Assemble the launch configurations for a worker pool and set them in the config.\nThis is useful at the moment to maintain backwards compatibility.\nLaunch configs are ordered by launch_config_id.",
+          "mode": "write",
+          "returns": "jsonb",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 133
     }
   ]
 }

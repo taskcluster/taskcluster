@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { parse, stringify } from 'qs';
 import storage from 'localforage';
-import merge from 'deepmerge';
+import cloneDeep from 'lodash.clonedeep';
 import { load, dump } from 'js-yaml';
 import { bool } from 'prop-types';
 import {
@@ -12,21 +12,21 @@ import {
   addMilliseconds,
   addHours,
 } from 'date-fns';
-import { withStyles } from '@material-ui/core/styles';
-import Switch from '@material-ui/core/Switch';
-import Typography from '@material-ui/core/Typography';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import withStyles from '@mui/styles/withStyles';
+import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import TextField from '../../../components/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { Queue } from '@taskcluster/client-web';
 import CodeEditor from '../../../components/CodeEditor';
 import SpeedDial from '../../../components/SpeedDial';
@@ -164,13 +164,12 @@ export default class CreateTask extends Component {
   }
 
   makeInteractive(payload) {
-    const task = merge(payload, {
-      payload: {
-        features: {
-          interactive: true,
-        },
-      },
-    });
+    const task = cloneDeep(payload);
+
+    task.payload = {
+      ...task.payload,
+      features: { ...task.payload?.features, interactive: true },
+    };
 
     if (task.payload.caches) {
       delete task.payload.caches;

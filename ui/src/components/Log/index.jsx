@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import storage from 'localforage';
 import { omit } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
@@ -43,7 +43,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
         fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
         fontSize: 13,
         padding: 10,
-        ...(theme.palette.type === 'light'
+        ...(theme.palette.mode === 'light'
           ? {
               '& > .react-lazylog-searchbar-input': {
                 height: theme.spacing(3),

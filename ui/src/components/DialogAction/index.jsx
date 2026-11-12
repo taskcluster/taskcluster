@@ -1,17 +1,29 @@
 import React, { Component } from 'react';
 import { oneOfType, object, node, string, func, bool } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import withMobileDialog from '@material-ui/core/withMobileDialog';
+import { useTheme } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Button from '../Button';
 import ErrorPanel from '../ErrorPanel';
 
-@withMobileDialog()
+const withMobileDialog = Wrapped =>
+  // biome-ignore lint/correctness/noComponentHookFactories: decorator
+  function MobileDialogComponent(props) {
+    const theme = useTheme();
+    const fullScreen = useMediaQuery(theme.breakpoints.down('md'), {
+      noSsr: true,
+    });
+
+    return <Wrapped fullScreen={fullScreen} {...props} />;
+  };
+
+@withMobileDialog
 @withStyles({
   executingActionWrapper: {
     position: 'relative',

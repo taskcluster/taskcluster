@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';
 import 'prismjs/themes/prism.css';
@@ -48,12 +48,12 @@ export default class Documentation extends Component {
       catchLinks(document.querySelector('main'), href => {
         history.push(href);
 
-        scrollToHash(theme.spacing(2));
+        scrollToHash(parseFloat(theme.spacing(2)));
       });
 
       // Handle initial scroll if necessary
       if (location.hash) {
-        scrollToHash(theme.spacing(2));
+        scrollToHash(parseFloat(theme.spacing(2)));
       }
     }, 0);
   }
@@ -67,7 +67,7 @@ export default class Documentation extends Component {
       prevProps.location.hash !== this.props.location.hash &&
       this.props.location.hash
     ) {
-      scrollToHash(this.props.theme.spacing(2));
+      scrollToHash(parseFloat(this.props.theme.spacing(2)));
     }
   }
 

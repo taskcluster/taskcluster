@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import { isEmpty } from 'ramda';
 import classNames from 'classnames';
 import InfoIcon from 'mdi-react/InformationOutlineIcon';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import Markdown from '../Markdown';
 import Chip from '../Chip';
 import Tooltip from '../Tooltip';

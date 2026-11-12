@@ -1,7 +1,10 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
+import render from '../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import TaskRunsCard from './index';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../../theme';
 
 it('should render TaskRunsCard', () => {
   const { asFragment } = render(
@@ -98,50 +101,90 @@ it('should link an unsafe log artifact name to the artifact url', () => {
   );
 });
 
-it('should indicate unavailable artifacts and leave available artifacts unmarked', () => {
-  render(
-    <MemoryRouter keyLength={0}>
-      <TaskRunsCard
-        taskId="taskId"
-        taskQueueId="task/queueId"
-        selectedRunId={0}
-        runs={[
-          {
-            runId: 0,
-            state: 'completed',
-            reasonCreated: 'scheduled',
-            reasonResolved: 'completed',
-            scheduled: '2022-02-03T14:41:19.706Z',
-            started: '2022-02-03T14:43:54.086Z',
-            resolved: '2022-02-03T14:45:28.396Z',
-            takenUntil: '2022-02-03T15:03:54.082Z',
-          },
-        ]}
-        artifacts={[
-          {
-            storageType: 'object',
-            name: 'public/available.txt',
-            contentType: 'text/plain',
-          },
-          {
-            storageType: 'error',
-            name: 'public/missing.txt',
-            contentType: 'text/plain',
-          },
-        ]}
-        page={0}
-        onNextPage={vi.fn()}
-        onPreviousPage={vi.fn()}
-      />
-    </MemoryRouter>
-  );
+it.each(['lightTheme', 'darkTheme'])(
+  'should keep unavailable artifacts non-interactive in %s',
+  themeName => {
+    render(
+      <ThemeProvider theme={theme[themeName]}>
+        <MemoryRouter keyLength={0}>
+          <TaskRunsCard
+            taskId="taskId"
+            taskQueueId="task/queueId"
+            selectedRunId={0}
+            runs={[
+              {
+                runId: 0,
+                state: 'completed',
+                reasonCreated: 'scheduled',
+                reasonResolved: 'completed',
+                scheduled: '2022-02-03T14:41:19.706Z',
+                started: '2022-02-03T14:43:54.086Z',
+                resolved: '2022-02-03T14:45:28.396Z',
+                takenUntil: '2022-02-03T15:03:54.082Z',
+              },
+            ]}
+            artifacts={[
+              ...['object', 's3', 'reference', 'link'].map(storageType => ({
+                storageType,
+                name: `public/${storageType}.txt`,
+                contentType: 'text/plain',
+              })),
+              {
+                storageType: 'error',
+                name: 'public/logs/live.log',
+                contentType: 'text/plain',
+              },
+            ]}
+            page={0}
+            onNextPage={vi.fn()}
+            onPreviousPage={vi.fn()}
+          />
+        </MemoryRouter>
+      </ThemeProvider>
+    );
 
-  const unavailableRow = screen.getByText('public/missing.txt').closest('tr');
-  const availableRow = screen.getByText('public/available.txt').closest('tr');
+    const unavailableRow = screen
+      .getByText('public/logs/live.log')
+      .closest('tr');
+    const unavailable = within(unavailableRow);
 
-  expect(within(unavailableRow).getByText('UNAVAILABLE')).toBeTruthy();
-  expect(within(availableRow).queryByText('UNAVAILABLE')).toBeNull();
-});
+    expect(unavailable.getByRole('status').textContent).toBe('UNAVAILABLE');
+    expect(unavailable.queryByRole('link')).toBeNull();
+    expect(unavailable.queryByRole('button')).toBeNull();
+    expect(unavailable.queryByTitle(/Artifact URL/)).toBeNull();
+    // Only the file-type icon remains; no copy or navigation icons.
+    expect(unavailableRow.querySelectorAll('svg')).toHaveLength(1);
+    expect(unavailableRow.querySelector('[href], [tabindex="0"]')).toBeNull();
+    expect(screen.queryByText('View Live Log')).toBeNull();
+
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+    fireEvent.click(unavailable.getByText('public/logs/live.log'));
+    expect(open).not.toHaveBeenCalled();
+
+    for (const storageType of ['object', 's3', 'reference', 'link']) {
+      const name = `public/${storageType}.txt`;
+      const row = screen.getByText(name).closest('tr');
+      const available = within(row);
+      const link = available.getByRole('link', { name });
+
+      expect(available.queryByText('UNAVAILABLE')).toBeNull();
+      expect(link.getAttribute('href')).toContain(
+        `/artifacts/public%2F${storageType}.txt`
+      );
+      expect(available.getByTitle(/Artifact URL/)).toBeTruthy();
+      expect(row.querySelectorAll('svg')).toHaveLength(3);
+      fireEvent.click(link);
+      expect(open).toHaveBeenLastCalledWith(
+        link.href,
+        '_blank',
+        'noopener,noreferrer'
+      );
+    }
+
+    open.mockRestore();
+  }
+);
 
 it('should render the no-runs state', () => {
   const { getByText } = render(

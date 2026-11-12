@@ -458,6 +458,50 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert(new Date(res.body.expires) < taskcluster.fromNow('1 year'));
     });
+    test(`invalid expires date fallbacks to maxExpires`, async () => {
+      const agent = await helper.signedInAgent();
+
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              '&client_id=test-token' +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      let query = getQuery(res.header.location);
+
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
+        .send(
+          new URLSearchParams({
+            clientId: query.get('clientId'),
+            transaction_id: query.get('transactionID'),
+            scope: query.get('scope'),
+            description: 'test',
+            expires: 'look-ma-no-hand',
+          }).toString()
+        )
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      query = getQuery(res.header.location, '#');
+
+      res = await agent
+        .get(url('/login/oauth/credentials'))
+        .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
+
+      const actual = new Date(res.body.expires);
+      assert(actual > taskcluster.fromNow('11 months'));
+      assert(actual < taskcluster.fromNow('1 year'));
+    });
     test('can request a client with expires less than maxExpires when client is whitelisted', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';
@@ -1022,6 +1066,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const expires = query.get('expires');
       const clientId = query.get('clientId');
       assert.equal(query.get('client_id'), registeredClientId);
+      assert.equal(query.get('redirect_uri'), 'https://test.example.com/cb');
+      assert(!query.has('response_type'));
       assert.equal(expires, '3 days');
       assert.equal(scope, 'tags:get:*');
       assert(clientId.startsWith(`test/test/${registeredClientId}-`));

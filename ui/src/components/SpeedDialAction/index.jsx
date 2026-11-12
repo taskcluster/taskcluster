@@ -1,22 +1,21 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import MuiSpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import { string, bool } from 'prop-types';
+import withStyles from '@mui/styles/withStyles';
+import MuiSpeedDialAction, {
+  speedDialActionClasses,
+} from '@mui/material/SpeedDialAction';
+import classNames from 'classnames';
+import { string, bool, oneOf } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 
 const styles = withStyles(theme => ({
-  icon: {
+  secondary: {
     ...theme.mixins.secondaryIcon,
   },
-  staticTooltipLabelDisabled: {
-    whiteSpace: 'nowrap',
-    backgroundColor: theme.palette.action.disabledBackground,
-    color: theme.palette.action.disabled,
+  error: {
+    ...theme.mixins.errorIcon,
   },
-  staticTooltipLabel: {
-    whiteSpace: 'nowrap',
-    backgroundColor: theme.palette.secondary.main,
-    color: theme.palette.secondary.contrastText,
+  success: {
+    ...theme.mixins.successIcon,
   },
 }));
 
@@ -26,6 +25,8 @@ const styles = withStyles(theme => ({
 function SpeedDialAction(props) {
   const {
     classes,
+    className,
+    color,
     requiresAuth,
     FabProps,
     user,
@@ -61,11 +62,17 @@ function SpeedDialAction(props) {
 
   return (
     <MuiSpeedDialAction
-      classes={{
-        fab: classes.icon,
-        staticTooltipLabel: fabProps.disabled
-          ? classes.staticTooltipLabelDisabled
-          : classes.staticTooltipLabel,
+      className={classNames(classes[color], className)}
+      sx={{
+        [`& .${speedDialActionClasses.staticTooltipLabel}`]: {
+          whiteSpace: 'nowrap',
+          backgroundColor: fabProps.disabled
+            ? 'action.disabledBackground'
+            : `${color}.main`,
+          color: fabProps.disabled
+            ? 'action.disabled'
+            : 'secondary.contrastText',
+        },
       }}
       FabProps={fabProps}
       {...rest}
@@ -78,12 +85,15 @@ function SpeedDialAction(props) {
 SpeedDialAction.propTypes = {
   /** The CSS class name of the wrapper element */
   className: string,
+  /** Color of the button and of its static tooltip label */
+  color: oneOf(['secondary', 'error', 'success']),
   /** If true, the button will be disabled if the user is not authenticated */
   requiresAuth: bool,
 };
 
 SpeedDialAction.defaultProps = {
   className: null,
+  color: 'secondary',
   requiresAuth: false,
 };
 

@@ -1,17 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import classNames from 'classnames';
 import { bool, string, func, number } from 'prop-types';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import {
-  alpha,
-  darken,
-  lighten,
-  useTheme,
-  withStyles,
-} from '@material-ui/core/styles';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { alpha, darken, lighten, useTheme } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 
 const diffStyles = theme => {
@@ -57,7 +52,7 @@ const diffStyles = theme => {
 
 const styles = withStyles(theme => {
   const borderColor =
-    theme.palette.type === 'light'
+    theme.palette.mode === 'light'
       ? alpha(theme.palette.common.black, 0.23)
       : alpha(theme.palette.common.white, 0.23);
 
@@ -150,7 +145,7 @@ function DiffTextArea(props) {
             splitView
             hideSummary
             compareMethod={DiffMethod.WORDS}
-            useDarkTheme={theme.palette.type === 'dark'}
+            useDarkTheme={theme.palette.mode === 'dark'}
             styles={diffViewerStyles}
           />
         )}

@@ -12,8 +12,11 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v115/internal/slugid"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
+	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v116/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -1213,6 +1216,63 @@ func TestIndexedArtifactCacheHitOnSameTaskID(t *testing.T) {
 	if strings.Contains(logtext, "Downloading") {
 		t.Fatalf("Expected no download on cache hit, but log contains 'Downloading'.\nLog:\n%v", logtext)
 	}
+}
+
+func TestIndexedArtifactMountUsesResolvedTask(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	taskID1 := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/indexed-artifact")
+	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID1, 1)
+
+	// Point the namespace at taskID2 as soon as the worker has looked it up.
+	orig := serviceFactory
+	serviceFactory = findTaskHook{orig, func() { indexArtifact(t, namespace, taskID2, 2) }}
+	t.Cleanup(func() { serviceFactory = orig })
+
+	content := json.RawMessage(`{"namespace": "` + namespace + `", "artifact": "public/indexed-artifact"}`)
+	mounts := []MountEntry{
+		&FileMount{File: "first.zip", Content: content},
+		&FileMount{File: "second.zip", Content: content},
+	}
+	payload := GenericWorkerPayload{
+		Mounts: toMountArray(t, &mounts),
+		Artifacts: []Artifact{
+			{Name: "public/first", Path: "first.zip", Type: "file"},
+			{Name: "public/second", Path: "second.zip", Type: "file"},
+		},
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+	mountTaskID := submitAndAssert(t, testTask(t), payload, "completed", "completed")
+
+	want := getArtifactContent(t, taskID1, "public/indexed-artifact")
+	for _, name := range []string{"public/first", "public/second"} {
+		if got := getArtifactContent(t, mountTaskID, name); string(got) != string(want) {
+			t.Errorf("Expected %v of mount task %v to be the artifact of task %v (%v bytes), got %v bytes", name, mountTaskID, taskID1, len(want), len(got))
+		}
+	}
+}
+
+type findTaskHook struct {
+	tc.ServiceFactory
+	afterFindTask func()
+}
+
+func (h findTaskHook) Index(creds *tcclient.Credentials, rootURL string) tc.Index {
+	return hookedIndex{h.ServiceFactory.Index(creds, rootURL), h.afterFindTask}
+}
+
+type hookedIndex struct {
+	tc.Index
+	afterFindTask func()
+}
+
+func (i hookedIndex) FindTask(namespace string) (*tcindex.IndexedTaskResponse, error) {
+	defer i.afterFindTask()
+	return i.Index.FindTask(namespace)
 }
 
 // TestCachedArtifactMountRequiresScope verifies that a cached non-public

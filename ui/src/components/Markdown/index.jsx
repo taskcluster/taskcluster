@@ -4,7 +4,8 @@ import classNames from 'classnames';
 import parser from 'markdown-it';
 import linkAttributes from 'markdown-it-link-attributes';
 import highlighter from 'markdown-it-highlightjs';
-import { alpha, withStyles } from '@material-ui/core/styles';
+import { alpha } from '@mui/material/styles';
+import withStyles from '@mui/styles/withStyles';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const markdown = parser({ linkify: true });
@@ -29,11 +30,11 @@ const markdownHtml = parser({ html: true, linkify: true });
       margin: 0,
     },
     '& .anchor-link': {
-      marginTop: -theme.spacing(1) * 12, // Offset for the anchor.
+      marginTop: theme.spacing(-12), // Offset for the anchor.
       position: 'absolute',
     },
     '& pre, & pre[class*="language-"]': {
-      margin: `${3 * theme.spacing(1)}px 0`,
+      margin: `${theme.spacing(3)} 0`,
       padding: '12px 18px',
       borderRadius: 3,
       overflow: 'auto',
@@ -87,7 +88,7 @@ const markdownHtml = parser({ html: true, linkify: true });
       '&:hover .anchor-link-style': {
         display: 'inline-block',
         opacity: 1,
-        padding: `0 ${theme.spacing(1)}px`,
+        padding: `0 ${theme.spacing(1)}`,
         color: theme.palette.text.hint,
         '&:hover': {
           color: theme.palette.text.secondary,
@@ -111,12 +112,12 @@ const markdownHtml = parser({ html: true, linkify: true });
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
       },
       '& .required': {
-        color: theme.palette.type === 'light' ? '#006500' : '#9bc89b',
+        color: theme.palette.mode === 'light' ? '#006500' : '#9bc89b',
       },
       '& .prop-type': {
         fontSize: '0.8125em',
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
-        color: theme.palette.type === 'light' ? '#932981' : '#dbb0d0',
+        color: theme.palette.mode === 'light' ? '#932981' : '#dbb0d0',
       },
       '& .prop-default': {
         fontSize: '0.8125em',
@@ -136,16 +137,16 @@ const markdownHtml = parser({ html: true, linkify: true });
     },
     '& td': {
       borderBottom: `1px solid ${theme.palette.divider}`,
-      padding: `${theme.spacing(1)}px ${2 * theme.spacing(1)}px ${theme.spacing(
+      padding: `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(
         1
-      )}px ${theme.spacing(1)}px`,
+      )} ${theme.spacing(1)}`,
       textAlign: 'left',
     },
     '& td:last-child': {
-      paddingRight: 3 * theme.spacing(1),
+      paddingRight: theme.spacing(3),
     },
     '& td compact': {
-      paddingRight: 3 * theme.spacing(1),
+      paddingRight: theme.spacing(3),
     },
     '& td code': {
       fontSize: '.8125em',
@@ -155,11 +156,11 @@ const markdownHtml = parser({ html: true, linkify: true });
       whiteSpace: 'pre',
       borderBottom: `1px solid ${theme.palette.divider}`,
       fontWeight: theme.typography.fontWeightMedium,
-      padding: `0 ${theme.spacing(1) * 2}px 0 ${theme.spacing(1)}px`,
+      padding: `0 ${theme.spacing(2)} 0 ${theme.spacing(1)}`,
       textAlign: 'left',
     },
     '& th:last-child': {
-      paddingRight: 3 * theme.spacing(1),
+      paddingRight: theme.spacing(3),
     },
     '& tr': {
       height: 48,
@@ -172,8 +173,8 @@ const markdownHtml = parser({ html: true, linkify: true });
     },
     '& blockquote': {
       borderLeft: `5px solid ${theme.palette.text.hint}`,
-      padding: `${theme.spacing(1) / 2}px ${3 * theme.spacing(1)}px`,
-      margin: `${3 * theme.spacing(1)}px 0`,
+      padding: `${theme.spacing(0.5)} ${theme.spacing(3)}`,
+      margin: `${theme.spacing(3)} 0`,
     },
     '& img': {
       maxWidth: '100%',
@@ -184,7 +185,7 @@ const markdownHtml = parser({ html: true, linkify: true });
     },
     '& :not(pre) > code': {
       backgroundColor:
-        theme.palette.type === 'dark' ? alpha('#fff', 0.1) : alpha('#000', 0.1),
+        theme.palette.mode === 'dark' ? alpha('#fff', 0.1) : alpha('#000', 0.1),
     },
   },
 }))

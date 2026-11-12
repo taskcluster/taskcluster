@@ -1685,6 +1685,19 @@ suite(testing.suiteName(), () => {
       });
     });
 
+    helper.dbTest('collect_launch_configs_if_exist orders launch configs by id', async db => {
+      const wpId = 'w/order';
+      for (const id of ['lc3', 'lc1', 'lc2']) {
+        await db.fns.create_worker_pool_launch_config(id, wpId, false, { id }, fromNow('0s'), fromNow('0s'));
+      }
+
+      const res = await db.fns.collect_launch_configs_if_exist({}, wpId);
+      assert.deepEqual(
+        res[0].collect_launch_configs_if_exist.launchConfigs.map(lc => lc.workerManager.launchConfigId),
+        ['lc1', 'lc2', 'lc3']
+      );
+    });
+
     helper.dbTest('upsert_worker_pool_launch_configs returns expected ids', async db => {
       const launchConfigs = [
         { cfg: 'c1', workerManager: { maxCapacity: 5 } },

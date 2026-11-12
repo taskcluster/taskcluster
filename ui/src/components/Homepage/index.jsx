@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import Divider from '@material-ui/core/Divider';
-import Hidden from '@material-ui/core/Hidden';
-import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
+import withStyles from '@mui/styles/withStyles';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import Button from '../Button';
 import Landing from '../Landing';
@@ -11,25 +11,36 @@ import SignInDialog from '../SignInDialog';
 @withStyles(theme => ({
   root: {
     padding: theme.spacing(10),
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       padding: theme.spacing(5),
     },
   },
   headline: {
     fontFamily: 'Roboto',
     fontWeight: 500,
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       marginBottom: theme.spacing(2),
       fontSize: 40,
+    },
+  },
+  largeHeadline: {
+    display: 'none',
+    [theme.breakpoints.up('sm')]: {
+      display: 'block',
+    },
+  },
+  smallHeadline: {
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
     },
   },
   actions: {
     marginTop: theme.spacing(3),
   },
   divider: {
-    margin: `${theme.spacing(10)}px 0 ${theme.spacing(3)}px`,
-    [theme.breakpoints.down('sm')]: {
-      margin: `${theme.spacing(5)}px 0 ${theme.spacing(2)}px`,
+    margin: `${theme.spacing(10)} 0 ${theme.spacing(3)}`,
+    [theme.breakpoints.down('md')]: {
+      margin: `${theme.spacing(5)} 0 ${theme.spacing(2)}`,
     },
   },
   icon: {
@@ -37,7 +48,7 @@ import SignInDialog from '../SignInDialog';
     marginRight: theme.spacing(1),
   },
   ciDescription: {
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       fontSize: 16,
     },
   },
@@ -61,16 +72,16 @@ export default class HomePage extends Component {
 
     return (
       <Landing className={classes.root}>
-        <Hidden xsDown implementation="css">
-          <Typography variant="h1" className={classes.headline}>
-            {window.env.APPLICATION_NAME}
-          </Typography>
-        </Hidden>
-        <Hidden smUp implementation="css">
-          <Typography variant="h2" className={classes.headline}>
-            {window.env.APPLICATION_NAME}
-          </Typography>
-        </Hidden>
+        <Typography
+          variant="h1"
+          className={classNames(classes.headline, classes.largeHeadline)}>
+          {window.env.APPLICATION_NAME}
+        </Typography>
+        <Typography
+          variant="h2"
+          className={classNames(classes.headline, classes.smallHeadline)}>
+          {window.env.APPLICATION_NAME}
+        </Typography>
         <Typography variant="h5" className={classes.ciDescription}>
           A task execution framework that supports Mozilla&apos;s continuous
           integration and release processes.

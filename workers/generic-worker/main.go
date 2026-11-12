@@ -28,21 +28,21 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v115/clients/client-go"
-	"github.com/taskcluster/taskcluster/v115/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v115/internal"
-	"github.com/taskcluster/taskcluster/v115/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v115/internal/scopes"
-	"github.com/taskcluster/taskcluster/v115/tools/workerproto"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v115/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
+	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v116/internal"
+	"github.com/taskcluster/taskcluster/v116/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v116/internal/scopes"
+	"github.com/taskcluster/taskcluster/v116/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v116/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -497,10 +497,7 @@ func RunWorker() (exitCode ExitCode) {
 	}
 
 	// Initial cleanup of old task directories
-	err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
-	if err != nil {
-		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
-	}
+	purgeOldTasks(taskManager.RunningTaskDirNames()...)
 
 	// processCompletion applies a completion and reports what the main loop
 	// should do next. Bookkeeping is in recordCompletion so drainUntilIdle
@@ -591,10 +588,7 @@ mainLoop:
 	doneProcessingCompletions:
 		if processedCompletion {
 			processedCompletion = false
-			err := purgeOldTasks(taskManager.RunningTaskDirNames()...)
-			if err != nil {
-				log.Printf("ERROR: purging old tasks: %v", err)
-			}
+			purgeOldTasks(taskManager.RunningTaskDirNames()...)
 		}
 
 		if checkWhetherToTerminate() {
@@ -792,7 +786,7 @@ mainLoop:
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
 					if !managedByWorkerManager() || checkWhetherToTerminate() {
-						_ = purgeOldTasks(taskManager.RunningTaskDirNames()...)
+						purgeOldTasks(taskManager.RunningTaskDirNames()...)
 						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 						return IDLE_TIMEOUT
 					}

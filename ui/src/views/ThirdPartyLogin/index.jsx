@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Auth } from '@taskcluster/client-web';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import { parse } from 'qs';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import Spinner from '../../components/Spinner';
 import AuthConsent from '../../components/AuthConsent';
 import Dashboard from '../../components/Dashboard';

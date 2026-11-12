@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v115/internal/slugid"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v115/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v115/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v116/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/safefs"
 )
 
 const (
@@ -268,10 +268,10 @@ func deleteTaskUserOnCleanup(ctx *TaskContext) {
 
 // purgeOldTasks cleans up old task directories and users.
 // skipDirs contains all task directory names to preserve (running tasks, etc.)
-func purgeOldTasks(skipDirs ...string) error {
+func purgeOldTasks(skipDirs ...string) {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
-		return nil
+		return
 	}
 
 	skipSet := make(map[string]bool)
@@ -297,7 +297,6 @@ func purgeOldTasks(skipDirs ...string) error {
 	if err != nil {
 		log.Printf("Could not delete old task users:\n%v", err)
 	}
-	return nil
 }
 
 // deleteExistingOSUsers removes old task users.
