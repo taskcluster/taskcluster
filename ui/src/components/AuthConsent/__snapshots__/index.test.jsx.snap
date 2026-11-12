@@ -135,7 +135,7 @@ exports[`should render AuthConsent page 1`] = `
                             <textarea
                               aria-invalid="false"
                               class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
-                              id="mui-1"
+                              id=":r1:"
                               name="description"
                               rows="5"
                               style="height: 0px; overflow: hidden;"
@@ -183,7 +183,7 @@ exports[`should render AuthConsent page 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiInput-input css-ume8vi-MuiInputBase-input-MuiInput-input"
-                              id="mui-2"
+                              id=":r2:"
                               max="3023-02-17T13:00"
                               type="datetime-local"
                               value="2022-02-02T01:00"
@@ -215,10 +215,10 @@ exports[`should render AuthConsent page 1`] = `
                             class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
                           >
                             <textarea
-                              aria-describedby="mui-3-helper-text"
+                              aria-describedby=":r3:-helper-text"
                               aria-invalid="false"
                               class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
-                              id="mui-3"
+                              id=":r3:"
                               placeholder="new-scope:for-something:*"
                               style="height: 0px; overflow: hidden;"
                             >
@@ -234,7 +234,7 @@ exports[`should render AuthConsent page 1`] = `
                           </div>
                           <p
                             class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-filled css-17wsglc-MuiFormHelperText-root"
-                            id="mui-3-helper-text"
+                            id=":r3:-helper-text"
                           >
                             Enter each scope on its own line
                           </p>
