@@ -1160,7 +1160,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                           class="TaskRunsCard-artifactNameWrapper-98"
                                         >
                                           <button
-                                            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-logButton-91 Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
+                                            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-78 Label-disabled-73 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-71 MuiButton-textSizeSmall MuiButton-colorInherit TaskRunsCard-artifactLabel-91 Label-mini-72 css-wogk46-MuiButtonBase-root-MuiButton-root"
                                             disabled=""
                                             tabindex="-1"
                                             type="button"
