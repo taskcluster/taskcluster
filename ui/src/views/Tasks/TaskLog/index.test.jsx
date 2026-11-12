@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter, Route } from 'react-router-dom';
 import { vi } from 'vitest';
 import { buildLogViewerUrl } from '../../../utils/artifactNames';
@@ -153,7 +153,7 @@ describe('task details', () => {
 
     renderPage(queue);
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(queue.status).toHaveBeenCalled();
     });
     expect(screen.getByRole('heading', { name: 'Log' })).toBeTruthy();
