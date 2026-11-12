@@ -71,7 +71,7 @@ export default class HomePage extends Component {
     const { signInDialogOpen } = this.state;
 
     return (
-      <Landing className={classes.root}>
+      <Landing classes={{ content: classes.root }}>
         <Typography
           variant="h1"
           className={classNames(classes.headline, classes.largeHeadline)}>

@@ -33,11 +33,11 @@ import SignInDialog from '../../../components/SignInDialog';
     '&:last-child': {
       paddingBottom: 0,
     },
-    '& svg': {
+    '&& svg': {
       transition: theme.transitions.create('fill'),
       fill: alpha(THEME.PRIMARY_TEXT_LIGHT, 0.4),
     },
-    '&:hover svg': {
+    '&&:hover svg': {
       fill: THEME.PRIMARY_TEXT_LIGHT,
     },
   },

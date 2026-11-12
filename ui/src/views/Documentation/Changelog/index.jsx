@@ -276,7 +276,7 @@ export default class Changelog extends Component {
                 />
               )}
             </h1>
-            <Markdown allowHtml className={classes.md}>
+            <Markdown allowHtml classes={{ root: classes.md }}>
               {maybeHighlight(section.html, this.state.q)}
             </Markdown>
           </Grid>

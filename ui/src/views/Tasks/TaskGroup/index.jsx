@@ -984,7 +984,7 @@ export default class TaskGroup extends Component {
     return (
       <Dashboard
         title={title.join(' - ')}
-        className={classes.dashboard}
+        classes={{ content: classes.dashboard }}
         helpView={<HelpView description={description} />}
         search={
           <Search
@@ -1032,7 +1032,7 @@ export default class TaskGroup extends Component {
           <Grid container>
             <Grid item xs={12} sm={8} className={classes.firstGrid}>
               <Search
-                formProps={{ className: classes.taskNameFormSearch }}
+                classes={{ root: classes.taskNameFormSearch }}
                 placeholder="Name contains"
                 defaultValue={searchTerm}
                 onSubmit={this.handleSearchTaskSubmit}
