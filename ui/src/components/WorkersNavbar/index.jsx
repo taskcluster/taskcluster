@@ -177,9 +177,9 @@ export default class WorkersNavbar extends Component {
             title={item.hint}
             component={Link}
             color="primary"
-            nav
-            activeClassName={classes.active}
-            isActive={() => window.location.pathname === item.to}
+            className={
+              window.location.pathname === item.to ? classes.active : undefined
+            }
             clickable
             to={item.to}
           />
