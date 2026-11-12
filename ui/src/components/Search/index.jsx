@@ -38,8 +38,8 @@ import { THEME } from '../../utils/constants';
     },
   },
   input: {
-    fontSize: theme.typography.body1.fontSize,
     font: 'inherit',
+    fontSize: theme.typography.body1.fontSize,
     paddingTop: theme.spacing(1),
     paddingRight: theme.spacing(1),
     paddingBottom: theme.spacing(1),

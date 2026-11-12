@@ -104,9 +104,9 @@ const markdownHtml = parser({ html: true, linkify: true });
       width: '100%',
       display: 'block',
       overflowX: 'auto',
+      overflowY: 'hidden',
       borderCollapse: 'collapse',
       borderSpacing: 0,
-      overflow: 'hidden',
       '& .prop-name': {
         fontSize: '0.8125em',
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',

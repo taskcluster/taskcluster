@@ -15,7 +15,7 @@ const styles = theme => ({
     borderCollapse: 'collapse',
     borderSpacing: 0,
     overflowX: 'auto',
-    overflow: 'hidden',
+    overflowY: 'hidden',
     '& thead': {
       display: 'table-header-group',
       color: theme.palette.text.secondary,
