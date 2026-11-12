@@ -81,10 +81,10 @@ function DiffTextArea(props) {
   const {
     classes,
     onChange,
-    rows,
+    rows = 5,
     initialValue,
-    sort,
-    defaultTabIndex,
+    sort = true,
+    defaultTabIndex = 0,
     ...rest
   } = props;
   const theme = useTheme();
@@ -94,12 +94,10 @@ function DiffTextArea(props) {
   const isViewDiff = tabIndex === 1;
   const isControlled =
     'value' in props && props.value !== undefined && props.value !== null;
-  const isSorted =
-    'sort' in props && props.sort !== undefined && props.sort !== null;
-  const pastValue = isSorted
+  const pastValue = sort
     ? initialValue.split('\n').sort().join('\n')
     : initialValue;
-  const currentValue = isSorted ? value.split('\n').sort().join('\n') : value;
+  const currentValue = sort ? value.split('\n').sort().join('\n') : value;
   const isNotEqualText = pastValue !== currentValue;
 
   function handleValueChange(event) {
@@ -188,15 +186,6 @@ DiffTextArea.propTypes = {
    * If true, the content will be sorted prior to computing the diff.
    */
   sort: bool,
-};
-
-DiffTextArea.defaultProps = {
-  sort: false,
-  onChange: null,
-  value: undefined,
-  placeholder: null,
-  defaultTabIndex: 0,
-  rows: 5,
 };
 
 export default styles(DiffTextArea);

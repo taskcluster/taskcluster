@@ -6,7 +6,9 @@ import SourceView from '../SourceView';
 import { schema } from '../../utils/prop-types';
 import { createSchemaTree } from '../../utils/schemaTree';
 
-function SchemaViewer({ schema, references }) {
+const NULL_SCHEMA = { type: 'null' };
+
+function SchemaViewer({ schema = NULL_SCHEMA, references = [] }) {
   /**
    * Create a tree structure based on the given schema.
    * This acts as an intermediary data structure to define the overall
@@ -59,15 +61,6 @@ SchemaViewer.propTypes = {
   /** Schema input given to render */
   schema,
   references: arrayOf(schema),
-};
-
-SchemaViewer.defaultProps = {
-  /** Null type schema is set as default prop */
-  schema: {
-    type: 'null',
-  },
-  /** References is set to empty array as default */
-  references: [],
 };
 
 export default React.memo(SchemaViewer);

@@ -101,11 +101,6 @@ Link.propTypes = {
   skipPrefetch: bool,
 };
 
-Link.defaultProps = {
-  nav: false,
-  skipPrefetch: false,
-};
-
 // App calls this on load; it avoids an import cycle by importing App/routes
 Link.setRoutes = routes => {
   Link.routes = routes;

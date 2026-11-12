@@ -61,10 +61,4 @@ CopyToClipboardListItem.propTypes = {
   listItem: object,
 };
 
-CopyToClipboardListItem.defaultProps = {
-  secondary: null,
-  listItemTextProps: null,
-  listItem: null,
-};
-
 export default CopyToClipboardListItem;

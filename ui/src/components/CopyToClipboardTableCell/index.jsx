@@ -50,8 +50,4 @@ CopyToClipboardTableCell.propTypes = {
   text: node,
 };
 
-CopyToClipboardTableCell.defaultProps = {
-  text: null,
-};
-
 export default withStyles(styles)(CopyToClipboardTableCell);

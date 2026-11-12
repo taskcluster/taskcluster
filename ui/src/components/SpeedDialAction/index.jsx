@@ -26,8 +26,8 @@ function SpeedDialAction(props) {
   const {
     classes,
     className,
-    color,
-    requiresAuth,
+    color = 'secondary',
+    requiresAuth = false,
     FabProps,
     user,
     onAuthorize,
@@ -89,12 +89,6 @@ SpeedDialAction.propTypes = {
   color: oneOf(['secondary', 'error', 'success']),
   /** If true, the button will be disabled if the user is not authenticated */
   requiresAuth: bool,
-};
-
-SpeedDialAction.defaultProps = {
-  className: null,
-  color: 'secondary',
-  requiresAuth: false,
 };
 
 export default withAuth(styles(SpeedDialAction));
