@@ -44,6 +44,7 @@ import PulseBindings from '../PulseBindings';
 import HookBindingDebugger from '../HookBindingDebugger';
 import removeKeys from '../../utils/removeKeys';
 import yamlSchema from '../../utils/yamlSchema';
+import { FIRST_CHILD } from '../../utils/constants';
 
 const initialHook = {
   metadata: {
@@ -117,7 +118,7 @@ const initialHook = {
   errorPanel: {
     maxHeight: '88vh',
     overflow: 'scroll',
-    '& span:first-child': {
+    [`& span${FIRST_CHILD}`]: {
       overflow: 'unset',
     },
   },

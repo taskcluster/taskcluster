@@ -326,3 +326,6 @@ export const TASK_PAYLOAD_SCHEMAS = {
     },
   },
 };
+
+// Same as `:first-child`, but ignores any <style> sibling
+export const FIRST_CHILD = ':not(style):not(:not(style) ~ *)';

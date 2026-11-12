@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import { alpha } from '@mui/material/styles';
 import withStyles from '@mui/styles/withStyles';
 import Markdown from '../Markdown';
+import { FIRST_CHILD } from '../../utils/constants';
 
 @withStyles(theme => {
   const borderColor =
@@ -29,7 +30,7 @@ import Markdown from '../Markdown';
       borderStyle: 'solid',
     },
     markdown: {
-      '& > :first-child': {
+      [`& > ${FIRST_CHILD}`]: {
         marginTop: '0',
       },
       '& a': {
