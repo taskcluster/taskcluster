@@ -37,8 +37,4 @@ Chip.propTypes = {
   icon: element,
 };
 
-Chip.defaultProps = {
-  icon: null,
-};
-
 export default React.memo(Chip);

@@ -417,6 +417,9 @@ exports[`should render ListHooks page 1`] = `
                         />
                       </svg>
                     </div>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </span>
                 </div>
               </td>

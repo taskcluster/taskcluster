@@ -1,5 +1,5 @@
 import React from 'react';
-import { waitFor, act } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import render from '../../../utils/renderWithTheme';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -14,25 +14,24 @@ const client = {
 };
 
 it('should render ListHooks page', async () => {
-  await act(async () => {
-    const { asFragment } = render(
-      <HelmetProvider>
-        <MemoryRouter keyLength={0}>
-          <TaskclusterClientContext.Provider value={() => client}>
-            <ListHooks
-              match={{ params: { hookGroupId: 'hg1' } }}
-              location={{
-                search: {
-                  slice: vi.fn().mockReturnValue('search=test'),
-                },
-              }}
-            />
-          </TaskclusterClientContext.Provider>
-        </MemoryRouter>
-      </HelmetProvider>
-    );
+  const { asFragment } = render(
+    <HelmetProvider>
+      <MemoryRouter keyLength={0}>
+        <TaskclusterClientContext.Provider value={() => client}>
+          <ListHooks
+            match={{ params: { hookGroupId: 'hg1' } }}
+            location={{
+              search: {
+                slice: vi.fn().mockReturnValue('search=test'),
+              },
+            }}
+          />
+        </TaskclusterClientContext.Provider>
+      </MemoryRouter>
+    </HelmetProvider>
+  );
 
-    await waitFor(() => {});
-    expect(asFragment()).toMatchSnapshot();
-  });
+  await act(async () => {});
+
+  expect(asFragment()).toMatchSnapshot();
 });

@@ -60,8 +60,4 @@ JsonDisplay.propTypes = {
   wrapperClassName: string,
 };
 
-JsonDisplay.defaultProps = {
-  wrapperClassName: null,
-};
-
 export default JsonDisplay;

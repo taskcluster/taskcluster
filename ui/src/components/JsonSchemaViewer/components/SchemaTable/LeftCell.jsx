@@ -87,7 +87,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function LeftCell({ treeNode, refType, setSchemaTree, references }) {
+function LeftCell({
+  treeNode,
+  refType,
+  setSchemaTree = NOOP,
+  references = {},
+}) {
   const { schema, path } = treeNode;
   const schemaType = schema._type;
   const name = schema._name;
@@ -293,11 +298,6 @@ LeftCell.propTypes = {
    * Only necessary for ref rows.
    */
   references: object,
-};
-
-LeftCell.defaultProps = {
-  setSchemaTree: NOOP,
-  references: {},
 };
 
 export default React.memo(LeftCell);

@@ -97,26 +97,14 @@ describe('TaskGroup page', () => {
     const location = {
       hash: '#term',
     };
-    let asFragment;
+    const { asFragment } = render(
+      <HelmetProvider>
+        <MemoryRouter keyLength={0}>
+          <TaskGroup match={{ params: { taskGroupId } }} location={location} />
+        </MemoryRouter>
+      </HelmetProvider>
+    );
 
-    await act(async () => {
-      ({ asFragment } = render(
-        <HelmetProvider>
-          <MemoryRouter keyLength={0}>
-            <TaskGroup
-              match={{ params: { taskGroupId } }}
-              location={location}
-            />
-          </MemoryRouter>
-        </HelmetProvider>
-      ));
-    });
-
-    // flush the load() promise chain and the batched table-update timer
-    // (vitest.setup.js turns on fake timers globally)
-    await act(async () => {
-      vi.runOnlyPendingTimers();
-    });
     await act(async () => {});
 
     const queue = getClient.mock.results[0].value;
@@ -173,27 +161,17 @@ describe('TaskGroup page', () => {
           </MemoryRouter>
         </HelmetProvider>
       );
-      let rerender;
+      const { rerender } = render(tree(user));
 
-      await act(async () => {
-        ({ rerender } = render(tree(user)));
-      });
-      await act(async () => {
-        vi.runOnlyPendingTimers();
-      });
-
-      return async nextUser => {
-        await act(async () => {
-          rerender(tree(nextUser));
-        });
-      };
+      await act(async () => {});
+      return nextUser => rerender(tree(nextUser));
     };
 
     it('keeps the subscription when re-rendered with the same user', async () => {
       const user = makeUser('token-1');
       const rerenderWithUser = await renderWithUser(user);
 
-      await rerenderWithUser(user);
+      rerenderWithUser(user);
 
       expect(subscribeToNamedEvents).toHaveBeenCalledTimes(1);
     });
@@ -205,7 +183,7 @@ describe('TaskGroup page', () => {
 
       const rerenderWithUser = await renderWithUser(makeUser('token-1'));
 
-      await rerenderWithUser(makeUser('token-2'));
+      rerenderWithUser(makeUser('token-2'));
 
       expect(unsubscribe).toHaveBeenCalledTimes(1);
       expect(subscribeToNamedEvents).toHaveBeenCalledTimes(2);

@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Markdown({ children, inverse }) {
+function Markdown({ children = '', inverse = false }) {
   /**
    * Generate classes to define overall style for the schema table.
    */
@@ -49,11 +49,6 @@ Markdown.propTypes = {
   children: string,
   /** Whether an inverse style should be applied or not */
   inverse: bool,
-};
-
-Markdown.defaultProps = {
-  children: '',
-  inverse: false,
 };
 
 export default React.memo(Markdown);

@@ -1,19 +1,22 @@
 import React from 'react';
+import { act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import render from '../../utils/renderWithTheme';
 import Log from './index';
 
-it('should render Log', () => {
+it('should render Log', async () => {
   const { asFragment } = render(
     <MemoryRouter keyLength={0}>
       <Log url="https://localhost:1234/logs/public/test.log" />
     </MemoryRouter>
   );
 
+  await act(async () => {});
+
   expect(asFragment()).toMatchSnapshot();
 });
 
-it('should render without following', () => {
+it('should render without following', async () => {
   const { asFragment } = render(
     <MemoryRouter
       initialEntries={[
@@ -22,6 +25,8 @@ it('should render without following', () => {
       <Log url="https://localhost:1234/logs/public/test.log" />
     </MemoryRouter>
   );
+
+  await act(async () => {});
 
   expect(asFragment()).toMatchSnapshot();
 });
