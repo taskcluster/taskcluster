@@ -105,15 +105,10 @@ updates:
       interval: "monthly"
     cooldown:
       default-days: 7
-      # Pick up new Taskcluster client releases at the next run
       exclude:
         - "@taskcluster/*"
     rebase-strategy: "disabled"
     groups:
-      # Keeps the UI's Taskcluster client up to date, including major
-      # versions (most Taskcluster releases are major versions). This must
-      # come before ui-node-deps, as a dependency joins the first group
-      # that matches it.
       ui-taskcluster:
         patterns:
           - "@taskcluster/*"
