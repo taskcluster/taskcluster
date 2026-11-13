@@ -21,6 +21,23 @@ const makeError = (message, code, statusCode) => {
   return err;
 };
 
+// Keep in sync with schemas/v1/worker-pool-error.yml
+export const WORKER_POOL_ERROR_TITLE_MAX = 128;
+export const WORKER_POOL_ERROR_DESCRIPTION_MAX = 10240;
+
+export const truncateText = (str, max) => {
+  if (str.length <= max) {
+    return str;
+  }
+  const marker = n => `…[truncated ${n} chars]`;
+  let keep = Math.max(0, max - marker(str.length).length);
+  const last = str.charCodeAt(keep - 1);
+  if (last >= 0xd800 && last <= 0xdbff) {
+    keep -= 1;
+  }
+  return str.slice(0, keep) + marker(str.length - keep);
+};
+
 const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
 export class WorkerPool {
@@ -484,8 +501,8 @@ export class WorkerPoolError {
       workerPoolId: this.workerPoolId,
       reported: this.reported.toJSON(),
       kind: this.kind,
-      title: this.title,
-      description: this.description,
+      title: truncateText(this.title, WORKER_POOL_ERROR_TITLE_MAX),
+      description: truncateText(this.description, WORKER_POOL_ERROR_DESCRIPTION_MAX),
       extra: this.extra,
       launchConfigId: this.launchConfigId || undefined,
     };
