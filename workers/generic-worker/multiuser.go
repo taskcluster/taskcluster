@@ -210,6 +210,7 @@ func prepareTaskEnvironment() (reboot bool) {
 	nextUser := &gwruntime.OSUser{
 		Name:     taskDirName,
 		Password: gwruntime.GeneratePassword(),
+		ReuseIDs: true,
 	}
 	err := nextUser.CreateNew(false)
 	if err != nil {
