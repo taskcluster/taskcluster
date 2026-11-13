@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import classNames from 'classnames';
 import { isEmpty, map, pipe, sort as rSort, path } from 'ramda';
 import { any, arrayOf, string } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -78,11 +79,11 @@ export default class HooksListTable extends Component {
     const { hookId, hookGroupId, schedule, bindings, lastFire } = hook;
     const hookUrl = `/hooks/${hookGroupId}/${encodeURIComponent(hookId)}`;
     const { classes } = this.props;
-    const classNames = [];
+    const rowClasses = [];
     let error = null;
 
     if (lastFire?.error) {
-      classNames.push(classes?.hasErrors);
+      rowClasses.push(classes?.hasErrors);
 
       if (typeof lastFire.error === 'string') {
         try {
@@ -98,11 +99,13 @@ export default class HooksListTable extends Component {
     }
 
     if (!lastFire?.taskId && !lastFire?.error) {
-      classNames.push(classes?.noFires);
+      rowClasses.push(classes?.noFires);
     }
 
     return (
-      <TableRow key={`${hookGroupId}/${hookId}`} className={classNames}>
+      <TableRow
+        key={`${hookGroupId}/${hookId}`}
+        className={classNames(rowClasses)}>
         <TableCell>
           <TableCellItem>{hookGroupId}</TableCellItem>
         </TableCell>
