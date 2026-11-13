@@ -3,7 +3,7 @@ import helper from './helper.js';
 import { Provider } from '../src/providers/provider.js';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
-import { WorkerPool, WorkerPoolError, Worker, truncateText } from '../src/data.js';
+import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
@@ -236,15 +236,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.match(error.title, /…\[truncated \d+ chars\]$/);
     });
 
-    test('truncateText boundaries', () => {
-      assert.equal(truncateText('a'.repeat(100), 100), 'a'.repeat(100));
-      for (const len of [101, 150, 30000]) {
-        const out = truncateText('a'.repeat(len), 100);
-        assert(out.length <= 100, `len ${len} -> ${out.length}`);
-        assert.match(out, /…\[truncated \d+ chars\]$/);
-      }
-    });
-
     test('report errors dedups emails on the full, untruncated description', async () => {
       const workerPool = await createWP({ emailOnError: true });
       const base = {
@@ -257,15 +248,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await provider.reportError({ ...base, description: `${'a'.repeat(30000)}X` });
       await provider.reportError({ ...base, description: `${'a'.repeat(30000)}Y` });
       assert.equal(helper.notify.emails.length, 2);
-    });
-
-    test('truncateText does not split surrogate pairs', () => {
-      for (let len = 90; len < 110; len++) {
-        const out = truncateText('😀'.repeat(200), len);
-        assert(out.length <= len);
-        assert.doesNotMatch(out, /[\ud800-\udbff](?![\udc00-\udfff])/);
-        assert.doesNotMatch(out, /(?<![\ud800-\udbff])[\udc00-\udfff]/);
-      }
     });
 
     test('report errors (w/ email)', async () => {

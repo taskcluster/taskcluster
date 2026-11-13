@@ -518,7 +518,12 @@ export class Provider {
           await this.notify.email({
             address: workerPool.owner,
             subject: `Taskcluster Worker Manager Error: ${title}`,
-            content: getExtraInfo({ extra, description, workerPoolId: workerPool.workerPoolId, errorId }),
+            content: getExtraInfo({
+              extra,
+              description: fullDescription,
+              workerPoolId: workerPool.workerPoolId,
+              errorId,
+            }),
           });
           this.markSent(extra, fullDescription, workerPool.workerPoolId);
         } else {

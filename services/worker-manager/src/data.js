@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import assert from 'node:assert';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import taskcluster from '@taskcluster/client';
 import { MAX_MODIFY_ATTEMPTS } from './util.js';
@@ -26,7 +27,9 @@ export const WORKER_POOL_ERROR_TITLE_MAX = 128;
 export const WORKER_POOL_ERROR_DESCRIPTION_MAX = 10240;
 
 export const truncateText = (str, max) => {
-  if (str.length <= max) {
+  assert(Number.isInteger(max) && max > 0, 'max length is required and needs to be a positive number');
+
+  if (typeof str !== 'string' || str.length <= max) {
     return str;
   }
   const marker = n => `…[truncated ${n} chars]`;
