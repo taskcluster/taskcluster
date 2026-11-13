@@ -4,7 +4,7 @@ import { kebabCase } from 'change-case';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Badge from '@mui/material/Badge';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -121,6 +121,46 @@ const toNodeStatus = status => ({
   })),
 });
 
+const calculateStatusCount = edges => {
+  const statusCount = {
+    completed: 0,
+    failed: 0,
+    exception: 0,
+    running: 0,
+    pending: 0,
+    unscheduled: 0,
+  };
+
+  (edges ?? []).forEach(({ node }) => {
+    const { state } = node.status;
+
+    switch (state) {
+      case TASK_STATE.COMPLETED:
+        statusCount.completed += 1;
+        break;
+      case TASK_STATE.FAILED:
+        statusCount.failed += 1;
+        break;
+      case TASK_STATE.EXCEPTION:
+        statusCount.exception += 1;
+        break;
+      case TASK_STATE.RUNNING:
+        statusCount.running += 1;
+        break;
+      case TASK_STATE.PENDING:
+        statusCount.pending += 1;
+        break;
+      case TASK_STATE.UNSCHEDULED:
+        statusCount.unscheduled += 1;
+        break;
+      default:
+        break;
+    }
+  });
+
+  return statusCount;
+};
+
 @withStyles(theme => ({
   dashboard: {
     overflow: 'hidden',
@@ -163,46 +203,6 @@ const toNodeStatus = status => ({
 }))
 export default class TaskGroup extends Component {
   static contextType = AuthContext;
-
-  static calculateStatusCount(edges) {
-    const statusCount = {
-      completed: 0,
-      failed: 0,
-      exception: 0,
-      running: 0,
-      pending: 0,
-      unscheduled: 0,
-    };
-
-    (edges ?? []).forEach(({ node }) => {
-      const { state } = node.status;
-
-      switch (state) {
-        case TASK_STATE.COMPLETED:
-          statusCount.completed += 1;
-          break;
-        case TASK_STATE.FAILED:
-          statusCount.failed += 1;
-          break;
-        case TASK_STATE.EXCEPTION:
-          statusCount.exception += 1;
-          break;
-        case TASK_STATE.RUNNING:
-          statusCount.running += 1;
-          break;
-        case TASK_STATE.PENDING:
-          statusCount.pending += 1;
-          break;
-        case TASK_STATE.UNSCHEDULED:
-          statusCount.unscheduled += 1;
-          break;
-        default:
-          break;
-      }
-    });
-
-    return statusCount;
-  }
 
   constructor(props) {
     super(props);
@@ -512,7 +512,7 @@ export default class TaskGroup extends Component {
 
     this.edges = this.edges.concat(edges);
 
-    const statusCount = TaskGroup.calculateStatusCount(this.edges);
+    const statusCount = calculateStatusCount(this.edges);
 
     this.setState({
       loading: false,
@@ -659,7 +659,7 @@ export default class TaskGroup extends Component {
   }
 
   afterEdgesChanged(taskGroupId) {
-    const statusCount = TaskGroup.calculateStatusCount(this.edges);
+    const statusCount = calculateStatusCount(this.edges);
 
     if (
       JSON.stringify(statusCount) !== JSON.stringify(this.state.statusCount)
@@ -984,7 +984,7 @@ export default class TaskGroup extends Component {
     return (
       <Dashboard
         title={title.join(' - ')}
-        className={classes.dashboard}
+        classes={{ content: classes.dashboard }}
         helpView={<HelpView description={description} />}
         search={
           <Search
@@ -1032,7 +1032,7 @@ export default class TaskGroup extends Component {
           <Grid container>
             <Grid item xs={12} sm={8} className={classes.firstGrid}>
               <Search
-                formProps={{ className: classes.taskNameFormSearch }}
+                classes={{ root: classes.taskNameFormSearch }}
                 placeholder="Name contains"
                 defaultValue={searchTerm}
                 onSubmit={this.handleSearchTaskSubmit}

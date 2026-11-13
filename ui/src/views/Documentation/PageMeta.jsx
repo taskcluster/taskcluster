@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { join } from 'path';
 import { func } from 'prop-types';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import PageNavigation from '../../components/PageNavigation';
 import { docsPageInfo } from '../../utils/prop-types';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';

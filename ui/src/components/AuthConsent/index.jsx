@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { array, shape, func, string } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';

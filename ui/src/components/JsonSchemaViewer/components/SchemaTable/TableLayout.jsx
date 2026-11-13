@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
 import classNames from 'classnames';
 import { array } from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   wrapper: {
     display: 'block',
     overflow: 'hidden',
@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function TableLayout({ rows }) {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   /* the approach here is to alternate divs for the left and right, with the
    * CSS configuring them so they fit side-by-side with a clear=all after each

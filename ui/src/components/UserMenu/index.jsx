@@ -3,7 +3,7 @@ import { bool } from 'prop-types';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { darken } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import AccountIcon from 'mdi-react/AccountIcon';

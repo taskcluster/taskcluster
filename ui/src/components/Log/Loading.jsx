@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Spinner from '../Spinner';
 
 @withStyles(theme => ({

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { oneOfType, object, node, string, func, bool } from 'prop-types';
 import { useTheme } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';

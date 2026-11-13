@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Secrets } from '@taskcluster/client-web';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs from 'qs';

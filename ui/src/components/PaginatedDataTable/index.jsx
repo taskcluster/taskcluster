@@ -12,7 +12,7 @@ import {
   string,
 } from 'prop-types';
 import classNames from 'classnames';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableHead from '@mui/material/TableHead';
@@ -26,7 +26,7 @@ import FilterIcon from 'mdi-react/FilterIcon';
 import { WindowScroller, AutoSizer, List } from 'react-virtualized';
 import Spinner from '../Spinner';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   spinner: {
     height: 56,
     minHeight: 56,
@@ -89,7 +89,7 @@ export default function PaginatedDataTable({
   rowHeight = 48,
   maxHeight = null,
 }) {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const [filterValue, setFilterValue] = useState('');
   // A header is either a plain name, or `{ id, label }` when the visible
   // label differs from the name sorting is keyed on (a responsive label, say).

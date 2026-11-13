@@ -3,7 +3,7 @@ import { arrayOf } from 'prop-types';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { init as initSentry } from '@sentry/browser';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
@@ -145,24 +145,22 @@ export default class App extends Component {
             <TaskclusterClientContext.Provider
               value={this.createTaskclusterClient}>
               <ToggleThemeContext.Provider value={this.toggleTheme}>
-                <StyledEngineProvider injectFirst>
-                  <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <ErrorBoundary
-                      FallbackComponent={ErrorPanel}
-                      onError={reportError}>
-                      <Main
-                        error={error}
-                        key={
-                          auth.user?.credentials
-                            ? auth.user.credentials.clientId
-                            : ''
-                        }
-                        routes={routes}
-                      />
-                    </ErrorBoundary>
-                  </ThemeProvider>
-                </StyledEngineProvider>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <ErrorBoundary
+                    FallbackComponent={ErrorPanel}
+                    onError={reportError}>
+                    <Main
+                      error={error}
+                      key={
+                        auth.user?.credentials
+                          ? auth.user.credentials.clientId
+                          : ''
+                      }
+                      routes={routes}
+                    />
+                  </ErrorBoundary>
+                </ThemeProvider>
               </ToggleThemeContext.Provider>
             </TaskclusterClientContext.Provider>
           </AuthContext.Provider>

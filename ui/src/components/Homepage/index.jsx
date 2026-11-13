@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
@@ -71,7 +71,7 @@ export default class HomePage extends Component {
     const { signInDialogOpen } = this.state;
 
     return (
-      <Landing className={classes.root}>
+      <Landing classes={{ content: classes.root }}>
         <Typography
           variant="h1"
           className={classNames(classes.headline, classes.largeHeadline)}>

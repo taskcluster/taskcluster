@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
 import HexagonIcon from 'mdi-react/HexagonIcon';

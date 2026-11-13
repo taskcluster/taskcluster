@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import { string, oneOf } from 'prop-types';
 import { kebabCase } from 'change-case';
 import Typography from '@mui/material/Typography';
+import { FIRST_CHILD } from '../../../../utils/constants';
 
 const childrenToText = node => {
   if (typeof node === 'string' || typeof node === 'number') {
@@ -25,7 +26,7 @@ const childrenToText = node => {
   header: {
     color: theme.palette.text.primary,
     marginTop: theme.spacing(4),
-    '&:first-child': {
+    [`&${FIRST_CHILD}`]: {
       marginTop: 0,
     },
     '& .anchor-link-style': {

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { bool, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 
 @withStyles({

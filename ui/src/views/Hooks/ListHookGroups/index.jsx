@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Hooks } from '@taskcluster/client-web';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
 import Typography from '@mui/material/Typography';

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
 import { useLocation } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import MuiSpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import CloseIcon from 'mdi-react/CloseIcon';

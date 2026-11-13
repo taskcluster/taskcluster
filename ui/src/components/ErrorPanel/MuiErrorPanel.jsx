@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { bool, func, instanceOf, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import CloseIcon from 'mdi-react/CloseIcon';

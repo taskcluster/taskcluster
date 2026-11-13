@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { path } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -25,6 +25,7 @@ import StatusLabel from '../../../components/StatusLabel';
 import SchemaTable from '../../../components/SchemaTable';
 import CodeExample from '../../../components/CodeExample';
 import generateExamples from '../../../utils/api-examples';
+import { FIRST_CHILD } from '../../../utils/constants';
 
 const primaryTypographyProps = { variant: 'body1' };
 
@@ -34,10 +35,10 @@ const primaryTypographyProps = { variant: 'body1' };
     expansionPanelSummaryContent: {
       display: 'flex',
       justifyContent: 'space-between',
-      '& div:first-child': {
+      '& div:first-of-type': {
         flex: 1,
       },
-      '& div:nth-child(2)': {
+      '& div:nth-of-type(2)': {
         flex: 1,
       },
     },
@@ -48,7 +49,7 @@ const primaryTypographyProps = { variant: 'body1' };
       width: '100%',
     },
     routingKeyCell: {
-      '& span:not(:first-child)': {
+      [`& span:not(${FIRST_CHILD})`]: {
         marginLeft: theme.spacing(0.5),
       },
     },

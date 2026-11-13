@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import ShellConsole from '../../components/Shell';
 import Dashboard from '../../components/Dashboard';
 
 @withStyles({
   main: {
-    padding: 0,
     position: 'relative',
   },
 })
@@ -21,6 +20,7 @@ export default class Shell extends Component {
     return (
       <Dashboard
         disableAppbar
+        disablePadding
         className={this.props.classes.main}
         title="Shell">
         <ShellConsole

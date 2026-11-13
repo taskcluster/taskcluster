@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import { isEmpty } from 'ramda';
 import classNames from 'classnames';
 import InfoIcon from 'mdi-react/InformationOutlineIcon';
@@ -10,7 +10,7 @@ import Tooltip from '../Tooltip';
 import { basicTreeNode } from '../../utils/prop-types';
 import { SKIP_KEYWORDS, TOOLTIP_DESCRIPTIONS } from '../../utils/constants';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   typography: {
     color: theme.palette.text.primary,
   },
@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 
 function RightCell({ treeNode }) {
   const { schema } = treeNode;
-  const classes = useStyles();
+  const { classes } = useStyles();
   /**
    * Identify keywords that define specifications of the given schema.
    * (skip over keywords that do not need to be displayed).

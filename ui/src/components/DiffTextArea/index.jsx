@@ -6,7 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { alpha, darken, lighten, useTheme } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 
 const diffStyles = theme => {

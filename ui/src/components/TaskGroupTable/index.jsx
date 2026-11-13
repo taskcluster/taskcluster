@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { string, arrayOf, shape, bool } from 'prop-types';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { FixedSizeList as List } from 'react-window';
 import { WindowScroller } from 'react-virtualized';
 import TableRow from '@mui/material/TableRow';
@@ -148,6 +148,9 @@ const ItemRendererMemo = React.memo(ItemRenderer);
   },
   tableHead: {
     display: 'flex',
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   tableHeadRow: {
     flex: 1,
@@ -158,6 +161,9 @@ const ItemRendererMemo = React.memo(ItemRenderer);
       paddingBottom: theme.spacing(1),
       paddingTop: theme.spacing(0.5),
     },
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   tableHeadCell: {
     color: theme.palette.text.secondary,
@@ -167,6 +173,9 @@ const ItemRendererMemo = React.memo(ItemRenderer);
     flex: 1,
     justifyContent: 'flex-end',
     width: '12%',
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   tableTimingHeadCell: {
     display: 'flex',
@@ -182,10 +191,16 @@ const ItemRendererMemo = React.memo(ItemRenderer);
     flex: 1,
     justifyContent: 'flex-end',
     width: '12%',
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   tableRow: {
     display: 'flex',
     ...theme.mixins.hover,
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   tableFirstCell: {
     width: '76%',
@@ -202,6 +217,9 @@ const ItemRendererMemo = React.memo(ItemRenderer);
     alignItems: 'flex-end',
     width: '12%',
     paddingRight: theme.spacing(4),
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   tableTimeCell: {
     display: 'flex',
@@ -221,6 +239,9 @@ const ItemRendererMemo = React.memo(ItemRenderer);
     justifyContent: 'flex-end',
     alignItems: 'center',
     width: '12%',
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   noTasksText: {
     marginTop: theme.spacing(2),

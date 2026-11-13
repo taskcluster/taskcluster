@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import appTheme from '../../theme';
 
 // Record the props the debugger is rendered with, and stub out the heavy
@@ -43,11 +43,9 @@ const withBindings = [
 
 const tree = hook => (
   <MemoryRouter keyLength={0}>
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={appTheme.darkTheme}>
-        <HookForm hook={hook} />
-      </ThemeProvider>
-    </StyledEngineProvider>
+    <ThemeProvider theme={appTheme.darkTheme}>
+      <HookForm hook={hook} />
+    </ThemeProvider>
   </MemoryRouter>
 );
 

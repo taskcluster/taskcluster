@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, string } from 'prop-types';
 import classNames from 'classnames';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import List from '@mui/material/List';

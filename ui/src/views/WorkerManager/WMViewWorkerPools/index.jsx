@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Queue, WorkerManager } from '@taskcluster/client-web';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs from 'qs';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';

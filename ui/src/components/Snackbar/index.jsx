@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { func, object, string, oneOf } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import IconButton from '@mui/material/IconButton';
 import MuiSnackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';

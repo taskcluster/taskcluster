@@ -1,9 +1,9 @@
 import React from 'react';
 import { node, element } from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import MuiChip from '@mui/material/Chip';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   /**
    * Chips used for keyword notations.
    */
@@ -17,7 +17,7 @@ function Chip({ label, icon }) {
   /**
    * Generate classes to use styles for chips.
    */
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   return (
     <MuiChip

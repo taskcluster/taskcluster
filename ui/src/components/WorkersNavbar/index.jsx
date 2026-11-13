@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { string, bool } from 'prop-types';
 import { Chip } from '@mui/material';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import HourglassIcon from 'mdi-react/HourglassIcon';
@@ -177,9 +177,9 @@ export default class WorkersNavbar extends Component {
             title={item.hint}
             component={Link}
             color="primary"
-            nav
-            activeClassName={classes.active}
-            isActive={() => window.location.pathname === item.to}
+            className={
+              window.location.pathname === item.to ? classes.active : undefined
+            }
             clickable
             to={item.to}
           />

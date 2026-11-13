@@ -3,16 +3,16 @@
 exports[`should render Profile page 1`] = `
 <DocumentFragment>
   <div
-    class="ToggleableThemeComponent-root-2"
+    class="css-3jbeo6-ToggleableThemeComponent-root"
   >
     <header
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorPrimary MuiAppBar-positionFixed ToggleableThemeComponent-appBar-3 mui-fixed css-v9gvnt-MuiPaper-root-MuiAppBar-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorPrimary MuiAppBar-positionFixed mui-fixed css-1cmidsi-MuiPaper-root-MuiAppBar-root-ToggleableThemeComponent-appBar"
     >
       <div
         class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-hyum1k-MuiToolbar-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit SkipNavigation-skipButton-21 css-rrlhcq-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit css-8ekss-MuiButtonBase-root-MuiButton-root-SkipNavigation-skipButton"
           selector="main"
           tabindex="0"
           type="button"
@@ -30,7 +30,7 @@ exports[`should render Profile page 1`] = `
           type="button"
         >
           <svg
-            class="mdi-icon ToggleableThemeComponent-appIcon-16"
+            class="mdi-icon css-151lide-ToggleableThemeComponent-appIcon"
             fill="currentColor"
             height="24"
             viewBox="0 0 24 24"
@@ -45,19 +45,19 @@ exports[`should render Profile page 1`] = `
           />
         </button>
         <h6
-          class="MuiTypography-root MuiTypography-h6 MuiTypography-noWrap ToggleableThemeComponent-appBarTitle-5 css-3l2ww3-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 MuiTypography-noWrap css-1anoqsw-MuiTypography-root-ToggleableThemeComponent-appBarTitle"
         >
           Profile
         </h6>
         <button
           aria-label="Toggle light/dark theme"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge ToggleableThemeComponent-leftAppBarButton-15 css-1iz4bek-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-166iiv8-MuiButtonBase-root-MuiIconButton-root-ToggleableThemeComponent-leftAppBarButton"
           data-mui-internal-clone-element="true"
           tabindex="0"
           type="button"
         >
           <svg
-            class="mdi-icon ToggleableThemeComponent-appIcon-16"
+            class="mdi-icon css-151lide-ToggleableThemeComponent-appIcon"
             fill="currentColor"
             height="24"
             viewBox="0 0 24 24"
@@ -82,7 +82,7 @@ exports[`should render Profile page 1`] = `
             type="button"
           >
             <svg
-              class="mdi-icon ToggleableThemeComponent-appIcon-16"
+              class="mdi-icon css-151lide-ToggleableThemeComponent-appIcon"
               fill="currentColor"
               height="24"
               viewBox="0 0 24 24"
@@ -98,7 +98,7 @@ exports[`should render Profile page 1`] = `
           </button>
         </a>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-25 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary UserMenu-buttonContainedPrimary-25 MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary UserMenu-userMenuButton-23 css-jiae46-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-9mnwqr-MuiButtonBase-root-UserMenu-buttonContainedPrimary-MuiButton-root-UserMenu-buttonContainedPrimary-UserMenu-userMenuButton"
           id="sign-in-button"
           tabindex="0"
           type="button"
@@ -111,7 +111,7 @@ exports[`should render Profile page 1`] = `
       </div>
     </header>
     <main
-      class="ToggleableThemeComponent-content-13 ToggleableThemeComponent-contentPadding-11"
+      class="css-eri4p-ToggleableThemeComponent-content css-8ogsti-ToggleableThemeComponent-contentPadding"
       location="[object Object]"
       match="[object Object]"
     >

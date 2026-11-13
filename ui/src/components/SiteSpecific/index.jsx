@@ -1,12 +1,13 @@
 import React, { createContext } from 'react';
 import { arrayOf, node, string } from 'prop-types';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Paper from '@mui/material/Paper';
 import {
   siteSpecificVariables,
   substituteSiteSpecific,
 } from '../../utils/siteSpecific';
+import { FIRST_CHILD } from '../../utils/constants';
 
 export const SiteSpecificContext = createContext(null);
 
@@ -16,7 +17,7 @@ const styles = withStyles(theme => ({
     backgroundColor: alpha(theme.palette.specific.main, 0.2),
     padding: `${theme.spacing(1)} ${theme.spacing(3)}`,
     margin: `${theme.spacing(3)} 0`,
-    '& > :first-child': {
+    [`& > ${FIRST_CHILD}`]: {
       marginTop: 0,
     },
     '& > :last-child': {

@@ -1,5 +1,5 @@
 import React from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../../utils/withStyles';
 import { THEME } from '../../../../utils/constants';
 
 const styles = theme => ({
@@ -15,7 +15,7 @@ const styles = theme => ({
     borderCollapse: 'collapse',
     borderSpacing: 0,
     overflowX: 'auto',
-    overflow: 'hidden',
+    overflowY: 'hidden',
     '& thead': {
       display: 'table-header-group',
       color: theme.palette.text.secondary,

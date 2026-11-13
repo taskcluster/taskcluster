@@ -1,6 +1,6 @@
 import React from 'react';
 import { node, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@mui/material/TableCell';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';

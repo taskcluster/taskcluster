@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';
 import 'prismjs/themes/prism.css';

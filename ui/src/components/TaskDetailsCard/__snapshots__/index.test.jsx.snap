@@ -7,10 +7,10 @@ exports[`should render TaskDetailsCard 1`] = `
   >
     <div>
       <div
-        class="MuiCardContent-root TaskDetailsCard-cardContent-2 css-46bh2p-MuiCardContent-root"
+        class="MuiCardContent-root css-115fbsa-MuiCardContent-root-TaskDetailsCard-cardContent"
       >
         <h5
-          class="MuiTypography-root MuiTypography-h5 TaskDetailsCard-headline-1 css-m1s8pb-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h5 css-13qoapx-MuiTypography-root-TaskDetailsCard-headline"
         >
           Task Details
         </h5>
@@ -32,7 +32,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-24 Label-disabled-19 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-18 css-wogk46-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-bq58-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-Label-mini"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -43,7 +43,7 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </li>
           <div
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1r8dyf1-MuiButtonBase-root-MuiListItem-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="taskId (Copy)"
@@ -78,7 +78,7 @@ exports[`should render TaskDetailsCard 1`] = `
             />
           </div>
           <div
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1r8dyf1-MuiButtonBase-root-MuiListItem-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2022-02-15T12:00:00.000Z (Copy)"
@@ -116,7 +116,7 @@ exports[`should render TaskDetailsCard 1`] = `
             href="/provisioners/task/worker-types/queue"
           >
             <div
-              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1kdby5y-MuiButtonBase-root-MuiListItem-root-TaskDetailsCard-listItemButton"
               role="button"
               tabindex="0"
               title="View Workers"
@@ -152,7 +152,7 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </a>
           <div
-            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1kdby5y-MuiButtonBase-root-MuiListItem-root-TaskDetailsCard-listItemButton"
             role="button"
             tabindex="0"
           >
@@ -250,7 +250,7 @@ exports[`should render TaskDetailsCard 1`] = `
                           class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
                         >
                           <div
-                            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+                            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1r8dyf1-MuiButtonBase-root-MuiListItem-root-listItemButtonRoot"
                             role="button"
                             tabindex="0"
                             title=" (Copy)"
@@ -283,7 +283,7 @@ exports[`should render TaskDetailsCard 1`] = `
                         </div>
                       </div>
                       <pre
-                        class="language-yaml TaskDetailsCard-payload-9"
+                        class="language-yaml css-15775ti-TaskDetailsCard-payload"
                       >
                         <code>
                           <span
@@ -414,11 +414,11 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </div>
           <a
-            class="TaskDetailsCard-listItemButton-5"
+            class="css-zvt5q9-TaskDetailsCard-listItemButton"
             href="/tasks/taskId/definition"
           >
             <div
-              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+              class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1kdby5y-MuiButtonBase-root-MuiListItem-root-TaskDetailsCard-listItemButton"
               role="button"
               tabindex="0"
             >
@@ -437,14 +437,14 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </a>
           <a
-            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button TaskDetailsCard-listItemButton-5 css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1kdby5y-MuiButtonBase-root-MuiListItem-root-TaskDetailsCard-listItemButton"
             href="https://test.taskcluster-dev.net/task/taskId"
             rel="noopener noreferrer"
             tabindex="0"
             target="_blank"
           >
             <div
-              class="MuiListItemText-root MuiListItemText-multiline TaskDetailsCard-sourceHeadlineText-4 css-konndc-MuiListItemText-root"
+              class="MuiListItemText-root MuiListItemText-multiline css-1wyxjzm-MuiListItemText-root-TaskDetailsCard-sourceHeadlineText"
               title="https://test.taskcluster-dev.net/task/taskId"
             >
               <span
@@ -453,7 +453,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 Source
               </span>
               <p
-                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary TaskDetailsCard-sourceHeadline-3 css-e28pe8-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-1hhgpg1-MuiTypography-root-TaskDetailsCard-sourceHeadline"
               >
                 https://test.taskcluster-dev.net/task/taskId
               </p>
@@ -492,7 +492,7 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </li>
           <div
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1r8dyf1-MuiButtonBase-root-MuiListItem-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2022-05-15T12:00:00.000Z (Copy)"
@@ -527,7 +527,7 @@ exports[`should render TaskDetailsCard 1`] = `
             />
           </div>
           <div
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-padding MuiListItem-button css-cuj1lx-MuiButtonBase-root-MuiListItem-root"
+            class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button css-1r8dyf1-MuiButtonBase-root-MuiListItem-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2023-02-15T12:00:00.000Z (Copy)"
@@ -576,7 +576,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled Label-info-24 Label-disabled-19 MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall Label-dense-17 MuiButton-textSizeSmall MuiButton-colorInherit Label-mini-18 css-wogk46-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-bq58-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-Label-mini"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -674,7 +674,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 Scopes
               </h6>
               <ul
-                class="TaskDetailsCard-unorderedList-7"
+                class="css-16kvc7w-TaskDetailsCard-unorderedList"
               >
                 <li>
                   <span

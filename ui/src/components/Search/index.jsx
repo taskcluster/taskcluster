@@ -2,19 +2,19 @@ import React, { PureComponent } from 'react';
 import { object, func, string, bool } from 'prop-types';
 import classNames from 'classnames';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import FormControl from '@mui/material/FormControl';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
 import { THEME } from '../../utils/constants';
 
-@withStyles(theme => ({
+@withStyles((theme, _props, classes) => ({
   root: {
     background: alpha(THEME.PRIMARY_DARK, 0.5),
     borderRadius: 2,
     '&:hover': {
       background: alpha(THEME.PRIMARY_DARK, 0.9),
     },
-    '& $input': {
+    [`& .${classes.input}`]: {
       transition: theme.transitions.create('width'),
       width: 230,
       '&:focus': {
@@ -38,8 +38,8 @@ import { THEME } from '../../utils/constants';
     },
   },
   input: {
-    fontSize: theme.typography.body1.fontSize,
     font: 'inherit',
+    fontSize: theme.typography.body1.fontSize,
     paddingTop: theme.spacing(1),
     paddingRight: theme.spacing(1),
     paddingBottom: theme.spacing(1),

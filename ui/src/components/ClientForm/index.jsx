@@ -3,7 +3,7 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import { parse } from 'qs';
 import { addYears } from 'date-fns';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import classNames from 'classnames';
 import List from '@mui/material/List';

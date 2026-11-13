@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { sum, values } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';

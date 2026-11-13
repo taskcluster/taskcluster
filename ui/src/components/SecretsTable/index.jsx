@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, func, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -20,6 +20,9 @@ const iconSize = 16;
     alignItems: 'center',
     paddingTop: theme.spacing(1.5),
     paddingBottom: theme.spacing(1.5),
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   nameLink: {
     flexGrow: 1,

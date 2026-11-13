@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Queue } from '@taskcluster/client-web';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';

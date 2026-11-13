@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { func, arrayOf, string, bool } from 'prop-types';
 import { camelCase } from 'change-case';
 import TableRow from '@mui/material/TableRow';

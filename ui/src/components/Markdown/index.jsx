@@ -5,7 +5,7 @@ import parser from 'markdown-it';
 import linkAttributes from 'markdown-it-link-attributes';
 import highlighter from 'markdown-it-highlightjs';
 import { alpha } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const markdown = parser({ linkify: true });
@@ -104,9 +104,9 @@ const markdownHtml = parser({ html: true, linkify: true });
       width: '100%',
       display: 'block',
       overflowX: 'auto',
+      overflowY: 'hidden',
       borderCollapse: 'collapse',
       borderSpacing: 0,
-      overflow: 'hidden',
       '& .prop-name': {
         fontSize: '0.8125em',
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',

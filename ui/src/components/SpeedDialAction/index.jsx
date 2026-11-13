@@ -1,5 +1,5 @@
 import React from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import MuiSpeedDialAction, {
   speedDialActionClasses,
 } from '@mui/material/SpeedDialAction';

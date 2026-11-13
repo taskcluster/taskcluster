@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { arrayOf, object } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import { parse, stringify } from 'qs';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';

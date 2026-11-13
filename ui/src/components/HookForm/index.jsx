@@ -12,7 +12,7 @@ import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Drawer from '@mui/material/Drawer';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -44,6 +44,7 @@ import PulseBindings from '../PulseBindings';
 import HookBindingDebugger from '../HookBindingDebugger';
 import removeKeys from '../../utils/removeKeys';
 import yamlSchema from '../../utils/yamlSchema';
+import { FIRST_CHILD } from '../../utils/constants';
 
 const initialHook = {
   metadata: {
@@ -117,7 +118,7 @@ const initialHook = {
   errorPanel: {
     maxHeight: '88vh',
     overflow: 'scroll',
-    '& span:first-child': {
+    [`& span${FIRST_CHILD}`]: {
       overflow: 'unset',
     },
   },

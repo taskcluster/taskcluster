@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { arrayOf, bool, func, string } from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -25,6 +25,10 @@ const iconSize = 16;
     paddingRight: theme.spacing(2),
     display: 'flex',
     width: '100%',
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+      paddingLeft: theme.spacing(2),
+    },
   },
 }))
 export default class RolesTable extends Component {

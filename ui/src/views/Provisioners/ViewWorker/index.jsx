@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { format, parseISO, addYears, isAfter } from 'date-fns';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
 import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';

@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { arrayOf, node, string, shape } from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from 'tss-react/mui';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import HeaderWithAnchor from '../HeaderWithAnchor';
@@ -10,14 +10,14 @@ import ListItem from '../ListItem';
 
 // Render a "Next Steps" section with links to further tutorial
 // sections.
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   divider: {
     margin: `${theme.spacing(3)} 0`,
   },
 }));
 
 export default function TutorialNavigation({ children, links }) {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   return (
     <Fragment>

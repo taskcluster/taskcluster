@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { FixedSizeList } from 'react-window';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';

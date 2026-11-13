@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import TableRow from '@mui/material/TableRow';

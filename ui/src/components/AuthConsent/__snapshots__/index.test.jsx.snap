@@ -23,7 +23,7 @@ exports[`should render AuthConsent page 1`] = `
     />
     <div>
       <div
-        class="MuiCardHeader-root AuthConsent-header-1 css-185gdzj-MuiCardHeader-root"
+        class="MuiCardHeader-root css-1s3okx9-MuiCardHeader-root-AuthConsent-header"
       >
         <div
           class="MuiCardHeader-avatar css-1ssile9-MuiCardHeader-avatar"
@@ -110,7 +110,7 @@ exports[`should render AuthConsent page 1`] = `
                   class="MuiAccordionDetails-root css-15v22id-MuiAccordionDetails-root"
                 >
                   <ul
-                    class="MuiList-root MuiList-padding AuthConsent-list-2 css-h4y409-MuiList-root"
+                    class="MuiList-root MuiList-padding css-uklivx-MuiList-root-AuthConsent-list"
                   >
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
@@ -252,7 +252,7 @@ exports[`should render AuthConsent page 1`] = `
     </div>
     <span
       aria-label="Deny"
-      class="AuthConsent-fab-3 AuthConsent-denySpanProps-5"
+      class="css-6iwy5h-AuthConsent-fab css-1ugsued-AuthConsent-denySpanProps"
       data-mui-internal-clone-element="true"
     >
       <button
@@ -280,11 +280,11 @@ exports[`should render AuthConsent page 1`] = `
     </span>
     <span
       aria-label="Allow"
-      class="AuthConsent-fab-3"
+      class="css-6iwy5h-AuthConsent-fab"
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root AuthConsent-allowIcon-4 MuiFab-circular MuiFab-sizeLarge MuiFab-default MuiFab-root AuthConsent-allowIcon-4 MuiFab-circular MuiFab-sizeLarge MuiFab-default css-1n8sh0e-MuiButtonBase-root-MuiFab-root"
+        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default css-1e5yhhr-MuiButtonBase-root-AuthConsent-allowIcon-MuiFab-root-AuthConsent-allowIcon"
         tabindex="0"
         type="submit"
       >

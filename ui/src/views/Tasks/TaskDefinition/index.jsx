@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Queue } from '@taskcluster/client-web';
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '../../../utils/withStyles';
 import Spinner from '../../../components/Spinner';
 import JsonDisplay from '../../../components/JsonDisplay';
 import Dashboard from '../../../components/Dashboard';
