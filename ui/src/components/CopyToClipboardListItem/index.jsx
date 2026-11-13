@@ -26,31 +26,40 @@ function CopyToClipboardListItem(props) {
     listItemProps,
   } = props;
 
+  const copyable = Boolean(textToCopy);
+  const item = (
+    <ListItem
+      button={copyable}
+      classes={copyable ? { root: classes.listItemButtonRoot } : undefined}
+      {...listItemProps}>
+      <ListItemText
+        primary={primary}
+        secondary={secondary}
+        {...listItemTextProps}
+      />
+      {copyable && (isCopy ? <CheckIcon /> : <ContentCopyIcon />)}
+    </ListItem>
+  );
+
+  if (!copyable) {
+    return item;
+  }
+
   return (
     <CopyToClipboard
       onCopy={onCopyClick}
       title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
       text={textToCopy}>
-      <ListItem
-        button
-        classes={{ root: classes.listItemButtonRoot }}
-        {...listItemProps}>
-        <ListItemText
-          primary={primary}
-          secondary={secondary}
-          {...listItemTextProps}
-        />
-        {isCopy ? <CheckIcon /> : <ContentCopyIcon />}
-      </ListItem>
+      {item}
     </CopyToClipboard>
   );
 }
 
 CopyToClipboardListItem.propTypes = {
   // A tooltip to show when the user hovers on the list item
-  tooltipTitle: string.isRequired,
+  tooltipTitle: string,
   // Text to copy when a user clicks on the list item
-  textToCopy: string.isRequired,
+  textToCopy: string,
   // The ListItemText primary prop
   primary: node.isRequired,
   // The ListItemText secondary prop
