@@ -51,15 +51,15 @@ describe('TaskGroupTable', () => {
   });
 
   const mockTasks = [
-    createMockTask('task-1', 'A-Task', 'running', '2025-01-01T00:00:00Z', null),
+    createMockTask('task-1', 'A-Task', 'RUNNING', '2025-01-01T00:00:00Z', null),
     createMockTask(
       'task-2',
       'B-Task',
-      'completed',
+      'COMPLETED',
       '2025-01-01T00:00:00Z',
       '2025-01-01T00:05:00Z'
     ),
-    createMockTask('task-3', 'C-Task', 'running', '2025-01-01T00:00:00Z', null),
+    createMockTask('task-3', 'C-Task', 'RUNNING', '2025-01-01T00:00:00Z', null),
   ];
 
   it('should use taskId as itemKey for proper component lifecycle on filter change', () => {
@@ -67,7 +67,6 @@ describe('TaskGroupTable', () => {
       <MemoryRouter>
         <TaskGroupTable
           taskGroupConnection={{ edges: mockTasks, pageInfo: {} }}
-          filter=""
           searchTerm=""
         />
       </MemoryRouter>
@@ -86,7 +85,6 @@ describe('TaskGroupTable', () => {
       <MemoryRouter>
         <TaskGroupTable
           taskGroupConnection={{ edges: mockTasks, pageInfo: {} }}
-          filter=""
           searchTerm=""
         />
       </MemoryRouter>
@@ -99,7 +97,7 @@ describe('TaskGroupTable', () => {
       <MemoryRouter>
         <TaskGroupTable
           taskGroupConnection={{ edges: mockTasks, pageInfo: {} }}
-          filter="running"
+          filter="RUNNING"
           searchTerm=""
         />
       </MemoryRouter>
