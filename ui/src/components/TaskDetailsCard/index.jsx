@@ -232,13 +232,11 @@ export default class TaskDetailsCard extends Component {
                 />
               </ListItem>
               <CopyToClipboardListItem
-                tooltipTitle={taskId}
                 textToCopy={taskId}
                 primary="Task ID"
                 secondary={taskId}
               />
               <CopyToClipboardListItem
-                tooltipTitle={task.created}
                 textToCopy={task.created}
                 primary="Created"
                 secondary={<DateDistance from={task.created} />}
@@ -310,7 +308,6 @@ export default class TaskDetailsCard extends Component {
                 />
               </ListItem>
               <CopyToClipboardListItem
-                tooltipTitle={task.deadline}
                 textToCopy={task.deadline}
                 primary="Deadline"
                 secondary={
@@ -318,7 +315,6 @@ export default class TaskDetailsCard extends Component {
                 }
               />
               <CopyToClipboardListItem
-                tooltipTitle={task.expires}
                 textToCopy={task.expires}
                 primary="Expires"
                 secondary={<DateDistance from={task.expires} />}

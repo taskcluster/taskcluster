@@ -408,12 +408,10 @@ export default class WMLaunchConfigs extends Component {
           </Link>
         </TableCell>
         <CopyToClipboardTableCell
-          tooltipTitle={launchConfig.created}
           textToCopy={launchConfig.created}
           text={<DateDistance from={launchConfig.created} />}
         />
         <CopyToClipboardTableCell
-          tooltipTitle={launchConfig.lastModified}
           textToCopy={launchConfig.lastModified}
           text={<DateDistance from={launchConfig.lastModified} />}
         />

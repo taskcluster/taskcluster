@@ -503,13 +503,11 @@ export default class TaskRunsCard extends Component {
                     />
                   </ListItem>
                   <CopyToClipboardListItem
-                    tooltipTitle={run.scheduled}
                     textToCopy={run.scheduled}
                     primary="Scheduled"
                     secondary={<DateDistance from={run.scheduled} />}
                   />
                   <CopyToClipboardListItem
-                    tooltipTitle={run.started}
                     textToCopy={run.started}
                     primary="Started"
                     secondary={
@@ -524,7 +522,6 @@ export default class TaskRunsCard extends Component {
                     }
                   />
                   <CopyToClipboardListItem
-                    tooltipTitle={run.resolved}
                     textToCopy={run.resolved}
                     primary="Resolved"
                     secondary={
@@ -571,7 +568,6 @@ export default class TaskRunsCard extends Component {
                     </ListItem>
                   </Link>
                   <CopyToClipboardListItem
-                    tooltipTitle={run.takenUntil}
                     textToCopy={run.takenUntil}
                     primary="Taken Until"
                     secondary={
