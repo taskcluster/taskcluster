@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
-import { Worker, WorkerPool, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
+import { Worker, WorkerPool, WorkerPoolError, WorkerPoolStats, truncateText } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -351,6 +351,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('returns undefined for a missing pool', async () => {
       assert.equal(await WorkerPool.get(helper.db, 'no/such'), undefined);
       assert.equal(await WorkerPool.get(helper.db, 'no/such', { includeStats: true }), undefined);
+    });
+  });
+
+  suite('truncateText', () => {
+    test('truncateText boundaries', () => {
+      assert.equal(truncateText('a'.repeat(100), 100), 'a'.repeat(100));
+      for (const len of [101, 150, 30000]) {
+        const out = truncateText('a'.repeat(len), 100);
+        assert(out.length <= 100, `len ${len} -> ${out.length}`);
+        assert.match(out, /…\[truncated \d+ chars\]$/);
+      }
+    });
+
+    test('truncateText does not split surrogate pairs', () => {
+      for (let len = 90; len < 110; len++) {
+        const out = truncateText('😀'.repeat(200), len);
+        assert(out.length <= len);
+        assert.doesNotMatch(out, /[\ud800-\udbff](?![\udc00-\udfff])/);
+        assert.doesNotMatch(out, /(?<![\ud800-\udbff])[\udc00-\udfff]/);
+      }
+    });
+
+    test('truncateText does not fail on non-strings', () => {
+      for (const smth of ['', null, undefined, false]) {
+        assert.equal(smth, truncateText(smth, 1));
+      }
     });
   });
 });

@@ -1460,6 +1460,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(spy.callCount, 0);
   });
 
+  test('get worker pool errors - oversized description already in db is truncated', async () => {
+    await helper.db.fns.create_worker_pool_error_launch_config(
+      slug.v4(),
+      'foobar/baz',
+      new Date(),
+      'something-error',
+      'Oversized',
+      'x'.repeat(25000),
+      {},
+      null
+    );
+
+    const data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+    assert.equal(data.workerPoolErrors.length, 1);
+    assert(data.workerPoolErrors[0].description.length <= 10240);
+    assert.match(data.workerPoolErrors[0].description, /…\[truncated \d+ chars\]$/);
+  });
+
   test('get worker pool errors - no errors in db', async () => {
     const data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 

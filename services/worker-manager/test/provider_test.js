@@ -217,6 +217,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(helper.notify.emails.length, 0);
     });
 
+    test('report errors truncates oversized title and description', async () => {
+      const workerPool = await createWP();
+
+      await provider.reportError({
+        workerPool,
+        kind: 'something-error',
+        title: 'T'.repeat(500),
+        description: 'The sizes available are: '.concat('Standard_NV12s_v3, '.repeat(1400)),
+        notify: helper.notify,
+        WorkerPoolError: WorkerPoolError,
+      });
+
+      const [error] = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
+      assert(error.description.length <= 10240);
+      assert.match(error.description, /^The sizes available are: .*…\[truncated \d+ chars\]$/);
+      assert(error.title.length <= 128);
+      assert.match(error.title, /…\[truncated \d+ chars\]$/);
+    });
+
+    test('report errors dedups emails on the full, untruncated description', async () => {
+      const workerPool = await createWP({ emailOnError: true });
+      const base = {
+        workerPool,
+        kind: 'big-error',
+        title: 'Big',
+        notify: helper.notify,
+        WorkerPoolError: WorkerPoolError,
+      };
+      await provider.reportError({ ...base, description: `${'a'.repeat(30000)}X` });
+      await provider.reportError({ ...base, description: `${'a'.repeat(30000)}Y` });
+      assert.equal(helper.notify.emails.length, 2);
+    });
+
     test('report errors (w/ email)', async () => {
       const workerPool = await createWP({ emailOnError: true });
 

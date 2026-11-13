@@ -4,7 +4,13 @@ import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';
 import * as yaml from 'js-yaml';
-import { Worker, WorkerPoolError } from '../data.js';
+import {
+  Worker,
+  WorkerPoolError,
+  truncateText,
+  WORKER_POOL_ERROR_TITLE_MAX,
+  WORKER_POOL_ERROR_DESCRIPTION_MAX,
+} from '../data.js';
 
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
@@ -491,6 +497,9 @@ export class Provider {
    * @returns {Promise<import('../data.js').WorkerPoolError>}
    */
   async reportError({ workerPool, kind, title, description, extra = {}, launchConfigId }) {
+    title = truncateText(title, WORKER_POOL_ERROR_TITLE_MAX);
+    const fullDescription = description;
+    description = truncateText(description, WORKER_POOL_ERROR_DESCRIPTION_MAX);
     const errorId = slugid.v4();
     const error = this.WorkerPoolError.fromApi({
       workerPoolId: workerPool.workerPoolId,
@@ -505,13 +514,18 @@ export class Provider {
 
     try {
       if (workerPool.emailOnError) {
-        if (!this.isDuplicate(extra, description, workerPool.workerPoolId)) {
+        if (!this.isDuplicate(extra, fullDescription, workerPool.workerPoolId)) {
           await this.notify.email({
             address: workerPool.owner,
             subject: `Taskcluster Worker Manager Error: ${title}`,
-            content: getExtraInfo({ extra, description, workerPoolId: workerPool.workerPoolId, errorId }),
+            content: getExtraInfo({
+              extra,
+              description: fullDescription,
+              workerPoolId: workerPool.workerPoolId,
+              errorId,
+            }),
           });
-          this.markSent(extra, description, workerPool.workerPoolId);
+          this.markSent(extra, fullDescription, workerPool.workerPoolId);
         } else {
           this.monitor.debug('Duplicate error email detected. Not attempting resend.');
         }
