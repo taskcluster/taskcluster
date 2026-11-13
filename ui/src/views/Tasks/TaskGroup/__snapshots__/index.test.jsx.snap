@@ -507,11 +507,11 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           role="table"
         >
           <div
-            class="MuiTableHead-root css-dstbw0-MuiTableHead-root-TaskGroupTable-tableHead"
+            class="MuiTableHead-root css-1a36lft-MuiTableHead-root-TaskGroupTable-tableHead"
             role="rowgroup"
           >
             <div
-              class="MuiTableRow-root MuiTableRow-head css-s2hcn1-MuiTableRow-root-TaskGroupTable-tableHeadRow"
+              class="MuiTableRow-root MuiTableRow-head css-jotyh7-MuiTableRow-root-TaskGroupTable-tableHeadRow"
               role="row"
             >
               <div
@@ -540,7 +540,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                 </span>
               </div>
               <div
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-4vp3zc-MuiTableCell-root-TaskGroupTable-tableSecondHeadCell"
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-ngz5ad-MuiTableCell-root-TaskGroupTable-tableSecondHeadCell"
                 role="columnheader"
                 scope="col"
               >
@@ -565,7 +565,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
                 </span>
               </div>
               <div
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-v14txj-MuiTableCell-root-TaskGroupTable-tableThirdHeadCell"
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeSmall css-12x9s5f-MuiTableCell-root-TaskGroupTable-tableThirdHeadCell"
                 role="columnheader"
                 scope="col"
               >

@@ -25,6 +25,10 @@ const iconSize = 16;
     paddingRight: theme.spacing(2),
     display: 'flex',
     width: '100%',
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+      paddingLeft: theme.spacing(2),
+    },
   },
 }))
 export default class RolesTable extends Component {

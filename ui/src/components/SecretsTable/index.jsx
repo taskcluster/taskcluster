@@ -20,6 +20,9 @@ const iconSize = 16;
     alignItems: 'center',
     paddingTop: theme.spacing(1.5),
     paddingBottom: theme.spacing(1.5),
+    [theme.breakpoints.down('lg')]: {
+      display: 'flex',
+    },
   },
   nameLink: {
     flexGrow: 1,
