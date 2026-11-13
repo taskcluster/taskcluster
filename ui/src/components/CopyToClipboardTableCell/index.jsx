@@ -17,17 +17,14 @@ const styles = theme => ({
 
 function CopyToClipboardTableCell(props) {
   const { isCopy, onCopyClick } = useCopyToClipboard();
-  const { classes, tooltipTitle, textToCopy, text } = props;
+  const { classes, textToCopy, tooltipTitle = textToCopy, text } = props;
   const iconSize = 16;
-
-  return (
-    <CopyToClipboard
-      onCopy={onCopyClick}
-      title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
-      text={textToCopy}>
-      <TableCell>
-        <TableCellItem button>
-          {text}
+  const copyable = Boolean(textToCopy);
+  const cell = (
+    <TableCell>
+      <TableCellItem button={copyable}>
+        {text}
+        {copyable && (
           <div className={classes.icon}>
             {isCopy ? (
               <CheckIcon size={iconSize} />
@@ -35,17 +32,32 @@ function CopyToClipboardTableCell(props) {
               <ContentCopyIcon size={iconSize} />
             )}
           </div>
-        </TableCellItem>
-      </TableCell>
+        )}
+      </TableCellItem>
+    </TableCell>
+  );
+
+  if (!copyable) {
+    return cell;
+  }
+
+  const copyLabel = isCopy ? 'Copied!' : 'Copy';
+
+  return (
+    <CopyToClipboard
+      onCopy={onCopyClick}
+      title={tooltipTitle ? `${tooltipTitle} (${copyLabel})` : copyLabel}
+      text={textToCopy}>
+      {cell}
     </CopyToClipboard>
   );
 }
 
 CopyToClipboardTableCell.propTypes = {
   // A tooltip to show when the user hovers on the list item
-  tooltipTitle: string.isRequired,
+  tooltipTitle: string,
   // Text to copy when a user clicks on the list item
-  textToCopy: string.isRequired,
+  textToCopy: string,
   // The TableCellText secondary prop
   text: node,
 };

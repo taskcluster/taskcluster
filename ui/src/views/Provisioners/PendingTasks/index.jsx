@@ -100,7 +100,6 @@ export default class WMViewPendingTasks extends Component {
           </Label>
         </TableCell>
         <CopyToClipboardTableCell
-          tooltipTitle={inserted}
           textToCopy={inserted}
           text={<DateDistance from={inserted} />}
         />

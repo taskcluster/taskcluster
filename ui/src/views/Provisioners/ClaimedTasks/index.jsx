@@ -107,7 +107,6 @@ export default class WMViewClaimedTasks extends Component {
           </Link>
         </TableCell>
         <CopyToClipboardTableCell
-          tooltipTitle={claimed}
           textToCopy={claimed}
           text={<DateDistance from={claimed} />}
         />

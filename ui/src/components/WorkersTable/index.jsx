@@ -273,7 +273,6 @@ export default class WorkersTable extends Component {
                 <TableCell> {capacity || 0} </TableCell>
                 {lastDateActive ? (
                   <CopyToClipboardTableCell
-                    tooltipTitle={lastDateActive}
                     textToCopy={lastDateActive}
                     text={<DateDistance from={lastDateActive} />}
                   />
@@ -283,7 +282,6 @@ export default class WorkersTable extends Component {
                   </TableCell>
                 )}
                 <CopyToClipboardTableCell
-                  tooltipTitle={firstClaim}
                   textToCopy={firstClaim}
                   text={<DateDistance from={firstClaim} />}
                 />
@@ -312,7 +310,6 @@ export default class WorkersTable extends Component {
                 </TableCell>
                 {latestTask?.run?.started ? (
                   <CopyToClipboardTableCell
-                    tooltipTitle={latestTask.run.started}
                     textToCopy={latestTask.run.started}
                     text={<DateDistance from={latestTask.run.started} />}
                   />
@@ -321,7 +318,6 @@ export default class WorkersTable extends Component {
                 )}
                 {latestTask?.run?.resolved ? (
                   <CopyToClipboardTableCell
-                    tooltipTitle={latestTask.run.resolved}
                     textToCopy={latestTask.run.resolved}
                     text={<DateDistance from={latestTask.run.resolved} />}
                   />

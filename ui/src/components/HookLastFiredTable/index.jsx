@@ -76,7 +76,6 @@ function HookLastFiredTable({ classes, ...props }) {
             <StatusLabel state={hookFire.taskState} />
           </TableCell>
           <CopyToClipboardTableCell
-            tooltipTitle={hookFire.taskCreateTime}
             textToCopy={hookFire.taskCreateTime}
             text={<DateDistance from={hookFire.taskCreateTime} />}
           />

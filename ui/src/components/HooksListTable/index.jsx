@@ -187,7 +187,6 @@ export default class HooksListTable extends Component {
         </TableCell>
 
         <CopyToClipboardTableCell
-          tooltipTitle={lastFire?.taskCreateTime}
           textToCopy={lastFire?.taskCreateTime}
           text={
             lastFire?.taskCreateTime ? (
