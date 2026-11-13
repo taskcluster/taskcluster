@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, act, fireEvent, cleanup } from '@testing-library/react';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import appTheme from '../../theme';
 import { AuthContext } from '../../utils/Auth';
 import HookBindingDebugger from './index';
@@ -31,17 +31,15 @@ const defaultSchema = { type: 'object', additionalProperties: false };
 
 const tree = (props, auth) => {
   const debuggerComponent = (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={appTheme.darkTheme}>
-        <HookBindingDebugger
-          open
-          onClose={vi.fn()}
-          bindings={bindings}
-          triggerSchema={defaultSchema}
-          {...props}
-        />
-      </ThemeProvider>
-    </StyledEngineProvider>
+    <ThemeProvider theme={appTheme.darkTheme}>
+      <HookBindingDebugger
+        open
+        onClose={vi.fn()}
+        bindings={bindings}
+        triggerSchema={defaultSchema}
+        {...props}
+      />
+    </ThemeProvider>
   );
 
   return auth ? (
