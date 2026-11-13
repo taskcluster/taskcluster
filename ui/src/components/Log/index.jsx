@@ -35,7 +35,7 @@ const globalStyles = theme => {
       paddingTop: 4,
       paddingBottom: theme.spacing(1),
       color: theme.palette.text.primary,
-      '-webkit-font-smoothing': 'auto',
+      WebkitFontSmoothing: 'auto',
     },
     'div.react-lazylog-searchbar': {
       backgroundColor: theme.palette.background.default,
