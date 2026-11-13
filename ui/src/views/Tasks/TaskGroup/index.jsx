@@ -1009,7 +1009,6 @@ export default class TaskGroup extends Component {
             <Grid container className={classes.firstGrid}>
               <Grid item xs={6}>
                 <CopyToClipboardListItem
-                  tooltipTitle={taskGroupInfo.expires}
                   textToCopy={taskGroupInfo.expires}
                   primary="Task Group Expires"
                   secondary={<DateDistance from={taskGroupInfo.expires} />}
@@ -1018,7 +1017,6 @@ export default class TaskGroup extends Component {
               <Grid item xs={6}>
                 {taskGroupInfo.sealed && (
                   <CopyToClipboardListItem
-                    tooltipTitle={taskGroupInfo.sealed}
                     textToCopy={taskGroupInfo.sealed}
                     primary="Task Group Sealed"
                     secondary={<DateDistance from={taskGroupInfo.sealed} />}

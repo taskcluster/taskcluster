@@ -18,8 +18,8 @@ function CopyToClipboardListItem(props) {
   const { classes } = useStyles();
   const { isCopy, onCopyClick } = useCopyToClipboard();
   const {
-    tooltipTitle,
     textToCopy,
+    tooltipTitle = textToCopy,
     primary,
     secondary,
     listItemTextProps,
@@ -45,10 +45,12 @@ function CopyToClipboardListItem(props) {
     return item;
   }
 
+  const copyLabel = isCopy ? 'Copied!' : 'Copy';
+
   return (
     <CopyToClipboard
       onCopy={onCopyClick}
-      title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
+      title={tooltipTitle ? `${tooltipTitle} (${copyLabel})` : copyLabel}
       text={textToCopy}>
       {item}
     </CopyToClipboard>

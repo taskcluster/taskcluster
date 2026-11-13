@@ -406,8 +406,7 @@ export default class ViewClient extends Component {
             />
             <CardContent className={classes.listItemButton}>
               <CopyToClipboardListItem
-                tooltipTitle={accessToken || ''}
-                textToCopy={accessToken || ''}
+                textToCopy={accessToken}
                 primary="AccessToken"
                 secondary={accessToken}
                 listItemTextProps={{
