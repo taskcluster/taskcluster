@@ -73,7 +73,7 @@ const DOTS_VARIANT_LIMIT = 5;
     pointer: {
       cursor: 'pointer',
     },
-    logButton: {
+    artifactLabel: {
       marginRight: theme.spacing(1),
     },
     artifactsListItemContainer: {
@@ -272,7 +272,9 @@ export default class TaskRunsCard extends Component {
   getLiveLogArtifact = () => {
     const { artifacts, liveLogName = 'public/logs/live.log' } = this.props;
 
-    return artifacts.find(({ name }) => name === liveLogName);
+    return artifacts.find(
+      ({ name, storageType }) => name === liveLogName && storageType !== 'error'
+    );
   };
 
   onCopyClick(url) {
@@ -294,6 +296,34 @@ export default class TaskRunsCard extends Component {
     const { classes } = this.props;
     const { isCopy } = this.state;
     const { name } = artifact;
+    if (artifact.storageType === 'error') {
+      const Icon = getIconFromMime(artifact.contentType);
+
+      return (
+        <TableRow key={name} className={classes.artifactTableRow}>
+          <TableCell>
+            <div className={classes.artifactLink}>
+              <div className={classes.iconDiv}>
+                <Icon />
+              </div>
+              <div className={classes.artifactNameWrapper}>
+                <Label
+                  component="span"
+                  role="status"
+                  status="error"
+                  mini
+                  className={classes.artifactLabel}>
+                  UNAVAILABLE
+                </Label>
+                <div className={classes.artifactName}>{name}</div>
+              </div>
+            </div>
+          </TableCell>
+          <TableCell />
+        </TableRow>
+      );
+    }
+
     const {
       icon: Icon,
       isLogFile,
@@ -326,7 +356,7 @@ export default class TaskRunsCard extends Component {
             </div>
             <div className={classes.artifactNameWrapper}>
               {isLogFile && (
-                <Label status="info" mini className={classes.logButton}>
+                <Label status="info" mini className={classes.artifactLabel}>
                   LOG
                 </Label>
               )}
