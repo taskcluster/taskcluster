@@ -6,28 +6,32 @@ import TaskGroupTable from './index';
 let capturedItemKey = null;
 let capturedItemData = null;
 
-vi.mock('react-window', () => ({
-  FixedSizeList: vi.fn(
-    ({ children: Children, itemData, itemKey, itemCount }) => {
-      capturedItemKey = itemKey;
-      capturedItemData = itemData;
+vi.mock('react-window', async () => {
+  const { forwardRef } = await import('react');
 
-      const items = [];
+  return {
+    FixedSizeList: forwardRef(
+      ({ children: Children, itemData, itemKey, itemCount }, _ref) => {
+        capturedItemKey = itemKey;
+        capturedItemData = itemData;
 
-      for (let i = 0; i < Math.min(3, itemCount); i += 1) {
-        const key = itemKey ? itemKey(i, itemData) : i;
+        const items = [];
 
-        items.push(
-          <div key={key} data-testid={`item-${i}`} data-item-key={key}>
-            <Children data={itemData} index={i} style={{}} />
-          </div>
-        );
+        for (let i = 0; i < Math.min(3, itemCount); i += 1) {
+          const key = itemKey ? itemKey(i, itemData) : i;
+
+          items.push(
+            <div key={key} data-testid={`item-${i}`} data-item-key={key}>
+              <Children data={itemData} index={i} style={{}} />
+            </div>
+          );
+        }
+
+        return <div data-testid="virtual-list">{items}</div>;
       }
-
-      return <div data-testid="virtual-list">{items}</div>;
-    }
-  ),
-}));
+    ),
+  };
+});
 
 vi.mock('react-virtualized', () => ({
   WindowScroller: ({ children }) => children({}),
