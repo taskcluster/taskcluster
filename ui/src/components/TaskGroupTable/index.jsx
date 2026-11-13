@@ -252,7 +252,6 @@ const ItemRendererMemo = React.memo(ItemRenderer);
 }))
 export default class TaskGroupTable extends Component {
   static defaultProps = {
-    filter: '',
     searchTerm: '',
   };
 
