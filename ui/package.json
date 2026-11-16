@@ -35,7 +35,7 @@
     "catch-links": "^2.0.1",
     "change-case": "^5.4.4",
     "classnames": "^2.5.1",
-    "codemirror": "^5.65.10",
+    "codemirror": "^6.0.2",
     "compare-versions": "^6.1.1",
     "date-fns": "^2.30.0",
     "deep-sort-object": "^1.0.2",
