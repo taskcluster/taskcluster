@@ -25,7 +25,7 @@ require (
 	github.com/shirou/gopsutil/v4 v4.26.10
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/stretchr/testify v1.12.1
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
 	github.com/taskcluster/httpbackoff/v3 v3.1.0
@@ -33,9 +33,9 @@ require (
 	github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.yaml.in/yaml/v3 v3.0.5
-	golang.org/x/sync v0.24.0
-	golang.org/x/sys v0.49.0
+	go.yaml.in/yaml/v3 v3.0.6
+	golang.org/x/sync v0.25.0
+	golang.org/x/sys v0.50.0
 	golang.org/x/tools v0.52.0
 	sigs.k8s.io/yaml v1.6.0
 )
