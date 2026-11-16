@@ -3033,10 +3033,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"builtin-modules@npm:^3.1.0":
-  version: 3.3.0
-  resolution: "builtin-modules@npm:3.3.0"
-  checksum: 10c0/2cb3448b4f7306dc853632a4fcddc95e8d4e4b9868c139400027b71938fc6806d4ff44007deffb362ac85724bd40c2c6452fb6a0aa4531650eeddb98d8e5ee8a
+"builtin-modules@npm:^5.5.0":
+  version: 5.5.0
+  resolution: "builtin-modules@npm:5.5.0"
+  checksum: 10c0/2ba109db605c0c738157e3ef505649d4376e4cf8b0b17666540a037a363dea23e7891677952033a6ef8f30230bcc3217df33a9d9ca6001dd9ae8f81e01eb48c5
   languageName: node
   linkType: hard
 
@@ -7635,7 +7635,7 @@ __metadata:
     aws-sdk-client-mock: "npm:^4.1.0"
     body-parser: "npm:2.4.0"
     bottleneck: "npm:^2.15.3"
-    builtin-modules: "npm:^3.1.0"
+    builtin-modules: "npm:^5.5.0"
     chalk: "npm:^6.0.1"
     commander: "npm:^9.4.1"
     compression: "npm:^1.8.2"

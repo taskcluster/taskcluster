@@ -126,7 +126,7 @@
     "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0",
-    "builtin-modules": "^3.1.0",
+    "builtin-modules": "^5.5.0",
     "commander": "^9.4.1",
     "console-taskgraph": "^1.7.2",
     "cronstrue": "^2.61.0",
