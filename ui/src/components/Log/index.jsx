@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react';
+import { flushSync } from 'react-dom';
 import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
-import { LazyLog, ScrollFollow } from 'react-lazylog';
+import { LazyLog as BaseLazyLog, ScrollFollow } from 'react-lazylog';
 import storage from 'localforage';
 import { omit } from 'ramda';
 import GlobalStyles from '@mui/material/GlobalStyles';
@@ -15,6 +16,17 @@ import { THEME } from '../../utils/constants';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
+
+// TODO: Remove this once we're off react-lazylog`
+// Work around a bug with react-lazylog and react 18.
+class LazyLog extends BaseLazyLog {
+  constructor(props) {
+    super(props);
+
+    const baseHandleUpdate = this.handleUpdate;
+    this.handleUpdate = update => flushSync(() => baseHandleUpdate(update));
+  }
+}
 
 const globalStyles = theme => {
   const filterStyles = {
