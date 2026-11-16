@@ -123,35 +123,35 @@ exports[`should render AuthConsent page 1`] = `
                         >
                           Description
                         </span>
-                        <p
-                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
-                        />
                         <div
-                          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
+                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                           >
-                            <textarea
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
-                              id=":r1:"
-                              name="description"
-                              rows="5"
-                              style="height: 0px; overflow: hidden;"
+                            <div
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
                             >
-                              description
-                            </textarea>
-                            <textarea
-                              aria-hidden="true"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
-                              readonly=""
-                              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
-                              tabindex="-1"
-                            />
+                              <textarea
+                                aria-invalid="false"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                id=":r1:"
+                                name="description"
+                                rows="5"
+                                style="height: 0px; overflow: hidden;"
+                              >
+                                description
+                              </textarea>
+                              <textarea
+                                aria-hidden="true"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                readonly=""
+                                style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
+                                tabindex="-1"
+                              />
+                            </div>
                           </div>
                         </div>
-                        <p />
                       </div>
                     </li>
                     <li
@@ -165,7 +165,7 @@ exports[`should render AuthConsent page 1`] = `
                         >
                           Expires
                         </span>
-                        <p
+                        <div
                           class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           <input
@@ -173,24 +173,23 @@ exports[`should render AuthConsent page 1`] = `
                             type="hidden"
                             value="2022-02-02T00:00:00.000Z"
                           />
-                        </p>
-                        <div
-                          class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-                        >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-18jm956-MuiInputBase-root-MuiInput-root"
+                            class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
                           >
-                            <input
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input css-ume8vi-MuiInputBase-input-MuiInput-input"
-                              id=":r2:"
-                              max="3023-02-17T13:00"
-                              type="datetime-local"
-                              value="2022-02-02T01:00"
-                            />
+                            <div
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-18jm956-MuiInputBase-root-MuiInput-root"
+                            >
+                              <input
+                                aria-invalid="false"
+                                class="MuiInputBase-input MuiInput-input css-ume8vi-MuiInputBase-input-MuiInput-input"
+                                id=":r2:"
+                                max="3023-02-17T13:00"
+                                type="datetime-local"
+                                value="2022-02-02T01:00"
+                              />
+                            </div>
                           </div>
                         </div>
-                        <p />
                       </div>
                     </li>
                     <li
@@ -204,42 +203,42 @@ exports[`should render AuthConsent page 1`] = `
                         >
                           Scopes
                         </span>
-                        <p
-                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
-                        />
                         <div
-                          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
-                          spellcheck="false"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
+                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                            spellcheck="false"
                           >
-                            <textarea
-                              aria-describedby=":r3:-helper-text"
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
-                              id=":r3:"
-                              placeholder="new-scope:for-something:*"
-                              style="height: 0px; overflow: hidden;"
+                            <div
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
                             >
-                              scopes
-                            </textarea>
-                            <textarea
-                              aria-hidden="true"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
-                              readonly=""
-                              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
-                              tabindex="-1"
-                            />
+                              <textarea
+                                aria-describedby=":r3:-helper-text"
+                                aria-invalid="false"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                id=":r3:"
+                                placeholder="new-scope:for-something:*"
+                                style="height: 0px; overflow: hidden;"
+                              >
+                                scopes
+                              </textarea>
+                              <textarea
+                                aria-hidden="true"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                readonly=""
+                                style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
+                                tabindex="-1"
+                              />
+                            </div>
+                            <p
+                              class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-filled css-17wsglc-MuiFormHelperText-root"
+                              id=":r3:-helper-text"
+                            >
+                              Enter each scope on its own line
+                            </p>
                           </div>
-                          <p
-                            class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-filled css-17wsglc-MuiFormHelperText-root"
-                            id=":r3:-helper-text"
-                          >
-                            Enter each scope on its own line
-                          </p>
                         </div>
-                        <p />
                       </div>
                     </li>
                   </ul>

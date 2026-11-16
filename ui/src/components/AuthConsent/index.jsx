@@ -101,6 +101,7 @@ export default class AuthConsent extends Component {
                 <ListItem>
                   <ListItemText
                     primary="Description"
+                    secondaryTypographyProps={{ component: 'div' }}
                     secondary={
                       <TextField
                         name="description"
@@ -116,6 +117,7 @@ export default class AuthConsent extends Component {
                 <ListItem>
                   <ListItemText
                     primary="Expires"
+                    secondaryTypographyProps={{ component: 'div' }}
                     secondary={
                       <DatePicker
                         name="expires"
@@ -129,6 +131,7 @@ export default class AuthConsent extends Component {
                 <ListItem>
                   <ListItemText
                     primary="Scopes"
+                    secondaryTypographyProps={{ component: 'div' }}
                     secondary={
                       <TextField
                         helperText="Enter each scope on its own line"
