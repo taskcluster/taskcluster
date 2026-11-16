@@ -70,7 +70,7 @@
     "react-lazylog": "^4.5.1",
     "react-router-dom": "^5.3.4",
     "react-virtualized": "^9.22.6",
-    "react-window": "^1.8.10",
+    "react-window": "^2.5.3",
     "remark-gfm": "^4.0.1",
     "resolve-pathname": "^3.0.0",
     "taskcluster-lib-scopes": "^11.0.0",
