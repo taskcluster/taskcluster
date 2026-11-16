@@ -46,17 +46,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mswjs/interceptors@npm:^0.44.0":
-  version: 0.44.0
-  resolution: "@mswjs/interceptors@npm:0.44.0"
+"@mswjs/interceptors@npm:^0.45.11":
+  version: 0.45.11
+  resolution: "@mswjs/interceptors@npm:0.45.11"
   dependencies:
     "@open-draft/until": "npm:^3.0.1"
     "@types/debug": "npm:^4.1.13"
     debug: "npm:^4.4.3"
     is-node-process: "npm:^1.2.0"
     outvariant: "npm:^1.4.3"
-    rettime: "npm:^0.11.11"
-  checksum: 10c0/4bb2eb1cee5d549809f3456b811dbefa2727d28b82083e48801a9329f8070ef433667cc1996f995dfbbe450f160a147c3ceb6455826b2ed62104bb3f0e87c2f5
+    rettime: "npm:^0.11.12"
+  checksum: 10c0/2b975e8518a9bf4040458322d4d7f590344f6619ba660e54710ab8d89b490e2b16bc552c138685f16aab11c24faed2a55d6565f849d194694e76d6028133ad42
   languageName: node
   linkType: hard
 
@@ -262,8 +262,8 @@ __metadata:
   linkType: hard
 
 "got@npm:^16.0.0":
-  version: 16.1.0
-  resolution: "got@npm:16.1.0"
+  version: 16.2.0
+  resolution: "got@npm:16.2.0"
   dependencies:
     "@sindresorhus/is": "npm:^8.1.0"
     byte-counter: "npm:^0.1.0"
@@ -275,7 +275,7 @@ __metadata:
     responselike: "npm:^4.0.2"
     type-fest: "npm:^5.10.0"
     uint8array-extras: "npm:^1.6.0"
-  checksum: 10c0/99a8ec70cf7bacf1e507cf1a16a52ad01d7fe347946575bff7299a3422aec3f39cd4b8880b3487f18b722f227b39b18460bac47a7f525399747d6365ed90594a
+  checksum: 10c0/1d017445c4bcccb00caab556dd800e099f017fd662837d2e34404f9ab312d14f7ca86cd8ab7aac7578311f2d6859e6dc7a915b0575ba70432da927fc87e23685
   languageName: node
   linkType: hard
 
@@ -449,11 +449,11 @@ __metadata:
   linkType: hard
 
 "nock@npm:^15.0.5":
-  version: 15.0.5
-  resolution: "nock@npm:15.0.5"
+  version: 15.0.6
+  resolution: "nock@npm:15.0.6"
   dependencies:
-    "@mswjs/interceptors": "npm:^0.44.0"
-  checksum: 10c0/1265620beacebf5436d8f83b1d6001353953a29f1889e42bc3339dfb5ff405743f74afe0a480d9040365744d05952b6b5e580108fccebc5a2bb0d70bb5de8c92
+    "@mswjs/interceptors": "npm:^0.45.11"
+  checksum: 10c0/1fb6c86836baae41f154ce98e71325b18be680aba6828c94de1e807e403fdd0a7a4e97ccaf5d80561604559ce2f9a59b4ec8859004a04698b43a28f06172de91
   languageName: node
   linkType: hard
 
@@ -511,7 +511,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rettime@npm:^0.11.11":
+"rettime@npm:^0.11.12":
   version: 0.11.12
   resolution: "rettime@npm:0.11.12"
   checksum: 10c0/d785a4b82535ccff6a47e9418456140d3b9317914e4a5134c41ba2e07f0573397b76e299ab9f4bbb73227a19f370056c2d5df6c4703193a9c5741f24705bd952
