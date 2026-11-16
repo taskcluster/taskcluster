@@ -105,8 +105,13 @@ updates:
       interval: "monthly"
     cooldown:
       default-days: 7
+      exclude:
+        - "@taskcluster/*"
     rebase-strategy: "disabled"
     groups:
+      ui-taskcluster:
+        patterns:
+          - "@taskcluster/*"
       ui-vitest:
         patterns:
           - "vitest"
