@@ -4760,6 +4760,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     );
   });
 
+  test('listManagedResources skips unattached resources that are listed but not found', async () => {
+    const tags = { 'managed-by': 'taskcluster', 'root-url': helper.rootUrl };
+    const { disk } = fake._managers;
+    const id = name => `/subscriptions/sub/resourceGroups/rgrp/providers/Microsoft.Compute/disks/${name}`;
+    for (const name of ['disk-real', 'disk-phantom']) {
+      disk.makeFakeResource('rgrp', name, { id: id(name), tags, diskState: 'Unattached' });
+    }
+    const get = disk.get.bind(disk);
+    const stub = sinon.stub(disk, 'get').callsFake(async (rg, name) => {
+      if (name === 'disk-phantom') {
+        throw Object.assign(new Error('not found'), { statusCode: 404 });
+      }
+      return get(rg, name);
+    });
+    try {
+      const resources = await provider.listManagedResources();
+      assert.deepEqual(
+        resources.map(r => r.name),
+        ['disk-real']
+      );
+      assert(stub.calledWith('rgrp', 'disk-phantom'));
+    } finally {
+      stub.restore();
+    }
+  });
+
   suite('listManagedResources failures', () => {
     const tags = { 'managed-by': 'taskcluster', 'root-url': helper.rootUrl };
     const makeError = statusCode => Object.assign(new Error('boom'), { statusCode });

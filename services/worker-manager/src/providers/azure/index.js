@@ -2337,7 +2337,37 @@ export class AzureProvider extends Provider {
       });
     }
 
-    return resources;
+    const exists = await Promise.all(resources.map(r => this.#unattachedResourceExists(r)));
+    return resources.filter((_, i) => exists[i]);
+  }
+
+  /**
+   * Subscription-wide listings can keep returning resources that no longer exist
+   * (seen with disks deleted long ago: listed as Unattached, but a GET by ID
+   * returns 404), so confirm an unattached resource before it is reported.
+   *
+   * @param {import('../provider.js').ManagedResource} resource
+   */
+  async #unattachedResourceExists({ resourceType, resourceId, name, attached }) {
+    const resourceGroup = resourceId?.match(/\/resourceGroups\/([^/]+)\//i)?.[1];
+    if (attached !== false || !resourceGroup) {
+      return true;
+    }
+    const get = {
+      disk: () => this.computeClient.disks.get(resourceGroup, name),
+      nic: () => this.networkClient.networkInterfaces.get(resourceGroup, name),
+      ip: () => this.networkClient.publicIPAddresses.get(resourceGroup, name),
+    }[resourceType];
+    try {
+      await this._enqueue('get', get);
+      return true;
+    } catch (err) {
+      if (err.statusCode !== 404) {
+        throw err;
+      }
+      this.monitor.notice({ message: 'listed resource not found, not checking it', resourceType, resourceId });
+      return false;
+    }
   }
 
   /*
