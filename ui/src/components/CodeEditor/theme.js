@@ -1,4 +1,5 @@
 import { createTheme } from '@uiw/codemirror-themes';
+import { foldGutter } from '@codemirror/language';
 import { EditorView } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 
@@ -28,12 +29,31 @@ export default [
       { tag: t.comment, color: '#546E7A' },
     ],
   }),
+  foldGutter({
+    markerDOM(open) {
+      const marker = document.createElement('span');
+
+      marker.className = open
+        ? 'cm-foldMarker cm-foldMarker-open'
+        : 'cm-foldMarker';
+      marker.textContent = '›';
+      marker.title = open ? 'Fold line' : 'Unfold line';
+
+      return marker;
+    },
+  }),
   EditorView.theme(
     {
       '.cm-foldPlaceholder': {
         backgroundColor: 'rgba(0, 0, 0, 0.2)',
         border: 'none',
         padding: '0 5px',
+      },
+      '.cm-foldMarker': {
+        display: 'inline-block',
+      },
+      '.cm-foldMarker-open': {
+        transform: 'rotate(90deg)',
       },
       // Don't show the current line highlight when the editor isn't focused
       '&:not(.cm-focused) .cm-activeLine, &:not(.cm-focused) .cm-activeLineGutter':

@@ -24,6 +24,7 @@ const basicSetup = {
   autocompletion: false,
   searchKeymap: false,
   highlightSelectionMatches: false,
+  foldGutter: false,
 };
 const languages = {
   json: { language: json(), linter: jsonParseLinter() },
