@@ -109,7 +109,7 @@
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.1.0",
     "topo-sort": "^1.0.0",
-    "type-is": "^1.6.15",
+    "type-is": "^3.0.0",
     "uuid": "^14.0.2",
     "walk": "^2.3.9",
     "ws": "^7.5.11"
