@@ -3,6 +3,85 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v116.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v26.13.1.
+
+### USERS
+
+▶ [minor] [bug 2072185](http://bugzil.la/2072185)
+The object service's `cdn` middleware now escapes special characters like `?` and `#` in object names when redirecting downloads to the CDN. Objects whose names contain `.` or `..` path segments are no longer redirected to the CDN and are served by the backend instead.
+
+▶ [minor]
+Update React to v18
+
+▶ [minor]
+Update the UI to material UI 5
+
+▶ [patch] [#8681](https://github.com/taskcluster/taskcluster/issues/8681)
+Task group profiles now color each task marker by its result: green for completed, orange for failed, red for exceptions, grey for canceled or superseded runs, and blue for runs that are still running. The "Start time" field on task and task group markers now shows the actual start time of the run, as an ISO timestamp. Previously it showed an incorrect time.
+
+▶ [patch] [#8681](https://github.com/taskcluster/taskcluster/issues/8681)
+Task group profiles now have a "Summary" row with high-level markers: the decision task, the initial tasks (created before the decision task finished), and one marker for each later burst of task creation, such as an action and the tasks it created. Individual task markers are no longer drawn in the timeline overview track.
+
+▶ [patch] [#8681](https://github.com/taskcluster/taskcluster/issues/8681)
+Task group profiles now include a "Concurrency" track that graphs how many tasks were running and pending over time.
+
+▶ [patch]
+The UI will not show a copy button on list items that don't have a copyable text. (e.g the resolved time for a task that hasn't been resolved yet)
+
+▶ [patch]
+The UI will not show a copy button on table cells that don't have a copyable text. (e.g the last fired time for a hook that has never fired)
+
+▶ [patch]
+The hook trigger context form doesn't consider YAML as invalid anymore. It always accepted both JSON and YAML but was throwing linting errors on YAML inputs
+
+▶ [patch] [#9475](https://github.com/taskcluster/taskcluster/issues/9475)
+Truncate oversized worker pool error descriptions so `listWorkerPoolErrors` no longer fails output validation.
+
+▶ [patch]
+Update the UI's code editor to codemirror 6, bringing in code folding, current line highlighting and bracket matching.
+
+▶ [patch]
+Work around `react-lazylog` not supporting react 18 properly
+
+▶ [patch] [#9465](https://github.com/taskcluster/taskcluster/issues/9465)
+Worker Manager now returns a worker pool's `config.launchConfigs` sorted by `launchConfigId`. Previously the order was arbitrary and could change when launch configs were updated, which made worker pool configs appear changed when they were not.
+
+### DEVELOPERS
+
+▶ [patch]
+Warnings in UI tests are now considered fatal
+
+### OTHER
+
+▶ Additional change not described here: [#9167](https://github.com/taskcluster/taskcluster/issues/9167).
+
+### Automated Package Updates
+
+<details>
+<summary>14 Dependabot updates</summary>
+
+* build(deps-dev): bump the client-web-vitest group (ae2e21957a)
+* build(deps): bump @taskcluster/client-web (c0cc76a9cb)
+* build(deps): bump flate2 (39cfb48f6b)
+* build(deps): bump the go-deps group across 1 directory with 4 updates (dcda7c2b1e)
+* build(deps-dev): bump builtin-modules from 3.3.0 to 5.5.0 (cf52d7b683)
+* build(deps): bump the node-deps group with 21 updates (6d7d79431b)
+* build(deps): bump the ui-node-deps group in /ui with 2 updates (b4a72ea6c7)
+* build(deps-dev): bump ruff (7472062134)
+* build(deps-dev): bump @biomejs/biome (b3bf23cb8b)
+* build(deps-dev): bump the ui-vitest group in /ui with 3 updates (eb0f314655)
+* build(deps): bump the client-node-deps group (44f28e38ce)
+* build(deps): bump the gh-actions-deps group with 3 updates (946245f301)
+* build(deps): bump go.opentelemetry.io/otel/sdk from 1.46.0 to 1.47.0 (667e085e27)
+* build(deps): bump node-forge from 1.4.2 to 1.4.3 (1992663b95)
+
+</details>
+
 ## v116.0.0
 
 ### GENERAL
