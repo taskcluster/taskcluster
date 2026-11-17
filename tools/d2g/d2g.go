@@ -48,12 +48,6 @@ type (
 		SrcPath  string
 		DestPath string
 	}
-	FileImageLoader struct {
-		Image Image
-	}
-	RegistryImageLoader struct {
-		Image Image
-	}
 	Config struct {
 		EnableD2G             bool   `json:"enableD2G"`
 		AllowChainOfTrust     bool   `json:"allowChainOfTrust"`
