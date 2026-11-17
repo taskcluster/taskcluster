@@ -36,9 +36,13 @@ export default class DateDistance extends Component {
       addSuffix: true,
       unit,
     });
-    const offsetParsed = isDate(offset) ? offset : parseISO(offset);
     const offsetNow =
-      offset && formatDistanceStrict(fromParsed, offsetParsed, { unit });
+      offset &&
+      formatDistanceStrict(
+        fromParsed,
+        isDate(offset) ? offset : parseISO(offset),
+        { unit }
+      );
 
     return offsetNow ? `${fromNow} (${offsetNow} later)` : fromNow;
   }

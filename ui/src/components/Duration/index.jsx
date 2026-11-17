@@ -65,7 +65,7 @@ export default class Duration extends Component {
     }
 
     const interval = intervalToDuration({ start, end });
-    const pad = num => String(num).padStart(2, '0');
+    const pad = num => String(num ?? 0).padStart(2, '0');
     const parts = [pad(interval.minutes), 'm ', pad(interval.seconds), 's '];
 
     if (interval.hours > 0) {
