@@ -45,7 +45,7 @@
     "change-case": "^5.4.4",
     "classnames": "^2.5.1",
     "compare-versions": "^6.1.1",
-    "date-fns": "^2.30.0",
+    "date-fns": "^4.4.0",
     "deep-sort-object": "^1.0.2",
     "dexie": "^3.2.6",
     "fast-memoize": "^2.5.1",

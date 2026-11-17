@@ -1,4 +1,4 @@
-import { compareDesc, isDate, parseISO } from 'date-fns';
+import { compareDesc, isDate } from 'date-fns';
 
 /**
  * Return a negative number if the reference element occurs before
@@ -20,7 +20,7 @@ const sort = (referenceElement, compareElement) => {
   }
 
   if (isDate(referenceElement) && isDate(compareElement)) {
-    return compareDesc(parseISO(referenceElement), parseISO(compareElement));
+    return compareDesc(referenceElement, compareElement);
   }
 
   return String(referenceElement ?? '').localeCompare(
