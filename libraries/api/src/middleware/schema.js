@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import url from 'node:url';
 import libUrls from 'taskcluster-lib-urls';
-import typeis from 'type-is';
 import Debug from 'debug';
 
 const debug = Debug('api:schema');
@@ -57,7 +56,7 @@ export const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceNa
   return (req, res, next) => {
     // If input schema is defined we need to validate the input
     if (input) {
-      if (!typeis(req, 'application/json')) {
+      if (!req.is('application/json')) {
         return res.reportError(
           'MalformedPayload',
           'Payload must be JSON with content-type: application/json ' + 'got content-type: {{contentType}}',
