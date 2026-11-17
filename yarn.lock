@@ -3300,10 +3300,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^9.4.1":
-  version: 9.5.0
-  resolution: "commander@npm:9.5.0"
-  checksum: 10c0/5f7784fbda2aaec39e89eb46f06a999e00224b3763dc65976e05929ec486e174fe9aac2655f03ba6a5e83875bd173be5283dc19309b7c65954701c02025b3c1d
+"commander@npm:^15.1.0":
+  version: 15.1.0
+  resolution: "commander@npm:15.1.0"
+  checksum: 10c0/dd1013291d3e8779c726313616fa23174abc962182d0894ac73017c55d8b1ffe4a72401d91a1173974050536576896dc5279db07d37f929dbad469a16a12c54e
   languageName: node
   linkType: hard
 
@@ -7648,7 +7648,7 @@ __metadata:
     bottleneck: "npm:^2.15.3"
     builtin-modules: "npm:^5.5.0"
     chalk: "npm:^6.0.1"
-    commander: "npm:^9.4.1"
+    commander: "npm:^15.1.0"
     compression: "npm:^1.8.2"
     console-taskgraph: "npm:^1.7.2"
     content-security-policy: "npm:^0.5.0"
