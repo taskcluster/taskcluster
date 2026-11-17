@@ -23,6 +23,8 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '../Label';
 import Button from '../Button';
@@ -107,6 +109,12 @@ const DOTS_VARIANT_LIMIT = 5;
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
+    },
+    unavailableArtifact: {
+      color: theme.palette.text.disabled,
+      '& svg': {
+        opacity: 0.45,
+      },
     },
     liveLogLabel: {
       marginLeft: theme.spacing(0.5),
@@ -194,11 +202,13 @@ export default class TaskRunsCard extends Component {
     return state === 'pending' || state === 'running';
   };
 
-  getArtifactInfo = ({ name, contentType }) => {
+  getArtifactInfo = ({ name, contentType, storageType }) => {
     const { runId } = this.getCurrentRun();
     const { taskId, user, anonymousScopes } = this.props;
     const logViewerUrl =
-      contentType.startsWith('text/plain') && name.endsWith('.log')
+      storageType !== 'error' &&
+      contentType.startsWith('text/plain') &&
+      name.endsWith('.log')
         ? buildLogViewerUrl({
             taskId,
             runId,
@@ -272,7 +282,9 @@ export default class TaskRunsCard extends Component {
   getLiveLogArtifact = () => {
     const { artifacts, liveLogName = 'public/logs/live.log' } = this.props;
 
-    return artifacts.find(({ name }) => name === liveLogName);
+    return artifacts.find(
+      ({ name, storageType }) => name === liveLogName && storageType !== 'error'
+    );
   };
 
   onCopyClick(url) {
@@ -294,6 +306,7 @@ export default class TaskRunsCard extends Component {
     const { classes } = this.props;
     const { isCopy } = this.state;
     const { name } = artifact;
+    const isError = artifact.storageType === 'error';
     const {
       icon: Icon,
       isLogFile,
@@ -318,11 +331,13 @@ export default class TaskRunsCard extends Component {
         hover>
         <TableCell>
           <Link
-            className={classes.artifactLink}
+            className={classNames(classes.artifactLink, {
+              [classes.unavailableArtifact]: isError,
+            })}
             to={url}
             onClick={handleArtifactClick}>
             <div className={classes.iconDiv}>
-              <Icon />
+              {isError ? <InsertDriveFileOutlinedIcon /> : <Icon />}
             </div>
             <div className={classes.artifactNameWrapper}>
               {isLogFile && (
@@ -333,18 +348,26 @@ export default class TaskRunsCard extends Component {
               <div className={classes.artifactName}>{artifact.name}</div>
             </div>
             <div className={classes.sizeCell}>
-              {formatBytes(artifact.contentLength)}
+              {!isError && formatBytes(artifact.contentLength)}
             </div>
-            <div>{isLogFile ? <LinkIcon /> : <OpenInNewIcon />}</div>
+            {isError ? (
+              <div title="View error">
+                <ErrorOutlineIcon />
+              </div>
+            ) : (
+              <div>{isLogFile ? <LinkIcon /> : <OpenInNewIcon />}</div>
+            )}
           </Link>
         </TableCell>
         <TableCell className={classNames(classes.copyButton)}>
-          <CopyToClipboard
-            onCopy={() => this.onCopyClick(url)}
-            title={`Artifact URL (${isCopy ? 'Copied!' : 'Copy'})`}
-            text={artifactUrl.toString()}>
-            {isCopy[url] ? <CheckIcon /> : <ContentCopyIcon />}
-          </CopyToClipboard>
+          {!isError && (
+            <CopyToClipboard
+              onCopy={() => this.onCopyClick(url)}
+              title={`Artifact URL (${isCopy ? 'Copied!' : 'Copy'})`}
+              text={artifactUrl.toString()}>
+              {isCopy[url] ? <CheckIcon /> : <ContentCopyIcon />}
+            </CopyToClipboard>
+          )}
         </TableCell>
       </TableRow>
     );
