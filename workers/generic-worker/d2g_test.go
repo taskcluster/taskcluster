@@ -1064,6 +1064,58 @@ func TestD2GChainOfTrustIndexedDockerImage(t *testing.T) {
 	D2GChainOfTrustHelper(t, &image, []string{}, expected)
 }
 
+// TestD2GNamedDockerImageAlwaysRepulls verifies that a named docker image
+// is pulled for every task, rather than reusing a d2g image cache entry
+// whose local tag could be outdated.
+func TestD2GNamedDockerImageAlwaysRepulls(t *testing.T) {
+	skipInDockerIfNoDocker(t)
+	setup(t)
+	image := map[string]any{
+		"name": "taskcluster/taskcluster-proxy:v81.0.2",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command:    []string{"taskcluster-proxy", "--version"},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		// The second task must pull again rather than log
+		// "[d2g] Using cached docker image"
+		for range 2 {
+			td := testTask(t)
+			resultTaskID := submitAndAssert(t, td, payload, "completed", "completed")
+			ExpectedArtifacts{
+				"public/logs/live_backing.log": {
+					ContentType:     "text/plain; charset=utf-8",
+					ContentEncoding: "gzip",
+					Expires:         td.Expires,
+				},
+				"public/logs/live.log": {
+					Extracts: []string{
+						"[d2g] Loading docker image",
+						"[d2g] Loaded docker image",
+						"=== Task Finished ===",
+						"Exit Code: 0",
+					},
+					ContentType:     "text/plain; charset=utf-8",
+					ContentEncoding: "gzip",
+					Expires:         td.Expires,
+				},
+			}.Validate(t, resultTaskID, 0)
+		}
+	default:
+		_ = submitAndAssert(t, testTask(t), payload, "exception", "malformed-payload")
+	}
+}
+
 // TestD2GDockerImageArtifactCaching verifies the full caching lifecycle for
 // d2g docker image artifacts:
 //

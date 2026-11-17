@@ -221,7 +221,7 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
+	containerName, err := setCommand(dwPayload, gwPayload, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
 	if err != nil {
 		return
 	}
@@ -399,7 +399,6 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 
 func runCommand(
 	dwPayload *dockerworker.DockerWorkerPayload,
-	dwImage Image,
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
 	nonEnvListArgs []string,
@@ -469,7 +468,9 @@ func runCommand(
 	// Use env file that's created by D2G task feature
 	args = append(args, "--env-file", "env.list")
 	args = append(args, "--")
-	args = append(args, dwImage.String())
+	// Run by image ID that's substituted by D2G task feature
+	// after a docker pull/load
+	args = append(args, "__D2G_IMAGE_ID__")
 	args = append(args, dwPayload.Command...)
 
 	return [][]string{args}, containerName, nil
@@ -530,13 +531,12 @@ func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generi
 func setCommand(
 	dwPayload *dockerworker.DockerWorkerPayload,
 	gwPayload *genericworker.GenericWorkerPayload,
-	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
 	nonEnvListArgs []string,
 	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
-	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
+	gwPayload.Command, containerName, err = runCommand(dwPayload, gwPayload.Artifacts, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
 	if err != nil {
 		return "", fmt.Errorf("cannot create run command: %v", err)
 	}
