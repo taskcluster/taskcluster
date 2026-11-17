@@ -908,6 +908,7 @@ export default class HookForm extends Component {
                       Context
                     </Typography>
                     <CodeEditor
+                      mode="yaml"
                       lint
                       className={classes.codeEditor}
                       value={triggerContextInput}

@@ -24,10 +24,6 @@ const globalStyles = theme => ({
   '.mdi-icon': {
     fill: theme.palette.text.primary,
   },
-  '.CodeMirror': {
-    fontSize: 13,
-    height: '100% !important',
-  },
   '[disabled] .mdi-icon': {
     fill: theme.palette.primary.light,
   },

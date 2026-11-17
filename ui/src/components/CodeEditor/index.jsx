@@ -1,79 +1,76 @@
-import React, { Component } from 'react';
-import { object, string, func } from 'prop-types';
-import { Controlled } from 'react-codemirror2';
+import React, { useMemo } from 'react';
+import { func, string } from 'prop-types';
+import CodeMirror from '@uiw/react-codemirror';
+import { json, jsonParseLinter } from '@codemirror/lang-json';
+import { yaml } from '@codemirror/lang-yaml';
+import { Prec } from '@codemirror/state';
+import { linter, lintGutter } from '@codemirror/lint';
+import theme from './theme';
 import classNames from 'classnames';
-import withStyles from '../../utils/withStyles';
-import 'codemirror/mode/xml/xml';
-import 'codemirror/mode/yaml/yaml';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/addon/display/placeholder';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/addon/lint/lint.css';
-import 'codemirror/theme/material.css';
-import './yaml-lint';
-import './json-lint';
+import { makeStyles } from 'tss-react/mui';
+import yamlLinter from './yaml-lint';
 
-// react-codemirror2 compares option values by identity
-// non-primitive values should be kept stable to avoid rebuild CodeMirror's gutters
-// on every React render (which also included renders caused by unrelated form fields)
-const DEFAULT_EXTRA_KEYS = { Tab: false };
-const DEFAULT_GUTTERS = ['CodeMirror-lint-markers'];
-
-@withStyles({
+const useStyles = makeStyles()({
   root: {
     width: '100%',
-    '& .CodeMirror pre.CodeMirror-placeholder': {
-      color: '#999',
+    '& .cm-editor': {
+      fontSize: 13,
+      height: '100%',
     },
   },
-})
-/** Render an editor.
- *
- * _Note: [material-ui](https://material-ui.com/) is a peer-dependency_
- */
-export default class CodeEditor extends Component {
-  static propTypes = {
-    /** Callback function fired when the editor is changed. */
-    onChange: func,
-    /** The value of the editor. */
-    value: string.isRequired,
-    /** Code mirror options */
-    options: object,
-    /** The CSS class name of the wrapper element */
-    className: string,
-  };
+});
+const basicSetup = {
+  closeBrackets: false,
+  autocompletion: false,
+  searchKeymap: false,
+  highlightSelectionMatches: false,
+  foldGutter: false,
+};
+const languages = {
+  json: { language: json(), linter: jsonParseLinter() },
+  yaml: { language: yaml(), linter: yamlLinter },
+};
 
-  static defaultProps = {
-    onChange: null,
-    options: null,
-    className: null,
-  };
+export default function CodeEditor({
+  value,
+  onChange,
+  mode = 'json',
+  lint = false,
+  placeholder,
+  className,
+}) {
+  const { classes } = useStyles();
+  const extensions = useMemo(() => {
+    const lang = languages[mode];
 
-  handleTextUpdate = (_editor, _data, value) => {
-    if (this.props.onChange) {
-      this.props.onChange(value);
+    if (!lang) {
+      return [];
     }
-  };
 
-  render() {
-    const { classes, className, value, onChange: _, ...options } = this.props;
-    const opts = {
-      mode: 'application/json',
-      theme: 'material',
-      indentWithTabs: false,
-      extraKeys: DEFAULT_EXTRA_KEYS,
-      gutters: DEFAULT_GUTTERS,
-      lineNumbers: true,
-      ...options,
-    };
+    return lint
+      ? [lang.language, linter(lang.linter), Prec.highest(lintGutter())]
+      : [lang.language];
+  }, [mode, lint]);
 
-    return (
-      <Controlled
-        className={classNames(classes.root, className)}
-        options={opts}
-        onBeforeChange={this.handleTextUpdate}
-        value={value}
-      />
-    );
-  }
+  return (
+    <CodeMirror
+      className={classNames(classes.root, className)}
+      value={value}
+      onChange={onChange}
+      extensions={extensions}
+      theme={theme}
+      placeholder={placeholder}
+      basicSetup={basicSetup}
+      indentWithTab={false}
+    />
+  );
 }
+
+CodeEditor.propTypes = {
+  /** Callback function fired when the editor is changed. */
+  onChange: func,
+  /** The value of the editor. */
+  value: string.isRequired,
+  /** The CSS class name of the wrapper element */
+  className: string,
+};

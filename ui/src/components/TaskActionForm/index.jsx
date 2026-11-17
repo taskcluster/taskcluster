@@ -36,9 +36,12 @@ export default class TaskActionForm extends Component {
     error: object,
   };
 
+  handleFormChange = value => {
+    this.props.onFormChange(value, this.props.action.name);
+  };
+
   render() {
     const { classes, action, form, error } = this.props;
-    const { name } = action;
 
     return (
       <Fragment>
@@ -68,7 +71,7 @@ export default class TaskActionForm extends Component {
                 mode="yaml"
                 lint
                 value={form}
-                onChange={value => this.props.onFormChange(value, name)}
+                onChange={this.handleFormChange}
               />
             </Grid>
             <Grid item lg={6} md={6} sm={12}>
