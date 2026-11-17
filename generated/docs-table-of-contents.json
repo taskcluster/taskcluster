@@ -6,8 +6,6 @@
       "order": 1000,
       "title": "Changelog"
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "changelog",
     "path": "changelog"
   },
@@ -18,8 +16,6 @@
       "noAnchors": true,
       "order": 1000
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "README",
     "path": "README"
   },
@@ -2092,8 +2088,6 @@
       "order": 1000,
       "title": "People"
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "people",
     "path": "people"
   },
@@ -4442,8 +4436,6 @@
       "order": 1000,
       "title": "Resources"
     },
-    "excerpt": "",
-    "isEmpty": false,
     "name": "resources",
     "path": "resources"
   },

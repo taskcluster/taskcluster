@@ -1,13 +1,18 @@
 import { glob, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import matter from 'gray-matter';
+import * as yaml from 'js-yaml';
 import { REPO_ROOT, writeRepoJSON } from '../../utils/index.js';
+
+function parseFrontmatter(content) {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  return { data: (match && yaml.load(match[1])) || {} };
+}
 
 async function mdParseDir(dir, pattern) {
   const paths = await Array.fromAsync(glob(pattern, { cwd: dir }));
 
   return Object.fromEntries(
-    await Promise.all(paths.map(async path => [path, matter(await readFile(join(dir, path), 'utf8'))]))
+    await Promise.all(paths.map(async path => [path, parseFrontmatter(await readFile(join(dir, path), 'utf8'))]))
   );
 }
 
