@@ -122,9 +122,7 @@ export default class WMViewWorkers extends Component {
         <TableCell>{dateItem(created)}</TableCell>
         <TableCell>{dateItem(expires)}</TableCell>
         <TableCell>
-          <Label mini status={stateToLabel[state]}>
-            {state}
-          </Label>
+          <Label status={stateToLabel[state]}>{state}</Label>
         </TableCell>
         <TableCell>
           {launchConfigId && (

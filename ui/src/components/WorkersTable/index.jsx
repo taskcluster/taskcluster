@@ -355,7 +355,7 @@ export default class WorkersTable extends Component {
                     </Button>
                   )}
                   {state === 'stopping' && (
-                    <Label mini status="warning" className={classes.button}>
+                    <Label status="warning" className={classes.button}>
                       Scheduled for termination
                     </Label>
                   )}

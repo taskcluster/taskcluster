@@ -150,9 +150,7 @@ export default class WorkerDetailsCard extends Component {
             </ListItem>
             {state === 'stopping' && (
               <ListItem>
-                <Label mini status="warning">
-                  Scheduled for termination
-                </Label>
+                <Label status="warning">Scheduled for termination</Label>
               </ListItem>
             )}
           </Grid>

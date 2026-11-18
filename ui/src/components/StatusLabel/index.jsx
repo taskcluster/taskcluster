@@ -1,24 +1,13 @@
 import React, { Component } from 'react';
-import classNames from 'classnames';
-import { oneOf, bool, string } from 'prop-types';
-import withStyles from '../../utils/withStyles';
+import { oneOf, string } from 'prop-types';
 import Label from '../Label';
 import labels from '../../utils/labels';
-import { purple } from '@mui/material/colors';
 
-@withStyles(theme => ({
-  pending: {
-    backgroundColor: `${purple[400]} !important`,
-    color: `${theme.palette.getContrastText(purple[400])} !important`,
-  },
-}))
 /**
  * A label color-coded based on known statuses from responses.
  */
 export default class StatusLabel extends Component {
   static defaultProps = {
-    mini: true,
-    className: null,
     variant: null,
   };
 
@@ -28,10 +17,6 @@ export default class StatusLabel extends Component {
      * reason (`worker-shutdown`). Case and dashes are normalized.
      */
     state: string.isRequired,
-    /**
-     * Render the label using dense styling.
-     */
-    mini: bool,
     /** The CSS class name of the wrapper element */
     className: string,
     /**
@@ -42,21 +27,12 @@ export default class StatusLabel extends Component {
   };
 
   render() {
-    const { classes, variant, state, mini, className, ...props } = this.props;
+    const { variant, state, ...props } = this.props;
     // the queue reports states and reasons in kebab case (`worker-shutdown`)
     const label = state ? state.toUpperCase().replace(/-/g, '_') : 'UNKNOWN';
 
     return (
-      <Label
-        mini={mini}
-        status={variant || labels[label] || 'default'}
-        className={classNames(
-          {
-            [classes.pending]: label === 'PENDING',
-          },
-          className
-        )}
-        {...props}>
+      <Label status={variant || labels[label] || 'default'} {...props}>
         {label}
       </Label>
     );

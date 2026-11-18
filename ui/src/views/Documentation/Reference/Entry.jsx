@@ -75,7 +75,7 @@ const primaryTypographyProps = { variant: 'body1' };
     },
     statusLabel: {
       display: 'block',
-      fontSize: '0.6rem',
+      width: 'fit-content',
       margin: `${theme.spacing(1)} 0 ${theme.spacing(1)} ${theme.spacing(-2)}`,
     },
     functionStatusLabel: {
@@ -372,7 +372,6 @@ export default class Entry extends Component {
                 {index < scopes[operator].length - 1 && (
                   <StatusLabel
                     className={classes.statusLabel}
-                    mini
                     state={'AllOf' in scopes ? 'AND' : 'OR'}
                   />
                 )}

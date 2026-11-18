@@ -95,9 +95,7 @@ export default class WMViewPendingTasks extends Component {
         </TableCell>
         <TableCell>{runId}</TableCell>
         <TableCell>
-          <Label mini status="info">
-            {task.priority}
-          </Label>
+          <Label status="info">{task.priority}</Label>
         </TableCell>
         <CopyToClipboardTableCell
           textToCopy={inserted}
