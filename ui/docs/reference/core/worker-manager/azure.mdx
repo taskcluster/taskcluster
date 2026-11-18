@@ -68,6 +68,26 @@ A minimal policy definition for this looks like:
 
 `"mode": "All"` is required — Azure Policy does not evaluate resource groups in the default `indexed` mode, so without it the policy silently does not fire on resource-group creation.
 
+## Spot Placement Score
+
+If the provider configuration sets `spotPlacementScore: true`, worker-manager asks the Azure [Spot Placement Score](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/spot-placement-score) API how likely each Spot launch configuration is to get capacity, and changes its selection weight:
+
+| Score | Weight multiplier |
+| --- | --- |
+| `High` | 1 |
+| `Medium` | 0.5 |
+| `Low` | 0.1 |
+| `RestrictedSkuNotAvailable`, `InsufficientQuota` | 0 |
+| any other score, or an API error | 1 (no change) |
+
+A launch configuration is Spot if its `priority` (or the `priority` ARM template parameter) is `Spot`. Its region and VM size come from `location` and `hardwareProfile.vmSize`, or from the `location` and `vmSize` ARM template parameters. Launch configurations without these values are not changed.
+
+Scores are regional (not per availability zone). The desired count is the number of VMs to spawn for the launch configuration (capacity to spawn divided by `capacityPerInstance`), rounded up to a power of two. Scores are cached for 15 minutes for each region, VM size and desired count, as Microsoft recommends. If every launch configuration of a pool gets a weight of 0, worker-manager ignores the scores for that provisioning run.
+
+A score is an estimate of current Spot capacity. It does not guarantee that an allocation succeeds, and it does not replace worker-manager's error feedback.
+
+The worker-manager service principal needs `Microsoft.Compute/locations/placementScores/generate/action` at **subscription** scope, because the API is a subscription-level endpoint. A role assigned only on the worker resource group is not enough. Assign the built-in "Compute Recommendations Role" on the subscription, or add the action to a custom role assigned there. A score from a location where `isQuotaAvailable` is `false` is treated as `InsufficientQuota`.
+
 ## Removing Workers
 
 A call to the `workerManager.removeWorker` API method for a worker managed by this provider type will result in an attempt to terminate the worker virtual machine and remove related resources.
