@@ -95,7 +95,7 @@ task user, not only root. If it is not, the worker will exit with exit code 69
 ### Windows - multiuser build
 
 On Windows, generic-worker is managed by worker-runner (`start-worker.exe`),
-with both installed as NSSM services. Worker-runner is set to auto-start and
+with both installed as NSSM services. Worker-runner starts at boot and
 launches generic-worker (set to demand-start) when work is available.
 
  1. Install the four binaries (see above):
@@ -136,13 +136,36 @@ launches generic-worker (set to demand-start) when work is available.
     nssm set "Generic Worker" Type SERVICE_WIN32_OWN_PROCESS
     ```
 
- 5. Install worker-runner as an NSSM service with auto start:
+ 5. Install worker-runner as an NSSM service:
 
     ```
     nssm install "worker-runner" C:\worker-runner\start-worker.exe
     nssm set "worker-runner" AppParameters C:\worker-runner\runner.yml
-    nssm set "worker-runner" Start SERVICE_AUTO_START
+    nssm set "worker-runner" Start SERVICE_DEMAND_START
     nssm set "worker-runner" Type SERVICE_WIN32_OWN_PROCESS
+    ```
+
+    For a __cloud worker image__ (or any image that will be sysprepped),
+    leave worker-runner as demand-start and start it only once Windows Setup
+    has completed. Otherwise it can claim a task while Setup is still running
+    on first boot, and Setup may reboot the machine or lock the user profile
+    in the middle of that task. Add these lines to the script that Windows runs
+    after Setup completes, `%WINDIR%\Setup\Scripts\SetupComplete.cmd` (on
+    Azure, which manages that file, use `%WINDIR%\OEM\SetupComplete2.cmd`
+    instead):
+
+    ```
+    sc.exe config worker-runner start= auto
+    sc.exe start worker-runner
+    ```
+
+    Save the script as plain ASCII, without a UTF-8 byte order mark.
+
+    For a __static worker__ (not sysprepped), set worker-runner to auto-start
+    instead:
+
+    ```
+    nssm set "worker-runner" Start SERVICE_AUTO_START
     ```
 
  6. Create the worker-runner configuration file `C:\worker-runner\runner.yml`.
@@ -215,8 +238,10 @@ launches generic-worker (set to demand-start) when work is available.
     127.0.0.1 taskcluster
     ```
 
- 8. Reboot the machine. The worker-runner service will start automatically
-    and launch generic-worker when work is available.
+ 8. Reboot the machine (for a cloud worker image, sysprep and capture it
+    instead). Worker-runner will start at boot (or, on a sysprepped image,
+    once Windows Setup completes) and launch generic-worker when work is
+    available.
 
 
 ### macOS - multiuser/insecure build
