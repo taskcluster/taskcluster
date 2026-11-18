@@ -29,6 +29,7 @@ tasks:
         cd ui &&
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         corepack yarn lint &&
+        corepack yarn typecheck &&
         corepack yarn test &&
         corepack yarn build
   smoke:
