@@ -20,10 +20,35 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		homedir="/Users/${0}"
 		fullname="${0}"
 		password="${1}"
+		reuse_ids="${2}"
 		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
-		maxid=$(dscl . -list '/Users' 'UniqueID' | awk '{print $2}' | sort -un | tail -1)
-		uid=$((maxid+1))
-		/usr/bin/dscl . -create "/Users/${username}"
+		if [ "${reuse_ids}" = "true" ]; then
+			# The lowest free UID from 502, and a GeneratedUID derived from it, so
+			# that per-user macOS state keyed by the GeneratedUID (such as
+			# usermanagerd personas) is reused rather than accumulating.
+			used=" $(dscl . -list '/Users' 'UniqueID' | awk '{print $2}' | tr '\n' ' ') "
+			uid=502
+			while [[ "${used}" == *" ${uid} "* ]]; do
+				uid=$((uid+1))
+			done
+			guid="$(printf 'CAFECAFE-AAAA-BBBB-CCCC-%012X' "${uid}")"
+			if [ -n "$(dscl . -search /Users GeneratedUID "${guid}")" ]; then
+				echo "GeneratedUID ${guid} is already in use" >&2
+				exit 1
+			fi
+			# Group membership is resolved through GroupMembers GeneratedUIDs, so
+			# remove any left by a previous user with this GeneratedUID.
+			dscl . -search /Groups GroupMembers "${guid}" | awk -F '\t' '/GroupMembers = / { print $1 }' | while read -r group; do
+				echo "Removing stale member ${guid} from group ${group}"
+				/usr/bin/dscl . -delete "/Groups/${group}" GroupMembers "${guid}"
+			done
+			/usr/bin/dscl . -create "/Users/${username}"
+			/usr/bin/dscl . -create "/Users/${username}" 'GeneratedUID' "${guid}"
+		else
+			maxid=$(dscl . -list '/Users' 'UniqueID' | awk '{print $2}' | sort -un | tail -1)
+			uid=$((maxid+1))
+			/usr/bin/dscl . -create "/Users/${username}"
+		fi
 		/usr/bin/dscl . -create "/Users/${username}" 'UserShell' '/bin/bash'
 		/usr/bin/dscl . -create "/Users/${username}" 'RealName' "${fullname}"
 		/usr/bin/dscl . -create "/Users/${username}" 'UniqueID' "${uid}"
@@ -35,7 +60,7 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		chown -R "${username}:staff" "${homedir}"
 	`
 
-	return host.Run("/usr/bin/env", "bash", "-c", createUserScript, user.Name, user.Password)
+	return host.Run("/usr/bin/env", "bash", "-c", createUserScript, user.Name, user.Password, fmt.Sprint(user.ReuseIDs))
 }
 
 func DeleteUser(username string) (err error) {
