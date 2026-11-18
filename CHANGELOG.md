@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v117.0.0
+
+### DEPLOYERS
+
+▶ [patch] [#8113](https://github.com/taskcluster/taskcluster/issues/8113)
+The worker-manager `check-dangling-resources` job no longer reports ghost Azure resources.
+Azure's subscription-wide list can keep returning such resources long after they were deleted, even though fetching them directly returns 404. The job now fetches each unattached resource before reporting it.
+
+### USERS
+
+▶ [MAJOR]
+Dropped support for python 3.9 in the python client
+
+▶ [patch]
+Labels are now `<span>`s instead of disabled buttons
+
+▶ [patch] [#7525](https://github.com/taskcluster/taskcluster/issues/7525)
+The task view now marks artifacts as unavailable when they are, and no longer offers a "View Live Log" link when the live log is an error artifact.
+
 ## v116.1.0
 
 ### GENERAL

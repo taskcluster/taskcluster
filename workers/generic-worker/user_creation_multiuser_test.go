@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	gwruntime "github.com/taskcluster/taskcluster/v116/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v117/workers/generic-worker/runtime"
 )
 
 func TestRunAfterUserCreation(t *testing.T) {

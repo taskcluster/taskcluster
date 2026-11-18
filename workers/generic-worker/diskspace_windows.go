@@ -3,7 +3,7 @@ package main
 import (
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/win32"
 )
 
 func freeDiskSpaceBytes(dir string) (uint64, error) {

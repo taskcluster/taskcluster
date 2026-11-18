@@ -13,11 +13,11 @@ import (
 	"path/filepath"
 
 	"github.com/peterbourgon/mergemap"
-	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v116/internal/scopes"
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v117/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v117/internal/scopes"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/safefs"
 )
 
 const (

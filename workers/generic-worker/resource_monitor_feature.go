@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v116/internal/scopes"
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v117/internal/scopes"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/process"
 )
 
 type ResourceMonitorFeature struct {

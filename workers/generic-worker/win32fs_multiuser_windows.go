@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/safefs"
 	"golang.org/x/sys/windows"
 )
 

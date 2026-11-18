@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	taskcluster "github.com/taskcluster/taskcluster/v116/clients/client-go"
-	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v116/tools/worker-runner/run"
+	taskcluster "github.com/taskcluster/taskcluster/v117/clients/client-go"
+	"github.com/taskcluster/taskcluster/v117/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v117/tools/worker-runner/run"
 )
 
 func CallConfigureRun(t *testing.T, state *run.State) {

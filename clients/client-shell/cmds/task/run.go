@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
-	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v116/clients/client-shell/config"
-	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	tcclient "github.com/taskcluster/taskcluster/v117/clients/client-go"
+	"github.com/taskcluster/taskcluster/v117/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v117/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v117/internal/slugid"
 )
 
 var (

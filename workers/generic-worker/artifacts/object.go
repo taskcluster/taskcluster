@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v116/clients/client-go"
-	"github.com/taskcluster/taskcluster/v116/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v116/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v117/clients/client-go"
+	"github.com/taskcluster/taskcluster/v117/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v117/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/gwconfig"
 )
 
 type ObjectArtifact struct {

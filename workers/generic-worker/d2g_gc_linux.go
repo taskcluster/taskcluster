@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v116/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/host"
 )
 
 var (

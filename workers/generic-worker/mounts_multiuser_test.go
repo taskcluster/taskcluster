@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v116/internal/slugid"
+	"github.com/taskcluster/taskcluster/v117/internal/slugid"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
