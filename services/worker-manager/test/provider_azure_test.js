@@ -1362,6 +1362,136 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       }
     });
 
+    suite('terminateAfter while the ARM deployment is in progress', () => {
+      const armLaunchConfig = {
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: { value: 'east' },
+          },
+        },
+      };
+
+      const setup = async ({ state = 'requested', terminateAfter }) => {
+        await provisionWorkerPool(armLaunchConfig);
+        const [worker] = await helper.getWorkers();
+        const { resourceGroupName } = worker.providerData;
+        const deploymentName = worker.providerData.deployment.name;
+        fake.deploymentsClient.deployments.setFakeDeploymentState(resourceGroupName, deploymentName, 'Running');
+        await worker.update(helper.db, w => {
+          w.state = state;
+          w.providerData.terminateAfter = terminateAfter;
+          w.created = taskcluster.fromNow('-11 minutes');
+        });
+        await provider.scanPrepare();
+        return { worker, resourceGroupName, deploymentName };
+      };
+
+      const deploymentState = async (resourceGroupName, deploymentName) =>
+        (await fake.deploymentsClient.deployments.get(resourceGroupName, deploymentName)).properties.provisioningState;
+
+      test('cancels the deployment and removes a REQUESTED worker after terminateAfter', async () => {
+        const { worker, resourceGroupName, deploymentName } = await setup({ terminateAfter: Date.now() - 1000 });
+
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+
+        assert.equal(worker.state, 'stopping');
+        assert.equal(worker.providerData.reasonRemoved, 'terminateAfter time exceeded during ARM deployment');
+        assert.equal(await deploymentState(resourceGroupName, deploymentName), 'Canceled');
+      });
+
+      test('removes the worker if the cancel fails, and retries the cancel on the next check', async () => {
+        const { worker, resourceGroupName, deploymentName } = await setup({ terminateAfter: Date.now() - 1000 });
+        const cancelStub = sinon
+          .stub(fake.deploymentsClient.deployments, 'cancel')
+          .rejects(Object.assign(new Error('transient'), { statusCode: 500 }));
+        try {
+          await provider.checkWorker({ worker });
+        } finally {
+          cancelStub.restore();
+        }
+        await worker.reload(helper.db);
+        assert(cancelStub.called);
+        assert.equal(worker.state, 'stopping');
+
+        await provider.checkWorker({ worker });
+        assert.equal(await deploymentState(resourceGroupName, deploymentName), 'Canceled');
+
+        // the canceled deployment is cleaned up without a worker pool error
+        fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(resourceGroupName, deploymentName, []);
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+        assert.equal(worker.providerData.provisioningComplete, true);
+        assert.equal(
+          (await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null)).length,
+          0
+        );
+      });
+
+      test('does not remove a worker during the deployment start grace period', async () => {
+        const { worker } = await setup({ terminateAfter: Date.now() - 1000 });
+        // the provisioner has not recorded the deployment operation yet
+        await worker.update(helper.db, w => {
+          w.created = new Date();
+          w.providerData.deployment.operation = false;
+        });
+
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+        assert.equal(worker.state, 'requested');
+      });
+
+      test('does not remove a REQUESTED worker before terminateAfter', async () => {
+        const { worker, resourceGroupName, deploymentName } = await setup({ terminateAfter: Date.now() + 60000 });
+
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+
+        assert.equal(worker.state, 'requested');
+        assert.equal(await deploymentState(resourceGroupName, deploymentName), 'Running');
+      });
+
+      test('does not remove a RUNNING worker after terminateAfter', async () => {
+        const { worker, resourceGroupName, deploymentName } = await setup({
+          state: 'running',
+          terminateAfter: Date.now() - 1000,
+        });
+
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+
+        assert.equal(worker.state, 'running');
+        assert.equal(await deploymentState(resourceGroupName, deploymentName), 'Running');
+      });
+
+      test('does not remove a worker that registered during the deployment check', async () => {
+        const { worker, resourceGroupName, deploymentName } = await setup({ terminateAfter: Date.now() - 1000 });
+        const getDeployment = fake.deploymentsClient.deployments.get;
+        const getStub = sinon.stub(fake.deploymentsClient.deployments, 'get').callsFake(async (...args) => {
+          // the worker registers while worker-manager waits for Azure
+          const [fresh] = await helper.getWorkers();
+          await fresh.update(helper.db, w => {
+            w.state = 'running';
+            w.providerData.terminateAfter = Date.now() + 60000;
+          });
+          return getDeployment(...args);
+        });
+
+        try {
+          await provider.checkWorker({ worker });
+        } finally {
+          getStub.restore();
+        }
+        await worker.reload(helper.db);
+        assert.equal(worker.state, 'running');
+        assert.equal(await deploymentState(resourceGroupName, deploymentName), 'Running');
+      });
+    });
+
     test('checkWorker continues after completed ARM deployment', async () => {
       await provisionWorkerPool({
         armDeployment: {

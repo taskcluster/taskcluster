@@ -875,13 +875,18 @@ export class AzureProvider extends Provider {
           worker.providerData.provisioningComplete = true;
         }, operations);
 
-        await this.#reportARMDeploymentErrors({
-          worker,
-          monitor,
-          deployment,
-          defaultMessage: errorMessage,
-          operations,
-        });
+        // checkWorker cancels the deployments of stopping workers; that is not a deployment error
+        if (
+          !(provisioningState === ArmDeploymentProvisioningState.Canceled && worker.state === Worker.states.STOPPING)
+        ) {
+          await this.#reportARMDeploymentErrors({
+            worker,
+            monitor,
+            deployment,
+            defaultMessage: errorMessage,
+            operations,
+          });
+        }
 
         if (worker.state === Worker.states.REQUESTED) {
           await this.removeWorker({ worker, reason: `deployment ${provisioningState}: ${errorMessage}` });
@@ -2044,6 +2049,29 @@ export class AzureProvider extends Provider {
         return;
       }
       if (!deploymentComplete) {
+        // a stuck VM create can outlast registrationTimeout, and the worker blocks replacements until removed;
+        // without a recorded operation the create may still be in flight, so wait for the start grace period
+        if (
+          worker.state === states.REQUESTED &&
+          worker.providerData.terminateAfter < Date.now() &&
+          (worker.providerData.deployment.operation ||
+            Date.now() - worker.created.getTime() >= ARM_DEPLOYMENT_START_GRACE_MS)
+        ) {
+          // the worker may have registered since it was fetched
+          await worker.reload(this.db);
+          if (worker.state === states.REQUESTED && worker.providerData.terminateAfter < Date.now()) {
+            await this.removeWorker({ worker, reason: 'terminateAfter time exceeded during ARM deployment' });
+          }
+        }
+        // cleanup waits for the deployment to end, so cancel it; repeated each scan in case a cancel failed
+        if (worker.state === states.STOPPING) {
+          await this._enqueue('query', () =>
+            this.deploymentsClient.deployments.cancel(
+              worker.providerData.resourceGroupName,
+              worker.providerData.deployment.name
+            )
+          ).catch(err => monitor.debug({ message: 'failed to cancel ARM deployment', error: err.message }));
+        }
         return;
       }
     }
