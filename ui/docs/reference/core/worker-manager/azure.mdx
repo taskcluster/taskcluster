@@ -70,7 +70,7 @@ A minimal policy definition for this looks like:
 
 ## Spot Placement Score
 
-If the provider configuration sets `spotPlacementScore: true`, worker-manager asks the Azure [Spot Placement Score](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/spot-placement-score) API how likely each Spot launch configuration is to get capacity, and changes its selection weight:
+If the provider configuration sets `spotPlacementScore: true`, worker-manager asks the Azure [Spot Placement Score](https://learn.microsoft.com/en-us/rest/api/recommenderrp/spot-placement-scores/post?view=rest-recommenderrp-2025-06-05) API how likely each Spot launch configuration is to get capacity, and changes its selection weight:
 
 | Score | Weight multiplier |
 | --- | --- |

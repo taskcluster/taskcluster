@@ -81,7 +81,7 @@ const markResourceGone = resource => {
   }
 };
 
-// https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/spot-placement-score
+// https://learn.microsoft.com/en-us/rest/api/recommenderrp/spot-placement-scores/post?view=rest-recommenderrp-2025-06-05
 // Microsoft suggests caching scores for 15 to 30 minutes
 const SPOT_SCORE_TTL_MS = 15 * 60 * 1000;
 // launch config weight multiplier per score; other scores (e.g. DataNotFoundOrStale) keep the weight
