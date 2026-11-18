@@ -83,7 +83,11 @@ toolchain = TransformSequence()
 def add_toolchain(config, tasks):
     """Install only what each task opts into: `release-toolchains` (subset of
     go, rust, node, uv) and `yarn-install` (monorepo `yarn --immutable`, needs
-    node). Runs after select_release_tasks, so this is a release or staging push."""
+    node). Runs after select_release_tasks, so this is a release or staging push.
+
+    Tasks run as their own task user, so they can't leave anything behind for
+    later tasks on the same worker. Only the image builds and pushes set
+    `run-task-as-current-user`, since docker needs root."""
     info = release_info(
         config.params["head_ref"], config.params["tasks_for"], config.params["project"]
     )
@@ -97,7 +101,6 @@ def add_toolchain(config, tasks):
         worker = task.setdefault("worker", {})
         worker["mounts"] = mounts + worker.get("mounts", [])
         worker["taskcluster-proxy"] = True
-        worker["run-task-as-current-user"] = True
         yield task
 
 

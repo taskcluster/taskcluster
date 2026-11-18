@@ -33,6 +33,7 @@ tasks:
     release-toolchains: [node]
     yarn-install: true
     worker:
+      run-task-as-current-user: true
       max-run-time: 7200
     dependencies:
       gate: release-gate-builds
@@ -50,6 +51,7 @@ tasks:
     release-toolchains: [node]
     yarn-install: true
     worker:
+      run-task-as-current-user: true
       max-run-time: 7200
     dependencies:
       gate: release-gate-builds
@@ -64,6 +66,8 @@ tasks:
   push-image-generic-worker:
     release-secret: docker-hub
     description: Push the generic-worker image to Docker Hub
+    worker:
+      run-task-as-current-user: true
     release-toolchains: [node]
     yarn-install: true
     dependencies:
@@ -79,6 +83,8 @@ tasks:
   push-image-livelog:
     release-secret: docker-hub
     description: Push the livelog image to Docker Hub
+    worker:
+      run-task-as-current-user: true
     release-toolchains: [node]
     yarn-install: true
     dependencies:
@@ -94,6 +100,8 @@ tasks:
   push-image-taskcluster-proxy:
     release-secret: docker-hub
     description: Push the taskcluster-proxy image to Docker Hub
+    worker:
+      run-task-as-current-user: true
     release-toolchains: [node]
     yarn-install: true
     dependencies:
@@ -109,6 +117,8 @@ tasks:
   push-image-websocktunnel:
     release-secret: docker-hub
     description: Push the websocktunnel image to Docker Hub
+    worker:
+      run-task-as-current-user: true
     release-toolchains: [node]
     yarn-install: true
     dependencies:

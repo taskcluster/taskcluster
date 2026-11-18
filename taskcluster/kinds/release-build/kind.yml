@@ -26,11 +26,13 @@ task-defaults:
 # Each task lists only the toolchains it needs (release-toolchains: subset of
 # go, rust, node, uv); see add_toolchain in src/transforms/release.py. The Docker
 # images that build in a multi-stage Dockerfile need none. No build runs the
-# monorepo `yarn --immutable`.
+# monorepo `yarn --immutable`. Only the image builds run as the worker's
+# (root) user, for docker.
 tasks:
   image-monoimage:
     description: Build the Taskcluster monoimage
     worker:
+      run-task-as-current-user: true
       max-run-time: 7200
     run:
       command: taskcluster/scripts/release/build-image.sh monoimage
@@ -39,6 +41,7 @@ tasks:
     dependencies:
       image-monoimage: release-build-image-monoimage
     worker:
+      run-task-as-current-user: true
       max-run-time: 7200
       mounts:
         - file: monoimage.tar.gz
@@ -50,22 +53,29 @@ tasks:
   image-generic-worker:
     description: Build the generic-worker Docker image
     worker:
+      run-task-as-current-user: true
       max-run-time: 7200
     run:
       command: taskcluster/scripts/release/build-image.sh generic-worker
   image-livelog:
     release-toolchains: [go]
     description: Build the livelog Docker image
+    worker:
+      run-task-as-current-user: true
     run:
       command: taskcluster/scripts/release/build-image.sh livelog
   image-taskcluster-proxy:
     release-toolchains: [go]
     description: Build the taskcluster-proxy Docker image
+    worker:
+      run-task-as-current-user: true
     run:
       command: taskcluster/scripts/release/build-image.sh taskcluster-proxy
   image-websocktunnel:
     release-toolchains: [go]
     description: Build the websocktunnel Docker image
+    worker:
+      run-task-as-current-user: true
     run:
       command: taskcluster/scripts/release/build-image.sh websocktunnel
   binaries-generic-worker:

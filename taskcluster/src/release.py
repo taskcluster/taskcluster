@@ -62,7 +62,16 @@ _TOOLCHAINS = {
             "directory": "rust",
             "format": "tar.gz",
         },
-        ["./rust/rust-$RUST_VERSION-x86_64-unknown-linux-gnu/install.sh"],
+        # Install into the task directory: the default prefix, /usr/local,
+        # needs root, and release tasks run as their task user.
+        [
+            (
+                "./rust/rust-$RUST_VERSION-x86_64-unknown-linux-gnu/install.sh"
+                ' --prefix="$(pwd)/rust/install" --disable-ldconfig'
+            ),
+            'export PATH="$(pwd)/rust/install/bin:${{PATH}}"',
+            "cargo --version",
+        ],
     ),
     "node": (
         {
