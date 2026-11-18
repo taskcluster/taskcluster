@@ -310,7 +310,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               <DeleteIcon size={iconSize} />
             </IconButton>
           ) : (
-            <Label mini status="warning" className={classes.button}>
+            <Label status="warning" className={classes.button}>
               Scheduled for deletion
             </Label>
           )}

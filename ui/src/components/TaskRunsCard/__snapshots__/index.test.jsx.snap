@@ -80,14 +80,11 @@ exports[`should render TaskRunsCard 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-4ffk3v-MuiButtonBase-root-Label-dense-Label-success-Label-disabled-MuiButton-root-Label-dense-Label-mini"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
+                <span
+                  class="css-8sdapx"
                 >
                   COMPLETED
-                </button>
+                </span>
               </p>
             </div>
           </li>
@@ -106,14 +103,11 @@ exports[`should render TaskRunsCard 1`] = `
                   class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
                 >
                   View Live Log 
-                  <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-1rxyzk8-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-TaskRunsCard-liveLogLabel-Label-mini"
-                    disabled=""
-                    tabindex="-1"
-                    type="button"
+                  <span
+                    class="css-1j1q1g4-TaskRunsCard-liveLogLabel"
                   >
                     LOG
-                  </button>
+                  </span>
                 </span>
                 <p
                   class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
@@ -208,14 +202,11 @@ exports[`should render TaskRunsCard 1`] = `
                                 <div
                                   class="css-10u2d4d-TaskRunsCard-artifactNameWrapper"
                                 >
-                                  <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-1cxzofh-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-TaskRunsCard-logButton-Label-mini"
-                                    disabled=""
-                                    tabindex="-1"
-                                    type="button"
+                                  <span
+                                    class="css-1i1nsa9-TaskRunsCard-logButton"
                                   >
                                     LOG
-                                  </button>
+                                  </span>
                                   <div
                                     class="css-f8nr9s-TaskRunsCard-artifactName"
                                   >
@@ -358,14 +349,11 @@ exports[`should render TaskRunsCard 1`] = `
                                 <div
                                   class="css-10u2d4d-TaskRunsCard-artifactNameWrapper"
                                 >
-                                  <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-1cxzofh-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-TaskRunsCard-logButton-Label-mini"
-                                    disabled=""
-                                    tabindex="-1"
-                                    type="button"
+                                  <span
+                                    class="css-1i1nsa9-TaskRunsCard-logButton"
                                   >
                                     LOG
-                                  </button>
+                                  </span>
                                   <div
                                     class="css-f8nr9s-TaskRunsCard-artifactName"
                                   >
@@ -432,14 +420,11 @@ exports[`should render TaskRunsCard 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-1sibxt4-MuiButtonBase-root-Label-dense-Label-default-Label-disabled-MuiButton-root-Label-dense-Label-mini"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
+                <span
+                  class="css-1qjuwkb"
                 >
                   COMPLETED
-                </button>
+                </span>
               </p>
             </div>
           </li>
@@ -566,14 +551,11 @@ exports[`should render TaskRunsCard 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-1sibxt4-MuiButtonBase-root-Label-dense-Label-default-Label-disabled-MuiButton-root-Label-dense-Label-mini"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
+                <span
+                  class="css-1qjuwkb"
                 >
                   SCHEDULED
-                </button>
+                </span>
               </p>
             </div>
           </li>

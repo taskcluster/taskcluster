@@ -326,11 +326,7 @@ export default class TaskDetailsCard extends Component {
                 }>
                 <ListItemText
                   primary="Priority"
-                  secondary={
-                    <Label mini status="info">
-                      {task.priority}
-                    </Label>
-                  }
+                  secondary={<Label status="info">{task.priority}</Label>}
                 />
               </ListItem>
               {task.dependencies.length ? (

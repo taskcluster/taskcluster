@@ -5,7 +5,7 @@
     "includes": [
       "{libraries,services,infrastructure,db,clients/client,clients/client-web,clients/client-test}/**/{src,test}/**/*.js",
       "test/**/*.js",
-      "ui/src/**/*.{js,jsx}",
+      "ui/src/**/*.{js,jsx,ts,tsx}",
       "!**/clients/client-web/src/clients",
       "!**/clients/client/src/apis.js",
       "!**/static/env.js"

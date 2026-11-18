@@ -341,7 +341,7 @@ export default class TaskRunsCard extends Component {
             </div>
             <div className={classes.artifactNameWrapper}>
               {isLogFile && (
-                <Label status="info" mini className={classes.logButton}>
+                <Label status="info" className={classes.logButton}>
                   LOG
                 </Label>
               )}
@@ -475,7 +475,6 @@ export default class TaskRunsCard extends Component {
                               View Live Log{' '}
                               <Label
                                 status="info"
-                                mini
                                 className={classes.liveLogLabel}>
                                 LOG
                               </Label>

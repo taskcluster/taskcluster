@@ -31,14 +31,11 @@ exports[`should render TaskDetailsCard 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-bq58-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-Label-mini"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
+                <span
+                  class="css-e1pvxi"
                 >
                   RUNNING
-                </button>
+                </span>
               </p>
             </div>
           </li>
@@ -575,14 +572,11 @@ exports[`should render TaskDetailsCard 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
               >
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-bq58-MuiButtonBase-root-Label-dense-Label-info-Label-disabled-MuiButton-root-Label-dense-Label-mini"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
+                <span
+                  class="css-e1pvxi"
                 >
                   very-high
-                </button>
+                </span>
               </p>
             </div>
           </li>

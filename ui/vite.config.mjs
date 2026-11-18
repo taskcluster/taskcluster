@@ -90,7 +90,7 @@ export default defineConfig(() => ({
     alias: {
       '@taskcluster/ui': resolve(dir, 'src'),
     },
-    extensions: ['.mjs', '.jsx', '.js', '.json'],
+    extensions: ['.mjs', '.tsx', '.ts', '.jsx', '.js', '.json'],
     dedupe: ['react', 'react-dom'],
   },
   oxc: {
@@ -142,6 +142,6 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: resolve(dir, 'vitest.setup.js'),
-    include: ['src/**/*.test.{js,jsx}'],
+    include: ['src/**/*.test.{js,jsx,ts,tsx}'],
   },
 }));
