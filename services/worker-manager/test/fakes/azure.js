@@ -637,6 +637,28 @@ export class FakeRestClient {
     this._throttleNextN = 0;
     this._throttleHeaders = {};
     this._responseHeaders = null;
+    // Spot placement score per `<region>/<sku>` (default High), and the HTTP status to answer with
+    this.spotScores = {};
+    this.spotScoreStatus = 200;
+    this.spotScoreRequests = [];
+  }
+
+  /** Fake the Spot Placement Score API, the only `sendRequest` caller */
+  async sendRequest(req) {
+    this.spotScoreRequests.push(req);
+    assert.match(req.url, /\/placementScores\/spot\/generate\?api-version=/);
+    if (this.spotScoreStatus !== 200) {
+      return { status: this.spotScoreStatus, bodyAsText: '{"error":{"code":"AuthorizationFailed"}}', headers: null };
+    }
+    const { desiredLocations, desiredSizes } = req.body;
+    const placementScores = desiredLocations.flatMap(region =>
+      desiredSizes.map(({ sku }) => {
+        // a value is a score, or an object with extra response fields such as isQuotaAvailable
+        const v = this.spotScores[`${region}/${sku}`] ?? 'High';
+        return typeof v === 'string' ? { region, sku, score: v } : { region, sku, ...v };
+      })
+    );
+    return { status: 200, parsedBody: { placementScores }, headers: null };
   }
 
   /**
