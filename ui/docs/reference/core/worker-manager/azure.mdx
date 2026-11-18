@@ -86,7 +86,7 @@ Scores are regional (not per availability zone). The desired count is the number
 
 A score is an estimate of current Spot capacity. It does not guarantee that an allocation succeeds, and it does not replace worker-manager's error feedback.
 
-The worker-manager service principal needs `Microsoft.Compute/locations/placementScores/generate/action` at **subscription** scope, because the API is a subscription-level endpoint. A role assigned only on the worker resource group is not enough. Assign the built-in "Compute Recommendations Role" on the subscription, or add the action to a custom role assigned there. A score from a location where `isQuotaAvailable` is `false` is treated as `InsufficientQuota`.
+The worker-manager service principal needs `Microsoft.Compute/locations/placementScores/generate/action` at **subscription** scope, because the API is a subscription-level endpoint. A role assigned only on the worker resource group is not enough. Contributor on the subscription already includes it. Otherwise, assign the built-in "Compute Recommendations Role" on the subscription, or add the action to a custom role assigned there. A score from a location where `isQuotaAvailable` is `false` is treated as `InsufficientQuota`.
 
 ## Removing Workers
 
