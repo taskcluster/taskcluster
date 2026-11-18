@@ -437,6 +437,33 @@ def check_release_artifact_mounts(tasks, graph_name, staging):
         raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
 
 
+# Only the image builds and pushes run docker, so only they run as the worker's
+# (root) user. Every other release task runs as its own task user.
+RELEASE_DOCKER_LABELS = {f"release-build-image-{i}" for i in IMAGES} | {
+    f"release-publish-push-image-{i}" for i in IMAGES
+}
+
+
+def check_release_task_users(tasks, graph_name):
+    errors = []
+    for label, task in sorted(tasks.items()):
+        if task.get("kind") not in RELEASE_KINDS:
+            continue
+        definition = task["task"]
+        payload = definition.get("payload", {})
+        scopes = [scope_text(s) for s in definition.get("scopes", [])]
+        expected = label in RELEASE_DOCKER_LABELS
+        if bool(payload.get("features", {}).get("runTaskAsCurrentUser")) != expected:
+            errors.append(f"{label} {'does not run' if expected else 'runs'} as the worker's user")
+        has_scope = any(s.startswith("generic-worker:run-task-as-current-user:") for s in scopes)
+        if has_scope != expected:
+            errors.append(f"{label} {'lacks' if expected else 'has'} the run-task-as-current-user scope")
+        if groups := payload.get("osGroups"):
+            errors.append(f"{label} has osGroups {groups}")
+    if errors:
+        raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
+
+
 def check_no_release_tasks(tasks, graph_name):
     if release := sorted(label for label, t in tasks.items() if t.get("kind", "").startswith("release")):
         raise RuntimeError(f"{graph_name} graph contains release tasks: " + ", ".join(release))
@@ -488,6 +515,8 @@ def main():
         check_release_mount_hashes(tasks, graph_name)
         check_release_artifact_mounts(tasks, graph_name, staging)
         print(f"{graph_name} graph pins every toolchain download by sha256")
+        check_release_task_users(tasks, graph_name)
+        print(f"{graph_name} graph runs only the docker tasks as the worker's user")
 
     tasks = generate_target_graph(PARAMETERS_DIR / MAIN_PUSH_PARAMETERS, version)
     check_no_release_tasks(tasks, "main push")
