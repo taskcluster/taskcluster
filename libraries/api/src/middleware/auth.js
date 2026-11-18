@@ -2,6 +2,7 @@ import hawk from 'hawk';
 import assert from 'node:assert';
 import scopes from 'taskcluster-lib-scopes';
 import crypto from 'node:crypto';
+import { isIP } from 'node:net';
 import { cleanRouteAndParams } from '../utils.js';
 import ScopeExpressionTemplate from '../expressions.js';
 import { ErrorReply } from '../error-reply.js';
@@ -17,6 +18,22 @@ import { ErrorReply } from '../error-reply.js';
  * @template {Record<string, any>} TContext
  * @typedef {import('../../@types/index.d.ts').APIRequestHandler<TContext>} APIRequestHandler
  */
+
+/**
+ * Parse an `X-Forwarded-Port` header value, returning undefined if the header
+ * is absent or does not hold a valid port number.
+ *
+ * @param {string | string[] | undefined} value
+ * @returns {number | undefined}
+ */
+const parseForwardedPort = value => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (typeof raw !== 'string' || !/^\d{1,5}$/.test(raw.trim())) {
+    return undefined;
+  }
+  const port = parseInt(raw, 10);
+  return port <= 65535 ? port : undefined;
+};
 
 /**
  * Authenticate client using remote API end-point and validate that it satisfies
@@ -145,14 +162,14 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
 
     // Parse host header
     const host = hawk.utils.parseHost(req);
-    // Find port, overwrite if forwarded by reverse proxy
+    // Find port, overwrite if forwarded by reverse proxy. The forwarded header
+    // is client-controlled, so a value that isn't a valid port is ignored
+    // rather than passed on, where it would fail schema validation in the auth
+    // service and turn into a 500.
     let port = host.port;
-    if (req.headers['x-forwarded-port'] !== undefined) {
-      if (Array.isArray(req.headers['x-forwarded-port'])) {
-        port = parseInt(req.headers['x-forwarded-port'][0], 10);
-      } else {
-        port = parseInt(req.headers['x-forwarded-port'], 10);
-      }
+    const forwardedPort = parseForwardedPort(req.headers['x-forwarded-port']);
+    if (forwardedPort !== undefined) {
+      port = forwardedPort;
     } else if (req.headers['x-forwarded-proto'] !== undefined) {
       port = req.headers['x-forwarded-proto'] === 'https' ? 443 : port;
     }
@@ -166,7 +183,9 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
           host: host.name,
           port: parseInt(port, 10),
           authorization: req.headers.authorization,
-          sourceIp: req.ip,
+          // req.ip is taken from X-Forwarded-For when behind a proxy, so it
+          // can be anything (e.g. `unknown`); it is only used for audit logging
+          sourceIp: isIP(req.ip) ? req.ip : undefined,
         },
         { traceId: req.traceId, requestId: req.requestId }
       )
