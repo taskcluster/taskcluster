@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-# Print one field of the release secret (the staging one when STAGING=1), read
-# through taskcluster-proxy. Callers capture the output; never echo it.
+# Print one field of the task's release secret, named in RELEASE_SECRET by
+# add_release_secret in src/transforms/release.py, read through
+# taskcluster-proxy. Callers capture the output; never echo it.
 set -euo pipefail
 
 field="${1:?usage: release-secret.sh FIELD}"
 : "${TASKCLUSTER_PROXY_URL:?}"
+name="${RELEASE_SECRET:?this task has no release-secret}"
 
-name=project/taskcluster/release
-if [ "${STAGING:-}" = 1 ]; then
-  name=project/taskcluster/staging-release
-fi
 secret="$(curl -fsS --retry 3 "$TASKCLUSTER_PROXY_URL/api/secrets/v1/secret/$name")"
 python3 -c '
 import json, sys

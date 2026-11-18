@@ -97,7 +97,7 @@ export const runStep = async ({ step, name }) => {
   // push-image needs Docker Hub credentials (staging pushes to an unauthenticated scratch
   // registry); every other step talks to GitHub.
   const required = step === 'push-image' ? (ctx.staging ? [] : ['DOCKER_USERNAME', 'DOCKER_PASSWORD']) : ['GH_TOKEN'];
-  const creds = await loadCredentials({ staging: ctx.staging, proxyUrl, required });
+  const creds = await loadCredentials({ secretName: process.env.RELEASE_SECRET, proxyUrl, required });
   // Talk to the queue directly, without credentials: release-build artifacts are public, and the
   // proxy would re-sign object-service download requests with the task's own credentials, breaking them.
   // This relies on the deployment's anonymous role granting queue:get-task, queue:list-artifacts

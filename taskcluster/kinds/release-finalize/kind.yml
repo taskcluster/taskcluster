@@ -30,6 +30,7 @@ task-defaults:
 
 tasks:
   github-release-publish:
+    release-secret: github
     description: Publish the GitHub release (also triggers npm publishing)
     dependencies:
       draft: release-publish-github-release-draft
@@ -47,6 +48,7 @@ tasks:
       command: yarn release:step --step github-release-publish
   publish-homebrew:
     description: Update the Homebrew tap once the release assets are public
+    release-secret: github
     release-only: true
     dependencies:
       release: release-finalize-github-release-publish

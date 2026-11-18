@@ -279,6 +279,17 @@ RELEASE_FINALIZE_LABELS = {
     "release-finalize-github-release-publish",
     "release-finalize-publish-homebrew",
 }
+# The secret each publish or finalize task reads (under project/taskcluster/release/
+# or project/taskcluster/staging-release/), and the ones staging tasks still read:
+# staging image pushes go to a scratch registry and PyPI and crates.io are dry runs.
+RELEASE_TASK_SECRETS = {f"release-publish-push-image-{i}": "docker-hub" for i in IMAGES} | {
+    "release-publish-github-release-draft": "github",
+    "release-publish-pypi": "pypi",
+    "release-publish-crates": "crates-io",
+    "release-finalize-github-release-publish": "github",
+    "release-finalize-publish-homebrew": "github",
+}
+STAGING_RELEASE_SECRETS = {"github"}
 RELEASE_KINDS = ("release-build", "release-gate", "release-publish", "release-finalize", "release-notify")
 
 
@@ -311,14 +322,22 @@ def check_release_pipeline(tasks, graph_name, staging):
             f"release-gate-builds must depend on exactly the builds; extra/missing: {sorted(gate_deps ^ builds)}"
         )
 
-    secret = "secrets:get:project/taskcluster/" + ("staging-release" if staging else "release")
+    prefix = "project/taskcluster/" + ("staging-release" if staging else "release")
     for label in sorted(labels & (RELEASE_PUBLISH_LABELS | finalize)):
         if "release-gate-builds" not in ancestors(tasks, label):
             errors.append(f"{label} can run before release-gate-builds")
+        name = RELEASE_TASK_SECRETS.get(label)
+        if staging and name not in STAGING_RELEASE_SECRETS:
+            name = None
+        secret = f"{prefix}/{name}" if name else None
         scopes = [scope_text(s) for s in tasks[label]["task"].get("scopes", [])]
-        if secret not in scopes:
-            errors.append(f"{label} lacks {secret}")
+        secret_scopes = [s for s in scopes if s.startswith("secrets:")]
+        expected_scopes = [f"secrets:get:{secret}"] if secret else []
+        if secret_scopes != expected_scopes:
+            errors.append(f"{label} has secret scopes {secret_scopes}; expected {expected_scopes}")
         env = tasks[label]["task"].get("payload", {}).get("env", {})
+        if env.get("RELEASE_SECRET") != secret:
+            errors.append(f"{label} has RELEASE_SECRET={env.get('RELEASE_SECRET')!r}; expected {secret!r}")
         if (env.get("STAGING") == "1") != staging:
             errors.append(f"{label} has STAGING={env.get('STAGING')!r}")
 
