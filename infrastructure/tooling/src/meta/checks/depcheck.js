@@ -1,7 +1,7 @@
 import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 import _ from 'lodash';
 import { gitLsFiles, readRepoFile, readRepoJSON } from '../../utils/index.js';
-import * as acorn from 'acorn-loose';
+import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 import builtinModules from 'builtin-modules';
 import stringify from 'fast-json-stable-stringify';
@@ -75,7 +75,7 @@ if (isMainThread) {
   };
 
   const handleFile = async (file, deps, used, section) => {
-    walk.simple(acorn.parse(await readRepoFile(file)), {
+    walk.simple(acorn.parse(await readRepoFile(file), { ecmaVersion: 'latest', sourceType: 'module' }), {
       ImportExpression(node) {
         if (node.source.type !== 'Literal') {
           return;
