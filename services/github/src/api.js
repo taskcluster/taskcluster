@@ -620,7 +620,6 @@ builder.declare(
       root: assetsPath,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Content-Security-Policy': "default-source 'none'; style-source 'unsafe-inline'",
         'X-Taskcluster-Status': '',
       },
     };
