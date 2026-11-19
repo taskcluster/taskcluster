@@ -81,7 +81,7 @@
     "jwks-rsa": "^2.1.5",
     "lodash": "4.18.1",
     "loglevel": "^1.9.2",
-    "marked": "^4.1.1",
+    "marked": "^18.2.1",
     "matrix-js-sdk": "^41.8.0",
     "memorystore": "^1.6.8",
     "netmask": "^2.1.1",
