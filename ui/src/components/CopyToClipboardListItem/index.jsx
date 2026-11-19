@@ -3,6 +3,7 @@ import { node, string, object } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { makeStyles } from 'tss-react/mui';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
@@ -27,9 +28,9 @@ function CopyToClipboardListItem(props) {
   } = props;
 
   const copyable = Boolean(textToCopy);
+  const Item = copyable ? ListItemButton : ListItem;
   const item = (
-    <ListItem
-      button={copyable}
+    <Item
       classes={copyable ? { root: classes.listItemButtonRoot } : undefined}
       {...listItemProps}>
       <ListItemText
@@ -38,7 +39,7 @@ function CopyToClipboardListItem(props) {
         {...listItemTextProps}
       />
       {copyable && (isCopy ? <CheckIcon /> : <ContentCopyIcon />)}
-    </ListItem>
+    </Item>
   );
 
   if (!copyable) {

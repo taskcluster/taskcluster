@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
@@ -201,6 +202,8 @@ export default class TaskDetailsCard extends Component {
       onChangePriority,
     } = this.props;
     const { sortBy, sortDirection } = this.state;
+    const canChangePriority = Boolean(onChangePriority && user);
+    const PriorityItem = canChangePriority ? ListItemButton : ListItem;
     const sortedDependents = [...dependents].sort((a, b) => {
       const first = a.task?.metadata?.name || '';
       const second = b.task?.metadata?.name || '';
@@ -243,24 +246,22 @@ export default class TaskDetailsCard extends Component {
               />
               <Link
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
-                <ListItem
+                <ListItemButton
                   title="View Workers"
-                  button
                   className={classes.listItemButton}>
                   <ListItemText
                     primary="Task Queue ID"
                     secondary={task.taskQueueId}
                   />
                   <LinkIcon />
-                </ListItem>
+                </ListItemButton>
               </Link>
-              <ListItem
-                button
+              <ListItemButton
                 className={classes.listItemButton}
                 onClick={this.handleTogglePayload}>
                 <ListItemText primary="Payload" />
                 {showPayload ? <ChevronUpIcon /> : <ChevronDownIcon />}
-              </ListItem>
+              </ListItemButton>
               <Collapse in={showPayload} timeout="auto">
                 <List component="div" disablePadding>
                   <ListItem>
@@ -280,13 +281,12 @@ export default class TaskDetailsCard extends Component {
               <Link
                 className={classes.listItemButton}
                 to={`/tasks/${taskId}/definition`}>
-                <ListItem button className={classes.listItemButton}>
+                <ListItemButton className={classes.listItemButton}>
                   <ListItemText primary="Full Task Definition" />
-                </ListItem>
+                </ListItemButton>
               </Link>
 
-              <ListItem
-                button
+              <ListItemButton
                 className={classes.listItemButton}
                 component="a"
                 href={task.metadata.source}
@@ -300,7 +300,7 @@ export default class TaskDetailsCard extends Component {
                   title={task.metadata.source}
                 />
                 {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
-              </ListItem>
+              </ListItemButton>
               <ListItem>
                 <ListItemText
                   primary="Retries Left"
@@ -319,16 +319,13 @@ export default class TaskDetailsCard extends Component {
                 primary="Expires"
                 secondary={<DateDistance from={task.expires} />}
               />
-              <ListItem
-                button={Boolean(onChangePriority && user)}
-                onClick={
-                  onChangePriority && user ? onChangePriority : undefined
-                }>
+              <PriorityItem
+                onClick={canChangePriority ? onChangePriority : undefined}>
                 <ListItemText
                   primary="Priority"
                   secondary={<Label status="info">{task.priority}</Label>}
                 />
-              </ListItem>
+              </PriorityItem>
               {task.dependencies.length ? (
                 <Fragment>
                   <ListItem>
@@ -363,8 +360,7 @@ export default class TaskDetailsCard extends Component {
                         // note that the task might not exist, if it has
                         // expired
                         <Link key={dep.taskId} to={`/tasks/${dep.taskId}`}>
-                          <ListItem
-                            button
+                          <ListItemButton
                             className={classes.listItemButton}
                             title="View Task">
                             <StatusLabel
@@ -376,7 +372,7 @@ export default class TaskDetailsCard extends Component {
                               primary={dep.metadata?.name || dep.taskId}
                             />
                             <LinkIcon />
-                          </ListItem>
+                          </ListItemButton>
                         </Link>
                       ))}
                     </List>

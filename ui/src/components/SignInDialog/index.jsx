@@ -5,7 +5,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import GithubCircleIcon from 'mdi-react/GithubCircleIcon';
@@ -92,8 +92,7 @@ export default class SignInDialog extends Component {
         <DialogContent>
           <List>
             {strategies.includes('mozilla-auth0') && (
-              <ListItem
-                button
+              <ListItemButton
                 component="a"
                 href="/login/mozilla-auth0"
                 rel="opener"
@@ -105,11 +104,10 @@ export default class SignInDialog extends Component {
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary="Sign in with Auth0" />
-              </ListItem>
+              </ListItemButton>
             )}
             {strategies.includes('github') && (
-              <ListItem
-                button
+              <ListItemButton
                 component="a"
                 href="/login/github"
                 rel="opener"
@@ -121,11 +119,10 @@ export default class SignInDialog extends Component {
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary="Sign in with GitHub" />
-              </ListItem>
+              </ListItemButton>
             )}
-            <ListItem
+            <ListItemButton
               disabled={window.location.pathname === '/third-party'}
-              button
               onClick={this.handleCredentialsDialogOpen}>
               <ListItemAvatar>
                 <Avatar>
@@ -133,7 +130,7 @@ export default class SignInDialog extends Component {
                 </Avatar>
               </ListItemAvatar>
               <ListItemText primary="Sign in with credentials" />
-            </ListItem>
+            </ListItemButton>
           </List>
           <CredentialsDialog
             onSignIn={this.handleCredentialsSignIn}

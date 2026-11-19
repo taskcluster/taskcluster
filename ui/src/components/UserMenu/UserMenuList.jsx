@@ -3,7 +3,7 @@ import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
 import withStyles from '../../utils/withStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import SignInDialog from '../SignInDialog';
@@ -52,8 +52,7 @@ export default class UserMenuList extends Component {
       return (
         <Fragment>
           <List component="nav">
-            <ListItem
-              button
+            <ListItemButton
               aria-haspopup="true"
               aria-controls="user-menu"
               aria-label="user menu"
@@ -68,7 +67,7 @@ export default class UserMenuList extends Component {
                 }}
                 primary="Sign In"
               />
-            </ListItem>
+            </ListItemButton>
           </List>
           <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
         </Fragment>
@@ -79,9 +78,8 @@ export default class UserMenuList extends Component {
 
     return (
       <List component="nav">
-        <ListItem
+        <ListItemButton
           className={classes.userMenu}
-          button
           aria-haspopup="true"
           aria-controls="user-menu"
           aria-label="user menu"
@@ -96,7 +94,7 @@ export default class UserMenuList extends Component {
             primaryTypographyProps={{ className: classes.username }}
             title={profileName}
           />
-        </ListItem>
+        </ListItemButton>
       </List>
     );
   }

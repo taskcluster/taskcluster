@@ -7,6 +7,7 @@ import withStyles from '../../utils/withStyles';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -348,8 +349,7 @@ export default class HookBindingDebugger extends Component {
 
     return (
       <Fragment key={row.id}>
-        <ListItem
-          button
+        <ListItemButton
           data-testid="pulse-message"
           className={classNames(classes.messageItem, {
             [classes.rejectedRow]: rejected,
@@ -375,7 +375,7 @@ export default class HookBindingDebugger extends Component {
             />
           )}
           <span className={classes.exchangeText}>{row.exchange}</span>
-        </ListItem>
+        </ListItemButton>
         <Collapse in={expanded} unmountOnExit>
           <div className={classes.details}>
             {this.renderDetailField(

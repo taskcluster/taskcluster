@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import withStyles from '../../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { parse, stringify } from 'qs';
@@ -114,10 +115,10 @@ export default class ScopesetExpander extends Component {
               )}
               {expandedScopes?.map(scope => (
                 <Link key={scope} to={scopeLink(scope)}>
-                  <ListItem button className={classes.listItemButton}>
+                  <ListItemButton className={classes.listItemButton}>
                     <code>{scope}</code>
                     <LinkIcon size={16} />
-                  </ListItem>
+                  </ListItemButton>
                 </Link>
               ))}
             </List>

@@ -6,6 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -213,17 +214,17 @@ export default class IndexedEntry extends Component {
           />
         </ListItem>
         <Link to={`/tasks/${indexedTask.taskId}`}>
-          <ListItem button className={classes.listItemButton}>
+          <ListItemButton className={classes.listItemButton}>
             <ListItemText primary="View task" secondary={indexedTask.taskId} />
             <LinkIcon />
-          </ListItem>
+          </ListItemButton>
         </Link>
         {taskGroupId && (
           <Link to={`/tasks/groups/${taskGroupId}`}>
-            <ListItem button className={classes.listItemButton}>
+            <ListItemButton className={classes.listItemButton}>
               <ListItemText primary="View task group" secondary={taskGroupId} />
               <LinkIcon />
-            </ListItem>
+            </ListItemButton>
           </Link>
         )}
         <ListItem component="div">

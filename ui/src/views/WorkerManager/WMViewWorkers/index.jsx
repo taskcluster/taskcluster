@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { WorkerManager } from '@taskcluster/client-web';
-import Tab from '@mui/material/Tab/Tab';
-import Tabs from '@mui/material/Tabs/Tabs';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import {
   TableCell,
   TableRow,

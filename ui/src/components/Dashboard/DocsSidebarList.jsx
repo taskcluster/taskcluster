@@ -3,7 +3,7 @@ import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Divider from '@mui/material/Divider';
@@ -72,9 +72,6 @@ const getDocsSectionFromPathname = pathname => {
     padding: `0 ${theme.spacing(2)}`,
     overflowY: 'auto',
     maxHeight: '48vh',
-  },
-  listItem: {
-    listStyle: 'none',
   },
   divider: {
     margin: `${theme.spacing(1)} 0`,
@@ -264,11 +261,9 @@ export default class DocsSidebarList extends Component {
           <Fragment key={item.label}>
             {item.hasChildren && <Divider />}
             <Link to={removeReadmeFromPath(item.path)}>
-              <ListItem
+              <ListItemButton
                 name={item.label}
-                button
-                onClick={this.handleSectionClick}
-                classes={{ container: classes.listItem }}>
+                onClick={this.handleSectionClick}>
                 <ListItemIcon>
                   <item.icon />
                 </ListItemIcon>
@@ -279,7 +274,7 @@ export default class DocsSidebarList extends Component {
                   ) : (
                     <ChevronDownIcon />
                   ))}
-              </ListItem>
+              </ListItemButton>
             </Link>
             <Collapse
               in={item.hasChildren && menuOpen && currentMenu === item.label}>

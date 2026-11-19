@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import withStyles from '../../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -322,15 +323,14 @@ export default class InteractiveConnect extends Component {
             />
           </ListItem>
           <Link to={`/tasks/${taskId}`}>
-            <ListItem
-              button
+            <ListItemButton
               className={classNames(
                 classes.listItemButton,
                 classes.viewTaskDetails
               )}>
               <ListItemText primary="View task details" />
               <LinkIcon />
-            </ListItem>
+            </ListItemButton>
           </Link>
         </List>
         {isSessionReady && (
@@ -342,15 +342,14 @@ export default class InteractiveConnect extends Component {
               after that the task will shutdown when all connections are closed.
             </Typography>
             <List>
-              <ListItem
+              <ListItemButton
                 disabled={!user}
-                button
                 onClick={this.handleShellOpen}
                 className={classes.listItemButton}>
                 <ConsoleIcon className={classes.listItemLeftIcon} />
                 <ListItemText primary="Shell" />
                 <OpenInNewIcon />
-              </ListItem>
+              </ListItemButton>
             </List>
           </Fragment>
         )}
