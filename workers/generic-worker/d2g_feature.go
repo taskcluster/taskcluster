@@ -194,10 +194,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	}
 
 	// Always want to re-pull the docker image
-	// if it's not an image artifact, as the
-	// tag could be outdated
+	// if it's not an image artifact or pinned by
+	// digest, as the tag could be outdated
 	// (see https://github.com/taskcluster/taskcluster/issues/8004)
-	image, loadedImage, loadErr := dtf.loadImageLocked(key, loadImage, isImageArtifact)
+	cacheable := isImageArtifact || hasDigest(key)
+	image, loadedImage, loadErr := dtf.loadImageLocked(key, loadImage, cacheable)
 	if loadErr != nil {
 		return loadErr
 	}
@@ -277,8 +278,9 @@ type imageLoadResult struct {
 // loadImageLocked deduplicates concurrent docker image loads (both
 // artifact-based `docker load` and registry-based `docker pull`) per
 // image key. Tasks pulling the *same* key share one docker invocation;
-// tasks pulling *different* keys run in parallel. Only artifact keys
-// (cacheable) are read from or written to the on-disk cache.
+// tasks pulling *different* keys run in parallel. Only cacheable keys
+// (artifacts and digest-pinned names) are read from or written to the
+// on-disk cache.
 //
 // The second return is whether *this* call actually performed the load
 // (true) versus picked up a result populated by another task (false) —
@@ -422,6 +424,16 @@ func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir s
 			command.Args[i] = placeholders.Replace(arg)
 		}
 	}
+}
+
+// hasDigest reports whether name is pinned by digest, e.g. name@sha256:...
+func hasDigest(name string) bool {
+	named, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return false
+	}
+	_, ok := named.(reference.Digested)
+	return ok
 }
 
 // pinnedImageRef returns name@digest for the digest reported by docker pull

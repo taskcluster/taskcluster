@@ -14,6 +14,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v117/clients/client-go"
 	"github.com/taskcluster/taskcluster/v117/tools/d2g"
 	"github.com/taskcluster/taskcluster/v117/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/host"
 )
 
 func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
@@ -1070,8 +1071,9 @@ func TestD2GChainOfTrustIndexedDockerImage(t *testing.T) {
 func TestD2GNamedDockerImageAlwaysRepulls(t *testing.T) {
 	skipInDockerIfNoDocker(t)
 	setup(t)
+	const imageName = "taskcluster/taskcluster-proxy:v81.0.2"
 	image := map[string]any{
-		"name": "taskcluster/taskcluster-proxy:v81.0.2",
+		"name": imageName,
 		"type": "docker-image",
 	}
 	imageBytes, err := json.Marshal(image)
@@ -1087,30 +1089,18 @@ func TestD2GNamedDockerImageAlwaysRepulls(t *testing.T) {
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
-		// The second task must pull again rather than log
-		// "[d2g] Using cached docker image"
-		for range 2 {
-			td := testTask(t)
-			resultTaskID := submitAndAssert(t, td, payload, "completed", "completed")
-			ExpectedArtifacts{
-				"public/logs/live_backing.log": {
-					ContentType:     "text/plain; charset=utf-8",
-					ContentEncoding: "gzip",
-					Expires:         td.Expires,
-				},
-				"public/logs/live.log": {
-					Extracts: []string{
-						"[d2g] Loading docker image",
-						"[d2g] Loaded docker image",
-						"=== Task Finished ===",
-						"Exit Code: 0",
-					},
-					ContentType:     "text/plain; charset=utf-8",
-					ContentEncoding: "gzip",
-					Expires:         td.Expires,
-				},
-			}.Validate(t, resultTaskID, 0)
+		_ = submitAndAssert(t, testTask(t), payload, "completed", "completed")
+
+		// Point the tag at an image without taskcluster-proxy, so the
+		// next task only succeeds if it pulls the tag again
+		if err := host.Run("docker", "pull", "busybox"); err != nil {
+			t.Fatal(err)
 		}
+		if err := host.Run("docker", "tag", "busybox", imageName); err != nil {
+			t.Fatal(err)
+		}
+
+		_ = submitAndAssert(t, testTask(t), payload, "completed", "completed")
 	default:
 		_ = submitAndAssert(t, testTask(t), payload, "exception", "malformed-payload")
 	}
