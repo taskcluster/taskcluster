@@ -92,7 +92,10 @@ export default class AuthConsent extends Component {
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
               id="panel1a-header">
-              <Typography variant="body2" className={classes.heading}>
+              <Typography
+                variant="body2"
+                component="span"
+                className={classes.heading}>
                 Client Details
               </Typography>
             </AccordionSummary>

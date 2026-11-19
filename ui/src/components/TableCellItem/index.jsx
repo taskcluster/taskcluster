@@ -3,6 +3,7 @@ import { node, bool, string } from 'prop-types';
 import withStyles from '../../utils/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 
 const styles = theme => ({
   root: {
@@ -30,22 +31,24 @@ const styles = theme => ({
  * have a text label and an icon.
  */
 const TableCellItem = forwardRef(function TableCellItem(
-  { classes, children, className = null, dense: _dense, ...props },
+  { classes, children, className = null, dense: _dense, button, ...props },
   ref
 ) {
+  const Item = button ? ListItemButton : ListItem;
+
   return (
     <List
       component="div"
       classes={{ root: classes.root }}
       className={className}>
-      <ListItem
+      <Item
         ref={ref}
         component="span"
         classes={{ gutters: classes.listItem }}
         className={classes.listItemButton}
         {...props}>
         {children}
-      </ListItem>
+      </Item>
     </List>
   );
 });

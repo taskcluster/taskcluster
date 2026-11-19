@@ -780,8 +780,10 @@ export default class Entry extends Component {
         defaultExpanded={expanded}
         onChange={this.handlePanelChange(entryHashKey)}
         TransitionProps={{ unmountOnExit: true }}
+        slotProps={{ heading: { component: 'div' } }}
         elevation={2}>
         <AccordionSummary
+          component="div"
           classes={{
             content: classNames(classes.expansionPanelSummary, {
               [classes.expansionPanelSummaryContent]: !isExchangeType,

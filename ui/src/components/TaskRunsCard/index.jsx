@@ -12,6 +12,7 @@ import MobileStepper from '@mui/material/MobileStepper';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
@@ -468,7 +469,7 @@ export default class TaskRunsCard extends Component {
                     <Link
                       to={liveLogInfo.url}
                       onClick={liveLogInfo.handleArtifactClick}>
-                      <ListItem button className={classes.listItemButton}>
+                      <ListItemButton className={classes.listItemButton}>
                         <ListItemText
                           primary={
                             <Fragment>
@@ -483,11 +484,10 @@ export default class TaskRunsCard extends Component {
                           secondary={liveLogArtifact.name}
                         />
                         <LinkIcon />
-                      </ListItem>
+                      </ListItemButton>
                     </Link>
                   )}
-                  <ListItem
-                    button
+                  <ListItemButton
                     className={classes.listItemButton}
                     onClick={this.handleToggleArtifacts}>
                     <ListItemText primary={`Artifacts (${artifactsCount})`} />
@@ -497,7 +497,7 @@ export default class TaskRunsCard extends Component {
                     {showArtifactsCollapse && !showArtifacts ? (
                       <ChevronDownIcon />
                     ) : null}
-                  </ListItem>
+                  </ListItemButton>
                   <Collapse in={showArtifacts} timeout="auto">
                     <List component="div" disablePadding>
                       <ListItem
@@ -578,16 +578,15 @@ export default class TaskRunsCard extends Component {
                   </ListItem>
                   <Link
                     to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerGroup}/${run.workerId}`}>
-                    <ListItem
+                    <ListItemButton
                       title="View Worker"
-                      button
                       className={classes.listItemButton}>
                       <ListItemText
                         primary="Worker ID"
                         secondary={run.workerId}
                       />
                       <LinkIcon />
-                    </ListItem>
+                    </ListItemButton>
                   </Link>
                   <CopyToClipboardListItem
                     textToCopy={run.takenUntil}

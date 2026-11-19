@@ -301,10 +301,8 @@ const themeOptions = isDarkTheme => {
         },
       },
       MuiTypography: {
-        styleOverrides: {
-          root: {
-            color: textPrimary,
-          },
+        defaultProps: {
+          color: 'textPrimary',
         },
       },
       MuiTableSortLabel: {
@@ -445,6 +443,13 @@ const themeOptions = isDarkTheme => {
         },
       },
       MuiListItem: {
+        styleOverrides: {
+          root: {
+            userSelect: 'text',
+          },
+        },
+      },
+      MuiListItemButton: {
         styleOverrides: {
           root: {
             userSelect: 'text',

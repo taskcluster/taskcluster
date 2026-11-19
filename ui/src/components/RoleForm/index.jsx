@@ -4,6 +4,7 @@ import withStyles from '../../utils/withStyles';
 import classNames from 'classnames';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
@@ -240,10 +241,10 @@ export default class RoleForm extends Component {
                     <List dense>
                       {expandedScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
-                          <ListItem button className={classes.listItemButton}>
+                          <ListItemButton className={classes.listItemButton}>
                             <ListItemText secondary={<code>{scope}</code>} />
                             <LinkIcon />
-                          </ListItem>
+                          </ListItemButton>
                         </Link>
                       ))}
                     </List>

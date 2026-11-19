@@ -5,7 +5,7 @@ import { FixedSizeList } from 'react-window';
 import withStyles from '../../utils/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import Divider from '@mui/material/Divider';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { memoize } from '../../utils/memoize';
@@ -92,10 +92,10 @@ export default class RoleScopesTable extends Component {
                 ? `/auth/roles/${encodeURIComponent(item)}`
                 : `/auth/scopes/${encodeURIComponent(item)}`
             }>
-            <ListItem className={classes.listItemButton} style={style} button>
+            <ListItemButton className={classes.listItemButton} style={style}>
               {item}
               <LinkIcon size={iconSize} />
-            </ListItem>
+            </ListItemButton>
           </Link>
           <Divider
             style={{

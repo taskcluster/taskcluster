@@ -6,7 +6,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import { FixedSizeList } from 'react-window';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
@@ -96,10 +96,10 @@ export default class ClientScopesTable extends Component {
                 ? `/auth/clients/${encodeURIComponent(item)}`
                 : `/auth/scopes/${encodeURIComponent(item)}`
             }>
-            <ListItem className={classes.listItemButton} style={style} button>
+            <ListItemButton className={classes.listItemButton} style={style}>
               {item}
               <LinkIcon size={iconSize} />
-            </ListItem>
+            </ListItemButton>
           </Link>
           <Divider
             style={{

@@ -23,10 +23,10 @@ exports[`should render AuthConsent page 1`] = `
     />
     <div>
       <div
-        class="MuiCardHeader-root css-1s3okx9-MuiCardHeader-root-AuthConsent-header"
+        class="MuiCardHeader-root css-i90hn7-MuiCardHeader-root-AuthConsent-header"
       >
         <div
-          class="MuiCardHeader-avatar css-1ssile9-MuiCardHeader-avatar"
+          class="MuiCardHeader-avatar css-1r9wl67-MuiCardHeader-avatar"
         >
           <img
             alt="Logo"
@@ -35,15 +35,15 @@ exports[`should render AuthConsent page 1`] = `
           />
         </div>
         <div
-          class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+          class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
         >
           <span
-            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-title css-17w1um2-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-title css-1v0tnt4-MuiTypography-root"
           >
             registeredClientId
           </span>
           <span
-            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-subheader css-e28pe8-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-subheader css-1y00ooy-MuiTypography-root"
           >
             <span>
               is requesting access to client ID 
@@ -55,50 +55,55 @@ exports[`should render AuthConsent page 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation2 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-o0y1ey-MuiPaper-root-MuiAccordion-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation2 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-mg0j8d-MuiPaper-root-MuiAccordion-root"
+        style="--Paper-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12); --Paper-overlay: linear-gradient(rgba(255, 255, 255, 0.069), rgba(255, 255, 255, 0.069));"
       >
-        <div
-          aria-controls="panel1a-content"
-          aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-hs236p-MuiButtonBase-root-MuiAccordionSummary-root"
-          id="panel1a-header"
-          role="button"
-          tabindex="0"
+        <h3
+          class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
         >
-          <div
-            class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
+          <button
+            aria-controls="panel1a-content"
+            aria-expanded="true"
+            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-1xu72ai-MuiButtonBase-root-MuiAccordionSummary-root"
+            id="panel1a-header"
+            tabindex="0"
+            type="button"
           >
-            <p
-              class="MuiTypography-root MuiTypography-body2 css-cuh330-MuiTypography-root"
+            <span
+              class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-yfrx4k-MuiAccordionSummary-content"
             >
-              Client Details
-            </p>
-          </div>
-          <div
-            class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-9lgt8n-MuiAccordionSummary-expandIconWrapper"
-          >
-            <svg
-              class="mdi-icon "
-              fill="currentColor"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
+              <span
+                class="MuiTypography-root MuiTypography-body2 css-1v0tnt4-MuiTypography-root"
+              >
+                Client Details
+              </span>
+            </span>
+            <span
+              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1prmyaj-MuiAccordionSummary-expandIconWrapper"
             >
-              <path
-                d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
-              />
-            </svg>
-          </div>
-        </div>
+              <svg
+                class="mdi-icon "
+                fill="currentColor"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+              >
+                <path
+                  d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                />
+              </svg>
+            </span>
+          </button>
+        </h3>
         <div
-          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
+          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
           style="min-height: 0px;"
         >
           <div
-            class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
+            class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
           >
             <div
-              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
+              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
             >
               <div
                 aria-labelledby="panel1a-header"
@@ -107,34 +112,34 @@ exports[`should render AuthConsent page 1`] = `
                 role="region"
               >
                 <div
-                  class="MuiAccordionDetails-root css-15v22id-MuiAccordionDetails-root"
+                  class="MuiAccordionDetails-root css-1lj39kh-MuiAccordionDetails-root"
                 >
                   <ul
-                    class="MuiList-root MuiList-padding css-uklivx-MuiList-root-AuthConsent-list"
+                    class="MuiList-root MuiList-padding css-tjwni4-MuiList-root-AuthConsent-list"
                   >
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
+                        class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-5ymzsq-MuiTypography-root"
                         >
                           Description
                         </span>
                         <div
-                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-1y00ooy-MuiTypography-root"
                         >
                           <div
-                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-bqul8j-MuiInputBase-root-MuiInput-root"
                             >
                               <textarea
                                 aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-ir98yr-MuiInputBase-input-MuiInput-input"
                                 id=":r1:"
                                 name="description"
                                 rows="5"
@@ -144,7 +149,7 @@ exports[`should render AuthConsent page 1`] = `
                               </textarea>
                               <textarea
                                 aria-hidden="true"
-                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-ir98yr-MuiInputBase-input-MuiInput-input"
                                 readonly=""
                                 style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
                                 tabindex="-1"
@@ -155,18 +160,18 @@ exports[`should render AuthConsent page 1`] = `
                       </div>
                     </li>
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
+                        class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-5ymzsq-MuiTypography-root"
                         >
                           Expires
                         </span>
                         <div
-                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-1y00ooy-MuiTypography-root"
                         >
                           <input
                             name="expires"
@@ -174,14 +179,14 @@ exports[`should render AuthConsent page 1`] = `
                             value="2022-02-02T00:00:00.000Z"
                           />
                           <div
-                            class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+                            class="MuiFormControl-root MuiTextField-root css-1xp5r68-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-18jm956-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-91vzsy-MuiInputBase-root-MuiInput-root"
                             >
                               <input
                                 aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input css-ume8vi-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input css-ke86s9-MuiInputBase-input-MuiInput-input"
                                 id=":r2:"
                                 max="3023-02-17T13:00"
                                 type="datetime-local"
@@ -193,30 +198,30 @@ exports[`should render AuthConsent page 1`] = `
                       </div>
                     </li>
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-wt0hbh-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
                     >
                       <div
-                        class="MuiListItemText-root MuiListItemText-multiline css-konndc-MuiListItemText-root"
+                        class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
                       >
                         <span
-                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-18bs3qr-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-5ymzsq-MuiTypography-root"
                         >
                           Scopes
                         </span>
                         <div
-                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-e28pe8-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-1y00ooy-MuiTypography-root"
                         >
                           <div
-                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
                             spellcheck="false"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-1cud9e-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-bqul8j-MuiInputBase-root-MuiInput-root"
                             >
                               <textarea
                                 aria-describedby=":r3:-helper-text"
                                 aria-invalid="false"
-                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-ir98yr-MuiInputBase-input-MuiInput-input"
                                 id=":r3:"
                                 placeholder="new-scope:for-something:*"
                                 style="height: 0px; overflow: hidden;"
@@ -225,14 +230,14 @@ exports[`should render AuthConsent page 1`] = `
                               </textarea>
                               <textarea
                                 aria-hidden="true"
-                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-1r0gjst-MuiInputBase-input-MuiInput-input"
+                                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMultiline css-ir98yr-MuiInputBase-input-MuiInput-input"
                                 readonly=""
                                 style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
                                 tabindex="-1"
                               />
                             </div>
                             <p
-                              class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-filled css-17wsglc-MuiFormHelperText-root"
+                              class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-filled css-18o8zoh-MuiFormHelperText-root"
                               id=":r3:-helper-text"
                             >
                               Enter each scope on its own line
@@ -255,7 +260,7 @@ exports[`should render AuthConsent page 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary css-17m3dpp-MuiButtonBase-root-MuiFab-root"
+        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary css-epe3kq-MuiButtonBase-root-MuiFab-root"
         name="cancel"
         tabindex="0"
         type="submit"
@@ -272,9 +277,6 @@ exports[`should render AuthConsent page 1`] = `
             d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
           />
         </svg>
-        <span
-          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-        />
       </button>
     </span>
     <span
@@ -283,7 +285,7 @@ exports[`should render AuthConsent page 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default css-1e5yhhr-MuiButtonBase-root-AuthConsent-allowIcon-MuiFab-root-AuthConsent-allowIcon"
+        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default css-tquekq-MuiButtonBase-root-AuthConsent-allowIcon-MuiFab-root-AuthConsent-allowIcon"
         tabindex="0"
         type="submit"
       >
@@ -298,9 +300,6 @@ exports[`should render AuthConsent page 1`] = `
             d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
           />
         </svg>
-        <span
-          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-        />
       </button>
     </span>
   </form>

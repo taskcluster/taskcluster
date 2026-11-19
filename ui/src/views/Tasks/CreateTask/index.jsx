@@ -19,7 +19,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import TextField from '../../../components/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -427,9 +427,8 @@ export default class CreateTask extends Component {
                   </ListSubheader>
                 }>
                 {this.state.recentTaskDefinitions.map(task => (
-                  <ListItem
+                  <ListItemButton
                     className={classes.listItemButton}
-                    button
                     onClick={() => {
                       this.handleRecentTaskDefinitionClick(task);
                     }}
@@ -443,7 +442,7 @@ export default class CreateTask extends Component {
                       }
                     />
                     <LinkIcon />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             )}

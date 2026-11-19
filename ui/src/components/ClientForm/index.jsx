@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import classNames from 'classnames';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Switch from '@mui/material/Switch';
 import FormGroup from '@mui/material/FormGroup';
@@ -339,10 +340,10 @@ export default class ClientForm extends Component {
                     <List dense>
                       {expandedScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
-                          <ListItem button className={classes.listItemButton}>
+                          <ListItemButton className={classes.listItemButton}>
                             <ListItemText secondary={<code>{scope}</code>} />
                             <LinkIcon />
-                          </ListItem>
+                          </ListItemButton>
                         </Link>
                       ))}
                     </List>
