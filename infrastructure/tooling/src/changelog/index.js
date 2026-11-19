@@ -2,7 +2,6 @@ import * as yaml from 'js-yaml';
 import semver from 'semver';
 import { globSync } from 'glob';
 import chalk from 'chalk';
-import appRootDir from 'app-root-dir';
 
 import {
   REPO_ROOT,
@@ -71,7 +70,7 @@ export class ChangeLog {
   }
 
   async loadSnippets() {
-    const snippetFiles = globSync('changelog/*.md', { cwd: appRootDir.get() }).filter(
+    const snippetFiles = globSync('changelog/*.md', { cwd: REPO_ROOT }).filter(
       filename => filename !== 'changelog/README.md'
     );
 

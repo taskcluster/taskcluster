@@ -122,7 +122,6 @@
     "@types/pg": "^8.23.1",
     "acorn-loose": "^8.5.0",
     "acorn-walk": "^8.3.5",
-    "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0",
     "builtin-modules": "^5.5.0",

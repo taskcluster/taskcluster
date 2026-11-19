@@ -1,5 +1,3 @@
-import appRootDir from 'app-root-dir';
-
 import fs from 'node:fs';
 import {
   dockerPull,
@@ -29,7 +27,7 @@ const tempDir = path.join(REPO_ROOT, 'temp');
  *  this process by theme.
  */
 const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
-  const sourceDir = appRootDir.get();
+  const sourceDir = REPO_ROOT;
 
   ensureTask(tasks, {
     title: 'Build Taskcluster Docker Image',

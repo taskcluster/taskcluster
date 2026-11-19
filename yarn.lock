@@ -2781,13 +2781,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-root-dir@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "app-root-dir@npm:1.0.2"
-  checksum: 10c0/0225e4be7788968a82bb76df9b14b0d7f212a5c12e8c625cdc34f80548780bcbfc5f3287d0806dddd83bf9dbf9ce302e76b2887cd3a6f4be52b79df7f3aa9e7c
-  languageName: node
-  linkType: hard
-
 "argparse@npm:^3.0.3":
   version: 3.0.4
   resolution: "argparse@npm:3.0.4"
@@ -7551,7 +7544,6 @@ __metadata:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
     amqplib: "npm:^2.3.1"
-    app-root-dir: "npm:^1.0.2"
     assume: "npm:^2.1.0"
     aws-sdk-client-mock: "npm:^4.1.0"
     body-parser: "npm:2.4.0"
