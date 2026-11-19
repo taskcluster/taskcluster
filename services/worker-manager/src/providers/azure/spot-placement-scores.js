@@ -51,13 +51,15 @@ export class SpotPlacementScores {
    * @param {{ workerPoolId: string, toSpawn: number, configs: import('../../launch-config-selector.js').WeightedConfig[] }} opts
    */
   async adjustWeights({ workerPoolId, toSpawn, configs }) {
-    const targets = configs.map(({ launchConfig }) => {
+    const targets = configs.map(({ launchConfig, remainingCapacity }) => {
       const cfg = launchConfig.configuration;
       const target = spotTarget(cfg);
       if (!target) {
         return null;
       }
-      const vms = Math.ceil(toSpawn / (cfg.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1));
+      // the selector never gives a config more than its remaining capacity
+      const capacity = Math.min(toSpawn, remainingCapacity);
+      const vms = Math.ceil(capacity / (cfg.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1));
       // shortcut: round the VM count up to a power of two so the cache is reused across loops, use exact counts if scores look off
       return { ...target, count: 2 ** Math.ceil(Math.log2(Math.max(vms, 1))) };
     });
