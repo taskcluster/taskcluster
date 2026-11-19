@@ -3,7 +3,7 @@
 exports[`should render TaskGroupProgress 1`] = `
 <DocumentFragment>
   <div
-    class="MuiGrid-root MuiGrid-container css-1003lqo-MuiGrid-root-TaskGroupProgress-container"
+    class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-9ke57g-MuiGrid-root-TaskGroupProgress-container"
   >
     <button
       class="MuiButtonBase-root css-13ct4pf-MuiButtonBase-root-TaskGroupProgress-completedButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"

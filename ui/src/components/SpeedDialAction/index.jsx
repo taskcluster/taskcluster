@@ -29,6 +29,7 @@ function SpeedDialAction(props) {
     color = 'secondary',
     requiresAuth = false,
     FabProps,
+    slotProps,
     user,
     onAuthorize,
     onUnauthorize,
@@ -74,8 +75,8 @@ function SpeedDialAction(props) {
             : 'secondary.contrastText',
         },
       }}
-      FabProps={fabProps}
       {...rest}
+      slotProps={{ ...slotProps, fab: { ...slotProps?.fab, ...fabProps } }}
       {...title}
       {...other}
     />

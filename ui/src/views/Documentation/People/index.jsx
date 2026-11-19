@@ -51,7 +51,7 @@ export default class People extends Component {
           [classes.gutterBottom]: gutterBottom,
         })}>
         {contributors.filter(filter || (() => true)).map(contrib => (
-          <Grid key={contrib.login} item xs={4} sm={3}>
+          <Grid key={contrib.login} size={{ xs: 4, sm: 3 }}>
             <Anchor href={contrib.profile || '#'}>
               <Card>
                 <CardActionArea className={classes.cardActionArea}>

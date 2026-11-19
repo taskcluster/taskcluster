@@ -1030,7 +1030,7 @@ export default class ViewTask extends Component {
             <br />
             <br />
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TaskDetailsCard
                   taskId={taskId}
                   task={task}
@@ -1048,7 +1048,7 @@ export default class ViewTask extends Component {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TaskRunsCard
                   taskId={taskId}
                   selectedRunId={selectedRunId(this.props) ?? 0}

@@ -126,7 +126,7 @@ export default class ScopesetComparison extends Component {
     return (
       <Dashboard title="Compare Scopes">
         <Grid className={classes.editorGrid} container spacing={1}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography gutterBottom variant="subtitle1">
               Scope A
             </Typography>
@@ -138,7 +138,7 @@ export default class ScopesetComparison extends Component {
               value={scopeTextA}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography gutterBottom variant="subtitle1">
               Scope B
             </Typography>
@@ -155,7 +155,7 @@ export default class ScopesetComparison extends Component {
           cellColors &&
           scopesetDiff.map((scopes, index) => (
             <Grid key={scopes} container>
-              <Grid item xs={6} className={classes[cellColors[index][0]]}>
+              <Grid className={classes[cellColors[index][0]]} size={6}>
                 {scopes[0].length > 0 &&
                   scopes[0].map(scope => (
                     <Typography
@@ -166,7 +166,7 @@ export default class ScopesetComparison extends Component {
                     </Typography>
                   ))}
               </Grid>
-              <Grid item xs={6} className={classes[cellColors[index][1]]}>
+              <Grid className={classes[cellColors[index][1]]} size={6}>
                 {scopes[1].length > 0 &&
                   scopes[1].map(scope => (
                     <Typography

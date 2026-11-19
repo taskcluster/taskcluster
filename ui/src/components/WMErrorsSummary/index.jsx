@@ -83,20 +83,20 @@ export default class WorkerManagerErrorsSummary extends Component {
           <Fragment>
             <StatusGroup widgets={errorWidgets} tiny />
             <Grid container spacing={2} style={{ marginBottom: 28 }}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <MiniTable
                   data={stats?.totals?.title}
                   title="Errors by title"
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <MiniTable
                   data={stats?.totals?.code}
                   title="Errors by error code"
                 />
               </Grid>
               {includeLaunchConfig && (
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <MiniTable
                     data={stats?.totals?.launchConfig}
                     title="Errors by launch config"

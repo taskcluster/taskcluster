@@ -186,7 +186,7 @@ export default class TaskGroupStats extends Component {
     return (
       <Paper className={classes.container}>
         <Grid container>
-          <Grid item xs={12} sm={3} className={classes.legend}>
+          <Grid className={classes.legend} size={{ xs: 12, sm: 3 }}>
             {resolves && starts && (
               <div>
                 <abbr title="Time from first task to start till last task to finish">
@@ -214,7 +214,7 @@ export default class TaskGroupStats extends Component {
               Durations sum: <strong>{formatTime(total)}</strong>
             </div>
           </Grid>
-          <Grid item xs={12} sm={9} className={classes.chartContainer}>
+          <Grid className={classes.chartContainer} size={{ xs: 12, sm: 9 }}>
             {activeTask && (
               <div className={classes.popover}>
                 <strong>{formatTime(activeTask.duration)}</strong>

@@ -13,7 +13,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1ygil4i-MuiToolbar-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit css-a6m6mt-MuiButtonBase-root-MuiButton-root-SkipNavigation-skipButton"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit css-a6m6mt-MuiButtonBase-root-MuiButton-root-SkipNavigation-skipButton"
           selector="main"
           tabindex="0"
           type="button"
@@ -137,7 +137,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </svg>
         </button>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-11em4bp-MuiButtonBase-root-UserMenu-buttonContainedPrimary-MuiButton-root-UserMenu-buttonContainedPrimary-UserMenu-userMenuButton"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-197dzmo-MuiButtonBase-root-MuiButton-root-UserMenu-buttonContainedPrimary-UserMenu-userMenuButton"
           id="sign-in-button"
           tabindex="0"
           type="button"
@@ -152,7 +152,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
       match="[object Object]"
     >
       <div
-        class="MuiGrid-root MuiGrid-container css-1003lqo-MuiGrid-root-TaskGroupProgress-container"
+        class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-9ke57g-MuiGrid-root-TaskGroupProgress-container"
       >
         <button
           class="MuiButtonBase-root css-1o5nh92-MuiButtonBase-root-TaskGroupProgress-completedButton-TaskGroupProgress-statusButton"
@@ -360,13 +360,13 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
         </button>
       </div>
       <div
-        class="MuiGrid-root MuiGrid-container css-1jb972n-MuiGrid-root-TaskGroup-firstGrid"
+        class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-7mi0qd-MuiGrid-root-TaskGroup-firstGrid"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1hhgieh-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-6 css-1ml5fja-MuiGrid-root"
         >
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-vr4xf3-MuiButtonBase-root-listItemButtonRoot-MuiListItemButton-root-listItemButtonRoot"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2027-08-30T00:00:00.000Z (Copy)"
@@ -399,14 +399,14 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1hhgieh-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-6 css-1ml5fja-MuiGrid-root"
         />
       </div>
       <div
-        class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
+        class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-d64g0g-MuiGrid-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-8 css-kxo3r0-MuiGrid-root-TaskGroup-firstGrid"
+          class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-12 MuiGrid-grid-sm-8 css-gusap2-MuiGrid-root-TaskGroup-firstGrid"
         >
           <form
             class="css-1qqbmr1-Search-root-TaskGroup-taskNameFormSearch"
@@ -441,10 +441,10 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           </form>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-9 MuiGrid-grid-sm-4 css-1xyt3kl-MuiGrid-root-TaskGroup-secondGrid"
+          class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-9 MuiGrid-grid-sm-4 css-8si980-MuiGrid-root-TaskGroup-secondGrid"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedInherit MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorInherit MuiButton-root MuiButton-outlined MuiButton-outlinedInherit MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorInherit css-113eohu-MuiButtonBase-root-MuiButton-root-TaskGroup-statsButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedInherit MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorInherit css-113eohu-MuiButtonBase-root-MuiButton-root-TaskGroup-statsButton"
             tabindex="0"
             type="button"
           >
@@ -572,8 +572,8 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           aria-expanded="false"
           aria-haspopup="true"
           aria-label="speed-dial"
-          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiSpeedDial-fab css-1cn0vw3-MuiButtonBase-root-MuiFab-root-MuiSpeedDial-fab"
-          style="transform: none; -webkit-transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiSpeedDial-fab css-1cn0vw3-MuiButtonBase-root-MuiFab-root-MuiSpeedDial-fab"
+          style="transform: none; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
           tabindex="0"
           type="button"
         >
@@ -623,7 +623,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-0-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               role="menuitem"
               style="transition-delay: 90ms;"
               tabindex="-1"
@@ -656,7 +656,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-1-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 60ms;"
@@ -690,7 +690,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-2-label"
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 30ms;"

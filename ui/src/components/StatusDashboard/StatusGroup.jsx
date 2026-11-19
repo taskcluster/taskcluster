@@ -6,10 +6,10 @@ import { StatusItem } from './StatusItem';
 
 const styles = theme => ({
   grid: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(5),
   },
   tinyGrid: {
-    marginTop: theme.spacing(-1),
+    marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
   item: {
@@ -48,12 +48,12 @@ const StatusGroup = ({ widgets, showTitle = true, tiny = false, classes }) => {
         .map(group => (
           <React.Fragment key={group}>
             {showTitle && (
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Typography>{group}</Typography>
               </Grid>
             )}
             {widgets[group].map(props => (
-              <Grid item xs={12} sm={6} md={3} key={props.title}>
+              <Grid key={props.title} size={{ xs: 12, sm: 6, md: 3 }}>
                 {props.link ? (
                   <Link to={props.link}>
                     <StatusItem

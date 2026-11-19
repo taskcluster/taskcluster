@@ -80,10 +80,8 @@ const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
     marginLeft: theme.spacing(2),
   },
   section: {
-    '&.MuiGrid-item': {
-      paddingBottom: theme.spacing(2),
-      borderBottom: `1px dotted ${theme.palette.divider}`,
-    },
+    paddingBottom: theme.spacing(2),
+    borderBottom: `1px dotted ${theme.palette.divider}`,
   },
   version: {
     cursor: 'pointer',
@@ -202,7 +200,7 @@ export default class Changelog extends Component {
     return (
       <Grid container spacing={1}>
         {Object.entries(dropdowns).map(([key, label]) => (
-          <Grid item xs={4} key={key}>
+          <Grid key={key} size={4}>
             <Autocomplete
               options={this.versions}
               freeSolo
@@ -218,7 +216,7 @@ export default class Changelog extends Component {
             />
           </Grid>
         ))}
-        <Grid item xs={4}>
+        <Grid size={4}>
           <TextField
             label="Search for a keyword"
             value={this.state.q}
@@ -226,7 +224,7 @@ export default class Changelog extends Component {
             onChange={ev => this.setState({ q: ev.target.value })}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Autocomplete
             options={this.audiences}
             freeSolo
@@ -243,7 +241,7 @@ export default class Changelog extends Component {
             )}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <FormControlLabel
             className={classes.cbx}
             control={
@@ -257,7 +255,7 @@ export default class Changelog extends Component {
           />
         </Grid>
         {this.filteredSections(this.state).map(section => (
-          <Grid key={section.id} item xs={12} className={classes.section}>
+          <Grid key={section.id} className={classes.section} size={12}>
             <h1>
               <button
                 type="button"

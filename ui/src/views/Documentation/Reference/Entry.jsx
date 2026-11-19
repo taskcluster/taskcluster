@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { path } from 'ramda';
 import withStyles from '../../../utils/withStyles';
@@ -32,16 +31,6 @@ const primaryTypographyProps = { variant: 'body1' };
 @withRouter
 @withStyles(
   theme => ({
-    expansionPanelSummaryContent: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      '& div:first-of-type': {
-        flex: 1,
-      },
-      '& div:nth-of-type(2)': {
-        flex: 1,
-      },
-    },
     expansionPanelSummary: {
       margin: 0,
     },
@@ -57,6 +46,7 @@ const primaryTypographyProps = { variant: 'body1' };
       whiteSpace: 'normal',
     },
     gridContainer: {
+      width: '100%',
       '& > div': {
         margin: 'auto',
       },
@@ -139,19 +129,19 @@ export default class Entry extends Component {
 
     return (
       <Grid className={classes.gridContainer} container spacing={1}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <div>
             <Typography variant="body2" id={entry.name} component="h3">
               {signature}
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <div>
             <Typography variant="body2">{entry.title}</Typography>
           </div>
         </Grid>
-        <Grid item xs={2}>
+        <Grid size={2}>
           <div className={classes.functionStatusLabel}>
             <StatusLabel state={entry.stability.toUpperCase()} />
           </div>
@@ -165,14 +155,14 @@ export default class Entry extends Component {
 
     return (
       <Grid className={classes.gridContainer} container spacing={1}>
-        <Grid item xs={5}>
+        <Grid size={5}>
           <div>
             <Typography variant="body2" id={entry.name} component="h3">
               {entry.exchange}
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={7}>
+        <Grid size={7}>
           <div>
             <Typography variant="body2">{entry.title}</Typography>
           </div>
@@ -186,26 +176,26 @@ export default class Entry extends Component {
 
     return (
       <Grid className={classes.gridContainer} container spacing={1}>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <div>
             <Typography variant="body2" id={entry.type} component="h3">
               {entry.type}
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={1}>
+        <Grid size={1}>
           <div>
             <Typography variant="body2" component="h3">
               v{entry.version}
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={7}>
+        <Grid size={7}>
           <div>
             <Typography variant="body2">{entry.title}</Typography>
           </div>
         </Grid>
-        <Grid item xs={1}>
+        <Grid size={1}>
           <div>
             <StatusLabel state={entry.level.toUpperCase()} />
           </div>
@@ -219,24 +209,24 @@ export default class Entry extends Component {
 
     return (
       <Grid className={classes.gridContainer} container spacing={1}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <div>
             <Typography variant="body2" id={entry.type} component="h3">
               {entry.name}
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <div>
             <Typography variant="body2" component="h3">
               {entry.title}
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={2}>
+        <Grid size={2}>
           <div>{entry.registers.join(', ')}</div>
         </Grid>
-        <Grid item xs={2}>
+        <Grid size={2}>
           <div>
             <StatusLabel state={entry.type.toUpperCase()} />
           </div>
@@ -250,7 +240,7 @@ export default class Entry extends Component {
 
     return (
       <Grid className={classes.gridContainer} container spacing={1}>
-        <Grid item xs={5}>
+        <Grid size={5}>
           <div>
             <Typography
               variant="body2"
@@ -260,7 +250,7 @@ export default class Entry extends Component {
             </Typography>
           </div>
         </Grid>
-        <Grid item xs={7}>
+        <Grid size={7}>
           <div>
             <Typography variant="body2">{entry.schema.$id}</Typography>
           </div>
@@ -784,11 +774,7 @@ export default class Entry extends Component {
         elevation={2}>
         <AccordionSummary
           component="div"
-          classes={{
-            content: classNames(classes.expansionPanelSummary, {
-              [classes.expansionPanelSummaryContent]: !isExchangeType,
-            }),
-          }}
+          classes={{ content: classes.expansionPanelSummary }}
           expandIcon={<ExpandMoreIcon />}>
           {isSchemaType && this.renderSchemaAccordionSummary()}
           {isExchangeType && this.renderExchangeAccordionSummary()}

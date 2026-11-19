@@ -55,7 +55,7 @@ exports[`should render Log 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-dmwtil-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-dmwtil-MuiButtonBase-root-MuiButton-root"
         tabindex="0"
         type="button"
       >
@@ -78,7 +78,7 @@ exports[`should render Log 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-53a39d-MuiButtonBase-root-MuiButton-root-Log-logToolbarButton-Log-followButtonFollowing"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-53a39d-MuiButtonBase-root-MuiButton-root-Log-logToolbarButton-Log-followButtonFollowing"
         tabindex="0"
         type="button"
       >
@@ -168,7 +168,7 @@ exports[`should render without following 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-dmwtil-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-dmwtil-MuiButtonBase-root-MuiButton-root"
         tabindex="0"
         type="button"
       >
@@ -191,7 +191,7 @@ exports[`should render without following 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-8b6on3-MuiButtonBase-root-MuiButton-root-Log-logToolbarButton"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorSecondary css-8b6on3-MuiButtonBase-root-MuiButton-root-Log-logToolbarButton"
         tabindex="0"
         type="button"
       >

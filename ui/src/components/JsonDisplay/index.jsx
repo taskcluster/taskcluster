@@ -9,15 +9,15 @@ import CopyToClipboardListItem from '../CopyToClipboardListItem';
 const YamlJsonSwitch = ({ handleChange, value }) => (
   <Typography component="div">
     <Grid component="label" container alignItems="center" spacing={1}>
-      <Grid item>YAML</Grid>
-      <Grid item>
+      <Grid>YAML</Grid>
+      <Grid>
         <Switch
           checked={value === 'json'}
           onChange={handleChange}
           name="yaml_json_switch"
         />
       </Grid>
-      <Grid item>JSON</Grid>
+      <Grid>JSON</Grid>
     </Grid>
   </Typography>
 );
@@ -38,7 +38,7 @@ const JsonDisplay = props => {
             setLanguage(language === 'yaml' ? 'json' : 'yaml')
           }
         />
-        <Grid item>
+        <Grid>
           <CopyToClipboardListItem
             tooltipTitle=""
             textToCopy={toText(props.objectContent)}
