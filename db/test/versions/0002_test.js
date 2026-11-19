@@ -1,51 +1,35 @@
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
-import { snakeCase } from 'snake-case';
-
-// due to some differences in different versions of snake-case, we
-// have some special-cases.  Everything else follows snake-case's
-// snakeCase.
-const POSTGRES_TABLE_NAMES = {
-  LastFire3: 'last_fire_3',
-  WMWorkers: 'wmworkers',
-  WMWorkerPools: 'wmworker_pools',
-  WMWorkerPoolErrors: 'wmworker_pool_errors',
-};
-
-const postgresTableName = azureTableName =>
-  `${POSTGRES_TABLE_NAMES[azureTableName] || snakeCase(azureTableName)}_entities`;
-
-const azureTableNames = [
-  'Clients',
-  // roles is actually stored in a azure container but we're putting everything in a table now
-  'Roles',
-  'TaskclusterGithubBuilds',
-  'TaskclusterIntegrationOwners',
-  'TaskclusterChecksToTasks',
-  'TaskclusterCheckRuns',
-  'Hooks',
-  'Queues',
-  'LastFire3',
-  'IndexedTasks',
-  'Namespaces',
-  'DenylistedNotification',
-  'CachePurges',
-  'QueueTasks',
-  'QueueArtifacts',
-  'QueueTaskGroups',
-  'QueueTaskGroupMembers',
-  'QueueTaskGroupActiveSets',
-  'QueueTaskRequirement',
-  'QueueTaskDependency',
-  'QueueWorker',
-  'QueueWorkerType',
-  'QueueProvisioner',
-  'Secrets',
-  'AuthorizationCodesTable',
-  'AccessTokenTable',
-  'WMWorkers',
-  'WMWorkerPools',
-  'WMWorkerPoolErrors',
+const tableNames = [
+  'clients_entities',
+  'roles_entities',
+  'taskcluster_github_builds_entities',
+  'taskcluster_integration_owners_entities',
+  'taskcluster_checks_to_tasks_entities',
+  'taskcluster_check_runs_entities',
+  'hooks_entities',
+  'queues_entities',
+  'last_fire_3_entities',
+  'indexed_tasks_entities',
+  'namespaces_entities',
+  'denylisted_notification_entities',
+  'cache_purges_entities',
+  'queue_tasks_entities',
+  'queue_artifacts_entities',
+  'queue_task_groups_entities',
+  'queue_task_group_members_entities',
+  'queue_task_group_active_sets_entities',
+  'queue_task_requirement_entities',
+  'queue_task_dependency_entities',
+  'queue_worker_entities',
+  'queue_worker_type_entities',
+  'queue_provisioner_entities',
+  'secrets_entities',
+  'authorization_codes_table_entities',
+  'access_token_table_entities',
+  'wmworkers_entities',
+  'wmworker_pools_entities',
+  'wmworker_pool_errors_entities',
 ];
 
 suite(testing.suiteName(), () => {
@@ -56,21 +40,21 @@ suite(testing.suiteName(), () => {
   test(`tables created on upgrade`, async () => {
     await helper.upgradeTo(1);
 
-    for (const azureTableName of azureTableNames) {
-      await helper.assertNoTable(postgresTableName(azureTableName));
+    for (const tableName of tableNames) {
+      await helper.assertNoTable(tableName);
     }
 
     await helper.upgradeTo(2);
 
-    for (const azureTableName of azureTableNames) {
-      await helper.assertTable(postgresTableName(azureTableName));
+    for (const tableName of tableNames) {
+      await helper.assertTable(tableName);
     }
   });
 
   test(`tables dropped on downgrade`, async () => {
     await helper.downgradeTo(1);
-    for (const azureTableName of azureTableNames) {
-      await helper.assertNoTable(postgresTableName(azureTableName));
+    for (const tableName of tableNames) {
+      await helper.assertNoTable(tableName);
     }
   });
 });
