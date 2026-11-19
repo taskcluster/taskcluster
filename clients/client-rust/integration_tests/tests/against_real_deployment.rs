@@ -207,6 +207,96 @@ async fn test_signed_url_unnamed_temp_creds() -> Result<()> {
     Ok(())
 }
 
+/// The auth service always adds `assume:anonymous` back after applying authorized scopes.
+fn assert_scopes_are_authorized_scopes(body: &Value, authorized_scopes: &[&str]) {
+    let mut scopes: Vec<&str> = body["scopes"]
+        .as_array()
+        .expect("scopes should be an array")
+        .iter()
+        .map(|s| s.as_str().expect("scope should be a string"))
+        .collect();
+    scopes.sort();
+    let mut expected: Vec<&str> = authorized_scopes.to_vec();
+    expected.push("assume:anonymous");
+    expected.sort();
+    assert_eq!(scopes, expected);
+}
+
+/// Test signed url using plain credentials with authorized scopes
+#[tokio::test]
+async fn test_signed_url_authorized_scopes() -> Result<()> {
+    let creds = Credentials::new("tester", "no-secret");
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
+                .authorized_scopes(vec!["test:authenticate-get"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let body: Value = reqwest::get(&url).await?.json().await?;
+    assert_eq!(body.get("clientId"), Some(&json!("tester")));
+    assert_scopes_are_authorized_scopes(&body, &["test:authenticate-get"]);
+
+    Ok(())
+}
+
+/// Test signed url using unnamed temporary credentials with authorized scopes
+#[tokio::test]
+async fn test_signed_url_unnamed_temp_creds_authorized_scopes() -> Result<()> {
+    let creds = Credentials::new("tester", "no-secret");
+    let creds = creds.create_temp_creds(
+        Duration::from_secs(3600),
+        vec!["test:authenticate-get", "test:other"],
+    )?;
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
+                .authorized_scopes(vec!["test:authenticate-get"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let body: Value = reqwest::get(&url).await?.json().await?;
+    assert_eq!(body.get("clientId"), Some(&json!("tester")));
+    assert_scopes_are_authorized_scopes(&body, &["test:authenticate-get"]);
+
+    Ok(())
+}
+
+/// Test signed url using named temporary credentials with authorized scopes
+#[tokio::test]
+async fn test_signed_url_named_temp_creds_authorized_scopes() -> Result<()> {
+    let creds = Credentials::new("tester", "no-secret");
+    let creds = creds.create_named_temp_creds(
+        "test:creds",
+        Duration::from_secs(3600),
+        vec!["test:authenticate-get", "test:other"],
+    )?;
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
+                .authorized_scopes(vec!["test:authenticate-get"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let body: Value = reqwest::get(&url).await?.json().await?;
+    assert_eq!(body.get("clientId"), Some(&json!("test:creds")));
+    assert_scopes_are_authorized_scopes(&body, &["test:authenticate-get"]);
+
+    Ok(())
+}
+
 /// Test authenticated call using authorizedScopes
 #[tokio::test]
 async fn test_auth_authorized_scopes() -> Result<()> {
