@@ -82,7 +82,7 @@ If the provider configuration sets `spotPlacementScore: true`, worker-manager as
 
 A launch configuration is Spot if its `priority` (or the `priority` ARM template parameter) is `Spot`. Its region and VM size come from `location` and `hardwareProfile.vmSize`, or from the `location` and `vmSize` ARM template parameters. Launch configurations without these values are not changed.
 
-Scores are regional (not per availability zone). The desired count is the number of VMs to spawn for the launch configuration (capacity to spawn divided by `capacityPerInstance`), rounded up to a power of two. Scores are cached for 15 minutes for each region, VM size and desired count, as Microsoft recommends. If every launch configuration of a pool gets a weight of 0, worker-manager ignores the scores for that provisioning run.
+Scores are regional (not per availability zone). The desired count is the number of VMs the launch configuration could get: the capacity to spawn, capped at the configuration's remaining capacity, divided by `capacityPerInstance`, and rounded up to a power of two. Scores are cached for 15 minutes for each region, VM size and desired count, as Microsoft recommends. If every launch configuration of a pool gets a weight of 0, worker-manager ignores the scores for that provisioning run.
 
 A score is an estimate of current Spot capacity. It does not guarantee that an allocation succeeds, and it does not replace worker-manager's error feedback.
 

@@ -82,6 +82,11 @@ suite(testing.suiteName(), () => {
     );
   });
 
+  test('asks for no more VMs than the config has remaining capacity for', async () => {
+    await weights([{ ...spot('e', 'eastus'), remainingCapacity: 2 }], 16);
+    assert.equal(requests[0].body.desiredCount, 2);
+  });
+
   test('gives no weight to a location without quota, whatever its score', async () => {
     scores = { [`eastus/${sku}`]: { score: 'High', isQuotaAvailable: false } };
     assert.deepEqual(await weights([spot('e', 'eastus')]), [0]);
