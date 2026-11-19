@@ -5724,13 +5724,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mockdate@npm:^3.0.2":
-  version: 3.0.5
-  resolution: "mockdate@npm:3.0.5"
-  checksum: 10c0/36ab00c4b94d3e3cc8b9ecec27730dcf396d47d2ba046ad96635e7f9bc4bba0fff6125dedaba7313b1cadc0cefc0eb3f3ac0d5c3655707afd3b82fa4550aae92
-  languageName: node
-  linkType: hard
-
 "module-details-from-path@npm:^1.0.3, module-details-from-path@npm:^1.0.4":
   version: 1.0.4
   resolution: "module-details-from-path@npm:1.0.4"
@@ -7536,7 +7529,6 @@ __metadata:
     matrix-js-sdk: "npm:^41.8.0"
     memorystore: "npm:^1.6.8"
     mocha: "npm:^12.0.3"
-    mockdate: "npm:^3.0.2"
     moment: "npm:^2.31.0"
     netmask: "npm:^2.1.1"
     nock: "npm:^14.0.17"
