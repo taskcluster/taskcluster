@@ -90,16 +90,7 @@ class Notifier {
     }
 
     debug(`Sending email to ${address}`);
-    // It is very, very important that this uses the sanitize option
-    let formatted = marked(content, {
-      gfm: true,
-      tables: true,
-      breaks: true,
-      pedantic: false,
-      smartLists: true,
-      smartypants: false,
-    });
-    formatted = sanitizeHtml(formatted);
+    const formatted = sanitizeHtml(marked(content, { breaks: true }));
 
     const message = {
       from: this.sender,
