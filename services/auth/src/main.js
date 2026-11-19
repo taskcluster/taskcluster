@@ -209,8 +209,10 @@ const load = Loader(
             `allowedServiceAccounts for project ${projectId} must be an array`
           );
 
-          const auth = googleapis.auth.fromJSON(credentials);
-          auth.scopes = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/iam'];
+          const auth = new googleapis.auth.JWT({
+            scopes: ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/iam'],
+          });
+          auth.fromJSON(credentials);
 
           projects[projectId] = {
             // the auth object constructed for this project's credentials

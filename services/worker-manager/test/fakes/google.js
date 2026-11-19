@@ -20,9 +20,13 @@ const PROJECT = 'testy';
 export class FakeGoogle extends FakeCloud {
   _patch() {
     this.sinon.stub(google, 'auth');
-    google.auth.fromJSON = creds => {
-      assert.equal(creds.client_id, 'fake-creds');
-      return { fake: true };
+    // biome-ignore lint/complexity/useArrowFunction: must stay a function. The provider calls `new ...JWT()` and arrows can't be constructors
+    google.auth.JWT = function ({ scopes }) {
+      return {
+        fake: true,
+        scopes,
+        fromJSON: creds => assert.equal(creds.client_email, 'fake-creds@testy.iam.gserviceaccount.com'),
+      };
     };
 
     const self = this;
