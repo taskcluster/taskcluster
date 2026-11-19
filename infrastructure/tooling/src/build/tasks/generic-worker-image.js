@@ -1,5 +1,3 @@
-import appRootDir from 'app-root-dir';
-
 import {
   dockerPull,
   dockerImageExists,
@@ -7,6 +5,7 @@ import {
   ensureTask,
   dockerPush,
   execCommand,
+  REPO_ROOT,
 } from '../../utils/index.js';
 
 import path from 'node:path';
@@ -15,7 +14,7 @@ import path from 'node:path';
  * This builds generic worker docker image containing all tools required to run generic worker
  */
 export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
-  const sourceDir = appRootDir.get();
+  const sourceDir = REPO_ROOT;
 
   ensureTask(tasks, {
     title: 'Build Generic Worker Docker Image',
