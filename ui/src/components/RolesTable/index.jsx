@@ -6,6 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import Button from '../Button';
 import PaginatedDataTable from '../PaginatedDataTable';
+import WhitespaceHighlight from '../WhitespaceHighlight';
 import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
 import { pagination } from '../../utils/prop-types';
 import sort from '../../utils/sort';
@@ -105,7 +106,7 @@ export default class RolesTable extends Component {
               <Link
                 className={classes.roleIdLink}
                 to={`/auth/roles/${encodeURIComponent(roleId)}`}>
-                {roleId}
+                <WhitespaceHighlight text={roleId} />
               </Link>
               <Button
                 requiresAuth

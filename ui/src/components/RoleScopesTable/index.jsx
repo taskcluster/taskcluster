@@ -11,6 +11,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
+import WhitespaceHighlight from '../WhitespaceHighlight';
 import { role } from '../../utils/prop-types';
 
 const sorted = pipe(
@@ -93,7 +94,7 @@ export default class RoleScopesTable extends Component {
                 : `/auth/scopes/${encodeURIComponent(item)}`
             }>
             <ListItemButton className={classes.listItemButton} style={style}>
-              {item}
+              <WhitespaceHighlight text={item} />
               <LinkIcon size={iconSize} />
             </ListItemButton>
           </Link>
