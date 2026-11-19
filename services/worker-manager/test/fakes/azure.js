@@ -363,6 +363,7 @@ export class DeploymentManager extends ResourceManager {
       get: async (rg, name) => this.get(rg, name),
       beginCreateOrUpdate: async (rg, name, params) => this.beginCreateOrUpdate(rg, name, params),
       beginDelete: async (rg, name) => this.beginDelete(rg, name),
+      cancel: async (rg, name) => this.cancel(rg, name),
       deploymentExists: (rg, name) => this.deploymentExists(rg, name),
       setFakeDeploymentState: (rg, name, state, error) => this.setFakeDeploymentState(rg, name, state, error),
       setFakeDeploymentOutputs: (rg, name, outputs) => this.setFakeDeploymentOutputs(rg, name, outputs),
@@ -426,6 +427,21 @@ export class DeploymentManager extends ResourceManager {
     this._requests.set(key, req);
 
     return req;
+  }
+
+  /**
+   * Cancel a deployment; like Azure, only Accepted or Running deployments can be canceled
+   */
+  async cancel(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    const deployment = this._deployments.get(key);
+    if (!deployment) {
+      throw makeError(`${this.resourceType} ${key} not found`, 404);
+    }
+    if (!['Accepted', 'Running'].includes(deployment.properties.provisioningState)) {
+      throw makeError(`${this.resourceType} ${key} cannot be canceled`, 409);
+    }
+    deployment.properties.provisioningState = 'Canceled';
   }
 
   /**
