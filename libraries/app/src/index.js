@@ -6,7 +6,6 @@ import assert from 'node:assert';
 import http from 'node:http';
 import sslify from 'express-sslify';
 import hsts from 'hsts';
-import csp from 'content-security-policy';
 import { v4 } from 'uuid';
 import { loadVersion } from '@taskcluster/lib-api';
 
@@ -189,14 +188,13 @@ export const App = async options => {
 
   if (options.contentSecurityPolicy) {
     // if you're loading HTML from an API, you're doing it wrong..
-    app.use(
-      csp.getCSP({
-        'default-src': csp.SRC_NONE,
-        'frame-ancestors': csp.SRC_NONE,
-        'base-uri': csp.SRC_NONE,
-        'report-uri': '/__cspreport__',
-      })
-    );
+    app.use((_req, res, next) => {
+      res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; report-uri /__cspreport__"
+      );
+      next();
+    });
   }
 
   if (options.trustProxy) {
