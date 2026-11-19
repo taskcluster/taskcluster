@@ -11,6 +11,7 @@ import {
   WORKER_POOL_ERROR_TITLE_MAX,
   WORKER_POOL_ERROR_DESCRIPTION_MAX,
 } from '../data.js';
+import { WeightedRandomConfig } from '../launch-config-selector.js';
 
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
@@ -197,7 +198,23 @@ export class Provider {
       return configSelector.getAll();
     }
 
-    return configSelector.selectCapacity(toSpawn);
+    const adjusted = new WeightedRandomConfig(
+      await this.adjustLaunchConfigWeights({ workerPool, toSpawn, configs: configSelector.configs })
+    );
+    // never starve the pool because of an adjustment
+    return (adjusted.totalWeight > 0 ? adjusted : configSelector).selectCapacity(toSpawn);
+  }
+
+  /**
+   * Providers may scale launch config weights, e.g. by an external capacity signal.
+   * Return new config objects and do not modify `configs`: if every adjusted weight is 0,
+   * selection falls back to the unadjusted configs.
+   *
+   * @param {{ workerPool: WorkerPool, toSpawn: number, configs: import('../launch-config-selector.js').WeightedConfig[] }} opts
+   * @returns {Promise<import('../launch-config-selector.js').WeightedConfig[]>}
+   */
+  async adjustLaunchConfigWeights({ configs }) {
+    return configs;
   }
 
   /**

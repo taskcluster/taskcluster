@@ -668,11 +668,7 @@ export class FakeRestClient {
     }
     const { desiredLocations, desiredSizes } = req.body;
     const placementScores = desiredLocations.flatMap(region =>
-      desiredSizes.map(({ sku }) => {
-        // a value is a score, or an object with extra response fields such as isQuotaAvailable
-        const v = this.spotScores[`${region}/${sku}`] ?? 'High';
-        return typeof v === 'string' ? { region, sku, score: v } : { region, sku, ...v };
-      })
+      desiredSizes.map(({ sku }) => ({ region, sku, score: this.spotScores[`${region}/${sku}`] ?? 'High' }))
     );
     return { status: 200, parsedBody: { placementScores }, headers: null };
   }

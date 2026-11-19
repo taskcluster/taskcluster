@@ -215,3 +215,14 @@ export function formatAzureError(error) {
     .filter(text => text !== error?.message);
   return [error?.message, ...nested].filter(Boolean).join(' | ');
 }
+
+/**
+ * The value of an ARM template parameter, which may be given as `{ value }` or as the value itself
+ */
+export function armParameterValue(parameters, name) {
+  const param = parameters?.[name];
+  if (param && typeof param === 'object' && 'value' in param) {
+    return param.value;
+  }
+  return param;
+}
