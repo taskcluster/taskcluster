@@ -875,10 +875,12 @@ export class AzureProvider extends Provider {
           worker.providerData.provisioningComplete = true;
         }, operations);
 
-        // checkWorker cancels the deployments of stopping workers; that is not a deployment error
-        if (
-          !(provisioningState === ArmDeploymentProvisioningState.Canceled && worker.state === Worker.states.STOPPING)
-        ) {
+        // checkWorker cancels deployments of stopping workers, so a Canceled
+        // deployment on a STOPPING worker is expected and is not an error.
+        const canceledByUs =
+          provisioningState === ArmDeploymentProvisioningState.Canceled && worker.state === Worker.states.STOPPING;
+
+        if (!canceledByUs) {
           await this.#reportARMDeploymentErrors({
             worker,
             monitor,
