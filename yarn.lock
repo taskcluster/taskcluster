@@ -2930,13 +2930,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bluebird@npm:^3.7.0":
-  version: 3.7.2
-  resolution: "bluebird@npm:3.7.2"
-  checksum: 10c0/680de03adc54ff925eaa6c7bb9a47a0690e8b5de60f4792604aae8ed618c65e6b63a7893b57ca924beaf53eee69c5af4f8314148c08124c550fe1df1add897d2
-  languageName: node
-  linkType: hard
-
 "body-parser@npm:2.4.0, body-parser@npm:^2.3.0":
   version: 2.4.0
   resolution: "body-parser@npm:2.4.0"
@@ -5731,13 +5724,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mockdate@npm:^3.0.2":
-  version: 3.0.5
-  resolution: "mockdate@npm:3.0.5"
-  checksum: 10c0/36ab00c4b94d3e3cc8b9ecec27730dcf396d47d2ba046ad96635e7f9bc4bba0fff6125dedaba7313b1cadc0cefc0eb3f3ac0d5c3655707afd3b82fa4550aae92
-  languageName: node
-  linkType: hard
-
 "module-details-from-path@npm:^1.0.3, module-details-from-path@npm:^1.0.4":
   version: 1.0.4
   resolution: "module-details-from-path@npm:1.0.4"
@@ -7543,7 +7529,6 @@ __metadata:
     matrix-js-sdk: "npm:^41.8.0"
     memorystore: "npm:^1.6.8"
     mocha: "npm:^12.0.3"
-    mockdate: "npm:^3.0.2"
     moment: "npm:^2.31.0"
     netmask: "npm:^2.1.1"
     nock: "npm:^14.0.17"
@@ -7579,7 +7564,6 @@ __metadata:
     uuid: "npm:^14.0.2"
     walk: "npm:^2.3.9"
     ws: "npm:^7.5.11"
-    zurvan: "npm:^0.8.0"
   languageName: unknown
   linkType: soft
 
@@ -8099,17 +8083,5 @@ __metadata:
   version: 0.8.15
   resolution: "zen-observable@npm:0.8.15"
   checksum: 10c0/71cc2f2bbb537300c3f569e25693d37b3bc91f225cefce251a71c30bc6bb3e7f8e9420ca0eb57f2ac9e492b085b8dfa075fd1e8195c40b83c951dd59c6e4fbf8
-  languageName: node
-  linkType: hard
-
-"zurvan@npm:^0.8.0":
-  version: 0.8.1
-  resolution: "zurvan@npm:0.8.1"
-  dependencies:
-    bluebird: "npm:^3.7.0"
-  dependenciesMeta:
-    bluebird:
-      optional: true
-  checksum: 10c0/d8eb1b95c161bdeb947887fa573225e003f4305aef293b6fa093b0810b91d23f324dd5dcb865ebf11de90fb8829af6cf9dbbde337379b29fa4566933e8bce170
   languageName: node
   linkType: hard

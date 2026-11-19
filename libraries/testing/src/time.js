@@ -1,5 +1,6 @@
-import zurvan from 'zurvan';
-import timers from 'node:timers';
+import sinon from 'sinon';
+
+const realSetImmediate = setImmediate;
 
 /** Return promise that is resolved in `delay` ms */
 export const sleep = delay =>
@@ -7,43 +8,39 @@ export const sleep = delay =>
     setTimeout(accept, delay);
   });
 
-export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, ...zurvanOptions } = {}) => {
+export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, systemTime, ...fakeTimersOptions } = {}) => {
   if (!mock) {
     // if not mocking, we can't use fake time as it will cause all sorts
     // of timeouts to occur immediately
     return fn;
   }
   return async function wrap() {
-    await zurvan.interceptTimers({
-      systemTime: new Date(),
-      denyImplicitTimer: true,
-      throwOnInvalidClearTimer: false, // superagent does this..
-      rejectOnCallbackFailure: true,
-      fakeNodeDedicatedTimers: false, // so we can call a real timers.setImmediate
-      ...zurvanOptions,
-    });
+    const clock = sinon.useFakeTimers({ now: systemTime ?? Date.now(), ...fakeTimersOptions });
 
     let finished, err;
-    fn.apply(this, []).then(
-      () => {
-        finished = true;
-      },
-      e => {
-        finished = true;
-        err = e;
-      }
-    );
+    try {
+      fn.apply(this, []).then(
+        () => {
+          finished = true;
+        },
+        e => {
+          finished = true;
+          err = e;
+        }
+      );
 
-    // intermingle setImmediate calls with advanceTime calls, so that things zurvan cannot
-    // successfully fake (like JS files internal to Node) get a chance to run.
-    let time = maxTime;
-    while (time > 0 && !finished) {
-      await zurvan.advanceTime(100);
-      time -= 100;
-      await new Promise(resolve => timers.setImmediate(resolve));
+      // intermingle real setImmediate calls with clock ticks, so that real I/O
+      // gets a chance to complete.
+      let time = maxTime;
+      while (time > 0 && !finished) {
+        await clock.tickAsync(100);
+        time -= 100;
+        await new Promise(resolve => realSetImmediate(resolve));
+      }
+    } finally {
+      clock.restore();
     }
 
-    await zurvan.releaseTimers();
     if (err) {
       throw err;
     }

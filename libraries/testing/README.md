@@ -428,7 +428,7 @@ poll for the expected state.
 ### Fake Time
 
 When testing functionality that involves timers, it is helpful to be able to simulate the rapid passage of time.
-The `testing.runWithFakeTime(<fn>, {mock, maxTime, ...})` uses [zurvan](https://github.com/tlewowski/zurvan) to do just that.
+The `testing.runWithFakeTime(<fn>, {mock, maxTime, ...})` uses [sinon fake timers](https://sinonjs.org/releases/latest/fake-timers/) to do just that.
 It is used to wrap an argument to a Mocha `test` function, avoiding interfering with Mocha's timers:
 ```js
 test('noun should verb', runWithFakeTime(async function() {
@@ -440,11 +440,12 @@ test('noun should verb', runWithFakeTime(async function() {
 ```
 
 The `maxTime` option is the total amount of simulated time to spend running the test; it defaults to 30 seconds.
+The `systemTime` option sets the initial fake clock and defaults to the current time.
 
 The `mock` option is for use with `mockSuite` and can be omitted otherwise.
 Fake time is only used when mocking; in a real situation, we are interacting with real services and must use the same clock they do.
 
-Any other options are passed directly to zurvan.
+Any other options are passed directly to `sinon.useFakeTimers`.
 
 Utilities
 ---------

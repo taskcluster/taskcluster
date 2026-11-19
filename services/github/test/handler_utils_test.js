@@ -1,6 +1,6 @@
 import helper from './helper.js';
 import assert from 'node:assert';
-import MockDate from 'mockdate';
+import sinon from 'sinon';
 import testing from '@taskcluster/lib-testing';
 import {
   GithubCheckOutput,
@@ -16,12 +16,14 @@ import { CHECK_RUN_STATES } from '../src/constants.js';
  * Tests of installation syncing
  */
 helper.secrets.mockSuite(testing.suiteName(), [], () => {
+  let clock;
+
   setup(async () => {
-    MockDate.set('2000-05-05T12:12:12.000Z');
+    clock = sinon.useFakeTimers({ now: new Date('2000-05-05T12:12:12.000Z'), toFake: ['Date'] });
   });
 
   teardown(() => {
-    MockDate.reset();
+    clock.restore();
   });
 
   test('GithubCheckOutput', () => {

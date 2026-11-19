@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import assert from 'node:assert';
-import MockDate from 'mockdate';
+import sinon from 'sinon';
 import RateLimit from '../src/ratelimit.js';
 import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
-  let rateLimit;
+  let rateLimit, clock;
 
   setup(async () => {
     rateLimit = new RateLimit({
@@ -14,17 +14,15 @@ suite(testing.suiteName(), () => {
       noPeriodicPurge: true,
     });
 
-    MockDate.set('1/1/2000');
+    clock = sinon.useFakeTimers({ now: new Date('1/1/2000'), toFake: ['Date'] });
   });
 
   teardown(() => {
-    MockDate.reset();
+    clock.restore();
   });
 
   const timeFlies = seconds => {
-    const newTime = new Date();
-    newTime.setSeconds(newTime.getSeconds() + seconds);
-    MockDate.set(newTime);
+    clock.tick(seconds * 1000);
   };
 
   test('does not rate-limit a single send', () => {
