@@ -14,6 +14,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v117/clients/client-go"
 	"github.com/taskcluster/taskcluster/v117/tools/d2g"
 	"github.com/taskcluster/taskcluster/v117/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v117/workers/generic-worker/host"
 )
 
 func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
@@ -1062,6 +1063,47 @@ func TestD2GChainOfTrustIndexedDockerImage(t *testing.T) {
 	expected := DockerWorkerPartialChainOfTrustCert{}
 
 	D2GChainOfTrustHelper(t, &image, []string{}, expected)
+}
+
+// TestD2GNamedDockerImageAlwaysRepulls verifies that a named docker image
+// is pulled for every task, rather than reusing a d2g image cache entry
+// whose local tag could be outdated.
+func TestD2GNamedDockerImageAlwaysRepulls(t *testing.T) {
+	skipInDockerIfNoDocker(t)
+	setup(t)
+	const imageName = "taskcluster/taskcluster-proxy:v81.0.2"
+	image := map[string]any{
+		"name": imageName,
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command:    []string{"taskcluster-proxy", "--version"},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, testTask(t), payload, "completed", "completed")
+
+		// Point the tag at an image without taskcluster-proxy, so the
+		// next task only succeeds if it pulls the tag again
+		if err := host.Run("docker", "pull", "busybox"); err != nil {
+			t.Fatal(err)
+		}
+		if err := host.Run("docker", "tag", "busybox", imageName); err != nil {
+			t.Fatal(err)
+		}
+
+		_ = submitAndAssert(t, testTask(t), payload, "completed", "completed")
+	default:
+		_ = submitAndAssert(t, testTask(t), payload, "exception", "malformed-payload")
+	}
 }
 
 // TestD2GDockerImageArtifactCaching verifies the full caching lifecycle for

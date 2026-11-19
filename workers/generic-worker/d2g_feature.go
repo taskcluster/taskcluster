@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/distribution/reference"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/singleflight"
 
@@ -95,12 +96,6 @@ func (dtf *D2GTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
-	// load cache on every start in case the garbage
-	// collector has pruned docker images between tasks
-	d2gCacheMutex.Lock()
-	dtf.imageCache.loadFromFile("d2g-image-cache.json")
-	d2gCacheMutex.Unlock()
-
 	taskDir := dtf.task.TaskDir()
 	var isImageArtifact bool
 	var key string
@@ -114,8 +109,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		key = dtf.task.D2GInfo.Image.String()
 	}
 
-	image := dtf.imageCache[key]
-	loadedImage := false
 	loadImage := func() (*Image, *CommandExecutionError) {
 		dtf.task.Info("[d2g] Loading docker image")
 
@@ -144,7 +137,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"pull",
-				"--quiet",
 				key,
 			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
@@ -156,11 +148,8 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
-		// Default to use the first line of output for image
-		// name as docker load can output multiple tags for the
-		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
 		lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-		imageName := lines[0]
+		var imageName string
 		if isImageArtifact {
 			imageNameFound := false
 			// Find the first line with "Loaded image: " prefix
@@ -176,34 +165,27 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			if !imageNameFound {
 				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
-		}
-		imageID := imageName
-
-		// DockerImageArtifact or IndexedDockerImage, need to get
-		// sha256 of the image to differentiate between images
-		// with the same name/tag
-		if isImageArtifact {
-			cmd, err = process.NewCommandNoOutputStreams([]string{
-				"docker",
-				"images",
-				"--no-trunc",
-				"--quiet",
-				imageName,
-			}, taskDir, []string{}, dtf.task.pd)
+		} else {
+			imageName, err = pinnedImageRef(key, lines)
 			if err != nil {
-				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
+				return nil, executionError(internalError, errored, err)
 			}
-			out, err = cmd.Output()
-			if err != nil {
-				return nil, executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
-			}
-
-			// Only use the first line of output for image ID
-			// as docker images can output multiple sha256's for the
-			// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-			idLine, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
-			imageID = strings.TrimPrefix(idLine, "sha256:")
 		}
+		cmd, err = process.NewCommandNoOutputStreams([]string{
+			"docker",
+			"image",
+			"inspect",
+			"--format={{.Id}}",
+			imageName,
+		}, taskDir, []string{}, dtf.task.pd)
+		if err != nil {
+			return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to determine docker image ID: %v", err))
+		}
+		out, err = cmd.Output()
+		if err != nil {
+			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not determine docker image ID", err, out))
+		}
+		imageID := strings.TrimPrefix(strings.TrimSpace(string(out)), "sha256:")
 
 		return &Image{
 			ID:   imageID,
@@ -212,27 +194,13 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	}
 
 	// Always want to re-pull the docker image
-	// if it's not an image artifact, as the
-	// tag could be outdated
+	// if it's not an image artifact or pinned by
+	// digest, as the tag could be outdated
 	// (see https://github.com/taskcluster/taskcluster/issues/8004)
-	if isImageArtifact {
-		if image == nil {
-			var loadErr *CommandExecutionError
-			image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage)
-			if loadErr != nil {
-				return loadErr
-			}
-		}
-	} else {
-		// Registry pulls also serialize through the same mutex so that
-		// concurrent tasks running with the same `image: foo:tag`
-		// don't issue parallel `docker pull`s and race on the cache
-		// JSON write below.
-		var loadErr *CommandExecutionError
-		image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage)
-		if loadErr != nil {
-			return loadErr
-		}
+	cacheable := isImageArtifact || hasDigest(key)
+	image, loadedImage, loadErr := dtf.loadImageLocked(key, loadImage, cacheable)
+	if loadErr != nil {
+		return loadErr
 	}
 
 	if loadedImage {
@@ -302,41 +270,47 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	return nil
 }
 
-// loadImageLocked deduplicates concurrent docker image loads (both
-// artifact-based `docker load` and registry-based `docker pull`) per
-// image key. Tasks pulling the *same* key share one docker invocation;
-// tasks pulling *different* keys run in parallel.
-//
-// The first return is whether *this* call actually performed the load
-// (true) versus picked up a result populated by another task (false) —
-// kept for the existing "[d2g] Loaded ..." vs "[d2g] Using cached ..."
-// log distinction in Start.
 type imageLoadResult struct {
 	image  *Image
 	loaded bool
 }
 
-func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image, *CommandExecutionError)) (*Image, bool, *CommandExecutionError) {
+// loadImageLocked deduplicates concurrent docker image loads (both
+// artifact-based `docker load` and registry-based `docker pull`) per
+// image key. Tasks pulling the *same* key share one docker invocation;
+// tasks pulling *different* keys run in parallel. Only cacheable keys
+// (artifacts and digest-pinned names) are read from or written to the
+// on-disk cache.
+//
+// The second return is whether *this* call actually performed the load
+// (true) versus picked up a result populated by another task (false) —
+// kept for the existing "[d2g] Loaded ..." vs "[d2g] Using cached ..."
+// log distinction in Start.
+func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image, *CommandExecutionError), cacheable bool) (*Image, bool, *CommandExecutionError) {
 	v, err, _ := d2gImageLoads.Do(key, func() (any, error) {
 		// Re-read the on-disk cache: another task may have completed
 		// the load while we were waiting on singleflight, OR an
 		// unrelated process (a previous worker run) may have left a
 		// fresh entry behind. Done inside Do so the doubled-check
 		// happens under the per-key serialization.
-		latestCache := ImageCache{}
-		d2gCacheMutex.Lock()
-		latestCache.loadFromFile("d2g-image-cache.json")
-		d2gCacheMutex.Unlock()
-		maps.Copy(dtf.imageCache, latestCache)
-		if image := latestCache[key]; image != nil {
-			return imageLoadResult{image: image, loaded: false}, nil
+		if cacheable {
+			latestCache := ImageCache{}
+			d2gCacheMutex.Lock()
+			latestCache.loadFromFile("d2g-image-cache.json")
+			d2gCacheMutex.Unlock()
+			maps.Copy(dtf.imageCache, latestCache)
+			if image := latestCache[key]; image != nil {
+				return imageLoadResult{image: image, loaded: false}, nil
+			}
 		}
 
 		image, loadErr := loadImage()
 		if loadErr != nil {
 			return nil, loadErr
 		}
-		dtf.imageCache[key] = image
+		if cacheable {
+			dtf.imageCache[key] = image
+		}
 		return imageLoadResult{image: image, loaded: true}, nil
 	})
 	if err != nil {
@@ -450,6 +424,30 @@ func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir s
 			command.Args[i] = placeholders.Replace(arg)
 		}
 	}
+}
+
+// hasDigest reports whether name is pinned by digest, e.g. name@sha256:...
+func hasDigest(name string) bool {
+	named, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return false
+	}
+	_, ok := named.(reference.Digested)
+	return ok
+}
+
+// pinnedImageRef returns name@digest for the digest reported by docker pull
+func pinnedImageRef(name string, pullOutput []string) (string, error) {
+	for _, line := range pullOutput {
+		if digest, found := strings.CutPrefix(line, "Digest: "); found {
+			named, err := reference.ParseNormalizedNamed(name)
+			if err != nil {
+				return "", fmt.Errorf("[d2g] invalid docker image name %q: %w", name, err)
+			}
+			return reference.TrimNamed(named).String() + "@" + strings.TrimSpace(digest), nil
+		}
+	}
+	return "", fmt.Errorf("[d2g] could not determine image digest from docker pull output:\n%s", strings.Join(pullOutput, "\n"))
 }
 
 // formatCommandError creates a detailed error message from command execution failure
