@@ -107,7 +107,7 @@ exports[`should render AuthConsent page 1`] = `
             >
               <div
                 aria-labelledby="panel1a-header"
-                class="MuiAccordion-region"
+                class="MuiAccordion-region css-at4ued-MuiAccordion-region"
                 id="panel1a-content"
                 role="region"
               >
@@ -135,7 +135,7 @@ exports[`should render AuthConsent page 1`] = `
                             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-bqul8j-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-afjimv-MuiInputBase-root-MuiInput-root"
                             >
                               <textarea
                                 aria-invalid="false"
@@ -182,7 +182,7 @@ exports[`should render AuthConsent page 1`] = `
                             class="MuiFormControl-root MuiTextField-root css-1xp5r68-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-91vzsy-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-formControl css-1myyeey-MuiInputBase-root-MuiInput-root"
                             >
                               <input
                                 aria-invalid="false"
@@ -216,7 +216,7 @@ exports[`should render AuthConsent page 1`] = `
                             spellcheck="false"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-bqul8j-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-afjimv-MuiInputBase-root-MuiInput-root"
                             >
                               <textarea
                                 aria-describedby=":r3:-helper-text"
@@ -260,7 +260,7 @@ exports[`should render AuthConsent page 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary css-epe3kq-MuiButtonBase-root-MuiFab-root"
+        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary css-epe3kq-MuiButtonBase-root-MuiFab-root"
         name="cancel"
         tabindex="0"
         type="submit"
@@ -285,7 +285,7 @@ exports[`should render AuthConsent page 1`] = `
       data-mui-internal-clone-element="true"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default css-tquekq-MuiButtonBase-root-AuthConsent-allowIcon-MuiFab-root-AuthConsent-allowIcon"
+        class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-default css-1ejw3ne-MuiButtonBase-root-MuiFab-root-AuthConsent-allowIcon"
         tabindex="0"
         type="submit"
       >
