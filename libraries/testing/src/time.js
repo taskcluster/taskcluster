@@ -18,19 +18,19 @@ export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, systemTime, 
     const clock = sinon.useFakeTimers({ now: systemTime ?? Date.now(), ...fakeTimersOptions });
 
     let finished, err;
-    fn.apply(this, []).then(
-      () => {
-        finished = true;
-      },
-      e => {
-        finished = true;
-        err = e;
-      }
-    );
-
-    // intermingle real setImmediate calls with clock ticks, so that real I/O
-    // gets a chance to complete.
     try {
+      fn.apply(this, []).then(
+        () => {
+          finished = true;
+        },
+        e => {
+          finished = true;
+          err = e;
+        }
+      );
+
+      // intermingle real setImmediate calls with clock ticks, so that real I/O
+      // gets a chance to complete.
       let time = maxTime;
       while (time > 0 && !finished) {
         await clock.tickAsync(100);
