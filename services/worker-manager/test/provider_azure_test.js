@@ -1472,38 +1472,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
     }
 
-    test('asks for VMs, not capacity, rounded up to a power of two', async () => {
-      provider.providerConfig.spotPlacementScore = true;
-      await provisionPool([
-        { ...sequentialEastus, workerManager: { launchConfigId: 'lc-eastus', capacityPerInstance: 3 } },
-      ]);
-      // 4 capacity / 3 per VM = 2 VMs
-      assert.equal(fake.restClient.spotScoreRequests[0].body.desiredCount, 2);
-    });
-
-    test('skips launch configs without quota, whatever their score', async () => {
-      provider.providerConfig.spotPlacementScore = true;
-      fake.restClient.spotScores = { [`eastus/${sku}`]: { score: 'High', isQuotaAvailable: false } };
-      await provisionPool();
-      assert.deepEqual(await spawnedLaunchConfigs(), ['lc-westus', 'lc-westus', 'lc-westus', 'lc-westus']);
-    });
-
-    test('a failed request keeps unexpired scores of other pairs in its batch', async () => {
-      provider.providerConfig.spotPlacementScore = true;
-      const key = `eastus/${sku}/4`.toLowerCase();
-      provider.spotScoreCache.set(key, { expires: Date.now() + 60000, score: 'RestrictedSkuNotAvailable' });
-
-      // eastus/other and westus/sku miss, so the request also covers the cached eastus/sku
-      fake.restClient.spotScoreStatus = 403;
-      const other = {
-        ...sequentialEastus,
-        workerManager: { launchConfigId: 'lc-eastus-other' },
-        hardwareProfile: { vmSize: 'Standard_Other' },
-      };
-      await provisionPool([sequentialEastus, other, armWestus]);
-      assert.equal(provider.spotScoreCache.get(key).score, 'RestrictedSkuNotAvailable');
-    });
-
     test('retries throttled and failed score requests through the request queue', async () => {
       provider.providerConfig.spotPlacementScore = true;
       fake.restClient.spotScoreStatus = 503;

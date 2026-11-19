@@ -10,7 +10,7 @@ import { WorkerPool, Worker } from '../../data.js';
 import azureApi from './azure-api.js';
 import { ApiError, Provider, TransientApiError } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
-import { WeightedRandomConfig } from '../../launch-config-selector.js';
+import { SpotPlacementScores } from './spot-placement-scores.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
 import {
   nicerId,
@@ -23,6 +23,7 @@ import {
   ArmDeploymentProvisioningState,
   azureErrorDetails,
   formatAzureError,
+  armParameterValue,
 } from './utils.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
@@ -80,13 +81,6 @@ const markResourceGone = resource => {
     resource.deleted = true;
   }
 };
-
-// https://learn.microsoft.com/en-us/rest/api/recommenderrp/spot-placement-scores/post?view=rest-recommenderrp-2025-06-05
-// Microsoft suggests caching scores for 15 to 30 minutes
-const SPOT_SCORE_TTL_MS = 15 * 60 * 1000;
-// launch config weight multiplier per score; other scores (e.g. DataNotFoundOrStale) keep the weight
-const SPOT_SCORE_WEIGHTS = { High: 1, Medium: 0.5, Low: 0.1, RestrictedSkuNotAvailable: 0, InsufficientQuota: 0 };
-const spotScoreKey = ({ location, sku, count }) => `${location}/${sku}/${count}`.toLowerCase();
 
 const UNKNOWN_METRIC_LABEL = 'unknown';
 const MAX_METRIC_LABEL_LENGTH = 200;
@@ -153,29 +147,6 @@ function firstMetricLabel(...values) {
   return UNKNOWN_METRIC_LABEL;
 }
 
-function armParameterValue(parameters, name) {
-  const param = parameters?.[name];
-  if (param && typeof param === 'object' && 'value' in param) {
-    return param.value;
-  }
-  return param;
-}
-
-/**
- * The location and VM size of a Spot launch config, or null if it is not Spot
- * shortcut: regional scores only, a launch config pinned to a zone gets its region's score
- */
-function spotTarget(cfg) {
-  const arm = cfg.armDeployment;
-  const priority = arm ? armParameterValue(arm.parameters, 'priority') : cfg.priority;
-  const location = arm ? armParameterValue(arm.parameters, 'location') : cfg.location;
-  const sku = arm ? armParameterValue(arm.parameters, 'vmSize') : cfg.hardwareProfile?.vmSize;
-  if (String(priority).toLowerCase() !== 'spot' || typeof location !== 'string' || typeof sku !== 'string') {
-    return null;
-  }
-  return { location, sku };
-}
-
 function extractAzureMetricError(error) {
   const queue = [error?.response?.parsedBody?.error, error?.parsedBody?.error, error?.body?.error, error?.error, error];
   const seen = new Set();
@@ -232,8 +203,23 @@ export class AzureProvider extends Provider {
     this.resourceGroupCache = new Map();
     /** @type {Map<string, number>} Consecutive `instanceView` 404s per worker */
     this.instanceView404Streaks = new Map();
-    /** @type {Map<string, { expires: number, score?: string }>} Spot placement scores by `spotScoreKey` */
-    this.spotScoreCache = new Map();
+    this.spotPlacementScores = new SpotPlacementScores({
+      subscriptionId: providerConfig.subscriptionId,
+      monitor: this.monitor,
+      // use the request queue so its error handler backs off on 429 and 5xx
+      request: req =>
+        this._enqueue('get', async () => {
+          const resp = await this.restClient.sendRequest(req);
+          this._recordRateLimitHeaders({ headers: resp.headers, statusCode: resp.status, operationType: 'read' });
+          if (resp.status !== 200) {
+            throw Object.assign(new Error(`HTTP ${resp.status}: ${resp.bodyAsText}`), {
+              statusCode: resp.status,
+              response: resp,
+            });
+          }
+          return resp.parsedBody;
+        }),
+    });
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -437,9 +423,7 @@ export class AzureProvider extends Provider {
       workerPool.config
     );
 
-    const cfgs = this.providerConfig.spotPlacementScore
-      ? await this.#selectLaunchConfigsBySpotScore({ workerPool, toSpawn, workerPoolStats })
-      : await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
 
     await Promise.all(
       cfgs.map(async lc => {
@@ -475,114 +459,14 @@ export class AzureProvider extends Provider {
   }
 
   /**
-   * Like `selectLaunchConfigsForSpawn`, but scale the weight of each Spot launch config
-   * by its Azure Spot Placement Score, so regions and sizes with more Spot capacity are picked more often.
-   *
-   * @param {{ workerPool: WorkerPool, toSpawn: number, workerPoolStats: WorkerPoolStats }} opts
+   * Scale the weight of each Spot launch config by its Azure Spot Placement Score when
+   * `spotPlacementScore` is set, so regions and sizes with more Spot capacity are picked more often.
    */
-  async #selectLaunchConfigsBySpotScore({ workerPool, toSpawn, workerPoolStats }) {
-    const selector = await this.launchConfigSelector.forWorkerPool(workerPool, workerPoolStats);
-    const targets = selector.configs.map(({ launchConfig }) => {
-      const cfg = launchConfig.configuration;
-      const target = spotTarget(cfg);
-      if (!target) {
-        return null;
-      }
-      const vms = Math.ceil(toSpawn / (cfg.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1));
-      // shortcut: round the VM count up to a power of two so the cache is reused across loops, use exact counts if scores look off
-      return { ...target, count: 2 ** Math.ceil(Math.log2(Math.max(vms, 1))) };
-    });
-    const scores = await this.#spotPlacementScores(
-      workerPool.workerPoolId,
-      targets.filter(t => t)
-    );
-    const scored = new WeightedRandomConfig(
-      selector.configs.map((cfg, i) => {
-        const score = targets[i] && scores.get(spotScoreKey(targets[i]));
-        return { ...cfg, weight: cfg.weight * (SPOT_SCORE_WEIGHTS[score] ?? 1) };
-      })
-    );
-    // never starve the pool: if every launch config scored zero, ignore the scores
-    return (scored.totalWeight > 0 ? scored : selector).selectCapacity(toSpawn);
-  }
-
-  /**
-   * Get Spot placement scores, keyed by `spotScoreKey`. Microsoft recommends caching
-   * each (subscription, desired count, region, zone, VM size) for 15 to 30 minutes; the provider is per subscription.
-   * Errors are logged and cached as "no score", so provisioning continues with unchanged weights.
-   *
-   * @param {string} workerPoolId
-   * @param {{ location: string, sku: string, count: number }[]} targets
-   */
-  async #spotPlacementScores(workerPoolId, targets) {
-    const now = Date.now();
-    const missing = targets.filter(t => !(this.spotScoreCache.get(spotScoreKey(t))?.expires > now));
-    const subscriptionId = encodeURIComponent(this.providerConfig.subscriptionId);
-
-    for (const [count, group] of Object.entries(_.groupBy(missing, 'count'))) {
-      const desiredCount = Number(count);
-      // the API accepts at most 8 regions and 5 VM sizes per request
-      for (const desiredLocations of _.chunk(_.uniq(group.map(t => t.location)), 8)) {
-        for (const skus of _.chunk(_.uniq(group.map(t => t.sku)), 5)) {
-          const fetched = new Map();
-          try {
-            const resp = await this._enqueue('get', async () => {
-              const resp = await this.restClient.sendRequest({
-                method: 'POST',
-                url:
-                  `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Compute` +
-                  `/locations/${encodeURIComponent(desiredLocations[0])}/placementScores/spot/generate?api-version=2025-06-05`,
-                body: {
-                  desiredLocations,
-                  desiredSizes: skus.map(sku => ({ sku })),
-                  desiredCount,
-                  availabilityZones: false,
-                },
-              });
-              this._recordRateLimitHeaders({ headers: resp.headers, statusCode: resp.status, operationType: 'read' });
-              if (resp.status !== 200) {
-                // throw inside the queue so its error handler backs off on 429 and 5xx
-                throw Object.assign(new Error(`HTTP ${resp.status}: ${resp.bodyAsText}`), {
-                  statusCode: resp.status,
-                  response: resp,
-                });
-              }
-              return resp;
-            });
-            for (const { region, sku, score, isQuotaAvailable } of resp.parsedBody?.placementScores ?? []) {
-              const key = spotScoreKey({ location: region, sku, count: desiredCount });
-              fetched.set(key, isQuotaAvailable === false ? 'InsufficientQuota' : score);
-            }
-            this.monitor.info({
-              message: 'Azure spot placement scores',
-              workerPoolId,
-              desiredCount,
-              scores: Object.fromEntries(fetched),
-            });
-          } catch (err) {
-            this.monitor.warning({
-              message: 'Azure spot placement score request failed; launch config weights are not changed',
-              workerPoolId,
-              desiredLocations,
-              skus,
-              desiredCount,
-              error: err.message,
-            });
-          }
-          for (const location of desiredLocations) {
-            for (const sku of skus) {
-              const key = spotScoreKey({ location, sku, count: desiredCount });
-              // a failed request must not erase unexpired scores for other pairs in the same batch
-              if (fetched.has(key) || !(this.spotScoreCache.get(key)?.expires > now)) {
-                this.spotScoreCache.set(key, { expires: now + SPOT_SCORE_TTL_MS, score: fetched.get(key) });
-              }
-            }
-          }
-        }
-      }
+  async adjustLaunchConfigWeights({ workerPool, toSpawn, configs }) {
+    if (!this.providerConfig.spotPlacementScore) {
+      return configs;
     }
-
-    return new Map(targets.map(t => [spotScoreKey(t), this.spotScoreCache.get(spotScoreKey(t))?.score]));
+    return this.spotPlacementScores.adjustWeights({ workerPoolId: workerPool.workerPoolId, toSpawn, configs });
   }
 
   /**
