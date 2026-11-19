@@ -20,10 +20,6 @@ import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
   actionButton: {
     ...theme.mixins.fab,
   },
-  listItemProps: {
-    button: true,
-    color: '#fff',
-  },
   hasErrors: {
     '& td, & a': {
       color: theme.palette.error.main,
