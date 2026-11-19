@@ -89,7 +89,8 @@ export class SpotPlacementScores {
       const desiredCount = Number(count);
       // the API accepts at most 8 regions and 5 VM sizes per request
       for (const desiredLocations of _.chunk(_.uniq(group.map(t => t.location)), 8)) {
-        for (const skus of _.chunk(_.uniq(group.map(t => t.sku)), 5)) {
+        const locationSkus = _.uniq(group.filter(t => desiredLocations.includes(t.location)).map(t => t.sku));
+        for (const skus of _.chunk(locationSkus, 5)) {
           const fetched = new Map();
           try {
             const body = await this.request({

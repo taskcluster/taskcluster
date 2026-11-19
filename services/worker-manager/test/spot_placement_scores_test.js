@@ -87,6 +87,17 @@ suite(testing.suiteName(), () => {
     assert.equal(requests[0].body.desiredCount, 2);
   });
 
+  test('asks each batch of regions only for the VM sizes those regions use', async () => {
+    // the API takes at most 8 regions per request; the 9th region uses another size
+    const regions = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8'].map(r => spot(r, r));
+    const other = config('r9', { priority: 'Spot', location: 'r9', hardwareProfile: { vmSize: 'Standard_Other' } });
+    await weights([...regions, other]);
+    assert.deepEqual(
+      requests.map(r => r.body.desiredSizes.map(s => s.sku)),
+      [[sku], ['Standard_Other']]
+    );
+  });
+
   test('gives no weight to a location without quota, whatever its score', async () => {
     scores = { [`eastus/${sku}`]: { score: 'High', isQuotaAvailable: false } };
     assert.deepEqual(await weights([spot('e', 'eastus')]), [0]);
