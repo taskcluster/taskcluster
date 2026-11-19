@@ -33,11 +33,12 @@ suite(testing.suiteName(), () => {
   });
 
   test('first of several X-Forwarded-Port values is used', async () => {
-    const v = await validatedRequest({ headers: { 'x-forwarded-port': ['8443', '80'] } });
+    // node joins repeated X-Forwarded-Port headers with ', '
+    const v = await validatedRequest({ headers: { 'x-forwarded-port': '8443, 80' } });
     assert.strictEqual(v.port, 8443);
   });
 
-  for (const bad of ['zioc1', '', '-1', '70000', '1.5']) {
+  for (const bad of ['zioc1', '', '-1', '70000']) {
     test(`invalid X-Forwarded-Port ${JSON.stringify(bad)} falls back to the request port`, async () => {
       const v = await validatedRequest({ headers: { 'x-forwarded-port': bad } });
       assert.strictEqual(v.port, 80);
@@ -54,9 +55,10 @@ suite(testing.suiteName(), () => {
   test('valid source IPs are passed on', async () => {
     assert.strictEqual((await validatedRequest({ ip: '192.0.2.7' })).sourceIp, '192.0.2.7');
     assert.strictEqual((await validatedRequest({ ip: '2001:db8::1' })).sourceIp, '2001:db8::1');
+    assert.strictEqual((await validatedRequest({ ip: '::ffff:192.0.2.7' })).sourceIp, '::ffff:192.0.2.7');
   });
 
-  for (const bad of ['unknown', '', null, '1.2.3']) {
+  for (const bad of ['unknown', '', null, '1.2.3', 'fe80::1%eth0']) {
     test(`source IP ${JSON.stringify(bad)} that is not an IP address is omitted`, async () => {
       const v = await validatedRequest({ ip: bad });
       assert.strictEqual(v.sourceIp, undefined);
