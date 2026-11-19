@@ -119,7 +119,7 @@
     "@biomejs/biome": "^2.6.6",
     "@taskcluster/lib-testing": "link:libraries/testing",
     "@types/pg": "^8.23.1",
-    "acorn-loose": "^8.5.0",
+    "acorn": "^8.19.0",
     "acorn-walk": "^8.3.5",
     "assume": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0",
