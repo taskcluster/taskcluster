@@ -65,11 +65,13 @@ export class GoogleProvider extends Provider {
     }
 
     this.ownClientEmail = creds.client_email;
-    const client = gcpCompute.auth.fromJSON(creds);
-    client.scopes = [
-      'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
-      'https://www.googleapis.com/auth/iam', // For fetching service account name
-    ];
+    const client = new gcpCompute.auth.JWT({
+      scopes: [
+        'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
+        'https://www.googleapis.com/auth/iam', // For fetching service account name
+      ],
+    });
+    client.fromJSON(creds);
     this.compute = gcpCompute.compute({
       version: 'v1',
       auth: client,

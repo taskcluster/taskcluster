@@ -36,7 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       providerConfig: {
         project,
         instancePermissions: [],
-        creds: '{"client_id": "fake-creds"}',
+        creds: '{"client_email": "fake-creds@testy.iam.gserviceaccount.com"}',
         workerServiceAccountId: '12345',
         _backoffDelay: 1,
       },
@@ -119,11 +119,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
     });
   };
-  constructorTest('constructor with creds as object', { client_id: 'fake-creds' });
-  constructorTest('constructor with creds as string', '{"client_id": "fake-creds"}');
+  constructorTest('constructor with creds as object', { client_email: 'fake-creds@testy.iam.gserviceaccount.com' });
+  constructorTest('constructor with creds as string', '{"client_email": "fake-creds@testy.iam.gserviceaccount.com"}');
   constructorTest(
     'constructor with creds as base64',
-    Buffer.from('{"client_id": "fake-creds"}', 'utf8').toString('base64')
+    Buffer.from('{"client_email": "fake-creds@testy.iam.gserviceaccount.com"}', 'utf8').toString('base64')
   );
 
   suite('provisioning', () => {
