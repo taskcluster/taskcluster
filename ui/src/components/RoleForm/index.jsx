@@ -22,6 +22,7 @@ import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
 import scopeLink from '../../utils/scopeLink';
+import WhitespaceHighlight from '../WhitespaceHighlight';
 
 @withStyles(theme => ({
   fab: {
@@ -183,7 +184,10 @@ export default class RoleForm extends Component {
           {role && (
             <Fragment>
               <ListItem>
-                <ListItemText primary="Role ID" secondary={roleId} />
+                <ListItemText
+                  primary="Role ID"
+                  secondary={<WhitespaceHighlight text={roleId} />}
+                />
               </ListItem>
               <ListItem>
                 <ListItemText primary="Date Created" secondary={created} />
@@ -242,7 +246,13 @@ export default class RoleForm extends Component {
                       {expandedScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItemButton className={classes.listItemButton}>
-                            <ListItemText secondary={<code>{scope}</code>} />
+                            <ListItemText
+                              secondary={
+                                <code>
+                                  <WhitespaceHighlight text={scope} />
+                                </code>
+                              }
+                            />
                             <LinkIcon />
                           </ListItemButton>
                         </Link>
