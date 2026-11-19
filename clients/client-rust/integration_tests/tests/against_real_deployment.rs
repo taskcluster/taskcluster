@@ -207,7 +207,7 @@ async fn test_signed_url_unnamed_temp_creds() -> Result<()> {
     Ok(())
 }
 
-/// Test signed url using unnamed temporary credentials with autorized scopes
+/// Test signed url using unnamed temporary credentials with authorized scopes
 #[tokio::test]
 async fn test_signed_url_unnamed_temp_creds_authorized_scopes() -> Result<()> {
     let creds = Credentials::new("tester", "no-secret");
@@ -244,6 +244,50 @@ async fn test_signed_url_unnamed_temp_creds_authorized_scopes_exclude_required()
             ClientBuilder::new(&root_url)
                 // but authorizedScopes narrows scope to just a subset of the credential scopes (so authentication succeeds)
                 // still missing the required scope
+                .authorized_scopes(vec!["test:other"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let res = reqwest::get(&url).await?;
+    assert_eq!(res.status(), reqwest::StatusCode::FORBIDDEN);
+
+    Ok(())
+}
+
+/// Test signed url using plain credentials with authorized scopes
+#[tokio::test]
+async fn test_signed_url_authorized_scopes() -> Result<()> {
+    let creds = Credentials::new("tester", "no-secret");
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
+                .authorized_scopes(vec!["test:authenticate-get"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let res = reqwest::get(&url).await?;
+    assert_eq!(res.status(), reqwest::StatusCode::OK);
+
+    Ok(())
+}
+
+/// Test signed url using plain credentials is rejected when authorizedScopes excludes the required scope
+#[tokio::test]
+async fn test_signed_url_authorized_scopes_exclude_required() -> Result<()> {
+    // the `tester` client holds `test:*`, so `test:other` is a subset of its scopes (so authentication succeeds)
+    // but it does not include the required `test:authenticate-get`
+    let creds = Credentials::new("tester", "no-secret");
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
                 .authorized_scopes(vec!["test:other"])
                 .credentials(creds),
         )?
