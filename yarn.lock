@@ -3363,13 +3363,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-security-policy@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "content-security-policy@npm:0.5.0"
-  checksum: 10c0/0c9ea28e083f729bdb37dd3c53f409b9d63bf58e690479b2cbdc7e4a83e6706dd0d8dc1551896bfb65a491ad405667d1b5b6fd9f53dfa7f6665b3decebd4e78f
-  languageName: node
-  linkType: hard
-
 "content-type@npm:^1.0.4":
   version: 1.0.5
   resolution: "content-type@npm:1.0.5"
@@ -7514,7 +7507,6 @@ __metadata:
     commander: "npm:^15.1.0"
     compression: "npm:^1.8.2"
     console-taskgraph: "npm:^1.7.2"
-    content-security-policy: "npm:^0.5.0"
     content-type: "npm:^1.0.4"
     cors: "npm:^2.8.6"
     cron-parser: "npm:5.10.4"
