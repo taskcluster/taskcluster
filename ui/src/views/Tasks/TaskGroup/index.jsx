@@ -1007,14 +1007,14 @@ export default class TaskGroup extends Component {
               onStatusClick={this.handleStatusClick}
             />
             <Grid container className={classes.firstGrid}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <CopyToClipboardListItem
                   textToCopy={taskGroupInfo.expires}
                   primary="Task Group Expires"
                   secondary={<DateDistance from={taskGroupInfo.expires} />}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 {taskGroupInfo.sealed && (
                   <CopyToClipboardListItem
                     textToCopy={taskGroupInfo.sealed}
@@ -1028,7 +1028,7 @@ export default class TaskGroup extends Component {
         )}
         {!loading && taskGroupConnection && (
           <Grid container>
-            <Grid item xs={12} sm={8} className={classes.firstGrid}>
+            <Grid className={classes.firstGrid} size={{ xs: 12, sm: 8 }}>
               <Search
                 classes={{ root: classes.taskNameFormSearch }}
                 placeholder="Name contains"
@@ -1036,7 +1036,7 @@ export default class TaskGroup extends Component {
                 onSubmit={this.handleSearchTaskSubmit}
               />
             </Grid>
-            <Grid item xs={9} sm={4} className={classes.secondGrid}>
+            <Grid className={classes.secondGrid} size={{ xs: 9, sm: 4 }}>
               <Button
                 size="small"
                 onClick={this.handleStatsChart}

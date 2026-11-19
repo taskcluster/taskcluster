@@ -84,7 +84,7 @@ export default class WorkerDetailsCard extends Component {
     return (
       <List>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <ListItem>
               <ListItemText
                 primary="Last Active"
@@ -154,7 +154,7 @@ export default class WorkerDetailsCard extends Component {
               </ListItem>
             )}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             {/* worker-manager view specific info */}
             {created && (
               <ListItem>

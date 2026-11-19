@@ -186,6 +186,9 @@ const getCustomContext = () => {
   dropdown: {
     minWidth: 200,
   },
+  findings: {
+    width: '100%',
+  },
   findingsRow: {
     fontSize: 14,
     margin: 0,
@@ -532,7 +535,7 @@ export default class TcYamlDebug extends Component {
     }
 
     return (
-      <Grid container spacing={2} id="findings">
+      <Grid container id="findings" className={classes.findings}>
         {findings.map(
           ({
             type,
@@ -544,8 +547,8 @@ export default class TcYamlDebug extends Component {
             tasksCount,
             validation,
           }) => (
-            <Grid container key={idx} className={classes.findingsRow}>
-              <Grid item xs={12} sm={4}>
+            <Grid container key={idx} size={12} className={classes.findingsRow}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <ListItemText
                   primary={
                     <Typography>
@@ -564,7 +567,7 @@ export default class TcYamlDebug extends Component {
                   ''
                 )}
               </Grid>
-              <Grid item xs={12} sm={8} className={classes.tasks}>
+              <Grid className={classes.tasks} size={{ xs: 12, sm: 8 }}>
                 {tasksCount ? (
                   <JsonDisplay syntax="yaml" objectContent={{ tasks }} />
                 ) : (
@@ -652,7 +655,7 @@ export default class TcYamlDebug extends Component {
           </ListItem>
           <ListItem>
             <Grid container spacing={2} alignItems="flex-end">
-              <Grid item>
+              <Grid>
                 <Button
                   spanProps={{ className: classes.analyzeButton }}
                   tooltipProps={{ title: 'Analyze' }}
@@ -662,7 +665,7 @@ export default class TcYamlDebug extends Component {
                   Analyze
                 </Button>
               </Grid>
-              <Grid item>
+              <Grid>
                 <TextField
                   className={classes.dropdown}
                   select
@@ -702,7 +705,7 @@ export default class TcYamlDebug extends Component {
                 </TextField>
               </Grid>
               {parsed && (
-                <Grid item>
+                <Grid>
                   <div>{parserOk ? '' : '⛔️ could not parse YAML'}</div>
                   <div>
                     {parserVersion === 0

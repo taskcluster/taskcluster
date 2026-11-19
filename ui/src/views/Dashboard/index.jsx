@@ -32,12 +32,12 @@ export default class DashboardView extends Component {
     return (
       <Dashboard>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Typography variant="h4" className={classes.title}>
               Hello, {username(user)}!
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
+          <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <Link to="/tasks" className={classes.link}>
               <Button>
                 <HexagonIcon className={classes.buttonIcon} />I want to look at
@@ -45,7 +45,7 @@ export default class DashboardView extends Component {
               </Button>
             </Link>
           </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
+          <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <Link to="/tasks/groups" className={classes.link}>
               <Button>
                 <HexagonMultipleIcon className={classes.buttonIcon} />I want to
@@ -53,7 +53,7 @@ export default class DashboardView extends Component {
               </Button>
             </Link>
           </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
+          <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <Link to="/tasks/create" className={classes.link}>
               <Button>
                 <PlusCircleIcon className={classes.buttonIcon} />I want to
@@ -61,7 +61,7 @@ export default class DashboardView extends Component {
               </Button>
             </Link>
           </Grid>
-          <Grid item xs={12} sm={6} lg={3}>
+          <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
             <Link to={DOCS_PATH_PREFIX} className={classes.link}>
               <Button>
                 <LibraryIcon className={classes.buttonIcon} />I want to see

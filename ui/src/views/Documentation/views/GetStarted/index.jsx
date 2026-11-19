@@ -48,7 +48,7 @@ export default function GetStarted() {
       <br />
       <Grid container spacing={2}>
         {cards.map(({ title, description, icon, to }) => (
-          <Grid key={title} item sm={6} xs={12}>
+          <Grid key={title} size={{ xs: 12, sm: 6 }}>
             <ExploreCard
               title={title}
               description={description}

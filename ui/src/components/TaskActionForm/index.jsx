@@ -62,7 +62,7 @@ export default class TaskActionForm extends Component {
         </div>
         {action.schema && (
           <Grid container spacing={2}>
-            <Grid item lg={6} md={6} sm={12}>
+            <Grid size={{ sm: 12, md: 6, lg: 6 }}>
               <Typography gutterBottom variant="subtitle1">
                 Action
               </Typography>
@@ -74,7 +74,7 @@ export default class TaskActionForm extends Component {
                 onChange={this.handleFormChange}
               />
             </Grid>
-            <Grid item lg={6} md={6} sm={12}>
+            <Grid size={{ sm: 12, md: 6, lg: 6 }}>
               <Typography gutterBottom variant="subtitle1">
                 Schema
               </Typography>

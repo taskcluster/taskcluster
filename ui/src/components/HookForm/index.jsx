@@ -903,7 +903,7 @@ export default class HookForm extends Component {
                   with the following context:
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item lg={6} md={6} sm={12}>
+                  <Grid size={{ sm: 12, md: 6, lg: 6 }}>
                     <Typography gutterBottom variant="subtitle1">
                       Context
                     </Typography>
@@ -915,7 +915,7 @@ export default class HookForm extends Component {
                       onChange={this.handleTriggerContextChange}
                     />
                   </Grid>
-                  <Grid item lg={6} md={6} sm={12}>
+                  <Grid size={{ sm: 12, md: 6, lg: 6 }}>
                     <Typography gutterBottom variant="subtitle1">
                       Schema
                     </Typography>
