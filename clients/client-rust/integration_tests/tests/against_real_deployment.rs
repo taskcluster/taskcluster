@@ -207,6 +207,57 @@ async fn test_signed_url_unnamed_temp_creds() -> Result<()> {
     Ok(())
 }
 
+/// Test signed url using unnamed temporary credentials with autorized scopes
+#[tokio::test]
+async fn test_signed_url_unnamed_temp_creds_authorized_scopes() -> Result<()> {
+    let creds = Credentials::new("tester", "no-secret");
+    let creds =
+        creds.create_temp_creds(Duration::from_secs(3600), vec!["test:authenticate-get"])?;
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
+                .authorized_scopes(vec!["test:authenticate-get"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let res = reqwest::get(&url).await?;
+    assert_eq!(res.status(), reqwest::StatusCode::OK);
+
+    Ok(())
+}
+
+/// Test signed url is rejected when authorizedScopes excludes the required scope
+#[tokio::test]
+async fn test_signed_url_unnamed_temp_creds_authorized_scopes_exclude_required() -> Result<()> {
+    let creds = Credentials::new("tester", "no-secret");
+    // the credentials hold the required scope (`test:authenticate-get`) plus another one
+    let creds = creds.create_temp_creds(
+        Duration::from_secs(3600),
+        vec!["test:authenticate-get", "test:other"],
+    )?;
+    let auth = if let Some(root_url) = get_root_url() {
+        Auth::new(
+            ClientBuilder::new(&root_url)
+                // but authorizedScopes narrows scope to just a subset of the credential scopes (so authentication succeeds)
+                // still missing the required scope
+                .authorized_scopes(vec!["test:other"])
+                .credentials(creds),
+        )?
+    } else {
+        return Ok(());
+    };
+
+    let url = auth.testAuthenticateGet_signed_url(Duration::from_secs(10))?;
+    let res = reqwest::get(&url).await?;
+    assert_eq!(res.status(), reqwest::StatusCode::FORBIDDEN);
+
+    Ok(())
+}
+
 /// Test authenticated call using authorizedScopes
 #[tokio::test]
 async fn test_auth_authorized_scopes() -> Result<()> {
