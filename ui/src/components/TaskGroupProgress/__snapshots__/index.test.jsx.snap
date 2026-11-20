@@ -6,7 +6,7 @@ exports[`should render TaskGroupProgress 1`] = `
     class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-9ke57g-MuiGrid-root-TaskGroupProgress-container"
   >
     <button
-      class="MuiButtonBase-root css-13ct4pf-MuiButtonBase-root-TaskGroupProgress-completedButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
+      class="MuiButtonBase-root css-svpsnb-MuiButtonBase-root-TaskGroupProgress-completedButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
       name="COMPLETED"
       tabindex="0"
       type="button"
@@ -40,7 +40,7 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
     </button>
     <button
-      class="MuiButtonBase-root css-1fm4bui-MuiButtonBase-root-TaskGroupProgress-runningButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
+      class="MuiButtonBase-root css-bqm6da-MuiButtonBase-root-TaskGroupProgress-runningButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
       name="RUNNING"
       tabindex="0"
       type="button"
@@ -74,7 +74,7 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
     </button>
     <button
-      class="MuiButtonBase-root css-tbajqm-MuiButtonBase-root-TaskGroupProgress-failedButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
+      class="MuiButtonBase-root css-inusae-MuiButtonBase-root-TaskGroupProgress-failedButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
       name="FAILED"
       tabindex="0"
       type="button"
@@ -108,7 +108,7 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
     </button>
     <button
-      class="MuiButtonBase-root css-nygxu1-MuiButtonBase-root-TaskGroupProgress-pendingButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
+      class="MuiButtonBase-root css-1b4jtuq-MuiButtonBase-root-TaskGroupProgress-pendingButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
       name="PENDING"
       tabindex="0"
       type="button"
@@ -142,7 +142,7 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
     </button>
     <button
-      class="MuiButtonBase-root css-jl3g2q-MuiButtonBase-root-TaskGroupProgress-exceptionButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
+      class="MuiButtonBase-root css-1b6km1y-MuiButtonBase-root-TaskGroupProgress-exceptionButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
       name="EXCEPTION"
       tabindex="0"
       type="button"
@@ -176,7 +176,7 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
     </button>
     <button
-      class="MuiButtonBase-root css-1rum3zq-MuiButtonBase-root-TaskGroupProgress-unscheduledButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
+      class="MuiButtonBase-root css-17x8l6k-MuiButtonBase-root-TaskGroupProgress-unscheduledButton-TaskGroupProgress-statusButton-TaskGroupProgress-noTasksButton"
       name="UNSCHEDULED"
       tabindex="0"
       type="button"

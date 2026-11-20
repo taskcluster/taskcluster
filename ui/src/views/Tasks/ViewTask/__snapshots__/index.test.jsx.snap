@@ -13,7 +13,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
         class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1ygil4i-MuiToolbar-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInherit MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInherit css-a6m6mt-MuiButtonBase-root-MuiButton-root-SkipNavigation-skipButton"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorInherit css-2pggqg-MuiButtonBase-root-MuiButton-root-SkipNavigation-skipButton"
           selector="main"
           tabindex="0"
           type="button"
@@ -22,7 +22,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
         </button>
         <button
           aria-label="toggle drawer"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeLarge css-12i7di7-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeLarge css-b7fv7m-MuiButtonBase-root-MuiIconButton-root"
           id="toggle-drawer"
           tabindex="0"
           type="button"
@@ -77,7 +77,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
         </form>
         <button
           aria-label="Toggle light/dark theme"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-m5ppcx-MuiButtonBase-root-MuiIconButton-root-ToggleableThemeComponent-leftAppBarButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1b17adx-MuiButtonBase-root-MuiIconButton-root-ToggleableThemeComponent-leftAppBarButton"
           data-mui-internal-clone-element="true"
           tabindex="0"
           type="button"
@@ -99,7 +99,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
         >
           <button
             aria-label="Documentation"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1hiqf95-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1qmsfw1-MuiButtonBase-root-MuiIconButton-root"
             data-mui-internal-clone-element="true"
             tabindex="0"
             type="button"
@@ -119,7 +119,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
         </a>
         <button
           aria-label="Page Information"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1hiqf95-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-1qmsfw1-MuiButtonBase-root-MuiIconButton-root"
           data-mui-internal-clone-element="true"
           tabindex="0"
           type="button"
@@ -137,7 +137,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           </svg>
         </button>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-197dzmo-MuiButtonBase-root-MuiButton-root-UserMenu-buttonContainedPrimary-UserMenu-userMenuButton"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-1d3tlh3-MuiButtonBase-root-MuiButton-root-UserMenu-buttonContainedPrimary-UserMenu-userMenuButton"
           id="sign-in-button"
           tabindex="0"
           type="button"
@@ -219,10 +219,10 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
       </h6>
       <div>
         <div
-          class="MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-filledDefault css-rigaax-MuiChip-root-ResourceComponent-tag"
+          class="MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault css-19js027-MuiChip-root-ResourceComponent-tag"
         >
           <span
-            class="MuiChip-label MuiChip-labelMedium css-s924rf-MuiChip-label"
+            class="MuiChip-label css-ahnj0-MuiChip-label"
           >
             owned by:  
             <em>
@@ -256,7 +256,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                   class="MuiList-root MuiList-padding css-b7dj7n-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -278,7 +278,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="bI8bvUB2SDmpHVqTUOFCWw (Copy)"
@@ -310,7 +310,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:00:00.000Z (Copy)"
@@ -345,7 +345,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/provisioners/proj/worker-types/worker"
                   >
                     <div
-                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1jr2qbk-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
+                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-2cdm1l-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
                       role="button"
                       tabindex="0"
                       title="View Workers"
@@ -378,7 +378,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </a>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1jr2qbk-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-2cdm1l-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
                     role="button"
                     tabindex="0"
                   >
@@ -417,7 +417,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                           class="MuiList-root css-54zhjy-MuiList-root"
                         >
                           <li
-                            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                           >
                             <div
                               class="MuiListItemText-root css-cfq8qh-MuiListItemText-root"
@@ -443,7 +443,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                         class="MuiSwitch-root MuiSwitch-sizeMedium css-1twhucs-MuiSwitch-root"
                                       >
                                         <span
-                                          class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary PrivateSwitchBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary css-tx7j36-MuiButtonBase-root-MuiSwitchBase-root-MuiSwitch-switchBase"
+                                          class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary PrivateSwitchBase-root MuiSwitch-switchBase MuiSwitch-colorSecondary css-zo3xtq-MuiButtonBase-root-MuiSwitchBase-root-MuiSwitch-switchBase"
                                         >
                                           <input
                                             class="PrivateSwitchBase-input MuiSwitch-input css-12xagqm-MuiSwitchBase-root"
@@ -456,7 +456,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                           />
                                         </span>
                                         <span
-                                          class="MuiSwitch-track css-x1umlq-MuiSwitch-track"
+                                          class="MuiSwitch-track css-jjcnvm-MuiSwitch-track"
                                         />
                                       </span>
                                     </div>
@@ -471,7 +471,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                   class="MuiGrid-root MuiGrid-direction-xs-row css-17fpwt7-MuiGrid-root"
                                 >
                                   <div
-                                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                                     role="button"
                                     tabindex="0"
                                     title="Copy"
@@ -537,7 +537,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/tasks/bI8bvUB2SDmpHVqTUOFCWw/definition"
                   >
                     <div
-                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1jr2qbk-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
+                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-2cdm1l-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
                       role="button"
                       tabindex="0"
                     >
@@ -553,7 +553,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </a>
                   <a
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1jr2qbk-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-2cdm1l-MuiButtonBase-root-MuiListItemButton-root-TaskDetailsCard-listItemButton"
                     href="https://example.com"
                     rel="noopener noreferrer"
                     tabindex="0"
@@ -587,7 +587,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </a>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -605,7 +605,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T03:00:00.000Z (Copy)"
@@ -637,7 +637,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="2027-08-30T03:00:00.000Z (Copy)"
@@ -669,7 +669,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -691,7 +691,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -711,7 +711,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -745,7 +745,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                             scope="col"
                           >
                             <span
-                              class="MuiButtonBase-root MuiTableSortLabel-root Mui-active MuiTableSortLabel-directionAsc css-13wvnn3-MuiButtonBase-root-MuiTableSortLabel-root-sortHeader"
+                              class="MuiButtonBase-root MuiTableSortLabel-root Mui-active MuiTableSortLabel-directionAsc css-v55yl9-MuiButtonBase-root-MuiTableSortLabel-root-sortHeader"
                               id="Name"
                               role="button"
                               tabindex="0"
@@ -753,7 +753,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                               Name
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-1punygw-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon css-1h8ydsa-MuiSvgIcon-root-MuiTableSortLabel-icon"
                                 data-testid="ArrowDownwardIcon"
                                 focusable="false"
                                 viewBox="0 0 24 24"
@@ -820,7 +820,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </table>
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -838,7 +838,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -856,7 +856,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -872,7 +872,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -908,7 +908,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                   style="--Paper-shadow: none; --Paper-overlay: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-14i98i4-MuiButtonBase-root-MuiButton-root-TaskRunsCard-previousPageArrow"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorInherit css-15jsvux-MuiButtonBase-root-MuiButton-root-TaskRunsCard-previousPageArrow"
                     tabindex="0"
                     type="button"
                   >
@@ -936,7 +936,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     />
                   </div>
                   <button
-                    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-18hz9es-MuiButtonBase-root-MuiButton-root-TaskRunsCard-nextPageArrow"
+                    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorInherit css-ty8s79-MuiButtonBase-root-MuiButton-root-TaskRunsCard-nextPageArrow"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -964,7 +964,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                   class="MuiList-root MuiList-padding css-b7dj7n-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -989,7 +989,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/tasks/bI8bvUB2SDmpHVqTUOFCWw/runs/1/logs/live/public/logs/live.log"
                   >
                     <div
-                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-19i5jgt-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
+                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-159bvb3-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
                       role="button"
                       tabindex="0"
                     >
@@ -1026,7 +1026,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </a>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-19i5jgt-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-159bvb3-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
                     role="button"
                     tabindex="0"
                   >
@@ -1054,7 +1054,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                           class="MuiList-root css-54zhjy-MuiList-root"
                         >
                           <div
-                            class="MuiListItem-root MuiListItem-padding css-saxw06-MuiListItem-root-TaskRunsCard-artifactsListItemContainer"
+                            class="MuiListItem-root MuiListItem-padding css-k1n63i-MuiListItem-root-TaskRunsCard-artifactsListItemContainer"
                           >
                             <div
                               class="css-1m37olp-tableWrapper"
@@ -1153,7 +1153,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -1173,7 +1173,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:02:00.000Z (Copy)"
@@ -1205,7 +1205,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:03:00.000Z (Copy)"
@@ -1237,7 +1237,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -1261,7 +1261,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                   class="MuiList-root css-54zhjy-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -1283,7 +1283,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
                   >
                     <div
                       class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -1304,7 +1304,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     href="/provisioners/proj/worker-types/worker/workers/wg/w1"
                   >
                     <div
-                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-19i5jgt-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
+                      class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-159bvb3-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
                       role="button"
                       tabindex="0"
                       title="View Worker"
@@ -1337,7 +1337,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </a>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:23:00.000Z (Copy)"
@@ -1383,7 +1383,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           aria-expanded="false"
           aria-haspopup="true"
           aria-label="speed-dial"
-          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiSpeedDial-fab css-1cn0vw3-MuiButtonBase-root-MuiFab-root-MuiSpeedDial-fab"
+          class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary MuiSpeedDial-fab css-1p7z6qq-MuiButtonBase-root-MuiFab-root-MuiSpeedDial-fab"
           style="transform: none; transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
           tabindex="0"
           type="button"
@@ -1435,7 +1435,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-0-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 270ms;"
@@ -1469,7 +1469,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-1-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 240ms;"
@@ -1503,7 +1503,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-2-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 210ms;"
@@ -1537,7 +1537,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-3-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 180ms;"
@@ -1571,7 +1571,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-4-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 150ms;"
@@ -1605,7 +1605,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-5-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 120ms;"
@@ -1639,7 +1639,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-6-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 90ms;"
@@ -1673,7 +1673,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-7-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 60ms;"
@@ -1707,7 +1707,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
             </span>
             <button
               aria-labelledby="speed-dial-action-8-label"
-              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1ux91rf-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
+              class="MuiButtonBase-root Mui-disabled MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-default MuiSpeedDialAction-fab MuiSpeedDialAction-fabClosed css-1dy9jfp-MuiButtonBase-root-MuiFab-root-MuiSpeedDialAction-fab-SpeedDialAction-secondary"
               disabled=""
               role="menuitem"
               style="transition-delay: 30ms;"

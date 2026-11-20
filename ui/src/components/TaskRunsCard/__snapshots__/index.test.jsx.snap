@@ -15,7 +15,7 @@ exports[`should render TaskRunsCard 1`] = `
           style="--Paper-shadow: none; --Paper-overlay: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));"
         >
           <button
-            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-14i98i4-MuiButtonBase-root-MuiButton-root-TaskRunsCard-previousPageArrow"
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorInherit css-15jsvux-MuiButtonBase-root-MuiButton-root-TaskRunsCard-previousPageArrow"
             disabled=""
             tabindex="-1"
             type="button"
@@ -41,7 +41,7 @@ exports[`should render TaskRunsCard 1`] = `
             />
           </div>
           <button
-            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-textInherit MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorInherit css-18hz9es-MuiButtonBase-root-MuiButton-root-TaskRunsCard-nextPageArrow"
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorInherit css-ty8s79-MuiButtonBase-root-MuiButton-root-TaskRunsCard-nextPageArrow"
             disabled=""
             tabindex="-1"
             type="button"
@@ -69,7 +69,7 @@ exports[`should render TaskRunsCard 1`] = `
           class="MuiList-root MuiList-padding css-b7dj7n-MuiList-root"
         >
           <li
-            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
           >
             <div
               class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -94,7 +94,7 @@ exports[`should render TaskRunsCard 1`] = `
             href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/apple/banana.log"
           >
             <div
-              class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-19i5jgt-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
+              class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-159bvb3-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
               role="button"
               tabindex="0"
             >
@@ -131,7 +131,7 @@ exports[`should render TaskRunsCard 1`] = `
             </div>
           </a>
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-19i5jgt-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-159bvb3-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
             role="button"
             tabindex="0"
           >
@@ -159,7 +159,7 @@ exports[`should render TaskRunsCard 1`] = `
                   class="MuiList-root css-54zhjy-MuiList-root"
                 >
                   <div
-                    class="MuiListItem-root MuiListItem-padding css-saxw06-MuiListItem-root-TaskRunsCard-artifactsListItemContainer"
+                    class="MuiListItem-root MuiListItem-padding css-k1n63i-MuiListItem-root-TaskRunsCard-artifactsListItemContainer"
                   >
                     <div
                       class="css-1m37olp-tableWrapper"
@@ -403,7 +403,7 @@ exports[`should render TaskRunsCard 1`] = `
             </div>
           </div>
           <li
-            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
           >
             <div
               class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -425,7 +425,7 @@ exports[`should render TaskRunsCard 1`] = `
             </div>
           </li>
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2022-02-03T14:41:19.706Z (Copy)"
@@ -457,7 +457,7 @@ exports[`should render TaskRunsCard 1`] = `
             </svg>
           </div>
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2022-02-03T14:43:54.086Z (Copy)"
@@ -489,7 +489,7 @@ exports[`should render TaskRunsCard 1`] = `
             </svg>
           </div>
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2022-02-03T14:45:28.396Z (Copy)"
@@ -525,7 +525,7 @@ exports[`should render TaskRunsCard 1`] = `
           class="MuiList-root css-54zhjy-MuiList-root"
         >
           <li
-            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
           >
             <div
               class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -547,7 +547,7 @@ exports[`should render TaskRunsCard 1`] = `
             </div>
           </li>
           <li
-            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1cpmgr2-MuiListItem-root"
+            class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1b6lr0m-MuiListItem-root"
           >
             <div
               class="MuiListItemText-root MuiListItemText-multiline css-14ln1j6-MuiListItemText-root"
@@ -568,7 +568,7 @@ exports[`should render TaskRunsCard 1`] = `
             href="/provisioners/task/worker-types/queueId/workers/us-east1/7421215367664916236"
           >
             <div
-              class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-19i5jgt-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
+              class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-159bvb3-MuiButtonBase-root-MuiListItemButton-root-TaskRunsCard-listItemButton"
               role="button"
               tabindex="0"
               title="View Worker"
@@ -601,7 +601,7 @@ exports[`should render TaskRunsCard 1`] = `
             </div>
           </a>
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1s2mtqr-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
             role="button"
             tabindex="0"
             title="2022-02-03T15:03:54.082Z (Copy)"
