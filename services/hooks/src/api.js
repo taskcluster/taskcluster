@@ -391,6 +391,7 @@ builder.declare(
       });
     }
 
+    const scheduleChanged = !_.isEqual(schedule, hook.schedule);
     hook = hookUtils.fromDbRows(
       await this.db.fns.update_hook(
         hook.hookGroupId /* hook_group_id */,
@@ -400,8 +401,10 @@ builder.declare(
         JSON.stringify(hookDef.bindings) /* bindings */,
         JSON.stringify(schedule) /* schedule */,
         null /* encrypted_trigger_token */,
-        this.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_next_task_id */,
-        nextDate(schedule) /* next_scheduled_date */,
+        scheduleChanged
+          ? this.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') })
+          : null /* encrypted_next_task_id */,
+        scheduleChanged ? nextDate(schedule) : null /* next_scheduled_date */,
         hookDef.triggerSchema /* trigger_schema */
       )
     );
