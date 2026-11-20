@@ -37,7 +37,10 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 }
 
 func waitForTaskUserSession(ctx *TaskContext) error {
-	return gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name)
+	if err := gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name); err != nil {
+		return err
+	}
+	return waitForDesktopSessionEnv(ctx.User.Name)
 }
 
 func platformTargets(arguments map[string]any) ExitCode {
