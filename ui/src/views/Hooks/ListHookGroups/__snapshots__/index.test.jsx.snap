@@ -45,7 +45,7 @@ exports[`should render ListHookGroupss page 1`] = `
           Hooks Groups
         </h6>
         <form
-          class="css-1ne8laz-Search-root"
+          class="css-jdebnx-Search-root"
         >
           <div
             class="MuiFormControl-root css-9l58fz-MuiFormControl-root-Search-formControl"
@@ -66,7 +66,7 @@ exports[`should render ListHookGroupss page 1`] = `
               </svg>
             </div>
             <input
-              class="css-zg20v3-Search-input css-13-Search-input-ref"
+              class="css-zg20v3-Search-input css-12-Search-input-ref"
               id="adornment-search"
               placeholder="Hook group contains"
               spellcheck="false"

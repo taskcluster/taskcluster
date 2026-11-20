@@ -1,6 +1,71 @@
-import { alpha, createTheme, lighten } from '@mui/material/styles';
+import {
+  alpha,
+  createTheme,
+  lighten,
+  type CSSProperties,
+  type PaletteColor,
+  type PaletteColorOptions,
+  type ThemeOptions,
+} from '@mui/material/styles';
 import { red, amber, blue, green, grey, purple } from '@mui/material/colors';
 import { THEME } from './utils/constants';
+
+interface DiffPalette {
+  red: { line: string; word: string };
+  green: { line: string; word: string };
+}
+
+declare module '@mui/material/styles' {
+  interface Theme {
+    drawerWidth: number;
+    docsDrawerWidth: number;
+  }
+
+  interface ThemeOptions {
+    drawerWidth?: number;
+    docsDrawerWidth?: number;
+  }
+
+  interface Palette {
+    specific: PaletteColor;
+    diff: DiffPalette;
+  }
+
+  interface PaletteOptions {
+    specific?: PaletteColorOptions;
+    diff?: DiffPalette;
+  }
+
+  interface TypeText {
+    hint: string;
+    icon: string;
+    active: string;
+    inactive: string;
+  }
+
+  interface TypographyVariants {
+    fontWeightDark: CSSProperties['fontWeight'];
+  }
+
+  interface TypographyVariantsOptions {
+    fontWeightDark?: CSSProperties['fontWeight'];
+  }
+
+  interface Mixins {
+    link: CSSProperties;
+    highlight: CSSProperties;
+    listItemButton: CSSProperties;
+    hover: CSSProperties;
+    fab: CSSProperties;
+    fabIcon: CSSProperties;
+    secondaryIcon: CSSProperties;
+    successIcon: CSSProperties;
+    warningIcon: CSSProperties;
+    errorIcon: CSSProperties;
+    unorderedList: CSSProperties;
+    actionButton: CSSProperties;
+  }
+}
 
 const Roboto300 = { fontFamily: 'Roboto, sans-serif', fontWeight: 300 };
 const Roboto400 = { fontFamily: 'Roboto, sans-serif', fontWeight: 400 };
@@ -28,7 +93,7 @@ const specific = {
   light: purple[200],
   contrastText: THEME.PRIMARY_TEXT_LIGHT,
 };
-const themeOptions = isDarkTheme => {
+const themeOptions = (isDarkTheme: boolean): ThemeOptions => {
   const primaryMain = isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT;
   const textPrimary = isDarkTheme
     ? THEME.PRIMARY_TEXT_DARK

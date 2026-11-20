@@ -10,12 +10,13 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import withStyles from '../../utils/withStyles';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import GoToLineButton from './GoToLineButton';
-import Loading from './Loading';
 import Button from '../Button';
+import Spinner from '../Spinner';
 import { THEME } from '../../utils/constants';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
+const Loading = () => <Spinner loading sx={{ mt: 3 }} />;
 
 // TODO: Remove this once we're off react-lazylog`
 // Work around a bug with react-lazylog and react 18.
