@@ -11,7 +11,9 @@ manually on a host and executes tasks indefinitely. For most purposes, it is
 far more cost-effective to dynamically adjust the pool of available workers
 based on the work to be done. This process entails both provisioning new
 instances (often referred to simply as "provisioning") and terminating running
-instances (typically a function of the worker itself).
+instances. For cloud-based workers, worker-manager usually decides when a worker
+is no longer needed (see
+[Worker Termination](/docs/reference/core/worker-manager/worker-interaction#worker-termination)).
 
 The worker-manager service is responsible for provisioning and for monitoring the status of running workers.
 

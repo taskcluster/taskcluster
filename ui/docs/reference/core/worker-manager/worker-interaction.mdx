@@ -77,6 +77,21 @@ when it was last active. That information is being used by worker manager to det
 
 Static workers and quarantines workers are not affected by this timeout.
 
+## Worker Termination
+
+For the `aws`, `azure`, and `google` providers, worker-manager decides when workers should terminate.
+Generic worker running with [worker-runner](/docs/reference/workers/worker-runner) v115.0.0 or later checks this decision via [`workerManager.shouldWorkerTerminate`](/docs/reference/core/worker-manager/api#shouldWorkerTerminate).
+Once marked to terminate, it stops claiming tasks, finishes its running tasks, and exits.
+Its `idleTimeoutSecs` setting has no effect.
+
+The worker scanner marks a worker to terminate if its launch configuration is archived or the pool has more capacity than it needs.
+Target capacity is pending plus claimed tasks, multiplied by `scalingRatio` and bounded by `minCapacity` and `maxCapacity`.
+The newest workers are kept until it is met, whether they are idle or busy.
+Since `minCapacity` counts busy workers, it only keeps idle workers while there are fewer tasks than `minCapacity`.
+
+Quarantined workers keep their last decision. If the call fails, the worker keeps running.
+Static and standalone workers are not managed this way.
+
 ## Worker Configuration
 
 Worker images and hosts should generally be kept as generic as possible, with configuration provided via the worker-manager.

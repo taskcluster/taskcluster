@@ -2576,6 +2576,13 @@
     "title": "Worker-Manager - Worker Interaction"
   },
   {
+    "element": "h2",
+    "id": "worker-termination",
+    "path": "/reference/core/worker-manager/worker-interaction",
+    "subtitle": "Worker Termination",
+    "title": "Worker-Manager - Worker Interaction"
+  },
+  {
     "element": "h1",
     "id": "guide-to-the-microservices",
     "path": "/reference/guide",
