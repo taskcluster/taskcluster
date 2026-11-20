@@ -135,6 +135,11 @@ func init() {
 	}
 }
 
+// desktopSessionEnv holds the variables of the task user's desktop session to
+// pass to task commands. Only set on non-headless Linux workers, by
+// waitForDesktopSessionEnv, before any task is claimed.
+var desktopSessionEnv map[string]string
+
 func (task *TaskRun) EnvVars() []string {
 	taskEnv := map[string]string{}
 	taskEnvArray := []string{}
@@ -144,6 +149,9 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["HOME"] = filepath.Join(gwruntime.UserHomeDirectoriesParent(), ctx.User.Name)
 	taskEnv["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 	taskEnv["USER"] = ctx.User.Name
+	// Desktop session variables (non-headless Linux only). These are defaults
+	// rather than forced, so that tasks can override e.g. XDG_SESSION_TYPE.
+	maps.Copy(taskEnv, desktopSessionEnv)
 
 	maps.Copy(taskEnv, task.Payload.Env)
 
@@ -154,7 +162,6 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {
-		taskEnv["DISPLAY"] = ":0"
 		taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(task.pd.SysProcAttr.Credential.Uid))
 	}
 	if config.WorkerLocation != "" {
