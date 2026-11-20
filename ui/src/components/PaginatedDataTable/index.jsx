@@ -135,11 +135,11 @@ export default function PaginatedDataTable({
         rowsPerPage={pageSize}
         rowsPerPageOptions={[pageSize]}
         page={page}
-        backIconButtonProps={{
-          'aria-label': 'Previous Page',
-        }}
-        nextIconButtonProps={{
-          'aria-label': 'Next Page',
+        slotProps={{
+          actions: {
+            previousButton: { 'aria-label': 'Previous Page' },
+            nextButton: { 'aria-label': 'Next Page' },
+          },
         }}
         onPageChange={handlePageChange}
       />
@@ -189,12 +189,14 @@ export default function PaginatedDataTable({
           placeholder={`Filter ${items.length} rows..`}
           onChange={e => setFilterValue(e.target.value)}
           value={filterValue}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <FilterIcon />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <FilterIcon />
+                </InputAdornment>
+              ),
+            },
           }}
         />
       )}

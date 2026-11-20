@@ -137,9 +137,12 @@ export default class DocSearch extends Component {
           return (
             <TextField
               {...params}
-              InputProps={{
-                ...params.InputProps,
-                startAdornment: <MagnifyIcon />,
+              slotProps={{
+                ...params.slotProps,
+                input: {
+                  ...params.slotProps.input,
+                  startAdornment: <MagnifyIcon />,
+                },
               }}
               placeholder="Search Documentation"
               fullWidth

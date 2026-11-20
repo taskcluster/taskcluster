@@ -185,15 +185,17 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
           <ListItem>
             <ListItemText
               primary="Configuration"
-              secondaryTypographyProps={{
-                component: 'div',
-              }}
               secondary={
                 <JsonDisplay
                   syntax="yaml"
                   objectContent={launchConfig.configuration}
                 />
               }
+              slotProps={{
+                secondary: {
+                  component: 'div',
+                },
+              }}
             />
           </ListItem>
         </List>

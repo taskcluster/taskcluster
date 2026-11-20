@@ -367,9 +367,11 @@ export default class TaskDetailsCard extends Component {
                               state={dep.status?.state || 'EXPIRED'}
                             />
                             <ListItemText
-                              primaryTypographyProps={{ variant: 'body2' }}
                               className={classes.listItemText}
                               primary={dep.metadata?.name || dep.taskId}
+                              slotProps={{
+                                primary: { variant: 'body2' },
+                              }}
                             />
                             <LinkIcon />
                           </ListItemButton>

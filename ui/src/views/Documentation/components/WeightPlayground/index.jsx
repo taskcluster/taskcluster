@@ -27,7 +27,7 @@ const styles = theme => ({
     height: 10,
     borderRadius: 5,
     minWidth: 80,
-    '& .MuiLinearProgress-barColorPrimary': {
+    '&.MuiLinearProgress-colorPrimary > .MuiLinearProgress-bar': {
       backgroundColor:
         theme.palette.mode === 'dark'
           ? theme.palette.primary.light
@@ -96,9 +96,11 @@ function WeightPlayground({ classes }) {
                     onChange={e =>
                       handleWeightChange(config.id, e.target.value)
                     }
-                    inputProps={{ min: 0, max: 1, step: 0.1 }}
                     size="small"
                     variant="outlined"
+                    slotProps={{
+                      htmlInput: { min: 0, max: 1, step: 0.1 },
+                    }}
                   />
                 </TableCell>
                 <TableCell>

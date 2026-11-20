@@ -250,7 +250,11 @@ export default class PulseMessages extends Component {
         title="Pulse Messages"
         helpView={
           <HelpView description={description}>
-            <Typography variant="body2" paragraph>
+            <Typography
+              variant="body2"
+              sx={{
+                marginBottom: '16px',
+              }}>
               This tool lets you listen to Pulse messages from any exchange and
               routing key. When messages are received you can inspect the
               messages. This is useful for debugging and development when
@@ -390,9 +394,6 @@ export default class PulseMessages extends Component {
               <ListItem>
                 <ListItemText
                   primary="Payload"
-                  secondaryTypographyProps={{
-                    component: 'div',
-                  }}
                   secondary={
                     drawerMessage && (
                       <JsonDisplay
@@ -401,6 +402,11 @@ export default class PulseMessages extends Component {
                       />
                     )
                   }
+                  slotProps={{
+                    secondary: {
+                      component: 'div',
+                    },
+                  }}
                 />
               </ListItem>
             </List>

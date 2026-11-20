@@ -263,10 +263,12 @@ export default class Entry extends Component {
     <Fragment>
       <ListItem>
         <ListItemText
-          primaryTypographyProps={primaryTypographyProps}
           disableTypography
           primary={<Typography variant="body1">{headerTitle}</Typography>}
           secondary={<SchemaTable schema={schemaId} />}
+          slotProps={{
+            primary: primaryTypographyProps,
+          }}
         />
       </ListItem>
       <br />
@@ -428,66 +430,80 @@ export default class Entry extends Component {
       <List className={classes.list}>
         <ListItem>
           <ListItemText
-            primaryTypographyProps={primaryTypographyProps}
             primary="Method"
             secondary={<StatusLabel state={entry.method.toUpperCase()} />}
+            slotProps={{
+              primary: primaryTypographyProps,
+            }}
           />
         </ListItem>
         <ListItem>
           <ListItemText
-            primaryTypographyProps={primaryTypographyProps}
             primary="Route"
             secondary={entry.route}
+            slotProps={{
+              primary: primaryTypographyProps,
+            }}
           />
         </ListItem>
         {entry.scopes && (
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
-              secondaryTypographyProps={{
-                className: classes.scopesWrapper,
-                component: 'div',
-              }}
               primary="Scopes"
               secondary={this.renderScopeExpression(entry.scopes)}
+              slotProps={{
+                primary: primaryTypographyProps,
+
+                secondary: {
+                  className: classes.scopesWrapper,
+                  component: 'div',
+                },
+              }}
             />
           </ListItem>
         )}
         <ListItem>
           <ListItemText
-            primaryTypographyProps={primaryTypographyProps}
             primary="Signature"
             secondary={signature}
+            slotProps={{
+              primary: primaryTypographyProps,
+            }}
           />
         </ListItem>
         <ListItem>
           <ListItemText
-            primaryTypographyProps={primaryTypographyProps}
             primary="Stability"
             secondary={<StatusLabel state={entry.stability.toUpperCase()} />}
+            slotProps={{
+              primary: primaryTypographyProps,
+            }}
           />
         </ListItem>
         {entry.description ? (
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Description"
               secondary={<Markdown>{entry.description}</Markdown>}
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
         ) : (
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Description"
               secondary="n/a"
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
         )}
         {entry.type === 'function' && (
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               disableTypography
               primary={<Typography variant="body1">Examples</Typography>}
               secondary={
@@ -517,6 +533,9 @@ export default class Entry extends Component {
                   </Box>
                 </Box>
               }
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
         )}
@@ -557,31 +576,36 @@ export default class Entry extends Component {
         <List className={classes.list}>
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Exchange"
               secondary={exchange}
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
           {entry.description ? (
             <ListItem>
               <ListItemText
-                primaryTypographyProps={primaryTypographyProps}
                 primary="Description"
                 secondary={<Markdown>{entry.description}</Markdown>}
+                slotProps={{
+                  primary: primaryTypographyProps,
+                }}
               />
             </ListItem>
           ) : (
             <ListItem>
               <ListItemText
-                primaryTypographyProps={primaryTypographyProps}
                 primary="Description"
                 secondary="n/a"
+                slotProps={{
+                  primary: primaryTypographyProps,
+                }}
               />
             </ListItem>
           )}
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Routing Keys"
               secondary={
                 <DataTable
@@ -616,6 +640,9 @@ export default class Entry extends Component {
                   )}
                 />
               }
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
           {entry.schema &&
@@ -637,14 +664,15 @@ export default class Entry extends Component {
         <List className={classes.list}>
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Description"
               secondary={<Markdown>{entry.description}</Markdown>}
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Fields"
               secondary={
                 <DataTable
@@ -658,6 +686,9 @@ export default class Entry extends Component {
                   )}
                 />
               }
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
         </List>
@@ -674,14 +705,15 @@ export default class Entry extends Component {
         <List className={classes.list}>
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Description"
               secondary={<Markdown>{entry.description}</Markdown>}
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Registers"
               secondary={
                 <div>
@@ -690,11 +722,13 @@ export default class Entry extends Component {
                   ))}
                 </div>
               }
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
           <ListItem>
             <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
               primary="Labels"
               secondary={
                 <DataTable
@@ -708,6 +742,9 @@ export default class Entry extends Component {
                   )}
                 />
               }
+              slotProps={{
+                primary: primaryTypographyProps,
+              }}
             />
           </ListItem>
         </List>
@@ -769,8 +806,10 @@ export default class Entry extends Component {
       <Accordion
         defaultExpanded={expanded}
         onChange={this.handlePanelChange(entryHashKey)}
-        TransitionProps={{ unmountOnExit: true }}
-        slotProps={{ heading: { component: 'div' } }}
+        slotProps={{
+          heading: { component: 'div' },
+          transition: { unmountOnExit: true },
+        }}
         elevation={2}>
         <AccordionSummary
           component="div"

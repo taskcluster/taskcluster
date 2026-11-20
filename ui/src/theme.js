@@ -341,21 +341,34 @@ const themeOptions = isDarkTheme => {
           sizeSmall: {
             minWidth: 36,
           },
-          textInherit: {
-            color: textPrimary,
-          },
-          outlinedInherit: {
-            color: textPrimary,
-            borderColor: isDarkTheme
-              ? 'rgba(255, 255, 255, 0.23)'
-              : 'rgba(0, 0, 0, 0.23)',
-          },
-          containedInherit: {
-            color: 'rgba(0, 0, 0, 0.87)',
-            backgroundColor: grey[300],
-            '&:hover': {
-              backgroundColor: grey.A100,
-            },
+          root: {
+            variants: [
+              {
+                props: { variant: 'text', color: 'inherit' },
+                style: {
+                  color: textPrimary,
+                },
+              },
+              {
+                props: { variant: 'outlined', color: 'inherit' },
+                style: {
+                  color: textPrimary,
+                  borderColor: isDarkTheme
+                    ? 'rgba(255, 255, 255, 0.23)'
+                    : 'rgba(0, 0, 0, 0.23)',
+                },
+              },
+              {
+                props: { variant: 'contained', color: 'inherit' },
+                style: {
+                  color: 'rgba(0, 0, 0, 0.87)',
+                  backgroundColor: grey[300],
+                  '&:hover': {
+                    backgroundColor: grey.A100,
+                  },
+                },
+              },
+            ],
           },
         },
       },
@@ -446,6 +459,13 @@ const themeOptions = isDarkTheme => {
         styleOverrides: {
           root: {
             userSelect: 'text',
+          },
+        },
+      },
+      MuiListItemIcon: {
+        styleOverrides: {
+          root: {
+            minWidth: 56,
           },
         },
       },

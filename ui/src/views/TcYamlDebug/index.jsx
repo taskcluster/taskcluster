@@ -654,7 +654,12 @@ export default class TcYamlDebug extends Component {
             />
           </ListItem>
           <ListItem>
-            <Grid container spacing={2} alignItems="flex-end">
+            <Grid
+              container
+              spacing={2}
+              sx={{
+                alignItems: 'flex-end',
+              }}>
               <Grid>
                 <Button
                   spanProps={{ className: classes.analyzeButton }}

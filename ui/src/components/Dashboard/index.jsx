@@ -395,9 +395,6 @@ export default class Dashboard extends Component {
                     onClose: this.handleDrawerToggle,
                   })}
               anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-              PaperProps={{
-                elevation: 2,
-              }}
               ModalProps={{
                 keepMounted: true,
               }}
@@ -405,6 +402,11 @@ export default class Dashboard extends Component {
                 paper: classNames(classes.drawerPaper, {
                   [classes.docsDrawerPaper]: isDocs,
                 }),
+              }}
+              slotProps={{
+                paper: {
+                  elevation: 2,
+                },
               }}>
               {drawer}
             </Drawer>

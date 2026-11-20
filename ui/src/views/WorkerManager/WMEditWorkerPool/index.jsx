@@ -178,8 +178,8 @@ export default class WMEditWorkerPool extends Component {
             : `Worker Pool "${workerPoolId}"`
         }>
         <Box
-          marginBottom={2}
           sx={{
+            marginBottom: 2,
             display: 'flex',
             width: '100%',
             flexWrap: 'wrap',
