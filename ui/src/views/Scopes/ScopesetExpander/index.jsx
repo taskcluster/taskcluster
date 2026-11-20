@@ -16,6 +16,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
 import Link from '../../../utils/Link';
 import scopeLink from '../../../utils/scopeLink';
+import WhitespaceHighlight from '../../../components/WhitespaceHighlight';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
 @withTaskclusterClient
@@ -116,7 +117,9 @@ export default class ScopesetExpander extends Component {
               {expandedScopes?.map(scope => (
                 <Link key={scope} to={scopeLink(scope)}>
                   <ListItemButton className={classes.listItemButton}>
-                    <code>{scope}</code>
+                    <code>
+                      <WhitespaceHighlight text={scope} />
+                    </code>
                     <LinkIcon size={16} />
                   </ListItemButton>
                 </Link>
