@@ -51,7 +51,7 @@ workers:
     # implementation refers to the payload format these transforms emit;
     # the runtime is generic-worker, which accepts docker-worker payloads via d2g.
     images:
-      provisioner: proj-taskcluster
+      provisioner: taskcluster-{level}
       os: linux
       implementation: docker-worker
-      worker-type: gw-ubuntu-24-04
+      worker-type: images

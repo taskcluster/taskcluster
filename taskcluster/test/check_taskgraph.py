@@ -22,6 +22,7 @@ DOCKER_IMAGE_INDEX_MARKER = ".docker-images."
 ALLOWED_WORKER_POOLS = {
     ("built-in", "succeed"),
     ("proj-taskcluster", "gw-ubuntu-24-04"),
+    ("taskcluster-1", "images"),
 }
 
 
@@ -469,6 +470,17 @@ def check_no_release_tasks(tasks, graph_name):
         raise RuntimeError(f"{graph_name} graph contains release tasks: " + ", ".join(release))
 
 
+def check_image_worker_pools(tasks, graph_name, level):
+    pools = {
+        (task["task"]["provisionerId"], task["task"]["workerType"])
+        for task in tasks.values()
+        if task["kind"] == "docker-image"
+    }
+    expected = {(f"taskcluster-{level}", "images")}
+    if pools != expected:
+        raise RuntimeError(f"{graph_name} uses image pools {pools}, expected {expected}")
+
+
 def check_malformed_release_ref(version):
     try:
         generate_target_graph(PARAMETERS_DIR / MALFORMED_RELEASE_PARAMETERS, version)
@@ -493,6 +505,7 @@ def main():
     for parameter_file, graph_name, trusted in graphs:
         tasks = generate_target_graph(PARAMETERS_DIR / parameter_file, version)
         print(f"Generated task graph with {len(tasks)} tasks")
+        check_image_worker_pools(tasks, graph_name, level=1)
         check_no_test_skip(tasks, graph_name)
         check_no_release_tasks(tasks, graph_name)
         if trusted:
@@ -508,6 +521,7 @@ def main():
     ):
         tasks = generate_target_graph(PARAMETERS_DIR / parameter_file, version)
         print(f"Generated {graph_name} task graph with {len(tasks)} tasks")
+        check_image_worker_pools(tasks, graph_name, level=3)
         check_release_build(tasks, graph_name, staging)
         print(f"{graph_name} graph has the expected build tasks")
         check_release_pipeline(tasks, graph_name, staging)
@@ -519,6 +533,7 @@ def main():
         print(f"{graph_name} graph runs only the docker tasks as the worker's user")
 
     tasks = generate_target_graph(PARAMETERS_DIR / MAIN_PUSH_PARAMETERS, version)
+    check_image_worker_pools(tasks, "main push", level=3)
     check_no_release_tasks(tasks, "main push")
     check_malformed_release_ref(version)
     print("Non-release graphs contain no release tasks; malformed release refs are rejected")
