@@ -1,4 +1,6 @@
-export default {
+import type { LabelStatus } from '../components/Label';
+
+const labels: Partial<Record<string, LabelStatus>> = {
   RUNNING: 'info',
   PENDING: 'pending',
   SCHEDULED: 'default',
@@ -51,3 +53,5 @@ export default {
   DEBUG: 'info',
   ANY: 'default',
 };
+
+export default labels;
