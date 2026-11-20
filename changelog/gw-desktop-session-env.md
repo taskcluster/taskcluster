@@ -1,0 +1,6 @@
+audience: users
+level: minor
+---
+Generic Worker: on non-headless Linux workers (multiuser engine with `headlessTasks: false`), task commands now get the desktop session's `DISPLAY`, `WAYLAND_DISPLAY`, `XAUTHORITY`, `XDG_SESSION_TYPE`, `XDG_CURRENT_DESKTOP`, `XDG_SESSION_DESKTOP`, `XDG_DATA_DIRS` and `DBUS_SESSION_BUS_ADDRESS`, as published to the task user's systemd user manager (`systemctl --user show-environment`). Before, only `DISPLAY=:0` and `XDG_RUNTIME_DIR` were set, so X11 clients failed with "Authorization required" under GNOME's Xwayland, and applications could not tell they were in a Wayland session. These variables are defaults that the task payload `env` can override. This now includes `DISPLAY`, which the payload could not override before.
+
+After the task user logs in, the worker waits up to 2 minutes for the session to publish `WAYLAND_DISPLAY` (or, outside of a Wayland session, `DISPLAY`) before claiming a task. If the session doesn't publish it in time, the worker logs what was missing and exits with an internal error, the same as when the task user's login doesn't complete. It shuts down the machine if `shutdownMachineOnInternalError` is set. `DISPLAY` is no longer hard-coded to `:0`.
