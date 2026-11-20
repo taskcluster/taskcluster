@@ -27,23 +27,35 @@ import (
 //
 //   - d2gImageLoads is a singleflight.Group keyed by image cache key.
 //     Concurrent tasks that resolve to the *same* image key share a
-//     single docker load / docker pull invocation; tasks resolving to
-//     *different* keys run in parallel — that's what capacity > 1 is
-//     for. Mirrors the fileCacheDownloads pattern in mounts_feature.go.
+//     single docker load / docker pull invocation. Tasks resolving to
+//     *different* keys don't wait for each other here, only on
+//     d2gTagMutex. Mirrors the fileCacheDownloads pattern in
+//     mounts_feature.go.
 //
 //   - d2gCacheMutex protects the d2g-image-cache.json file. Held only
 //     across the read or write to that single shared file, never across
 //     a docker invocation, so it doesn't bottleneck unrelated loads.
 //
+//   - d2gTagMutex is held across an artifact docker load and the docker
+//     image inspect of the tag that load reports, so nothing else d2g
+//     runs can move that tag in between. Artifact loads hold it
+//     exclusively, so loads of different artifacts run one at a time.
+//     Registry pulls by tag hold it shared, so they run in parallel
+//     with each other but not with an artifact load. Pulls by digest
+//     don't take it, as they never create or move a tag.
+//
 //   - dockerContainerRemovals tracks the removal of finished tasks'
 //     containers, which runs in the background since it can take
 //     minutes, so tasks resolve without waiting for it.
 //
-// Lock ordering (when both are held): d2gCacheMutex outside cacheMutex
-// (cacheMutex is defined in mounts_feature.go and acquired by
-// garbageCollection → removeD2GCacheFile → d2gCacheMutex).
+// Lock ordering: d2gCacheMutex, d2gTagMutex and cacheMutex (defined in
+// mounts_feature.go) are never held at the same time. garbageCollection
+// releases cacheMutex before removeD2GCacheFile takes d2gCacheMutex, and
+// loadImage takes d2gTagMutex only after loadImageLocked has released
+// d2gCacheMutex.
 var (
 	d2gCacheMutex           sync.Mutex
+	d2gTagMutex             sync.RWMutex
 	d2gImageLoads           singleflight.Group
 	dockerContainerRemovals sync.WaitGroup
 )
@@ -111,6 +123,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	loadImage := func() (*Image, *CommandExecutionError) {
 		dtf.task.Info("[d2g] Loading docker image")
+
+		if isImageArtifact {
+			d2gTagMutex.Lock()
+			defer d2gTagMutex.Unlock()
+		} else if !hasDigest(key) {
+			d2gTagMutex.RLock()
+			defer d2gTagMutex.RUnlock()
+		}
 
 		var cmd *process.Command
 		var err error
@@ -277,10 +297,10 @@ type imageLoadResult struct {
 
 // loadImageLocked deduplicates concurrent docker image loads (both
 // artifact-based `docker load` and registry-based `docker pull`) per
-// image key. Tasks pulling the *same* key share one docker invocation;
-// tasks pulling *different* keys run in parallel. Only cacheable keys
-// (artifacts and digest-pinned names) are read from or written to the
-// on-disk cache.
+// image key. Tasks pulling the *same* key share one docker invocation.
+// Tasks pulling *different* keys only wait for each other on
+// d2gTagMutex. Only cacheable keys (artifacts and digest-pinned names)
+// are read from or written to the on-disk cache.
 //
 // The second return is whether *this* call actually performed the load
 // (true) versus picked up a result populated by another task (false) —
