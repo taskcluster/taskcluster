@@ -397,6 +397,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       );
     });
 
+    test('updating with the same schedule does not skip a due fire', async () => {
+      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
+      const past = new Date(Date.now() - 60000);
+      const taskId = helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') });
+      await helper.db.fns.update_hook('foo', 'bar', null, null, null, null, null, taskId, past, null);
+
+      await helper.hooks.updateHook('foo', 'bar', dailyHookDef);
+
+      const [row] = await helper.db.fns.get_hook('foo', 'bar');
+      assert.deepEqual(row.next_scheduled_date, past);
+      assert.deepEqual(row.encrypted_next_task_id, taskId);
+    });
+
+    test('updating with a different schedule moves the next fire', async () => {
+      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
+      const past = new Date(Date.now() - 60000);
+      await helper.db.fns.update_hook('foo', 'bar', null, null, null, null, null, null, past, null);
+
+      await helper.hooks.updateHook('foo', 'bar', { ...dailyHookDef, schedule: ['0 0 4 * * *'] });
+
+      const [row] = await helper.db.fns.get_hook('foo', 'bar');
+      assert(row.next_scheduled_date > new Date());
+    });
+
     test('succeeds if hookIds match', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.updateHook('foo', 'bar', hookWithHookIds);
