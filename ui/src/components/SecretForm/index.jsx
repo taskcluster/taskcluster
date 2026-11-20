@@ -14,7 +14,7 @@ import Switch from '@mui/material/Switch';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import CodeEditor from '../CodeEditor';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import DialogAction from '../DialogAction';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';

@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import { dump, load } from 'js-yaml';
 import debounce from 'lodash.debounce';
 import { Grid, MenuItem } from '@mui/material';
-import TextField from '../../components/TextField';
+import TextField from '@mui/material/TextField';
 import CodeEditor from '../../components/CodeEditor';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';

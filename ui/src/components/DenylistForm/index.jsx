@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import DialogAction from '../DialogAction';
 import { notificationAddress as address } from '../../utils/prop-types';
 import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';

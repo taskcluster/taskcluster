@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import Button from '../Button';
 import DiffTextArea from '../DiffTextArea';

@@ -6,7 +6,7 @@ import withStyles from '../../../utils/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
 import Spinner from '../../../components/Spinner';
-import TextField from '../../../components/TextField';
+import TextField from '@mui/material/TextField';
 import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';

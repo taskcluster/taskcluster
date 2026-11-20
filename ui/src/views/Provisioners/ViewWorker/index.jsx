@@ -7,7 +7,7 @@ import HomeLockIcon from 'mdi-react/HomeLockIcon';
 import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import Spinner from '../../../components/Spinner';
-import TextField from '../../../components/TextField';
+import TextField from '@mui/material/TextField';
 import Dashboard from '../../../components/Dashboard';
 import WorkerDetailsCard from '../../../components/WorkerDetailsCard';
 import DialogAction from '../../../components/DialogAction';

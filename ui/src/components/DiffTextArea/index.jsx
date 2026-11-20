@@ -127,7 +127,6 @@ function DiffTextArea(props) {
         })}>
         {!isViewDiff && (
           <TextField
-            color="secondary"
             onChange={handleValueChange}
             fullWidth
             multiline

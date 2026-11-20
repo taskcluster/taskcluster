@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import withStyles from '../../../utils/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import Spinner from '../../../components/Spinner';
-import TextField from '../../../components/TextField';
+import TextField from '@mui/material/TextField';
 import WorkerTypesTable from '../../../components/WorkerTypesTable';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';

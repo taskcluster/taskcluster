@@ -31,7 +31,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import CodeEditor from '../CodeEditor';
 import JsonDisplay from '../JsonDisplay';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import ErrorPanel from '../ErrorPanel';
 import Button from '../Button';

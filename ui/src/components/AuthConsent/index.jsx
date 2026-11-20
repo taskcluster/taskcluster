@@ -15,7 +15,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from 'mdi-react/ExpandMoreIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import Button from '../Button';
 import DatePicker from '../DatePicker';
 import { date } from '../../utils/prop-types';
