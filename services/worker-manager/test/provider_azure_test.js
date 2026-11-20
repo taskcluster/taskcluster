@@ -1531,6 +1531,106 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  suite('spot placement score', () => {
+    const sku = 'Standard_D2_v5';
+    const sequentialEastus = {
+      workerManager: { launchConfigId: 'lc-eastus' },
+      priority: 'spot',
+      subnetId: 'some/subnet',
+      location: 'eastus',
+      hardwareProfile: { vmSize: sku },
+      storageProfile: { osDisk: {} },
+    };
+    const armWestus = {
+      workerManager: { launchConfigId: 'lc-westus' },
+      armDeployment: {
+        mode: 'Incremental',
+        templateLink: {
+          id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+        },
+        parameters: {
+          location: { value: 'westus' },
+          vmSize: { value: sku },
+          priority: { value: 'Spot' },
+        },
+      },
+    };
+
+    const provisionPool = async (launchConfigs = [sequentialEastus, armWestus]) => {
+      const workerPool = await makeWorkerPool({
+        config: { minCapacity: 4, maxCapacity: 4, scalingRatio: 1, launchConfigs },
+      });
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats(workerPoolId) });
+      return workerPool;
+    };
+    const spawnedLaunchConfigs = async () => (await helper.getWorkers()).map(w => w.launchConfigId).sort();
+
+    test('is off by default', async () => {
+      await provisionPool();
+      assert.equal(fake.restClient.spotScoreRequests.length, 0);
+      assert.equal((await spawnedLaunchConfigs()).length, 4);
+    });
+
+    test('makes no request for pools without spot launch configs', async () => {
+      provider.providerConfig.spotPlacementScore = true;
+      await provisionPool([{ ...sequentialEastus, priority: 'Regular' }]);
+      assert.equal(fake.restClient.spotScoreRequests.length, 0);
+      assert.equal((await spawnedLaunchConfigs()).length, 4);
+    });
+
+    for (const [restricted, expected] of [
+      ['westus', 'lc-eastus'],
+      ['eastus', 'lc-westus'],
+    ]) {
+      test(`skips launch configs restricted in ${restricted}`, async () => {
+        provider.providerConfig.spotPlacementScore = true;
+        fake.restClient.spotScores = { [`${restricted}/${sku}`]: 'RestrictedSkuNotAvailable' };
+        await provisionPool();
+
+        assert.deepEqual(await spawnedLaunchConfigs(), [expected, expected, expected, expected]);
+        assert.equal(fake.restClient.spotScoreRequests.length, 1);
+        const { method, url, body } = fake.restClient.spotScoreRequests[0];
+        assert.equal(method, 'POST');
+        assert.match(
+          url,
+          /^https:\/\/management\.azure\.com\/subscriptions\/a%20subscription%20id\/providers\/Microsoft\.Compute\/locations\/(eastus|westus)\/placementScores\/spot\/generate\?api-version=2025-06-05$/
+        );
+        assert.deepEqual(
+          { ...body, desiredLocations: body.desiredLocations.sort() },
+          { desiredLocations: ['eastus', 'westus'], desiredSizes: [{ sku }], desiredCount: 4, availabilityZones: false }
+        );
+      });
+    }
+
+    test('retries throttled and failed score requests through the request queue', async () => {
+      provider.providerConfig.spotPlacementScore = true;
+      fake.restClient.spotScoreStatus = 503;
+      await provisionPool();
+      assert(fake.restClient.spotScoreRequests.length > 1);
+      assert.equal((await spawnedLaunchConfigs()).length, 4);
+    });
+
+    test('ignores scores when every launch config scores zero', async () => {
+      provider.providerConfig.spotPlacementScore = true;
+      fake.restClient.spotScores = {
+        [`eastus/${sku}`]: 'RestrictedSkuNotAvailable',
+        [`westus/${sku}`]: 'RestrictedSkuNotAvailable',
+      };
+      await provisionPool();
+      assert.equal((await spawnedLaunchConfigs()).length, 4);
+    });
+
+    test('keeps weights when the API fails, and caches the failure', async () => {
+      provider.providerConfig.spotPlacementScore = true;
+      fake.restClient.spotScoreStatus = 403;
+      const workerPool = await provisionPool();
+      assert.equal((await spawnedLaunchConfigs()).length, 4);
+
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats(workerPoolId) });
+      assert.equal(fake.restClient.spotScoreRequests.length, 1);
+    });
+  });
+
   suite('ARM deployment resource group management', () => {
     const provisionWorkerPool = async (launchConfig, overrides) => {
       const workerPool = await makeWorkerPool({
