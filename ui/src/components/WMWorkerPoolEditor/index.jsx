@@ -25,7 +25,7 @@ import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import CodeEditor from '../CodeEditor';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import DialogAction from '../DialogAction';
 import Button from '../Button';

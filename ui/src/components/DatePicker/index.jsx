@@ -38,7 +38,6 @@ export default function DatePicker({
       )}
       <TextField
         type="datetime-local"
-        color="secondary"
         value={toInputValue(parsed)}
         onChange={handleChange}
         {...props}

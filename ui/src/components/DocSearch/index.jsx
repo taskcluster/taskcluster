@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import ListSubheader from '@mui/material/ListSubheader';
 import Autocomplete from '@mui/material/Autocomplete';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import Link from '../../utils/Link';
 import { THEME } from '../../utils/constants';
 

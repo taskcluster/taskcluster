@@ -10,7 +10,7 @@ import { Chip, FormControlLabel } from '@mui/material';
 import { memoize } from '../../../utils/memoize';
 import Markdown from '../../../components/Markdown';
 import ChangelogMd from '../../../../../CHANGELOG.md?raw';
-import TextField from '../../../components/TextField';
+import TextField from '@mui/material/TextField';
 
 const parseMarkdownIntoSections = markdown => {
   const lines = markdown.split('\n');

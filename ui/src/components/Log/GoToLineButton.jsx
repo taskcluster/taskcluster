@@ -6,7 +6,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import NumericIcon from 'mdi-react/NumericIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import Button from '../Button';
 
 @withStyles(theme => ({

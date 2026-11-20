@@ -348,6 +348,7 @@ const themeOptions = (isDarkTheme: boolean): ThemeOptions => {
       MuiTextField: {
         defaultProps: {
           variant: 'standard',
+          color: 'secondary',
         },
       },
       MuiFormControl: {

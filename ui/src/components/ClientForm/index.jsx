@@ -19,7 +19,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import DateDistance from '../DateDistance';
 import DiffTextArea from '../DiffTextArea';

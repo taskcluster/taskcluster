@@ -19,7 +19,7 @@ import { dump } from 'js-yaml';
 import debounce from 'lodash.debounce';
 import Spinner from '../../components/Spinner';
 import CodeEditor from '../../components/CodeEditor';
-import TextField from '../../components/TextField';
+import TextField from '@mui/material/TextField';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import HelpView from '../../components/HelpView';

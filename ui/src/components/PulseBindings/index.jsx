@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import TextField from '../TextField';
+import TextField from '@mui/material/TextField';
 
 @withStyles(theme => ({
   iconButton: {
