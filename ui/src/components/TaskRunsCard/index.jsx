@@ -25,7 +25,7 @@ import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '../Label';
 import Button from '../Button';
@@ -353,7 +353,7 @@ export default class TaskRunsCard extends Component {
             </div>
             {isError ? (
               <div title="View error">
-                <ErrorOutlineIcon />
+                <ErrorOutlineOutlinedIcon />
               </div>
             ) : (
               <div>{isLogFile ? <LinkIcon /> : <OpenInNewIcon />}</div>

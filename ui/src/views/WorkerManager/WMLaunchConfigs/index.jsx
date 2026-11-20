@@ -514,8 +514,8 @@ export default class WMLaunchConfigs extends Component {
         disableTitleFormatting
         title={`Worker Pool "${workerPoolId}" Launch Configs`}>
         <Box
-          marginBottom={2}
           sx={{
+            marginBottom: 2,
             display: 'flex',
             width: '100%',
             flexWrap: 'wrap',
@@ -577,7 +577,11 @@ export default class WMLaunchConfigs extends Component {
                   </Button>
                 )}
               </Box>
-              <Box mb={2} pl={1}>
+              <Box
+                sx={{
+                  mb: 2,
+                  pl: 1,
+                }}>
                 <Typography
                   variant="body2"
                   color="textSecondary"

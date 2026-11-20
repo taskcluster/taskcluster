@@ -230,12 +230,14 @@ export default class IndexedEntry extends Component {
         <ListItem component="div">
           <ListItemText
             primary="Data"
-            secondaryTypographyProps={{
-              component: 'div',
-            }}
             secondary={
               <JsonDisplay syntax="yaml" objectContent={indexedTask.data} />
             }
+            slotProps={{
+              secondary: {
+                component: 'div',
+              },
+            }}
           />
         </ListItem>
         <ListItem className={classes.latestArtifactsListItem}>

@@ -3,6 +3,7 @@ import withStyles from '../../utils/withStyles';
 import MuiSpeedDialAction, {
   speedDialActionClasses,
 } from '@mui/material/SpeedDialAction';
+import { mergeSlotProps } from '@mui/material/utils';
 import classNames from 'classnames';
 import { string, bool, oneOf } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
@@ -35,6 +36,7 @@ function SpeedDialAction(props) {
     onUnauthorize,
     getCredentials,
     tooltipTitle,
+    tooltipOpen,
     ...rest
   } = props;
   const other = {};
@@ -43,13 +45,13 @@ function SpeedDialAction(props) {
     ...FabProps,
     ...(lackingAuth ? { disabled: true } : {}),
   };
-  const title = tooltipTitle
-    ? {
-        tooltipTitle: lackingAuth
-          ? `${tooltipTitle} (Auth Required)`
-          : tooltipTitle,
-      }
-    : null;
+  const tooltipProps = mergeSlotProps(slotProps?.tooltip, {
+    open: tooltipOpen,
+    title:
+      tooltipTitle && lackingAuth
+        ? `${tooltipTitle} (Auth Required)`
+        : tooltipTitle,
+  });
 
   if (fabProps.disabled) {
     // Remove material-ui disabled prop warning
@@ -76,8 +78,11 @@ function SpeedDialAction(props) {
         },
       }}
       {...rest}
-      slotProps={{ ...slotProps, fab: { ...slotProps?.fab, ...fabProps } }}
-      {...title}
+      slotProps={{
+        ...slotProps,
+        fab: { ...slotProps?.fab, ...fabProps },
+        tooltip: tooltipProps,
+      }}
       {...other}
     />
   );

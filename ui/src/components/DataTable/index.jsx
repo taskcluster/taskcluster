@@ -193,11 +193,11 @@ export default class DataTable extends Component {
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[rowsPerPage]}
             page={page}
-            backIconButtonProps={{
-              'aria-label': 'Previous Page',
-            }}
-            nextIconButtonProps={{
-              'aria-label': 'Next Page',
+            slotProps={{
+              actions: {
+                previousButton: { 'aria-label': 'Previous Page' },
+                nextButton: { 'aria-label': 'Next Page' },
+              },
             }}
             onPageChange={this.handlePageChange}
           />

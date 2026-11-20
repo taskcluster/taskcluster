@@ -365,7 +365,11 @@ export default class QuickStart extends Component {
           <HelpView
             description="Create a configuration file and
                 plug the CI into your repository.">
-            <Typography variant="body2" paragraph>
+            <Typography
+              variant="body2"
+              sx={{
+                marginBottom: '16px',
+              }}>
               This tool lets you easily generate a simple generic{' '}
               <code>.taskcluster.yml</code> file, which should live in the root
               of your repository. It defines tasks that you want{' '}
@@ -373,19 +377,29 @@ export default class QuickStart extends Component {
               when certain GitHub events happen. You will choose the events you
               are interested in while creating the file.
             </Typography>
-            <Typography variant="body2" paragraph>
+            <Typography
+              variant="body2"
+              sx={{
+                marginBottom: '16px',
+              }}>
               For independent developers and organization owners: How to set up
               your repository with {window.env.APPLICATION_NAME}
             </Typography>
             <ul>
               <li>
-                <Typography paragraph>
+                <Typography
+                  sx={{
+                    marginBottom: '16px',
+                  }}>
                   Fill out the form below. All changes in the form will
                   instantly show up in the code field.
                 </Typography>
               </li>
               <li>
-                <Typography paragraph>
+                <Typography
+                  sx={{
+                    marginBottom: '16px',
+                  }}>
                   When you are done editing, copy the contents of the code field
                   and paste it into a file named <code>.taskcluster.yml</code>{' '}
                   in the root of your repository.
@@ -400,7 +414,11 @@ export default class QuickStart extends Component {
                 </SiteSpecific>
               </li>
             </ul>
-            <Typography variant="body2" paragraph>
+            <Typography
+              variant="body2"
+              sx={{
+                marginBottom: '16px',
+              }}>
               Optionally, after you create your file, you can edit it here or in
               you favorite editor to add more functionality. Please refer to the{' '}
               <a

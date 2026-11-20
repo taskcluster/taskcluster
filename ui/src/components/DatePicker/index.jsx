@@ -1,6 +1,7 @@
 import { func, string } from 'prop-types';
 import { format, isValid } from 'date-fns';
 import TextField from '@mui/material/TextField';
+import { mergeSlotProps } from '@mui/material/utils';
 import { date } from '../../utils/prop-types';
 
 const toDate = value => {
@@ -20,7 +21,7 @@ export default function DatePicker({
   value,
   maxDate,
   onChange,
-  inputProps,
+  slotProps,
   ...props
 }) {
   const parsed = toDate(value);
@@ -38,14 +39,16 @@ export default function DatePicker({
       <TextField
         type="datetime-local"
         color="secondary"
-        InputLabelProps={{ shrink: true }}
         value={toInputValue(parsed)}
         onChange={handleChange}
-        inputProps={{
-          max: toInputValue(toDate(maxDate)) || undefined,
-          ...inputProps,
-        }}
         {...props}
+        slotProps={{
+          ...slotProps,
+          htmlInput: mergeSlotProps(slotProps?.htmlInput, {
+            max: toInputValue(toDate(maxDate)) || undefined,
+          }),
+          inputLabel: mergeSlotProps(slotProps?.inputLabel, { shrink: true }),
+        }}
       />
     </>
   );

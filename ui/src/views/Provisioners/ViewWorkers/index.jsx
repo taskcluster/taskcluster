@@ -244,7 +244,10 @@ export default class ViewWorkers extends Component {
                 />
               </Breadcrumbs>
 
-              <Box marginTop={-2}>
+              <Box
+                sx={{
+                  marginTop: -2,
+                }}>
                 <TextField
                   disabled={loading}
                   className={classes.dropdown}

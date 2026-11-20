@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import { arrayOf, node, string, shape } from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import HeaderWithAnchor from '../HeaderWithAnchor';
@@ -13,6 +14,7 @@ import ListItem from '../ListItem';
 const useStyles = makeStyles()(theme => ({
   divider: {
     margin: `${theme.spacing(3)} 0`,
+    borderColor: alpha(theme.palette.divider, 0.08),
   },
 }));
 
@@ -21,7 +23,7 @@ export default function TutorialNavigation({ children, links }) {
 
   return (
     <Fragment>
-      <Divider className={classes.divider} light />
+      <Divider className={classes.divider} />
       <HeaderWithAnchor type="h2">Next Steps</HeaderWithAnchor>
       <Typography variant="subtitle1">{children}</Typography>
       {links && (

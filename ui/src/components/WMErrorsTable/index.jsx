@@ -283,15 +283,17 @@ export default class WorkerManagerErrorsTable extends Component {
                   <ListItem>
                     <ListItemText
                       primary="Extra"
-                      secondaryTypographyProps={{
-                        component: 'div',
-                      }}
                       secondary={
                         <JsonDisplay
                           syntax="json"
                           objectContent={drawerError.extra}
                         />
                       }
+                      slotProps={{
+                        secondary: {
+                          component: 'div',
+                        },
+                      }}
                     />
                   </ListItem>
                 </List>

@@ -111,7 +111,6 @@ export default class Profile extends Component {
               <ListItem>
                 <ListItemText
                   primary="Scopes"
-                  secondaryTypographyProps={{ component: 'div' }}
                   secondary={
                     currentScopes.length ? (
                       <List>
@@ -125,6 +124,9 @@ export default class Profile extends Component {
                       'no scopes'
                     )
                   }
+                  slotProps={{
+                    secondary: { component: 'div' },
+                  }}
                 />
               </ListItem>
             </List>

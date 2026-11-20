@@ -8,7 +8,13 @@ import CopyToClipboardListItem from '../CopyToClipboardListItem';
 
 const YamlJsonSwitch = ({ handleChange, value }) => (
   <Typography component="div">
-    <Grid component="label" container alignItems="center" spacing={1}>
+    <Grid
+      component="label"
+      container
+      spacing={1}
+      sx={{
+        alignItems: 'center',
+      }}>
       <Grid>YAML</Grid>
       <Grid>
         <Switch

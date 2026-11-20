@@ -83,7 +83,7 @@ export default class UserMenu extends Component {
               className: classes.buttonAvatar,
             }}
             buttonProps={{
-              classes: { containedPrimary: classes.buttonContainedPrimary },
+              classes: { root: classes.buttonContainedPrimary },
             }}
             className={classNames({ [classes.userMenuButton]: !user })}
             signInDialogOpen={signInDialogOpen}

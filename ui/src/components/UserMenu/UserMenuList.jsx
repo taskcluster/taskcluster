@@ -61,11 +61,13 @@ export default class UserMenuList extends Component {
                 <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText
-                primaryTypographyProps={{
-                  variant: 'body1',
-                  className: classes.text,
-                }}
                 primary="Sign In"
+                slotProps={{
+                  primary: {
+                    variant: 'body1',
+                    className: classes.text,
+                  },
+                }}
               />
             </ListItemButton>
           </List>
@@ -91,8 +93,10 @@ export default class UserMenuList extends Component {
           )}
           <ListItemText
             primary={profileName}
-            primaryTypographyProps={{ className: classes.username }}
             title={profileName}
+            slotProps={{
+              primary: { className: classes.username },
+            }}
           />
         </ListItemButton>
       </List>
