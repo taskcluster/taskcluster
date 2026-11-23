@@ -2,9 +2,11 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
+import slugid from 'slugid';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { WorkerPool, Worker } from '../src/data.js';
 import { ApiError } from '../src/providers/provider.js';
+import { TestingProvider } from '../src/providers/testing.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -467,6 +469,83 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       );
       monitor.manager.reset();
     });
+
+    const healthWindowCases = [
+      { name: 'the default window', healthWindowMinutes: undefined, workerPoolId: 'pp/hh', expected: 1 },
+      { name: 'a configured window', healthWindowMinutes: 60, workerPoolId: 'pp/hh60', expected: 2 },
+    ];
+    for (const { name, healthWindowMinutes, workerPoolId, expected } of healthWindowCases) {
+      test(`provision scan collects launch config health within ${name}`, async () => {
+        await WorkerPool.fromApi({
+          workerPoolId,
+          providerId: 'testing1',
+          previousProviderIds: [],
+          description: '',
+          created: new Date(),
+          lastModified: new Date(),
+          config: {},
+          owner: 'me@example.com',
+          emailOnError: false,
+          providerData: {},
+        }).create(helper.db);
+
+        const minutesAgo = minutes => new Date(Date.now() - minutes * 60 * 1000);
+        const addError = reported =>
+          helper.db.fns.create_worker_pool_error_launch_config(
+            slugid.v4(),
+            workerPoolId,
+            reported,
+            'operation-error',
+            'Operation Error',
+            'zone does not have enough resources',
+            {},
+            'lc1'
+          );
+        await addError(minutesAgo(5)); // inside both windows
+        await addError(minutesAgo(30)); // inside only the 60 minute window
+
+        const addWorker = (workerId, lastModified, state) =>
+          Worker.fromApi({
+            workerPoolId,
+            workerGroup: 'wg',
+            workerId,
+            providerId: 'testing1',
+            lastModified,
+            capacity: 1,
+            state,
+            launchConfigId: 'lc1',
+            providerData: {},
+          }).create(helper.db);
+        await addWorker('recent-running', minutesAgo(5), Worker.states.RUNNING); // inside both windows
+        await addWorker('old-running', minutesAgo(30), Worker.states.RUNNING); // inside only the 60 minute window
+
+        let captured;
+        const originalProvision = TestingProvider.prototype.provision;
+        TestingProvider.prototype.provision = async ({ workerPool, workerPoolStats }) => {
+          if (workerPool.workerPoolId === workerPoolId) {
+            captured = workerPoolStats;
+          }
+        };
+        try {
+          const provisioner = await helper.load('provisioner');
+          const originalWindow = provisioner.healthWindowMinutes;
+          if (healthWindowMinutes) {
+            provisioner.healthWindowMinutes = healthWindowMinutes;
+          }
+          try {
+            await provisioner.provision();
+          } finally {
+            provisioner.healthWindowMinutes = originalWindow;
+          }
+        } finally {
+          TestingProvider.prototype.provision = originalProvision;
+        }
+
+        assert.ok(captured, 'provider.provision should have been called for the pool');
+        assert.equal(captured.errorsByLaunchConfig.get('lc1'), expected);
+        assert.equal(captured.successesByLaunchConfig.get('lc1'), expected);
+      });
+    }
   });
 
   suite('deprovisioning loop', () => {
