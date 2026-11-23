@@ -209,7 +209,8 @@ export class AzureProvider extends Provider {
       // use the request queue so its error handler backs off on 429 and 5xx
       request: req =>
         this._enqueue('get', async () => {
-          const resp = await this.restClient.sendRequest(req);
+          // the fetch runs in the background, but a hung request would block every later refresh
+          const resp = await this.restClient.sendRequest({ ...req, abortSignal: AbortSignal.timeout(30000) });
           this._recordRateLimitHeaders({ headers: resp.headers, statusCode: resp.status, operationType: 'read' });
           if (resp.status !== 200) {
             throw Object.assign(new Error(`HTTP ${resp.status}: ${resp.bodyAsText}`), {
@@ -462,7 +463,7 @@ export class AzureProvider extends Provider {
    * Scale the weight of each Spot launch config by its Azure Spot Placement Score when
    * `spotPlacementScore` is set, so regions and sizes with more Spot capacity are picked more often.
    */
-  async adjustLaunchConfigWeights({ workerPool, toSpawn, configs }) {
+  adjustLaunchConfigWeights({ workerPool, toSpawn, configs }) {
     if (!this.providerConfig.spotPlacementScore) {
       return configs;
     }

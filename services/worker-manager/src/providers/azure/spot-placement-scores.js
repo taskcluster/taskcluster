@@ -32,6 +32,12 @@ export class SpotPlacementScores {
   cache = new Map();
 
   /**
+   * Settles when every refresh started so far has finished. Selection never awaits this; tests do.
+   * @type {Promise<void>}
+   */
+  refreshing = Promise.resolve();
+
+  /**
    * @param {object} opts
    * @param {string} opts.subscriptionId
    * @param {(req: { method: string, url: string, body: object }) => Promise<any>} opts.request -
@@ -45,12 +51,13 @@ export class SpotPlacementScores {
   }
 
   /**
-   * Return copies of `configs` with each Spot launch config's weight scaled by its score.
-   * `configs` is not modified.
+   * Return copies of `configs` with each Spot launch config's weight scaled by its cached score.
+   * `configs` is not modified. This never waits for Azure: a missing or expired score is
+   * refreshed in the background and used from the next provisioning loop on.
    *
    * @param {{ workerPoolId: string, toSpawn: number, configs: import('../../launch-config-selector.js').WeightedConfig[] }} opts
    */
-  async adjustWeights({ workerPoolId, toSpawn, configs }) {
+  adjustWeights({ workerPoolId, toSpawn, configs }) {
     const targets = configs.map(({ launchConfig, remainingCapacity }) => {
       const cfg = launchConfig.configuration;
       const target = spotTarget(cfg);
@@ -63,7 +70,7 @@ export class SpotPlacementScores {
       // shortcut: round the VM count up to a power of two so the cache is reused across loops, use exact counts if scores look off
       return { ...target, count: 2 ** Math.ceil(Math.log2(Math.max(vms, 1))) };
     });
-    await this.#fetch(
+    this.#refresh(
       workerPoolId,
       targets.filter(t => t)
     );
@@ -74,23 +81,50 @@ export class SpotPlacementScores {
   }
 
   /**
-   * Fetch scores for targets without an unexpired cache entry.
-   * Errors are logged and cached as "no score", so provisioning continues with unchanged weights.
+   * Start a background fetch for targets without an unexpired cache entry.
    *
    * @param {string} workerPoolId
    * @param {{ location: string, sku: string, count: number }[]} targets
    */
-  async #fetch(workerPoolId, targets) {
+  #refresh(workerPoolId, targets) {
     const now = Date.now();
-    const missing = targets.filter(t => !(this.cache.get(scoreKey(t))?.expires > now));
+    const missing = _.uniqBy(
+      targets.filter(t => !(this.cache.get(scoreKey(t))?.expires > now)),
+      scoreKey
+    );
+    if (!missing.length) {
+      return;
+    }
+    // reserve the keys so later loops do not request them again while this fetch is running;
+    // an expired score is served until the fetch replaces or clears it
+    for (const t of missing) {
+      const key = scoreKey(t);
+      this.cache.set(key, { expires: now + TTL_MS, score: this.cache.get(key)?.score });
+    }
+    // one fetch at a time, in order
+    this.refreshing = this.refreshing
+      .then(() => this.#fetch(workerPoolId, missing))
+      .catch(err => this.monitor.reportError(err));
+  }
+
+  /**
+   * Fetch scores for `missing` and store them. A failed request is logged and stored as
+   * "no score", so those launch configs keep their weights until the entry expires.
+   *
+   * @param {string} workerPoolId
+   * @param {{ location: string, sku: string, count: number }[]} missing
+   */
+  async #fetch(workerPoolId, missing) {
     const subscriptionId = encodeURIComponent(this.subscriptionId);
 
     for (const [count, group] of Object.entries(_.groupBy(missing, 'count'))) {
       const desiredCount = Number(count);
       // the API accepts at most 8 regions and 5 VM sizes per request
       for (const desiredLocations of _.chunk(_.uniq(group.map(t => t.location)), 8)) {
-        const locationSkus = _.uniq(group.filter(t => desiredLocations.includes(t.location)).map(t => t.sku));
-        for (const skus of _.chunk(locationSkus, 5)) {
+        const inRegions = group.filter(t => desiredLocations.includes(t.location));
+        for (const skus of _.chunk(_.uniq(inRegions.map(t => t.sku)), 5)) {
+          // the pairs this request was made for; it also returns other region/size combinations
+          const requested = inRegions.filter(t => skus.includes(t.sku)).map(scoreKey);
           const fetched = new Map();
           try {
             const body = await this.request({
@@ -125,14 +159,12 @@ export class SpotPlacementScores {
               error: err.message,
             });
           }
-          for (const location of desiredLocations) {
-            for (const sku of skus) {
-              const key = scoreKey({ location, sku, count: desiredCount });
-              // a failed request must not erase unexpired scores for other pairs in the same batch
-              if (fetched.has(key) || !(this.cache.get(key)?.expires > now)) {
-                this.cache.set(key, { expires: now + TTL_MS, score: fetched.get(key) });
-              }
-            }
+          // store every score that came back, and clear the requested pairs that got none (a failed
+          // request, or a pair missing from the response) so a reserved stale score is not kept.
+          // Other pairs in the batch are left alone: a failure must not erase their unexpired scores.
+          const expires = Date.now() + TTL_MS;
+          for (const key of new Set([...requested, ...fetched.keys()])) {
+            this.cache.set(key, { expires, score: fetched.get(key) });
           }
         }
       }

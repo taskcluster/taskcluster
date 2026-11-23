@@ -1560,7 +1560,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const workerPool = await makeWorkerPool({
         config: { minCapacity: 4, maxCapacity: 4, scalingRatio: 1, launchConfigs },
       });
-      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats(workerPoolId) });
+      const workerPoolStats = new WorkerPoolStats(workerPoolId);
+      // scores are fetched in the background, so let a first selection fetch them before provisioning
+      await provider.selectLaunchConfigsForSpawn({ workerPool, toSpawn: 4, workerPoolStats });
+      await provider.spotPlacementScores.refreshing;
+      await provider.provision({ workerPool, workerPoolStats });
       return workerPool;
     };
     const spawnedLaunchConfigs = async () => (await helper.getWorkers()).map(w => w.launchConfigId).sort();
@@ -1608,6 +1612,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await provisionPool();
       assert(fake.restClient.spotScoreRequests.length > 1);
       assert.equal((await spawnedLaunchConfigs()).length, 4);
+    });
+
+    test('provisions without waiting for the score request', async () => {
+      provider.providerConfig.spotPlacementScore = true;
+      const sendRequest = sinon.stub(fake.restClient, 'sendRequest').returns(new Promise(() => {}));
+      try {
+        const workerPool = await makeWorkerPool({
+          config: { minCapacity: 4, maxCapacity: 4, scalingRatio: 1, launchConfigs: [sequentialEastus, armWestus] },
+        });
+        await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats(workerPoolId) });
+        assert(sendRequest.called, 'a score request was started');
+        assert.equal((await spawnedLaunchConfigs()).length, 4);
+      } finally {
+        sendRequest.restore();
+      }
     });
 
     test('ignores scores when every launch config scores zero', async () => {
