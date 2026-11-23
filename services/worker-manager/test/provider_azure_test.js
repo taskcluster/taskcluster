@@ -1616,7 +1616,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     test('provisions without waiting for the score request', async () => {
       provider.providerConfig.spotPlacementScore = true;
-      const sendRequest = sinon.stub(fake.restClient, 'sendRequest').returns(new Promise(() => {}));
+      let respond;
+      const pending = new Promise(resolve => {
+        respond = resolve;
+      });
+      const sendRequest = sinon.stub(fake.restClient, 'sendRequest').returns(pending);
       try {
         const workerPool = await makeWorkerPool({
           config: { minCapacity: 4, maxCapacity: 4, scalingRatio: 1, launchConfigs: [sequentialEastus, armWestus] },
@@ -1625,6 +1629,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(sendRequest.called, 'a score request was started');
         assert.equal((await spawnedLaunchConfigs()).length, 4);
       } finally {
+        // finish the request so it does not stay on the queue after the test
+        respond({ status: 200, parsedBody: { placementScores: [] }, headers: null });
+        await provider.spotPlacementScores.refreshing;
         sendRequest.restore();
       }
     });
