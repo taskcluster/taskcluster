@@ -84,13 +84,21 @@ suite(testing.suiteName(), () => {
   });
 
   test('does not wait for Azure', async () => {
-    hang = new Promise(() => {});
-    const result = sps.adjustWeights({ workerPoolId: 'wp', toSpawn: 4, configs: [spot('e', 'eastus')] });
-    assert(Array.isArray(result), 'returns weights right away, not a promise');
-    assert.deepEqual(
-      result.map(c => c.weight),
-      [1]
-    );
+    let release;
+    hang = new Promise(resolve => {
+      release = resolve;
+    });
+    try {
+      const result = sps.adjustWeights({ workerPoolId: 'wp', toSpawn: 4, configs: [spot('e', 'eastus')] });
+      assert(Array.isArray(result), 'returns weights right away, not a promise');
+      assert.deepEqual(
+        result.map(c => c.weight),
+        [1]
+      );
+    } finally {
+      release();
+      await sps.refreshing;
+    }
   });
 
   test('serves the old score while refreshing, and requests each key once', async () => {

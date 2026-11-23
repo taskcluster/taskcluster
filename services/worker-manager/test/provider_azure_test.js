@@ -1608,9 +1608,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     test('retries throttled and failed score requests through the request queue', async () => {
       provider.providerConfig.spotPlacementScore = true;
+      // fail once, then succeed, so the queue does not exhaust its retries and leave a timer behind
       fake.restClient.spotScoreStatus = 503;
-      await provisionPool();
-      assert(fake.restClient.spotScoreRequests.length > 1);
+      const send = fake.restClient.sendRequest.bind(fake.restClient);
+      const sendRequest = sinon.stub(fake.restClient, 'sendRequest').callsFake(async req => {
+        const resp = await send(req);
+        fake.restClient.spotScoreStatus = 200;
+        return resp;
+      });
+      try {
+        await provisionPool();
+      } finally {
+        sendRequest.restore();
+      }
+      assert.equal(fake.restClient.spotScoreRequests.length, 2);
       assert.equal((await spawnedLaunchConfigs()).length, 4);
     });
 
