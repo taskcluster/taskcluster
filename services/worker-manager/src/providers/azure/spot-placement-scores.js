@@ -95,16 +95,25 @@ export class SpotPlacementScores {
     if (!missing.length) {
       return;
     }
-    // reserve the keys so later loops do not request them again while this fetch is running;
-    // an expired score is served until the fetch replaces or clears it
+    // reserve the keys until the fetch ends, so later loops do not request them again even if
+    // throttling makes it slow; an expired score is served until the fetch replaces or clears it
     for (const t of missing) {
       const key = scoreKey(t);
-      this.cache.set(key, { expires: now + TTL_MS, score: this.cache.get(key)?.score });
+      this.cache.set(key, { expires: Infinity, score: this.cache.get(key)?.score });
     }
     // one fetch at a time, in order
     this.refreshing = this.refreshing
       .then(() => this.#fetch(workerPoolId, missing))
-      .catch(err => this.monitor.reportError(err));
+      .catch(err => {
+        this.monitor.reportError(err);
+        // an unexpected error must not leave keys reserved forever
+        for (const t of missing) {
+          const entry = this.cache.get(scoreKey(t));
+          if (entry?.expires === Infinity) {
+            entry.expires = Date.now() + TTL_MS;
+          }
+        }
+      });
   }
 
   /**

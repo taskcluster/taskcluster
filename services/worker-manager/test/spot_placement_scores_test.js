@@ -105,9 +105,11 @@ suite(testing.suiteName(), () => {
     scores = {};
     assert.deepEqual(weights([spot('e', 'eastus')]), [0], 'old score while the refresh runs');
     assert.deepEqual(weights([spot('e', 'eastus')]), [0]);
+    assert.equal(sps.cache.get(`eastus/${sku}/4`.toLowerCase()).expires, Infinity, 'reserved until the fetch ends');
     release();
     await sps.refreshing;
     assert.equal(requests.length, 2, 'the reserved key is not requested again');
+    assert(sps.cache.get(`eastus/${sku}/4`.toLowerCase()).expires < Infinity, 'the TTL starts when the fetch ends');
     assert.deepEqual(weights([spot('e', 'eastus')]), [1], 'new score after the refresh');
   });
 
@@ -117,6 +119,23 @@ suite(testing.suiteName(), () => {
     expireAll();
     failing = true;
     assert.deepEqual(await settled([spot('e', 'eastus')]), [1]);
+  });
+
+  test('releases reserved keys if a refresh throws unexpectedly', async () => {
+    sps.request = () => {
+      throw new Error('boom');
+    };
+    // #fetch catches request errors, so make storing the results throw instead
+    const set = sps.cache.set.bind(sps.cache);
+    sps.cache.set = (key, value) => {
+      if (value.expires !== Infinity) {
+        throw new Error('unexpected');
+      }
+      return set(key, value);
+    };
+    weights([spot('e', 'eastus')]);
+    await sps.refreshing;
+    assert(sps.cache.get(`eastus/${sku}/4`.toLowerCase()).expires < Infinity);
   });
 
   test('reads location, size and priority from ARM template parameters', async () => {
