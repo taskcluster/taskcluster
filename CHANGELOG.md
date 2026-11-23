@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v117.1.0
+
+### DEPLOYERS
+
+▶ [patch] [#9526](https://github.com/taskcluster/taskcluster/issues/9526)
+The Azure provider now removes a requested worker when its `registrationTimeout` passes while its ARM deployment is still in progress. Previously such workers stayed requested until Azure ended the deployment, which could take 40 minutes or more, and they blocked replacement workers. The provider also cancels the in-progress ARM deployment of any stopping worker, so its cleanup does not wait for Azure. This cancellation is not reported as a worker pool error.
+
+### USERS
+
+▶ [minor]
+Update the UI to MUI 6
+
+▶ [minor]
+Update the UI to MUI 7
+
+▶ [minor]
+Update the UI to MUI 9
+
+▶ [patch] [bug 2069337](http://bugzil.la/2069337)
+D2G: a task loading a docker image artifact can no longer resolve the image ID of another image that a concurrent task loads or pulls with the same tag.
+
+▶ [patch] [bug 2069337](http://bugzil.la/2069337)
+D2G: named docker images are now re-pulled for every task, unless pinned by digest, and run by the image ID of the pulled digest. As with image artifacts, payloads converted by `taskcluster d2g` now show the `__D2G_IMAGE_ID__` placeholder in the `docker run` command, which generic-worker replaces with the image ID at runtime.
+
+▶ [patch]
+Fix some text fields throughout the UI not having the right border color when selected
+
+▶ [patch] [#9542](https://github.com/taskcluster/taskcluster/issues/9542)
+Hooks can no longer skip a scheduled fire if they're updated within the short window between the time they should've fired and the time the scheduler looked if they should be
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades yarn to v4.19.0
+
 ## v117.0.0
 
 ### DEPLOYERS
