@@ -4,6 +4,8 @@ defaults:
     workerScannerIterateConfig: !env:json:optional WORKER_SCANNER_ITERATE_CONFIG
     # how many workers the scanner may check concurrently (set to 1 for sequential)
     workerScannerConcurrency: !env:number:optional WORKER_SCANNER_CONCURRENCY
+    # how many minutes of recent launch errors and successes count toward launch config health (default 15)
+    launchConfigHealthWindowMinutes: !env:number:optional LAUNCH_CONFIG_HEALTH_WINDOW_MINUTES
     workerPoolErrorRetentionDays: 7 # keep worker pool error stats for this many days
   monitoring:
     level: !env:optional LEVEL

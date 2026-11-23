@@ -72,9 +72,9 @@ Adjust weights below to see how workers would be distributed across configuratio
 
 ### Weight Adjustment
 
-The actual weight used for provisioning is dynamically adjusted based on:
+For Google and Azure worker pools, the actual weight used for provisioning is dynamically adjusted based on:
 - Current capacity vs maxCapacity
-- The launch configuration's recent health (within the last 15 minutes)
+- The launch configuration's recent health (within the last 15 minutes by default)
 
 ```
 adjustedWeight = (initialWeight - existingCapacity/maxCapacity) * health
@@ -90,9 +90,12 @@ This ensures that:
 - When several configurations are failing at once (for example, a cloud region running out of spot capacity), most new workers go to the configurations that are succeeding
 - Failing configurations keep a small share of requests, so they are still probed and regain weight once they start succeeding again
 
+AWS worker pools do not use health. Worker-Manager spreads new AWS workers evenly across the launch configurations whose capacity-adjusted weight is above zero.
+
 ### Error Recovery
 
-Worker-Manager uses a 15-minute sliding window for errors and successes, so configurations recover automatically once they stop failing.
+For Google and Azure worker pools, Worker-Manager uses a 15-minute sliding window for errors and successes, so configurations recover automatically once they stop failing.
+Deployers can change the window with the `worker_manager.launch_config_health_window_minutes` setting.
 Recovery is gradual: after a burst of failures, health stays low until those failures age out of the window.
 
 ## Usage Tracking

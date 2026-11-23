@@ -2892,6 +2892,9 @@
         "keep_alive_timeout_seconds": {
           "type": "number"
         },
+        "launch_config_health_window_minutes": {
+          "type": "number"
+        },
         "level": {
           "type": "string"
         },

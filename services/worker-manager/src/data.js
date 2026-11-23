@@ -262,7 +262,7 @@ export class WorkerPoolStats {
     /** @type {Map<string, { existingCapacity: number, requestedCapacity: number, stoppingCapacity: number }>} */
     this.capacityByWorkerGroup = new Map();
 
-    // workers that registered at or after this time count as launch successes
+    // workers that registered after this time count as launch successes
     this.recentSince = recentSince;
     /** @type {Map<string, number>} */
     this.successesByLaunchConfig = new Map();
@@ -338,7 +338,7 @@ export class WorkerPoolStats {
 
       // providers set lastModified when a worker registers and becomes RUNNING, and do not
       // change it again until the worker stops, so it is the worker's registration time
-      if (this.recentSince && worker.state === Worker.states.RUNNING && worker.lastModified >= this.recentSince) {
+      if (this.recentSince && worker.state === Worker.states.RUNNING && worker.lastModified > this.recentSince) {
         this.successesByLaunchConfig.set(
           worker.launchConfigId,
           (this.successesByLaunchConfig.get(worker.launchConfigId) || 0) + 1

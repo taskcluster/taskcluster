@@ -20,14 +20,16 @@ export class Provisioner {
    * @param {object} options.notify
    * @param {import('@taskcluster/lib-postgres').Database} options.db
    * @param {string} options.ownName
+   * @param {number} [options.healthWindowMinutes] - window for recent launch errors and successes
    */
-  constructor({ providers, iterateConf, Worker, WorkerPool, monitor, notify, db, ownName }) {
+  constructor({ providers, iterateConf, Worker, WorkerPool, monitor, notify, db, ownName, healthWindowMinutes = 15 }) {
     this.providers = providers;
     this.WorkerPool = WorkerPool;
     this.Worker = Worker;
     this.monitor = monitor;
     this.notify = notify;
     this.db = db;
+    this.healthWindowMinutes = healthWindowMinutes;
 
     // lib-iterate will have loops stand on top of each other
     // so we will explicitly grab a mutex in each loop to ensure
@@ -107,8 +109,8 @@ export class Provisioner {
         ...after,
       });
 
-    // errors and launch successes are both counted over the last 15 minutes
-    const recentSince = fromNow('-15 minutes');
+    // errors and launch successes are both counted over the health window
+    const recentSince = fromNow(`-${this.healthWindowMinutes} minutes`);
     const stats = new WorkerPoolStats(workerPoolId, {}, { recentSince });
     for await (const row of paginatedIterator({
       fetch,
@@ -121,7 +123,7 @@ export class Provisioner {
       stats.updateFromWorker(worker);
     }
 
-    // add information about errors in the past 15 minutes
+    // add information about errors in the health window
     const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, recentSince);
     for (const row of errorsByLc) {
       stats.errorsByLaunchConfig.set(row.launch_config_id, row.count);

@@ -18,7 +18,6 @@ export const HEALTH_FLOOR = 0.02;
  * @param {number} successes
  */
 export const launchConfigHealth = (failures, successes) =>
-  // (s + 1) / (f + s + 1) is 1 - f / (f + s + 1) without the rounding error of the subtraction
   Math.max(HEALTH_FLOOR, (successes + 1) / (failures + successes + 1));
 
 /**
@@ -137,11 +136,11 @@ export class LaunchConfigSelector {
    * Fetch all launch configurations for a worker pool
    * and return a weighted random config selector
    * that would return launch configs with probability
-   * that is proportional to its weight (initialWeight + adjustedWeight)
+   * that is proportional to its weight
    *
-   * If workerPoolStats are passed, launch config's
-   * initial weights would be adjusted proportionally to existing capacity,
-   * and scaled by the config's health (recent failures vs successes)
+   * Without workerPoolStats the weight is the config's initialWeight.
+   * With workerPoolStats it is (initialWeight - existingCapacity / maxCapacity) * health,
+   * where health comes from the config's recent failures and successes
    *
    * Launch configs with initial or adjusted weight of 0 would not be returned
    *

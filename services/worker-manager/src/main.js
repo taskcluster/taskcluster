@@ -300,6 +300,7 @@ const load = loader(
           notify,
           db,
           iterateConf: cfg.app.provisionerIterateConfig || {},
+          healthWindowMinutes: cfg.app.launchConfigHealthWindowMinutes || 15,
         });
         childMonitor.exposeMetrics('provision');
         return provisioner;
