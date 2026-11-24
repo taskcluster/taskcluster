@@ -46,7 +46,7 @@ export const CONTENT_MAX_WIDTH = 2000;
 export const VALID_TASK =
   /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';
-export const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+export const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 export const TASK_STATE = {
   COMPLETED: 'COMPLETED',
   RUNNING: 'RUNNING',
