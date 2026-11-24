@@ -4,17 +4,6 @@ import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
 import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
 import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import FileDocumentIcon from 'mdi-react/FileDocumentIcon';
-import FilePdfIcon from 'mdi-react/FilePdfIcon';
-import ArchiveIcon from 'mdi-react/ArchiveIcon';
-import FileWordIcon from 'mdi-react/FileWordIcon';
-import FileExcelIcon from 'mdi-react/FileExcelIcon';
-import FilePowerpointIcon from 'mdi-react/FilePowerpointIcon';
-import FileCodeIcon from 'mdi-react/FileCodeIcon';
-import FileVideoIcon from 'mdi-react/FileVideoIcon';
-import FileImageIcon from 'mdi-react/FileImageIcon';
-import FileMusicIcon from 'mdi-react/FileMusicIcon';
-import FileIcon from 'mdi-react/FileIcon';
 import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import { join } from 'path';
@@ -79,51 +68,6 @@ export const INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES = {
   groupNotifyTaskFailed: false,
   groupNotifySuccess: false,
 };
-export const MIMETYPE_ICONS = [
-  [FilePdfIcon, ['application/pdf', 'application/postscript']],
-  [
-    ArchiveIcon,
-    [
-      'application/zip',
-      'application/gzip',
-      'application/x-tar',
-      'application/x-gzip',
-      'application/x-bzip2',
-      'application/x-lzip',
-      'application/x-lzma',
-      'application/x-lzop',
-      'application/x-xz',
-      'application/x-compress',
-      'application/x-apple-diskimage',
-      'application/vnd.ms-cab-compressed',
-      'application/vnd.android.package-archive',
-      'application/x-gtar',
-      /compressed/,
-      /tar/,
-      /zip/,
-    ],
-  ],
-  [FileWordIcon, ['text/rtf', 'text/html']],
-  [FileExcelIcon, ['text/csv']],
-  [FilePowerpointIcon, []],
-  [
-    FileCodeIcon,
-    [
-      'application/javascript',
-      'application/json',
-      'application/xml',
-      'text/css',
-      'text/javascript',
-      'text/xml',
-      'application/ecmascript',
-    ],
-  ],
-  [FileVideoIcon, [/^video\//]],
-  [FileImageIcon, [/^image\//]],
-  [FileDocumentIcon, [/^text\//]],
-  [FileMusicIcon, [/^audio\//]],
-  [FileIcon, [/.*/]],
-];
 export const TASK_ADDED_FIELDS = [
   'taskId',
   'decisionTask',
