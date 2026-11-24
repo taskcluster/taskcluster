@@ -5,6 +5,8 @@ import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
 import { LEVELS } from '@taskcluster/lib-monitor';
+import sinon from 'sinon';
+import { WeightedRandomConfig } from '../src/launch-config-selector.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -400,6 +402,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         `No launch configs found for worker pool ${workerPool.workerPoolId}`
       );
       monitor.manager.reset();
+    });
+  });
+
+  suite('adjustLaunchConfigWeights', () => {
+    let provider;
+    let sandbox;
+
+    setup(async () => {
+      provider = await createProvider();
+      sandbox = sinon.createSandbox();
+      const configs = ['a', 'b'].map(launchConfigId => ({
+        launchConfig: { launchConfigId, configuration: {} },
+        weight: 1,
+        remainingCapacity: 10,
+      }));
+      sandbox.stub(provider.launchConfigSelector, 'forWorkerPool').resolves(new WeightedRandomConfig(configs));
+    });
+
+    teardown(() => sandbox.restore());
+
+    const select = async opts =>
+      (await provider.selectLaunchConfigsForSpawn({ workerPool: {}, toSpawn: 4, ...opts }))
+        .map(lc => lc.launchConfigId)
+        .sort();
+
+    test('selects by the adjusted weights', async () => {
+      provider.adjustLaunchConfigWeights = async ({ configs }) =>
+        configs.map(c => ({ ...c, weight: c.launchConfig.launchConfigId === 'a' ? 1 : 0 }));
+      assert.deepEqual(await select(), ['a', 'a', 'a', 'a']);
+    });
+
+    test('ignores the adjustment if every adjusted weight is 0', async () => {
+      provider.adjustLaunchConfigWeights = async ({ configs }) => configs.map(c => ({ ...c, weight: 0 }));
+      assert.equal((await select()).length, 4);
+    });
+
+    test('does not adjust when returning all launch configs', async () => {
+      const adjust = sandbox.spy(provider, 'adjustLaunchConfigWeights');
+      assert.deepEqual(await select({ returnAll: true }), ['a', 'b']);
+      assert.equal(adjust.callCount, 0);
     });
   });
 

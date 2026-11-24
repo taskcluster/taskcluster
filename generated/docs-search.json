@@ -2345,6 +2345,13 @@
     "title": "Azure Provider Type"
   },
   {
+    "element": "h2",
+    "id": "spot-placement-score",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Spot Placement Score",
+    "title": "Azure Provider Type"
+  },
+  {
     "element": "h3",
     "id": "tags",
     "path": "/reference/core/worker-manager/azure",

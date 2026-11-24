@@ -266,6 +266,7 @@ Now set the following configuration:
 * `secret` the generated secret
 * `resourceGroupName` - the name of the resource group
 * `apiRateLimits` - optional limits on the rate at which worker-manager calls Azure APIs
+* `spotPlacementScore` - optional, set to `true` to weight Spot launch configurations by their [Spot Placement Score](/docs/reference/core/worker-manager/azure#spot-placement-score). The role must also include `Microsoft.Compute/locations/placementScores/generate/action`.
 
 ### Launch configurations
 

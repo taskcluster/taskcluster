@@ -10,6 +10,7 @@ import { WorkerPool, Worker } from '../../data.js';
 import azureApi from './azure-api.js';
 import { ApiError, Provider, TransientApiError } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
+import { SpotPlacementScores } from './spot-placement-scores.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
 import {
   nicerId,
@@ -22,6 +23,7 @@ import {
   ArmDeploymentProvisioningState,
   azureErrorDetails,
   formatAzureError,
+  armParameterValue,
 } from './utils.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
@@ -145,14 +147,6 @@ function firstMetricLabel(...values) {
   return UNKNOWN_METRIC_LABEL;
 }
 
-function armParameterValue(parameters, name) {
-  const param = parameters?.[name];
-  if (param && typeof param === 'object' && 'value' in param) {
-    return param.value;
-  }
-  return param;
-}
-
 function extractAzureMetricError(error) {
   const queue = [error?.response?.parsedBody?.error, error?.parsedBody?.error, error?.body?.error, error?.error, error];
   const seen = new Set();
@@ -209,6 +203,24 @@ export class AzureProvider extends Provider {
     this.resourceGroupCache = new Map();
     /** @type {Map<string, number>} Consecutive `instanceView` 404s per worker */
     this.instanceView404Streaks = new Map();
+    this.spotPlacementScores = new SpotPlacementScores({
+      subscriptionId: providerConfig.subscriptionId,
+      monitor: this.monitor,
+      // use the request queue so its error handler backs off on 429 and 5xx
+      request: req =>
+        this._enqueue('get', async () => {
+          // the fetch runs in the background, but a hung request would block every later refresh
+          const resp = await this.restClient.sendRequest({ ...req, abortSignal: AbortSignal.timeout(30000) });
+          this._recordRateLimitHeaders({ headers: resp.headers, statusCode: resp.status, operationType: 'read' });
+          if (resp.status !== 200) {
+            throw Object.assign(new Error(`HTTP ${resp.status}: ${resp.bodyAsText}`), {
+              statusCode: resp.status,
+              response: resp,
+            });
+          }
+          return resp.parsedBody;
+        }),
+    });
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -445,6 +457,17 @@ export class AzureProvider extends Provider {
         }
       })
     );
+  }
+
+  /**
+   * Scale the weight of each Spot launch config by its Azure Spot Placement Score when
+   * `spotPlacementScore` is set, so regions and sizes with more Spot capacity are picked more often.
+   */
+  adjustLaunchConfigWeights({ workerPool, toSpawn, configs }) {
+    if (!this.providerConfig.spotPlacementScore) {
+      return configs;
+    }
+    return this.spotPlacementScores.adjustWeights({ workerPoolId: workerPool.workerPoolId, toSpawn, configs });
   }
 
   /**
