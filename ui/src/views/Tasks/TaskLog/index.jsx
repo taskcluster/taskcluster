@@ -49,6 +49,8 @@ export default class TaskLog extends Component {
     forceSign: false,
   };
 
+  logUrl = { deps: [], url: null };
+
   // Guards against out-of-order responses when the task ID changes while a
   // fetch is in flight, and against updating state after unmounting.
   requestId = 0;
@@ -136,6 +138,30 @@ export default class TaskLog extends Component {
     });
   }
 
+  getStableLogUrl() {
+    const {
+      user,
+      anonymousScopes,
+      match: {
+        params: { taskId, runId },
+      },
+    } = this.props;
+    const deps = [
+      taskId,
+      runId,
+      this.getLogName(),
+      this.state.forceSign,
+      user?.credentials?.clientId,
+      anonymousScopes,
+    ];
+
+    if (deps.some((dep, i) => dep !== this.logUrl.deps[i])) {
+      this.logUrl = { deps, url: this.getLogUrl() };
+    }
+
+    return this.logUrl.url;
+  }
+
   handleLogError = error => {
     const { user, anonymousScopes } = this.props;
 
@@ -151,6 +177,10 @@ export default class TaskLog extends Component {
     }
   };
 
+  handleHashChange = hash => {
+    this.props.history.replace({ hash });
+  };
+
   goToLog() {
     // as log url contains bewit, the link could expire
     // raw logs will be opened in new tab/window
@@ -160,9 +190,9 @@ export default class TaskLog extends Component {
   }
 
   render() {
-    const { classes, match, stream, anonymousScopesLoaded } = this.props;
+    const { classes, match, location, anonymousScopesLoaded } = this.props;
     const { task } = this.state;
-    const url = this.getLogUrl();
+    const url = this.getStableLogUrl();
     const run = this.getCurrentRun();
 
     if (!url) {
@@ -188,7 +218,8 @@ export default class TaskLog extends Component {
         ) : (
           <Log
             url={url}
-            stream={stream}
+            hash={location.hash}
+            onHashChange={this.handleHashChange}
             onError={this.handleLogError}
             actions={
               <Fragment>
