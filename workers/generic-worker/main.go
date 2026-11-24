@@ -496,6 +496,12 @@ func RunWorker() (exitCode ExitCode) {
 		return REBOOT_REQUIRED
 	}
 
+	// Warn after any setup reboot, and only before the first task, so
+	// workers that reboot between tasks warn just once.
+	if tasksResolved == 0 {
+		warnIfIdleTimeoutIgnored()
+	}
+
 	// Initial cleanup of old task directories
 	purgeOldTasks(taskManager.RunningTaskDirNames()...)
 
@@ -852,6 +858,23 @@ type taskCompletionResult struct {
 // should-worker-terminate capability for providers where it does.
 func managedByWorkerManager() bool {
 	return withWorkerRunner && WorkerRunnerProtocol.Capable("should-worker-terminate")
+}
+
+// warnIfIdleTimeoutIgnored logs a warning if idleTimeoutSecs is set, since it
+// has no effect when Worker Manager decides termination. It is only logged,
+// not reported as a worker pool error, since Worker Manager counts those
+// against the launch config.
+func warnIfIdleTimeoutIgnored() {
+	if config.IdleTimeoutSecs == 0 || !managedByWorkerManager() {
+		return
+	}
+	log.Printf(
+		"WARNING: idleTimeoutSecs is set to %d but has no effect, since Worker Manager decides when this worker terminates. "+
+			"Remove idleTimeoutSecs from the worker config. "+
+			"To keep workers running when there are few tasks, set the worker pool's minCapacity instead. "+
+			"See https://docs.taskcluster.net/docs/reference/core/worker-manager/worker-interaction#worker-termination",
+		config.IdleTimeoutSecs,
+	)
 }
 
 func checkWhetherToTerminate() bool {
