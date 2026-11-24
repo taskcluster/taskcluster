@@ -1,23 +1,10 @@
-import { alpha } from '@mui/material/styles';
 import GestureTapIcon from 'mdi-react/GestureTapIcon';
 import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
 import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
 import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import FileDocumentIcon from 'mdi-react/FileDocumentIcon';
-import FilePdfIcon from 'mdi-react/FilePdfIcon';
-import ArchiveIcon from 'mdi-react/ArchiveIcon';
-import FileWordIcon from 'mdi-react/FileWordIcon';
-import FileExcelIcon from 'mdi-react/FileExcelIcon';
-import FilePowerpointIcon from 'mdi-react/FilePowerpointIcon';
-import FileCodeIcon from 'mdi-react/FileCodeIcon';
-import FileVideoIcon from 'mdi-react/FileVideoIcon';
-import FileImageIcon from 'mdi-react/FileImageIcon';
-import FileMusicIcon from 'mdi-react/FileMusicIcon';
-import FileIcon from 'mdi-react/FileIcon';
 import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
-import { join } from 'path';
 
 export const ARTIFACTS_SHOW_MAX = 10;
 export const ARTIFACTS_PAGE_SIZE = 1000;
@@ -37,17 +24,10 @@ export const VIEW_DENYLIST_PAGE_SIZE = 20;
 export const VIEW_NAMESPACES_PAGE_SIZE = 20;
 export const VIEW_CACHE_PURGES_PAGE_SIZE = 1000;
 export const DASHBOARD_STATS_PAGE_SIZE = 1000;
-export const HOOKS_LAST_FIRE_TYPE = {
-  NO_FIRE: 'NoFire',
-  SUCCESSFUL_FIRE: 'HookSuccessfulFire',
-  FAILED_FIRE: 'HookFailedFire',
-};
 
 export const THEME = {
-  WHITE: '#fff',
-  BLACK: '#000',
-  TEN_PERCENT_WHITE: alpha('#fff', 0.1),
-  TEN_PERCENT_BLACK: alpha('#000', 0.1),
+  TEN_PERCENT_WHITE: 'rgba(255, 255, 255, 0.1)',
+  TEN_PERCENT_BLACK: 'rgba(0, 0, 0, 0.1)',
   DARK_THEME_BACKGROUND: '#12202c',
   PRIMARY_DARK: '#1b2a39',
   PRIMARY_LIGHT: '#fafafa',
@@ -57,7 +37,6 @@ export const THEME = {
   SECONDARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.7)',
   SECONDARY: '#4177a5',
   DRAWER_WIDTH: 240,
-  DIVIDER: 'rgba(0, 0, 0, 0.12)',
   TONAL_OFFSET: 0.2,
 };
 export const CONTENT_MAX_WIDTH = 2000;
@@ -65,7 +44,7 @@ export const CONTENT_MAX_WIDTH = 2000;
 export const VALID_TASK =
   /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';
-export const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+export const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 export const TASK_STATE = {
   COMPLETED: 'COMPLETED',
   RUNNING: 'RUNNING',
@@ -83,57 +62,10 @@ const SECOND = 1000;
 
 export const INTERACTIVE_CONNECT_TASK_POLL_INTERVAL = 10 * SECOND;
 export const TASK_POLL_INTERVAL = 60 * SECOND;
-export const VNC_DISPLAYS_POLLING_INTERVAL = 10 * SECOND;
-export const INITIAL_CURSOR = '$$FIRST$$';
 export const INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES = {
   groupNotifyTaskFailed: false,
   groupNotifySuccess: false,
 };
-export const MIMETYPE_ICONS = [
-  [FilePdfIcon, ['application/pdf', 'application/postscript']],
-  [
-    ArchiveIcon,
-    [
-      'application/zip',
-      'application/gzip',
-      'application/x-tar',
-      'application/x-gzip',
-      'application/x-bzip2',
-      'application/x-lzip',
-      'application/x-lzma',
-      'application/x-lzop',
-      'application/x-xz',
-      'application/x-compress',
-      'application/x-apple-diskimage',
-      'application/vnd.ms-cab-compressed',
-      'application/vnd.android.package-archive',
-      'application/x-gtar',
-      /compressed/,
-      /tar/,
-      /zip/,
-    ],
-  ],
-  [FileWordIcon, ['text/rtf', 'text/html']],
-  [FileExcelIcon, ['text/csv']],
-  [FilePowerpointIcon, []],
-  [
-    FileCodeIcon,
-    [
-      'application/javascript',
-      'application/json',
-      'application/xml',
-      'text/css',
-      'text/javascript',
-      'text/xml',
-      'application/ecmascript',
-    ],
-  ],
-  [FileVideoIcon, [/^video\//]],
-  [FileImageIcon, [/^image\//]],
-  [FileDocumentIcon, [/^text\//]],
-  [FileMusicIcon, [/^audio\//]],
-  [FileIcon, [/.*/]],
-];
 export const TASK_ADDED_FIELDS = [
   'taskId',
   'decisionTask',
@@ -151,37 +83,37 @@ export const DOCS_MENU_ITEMS = [
   },
   {
     label: 'Tutorial',
-    path: join(DOCS_PATH_PREFIX, 'tutorial'),
+    path: `${DOCS_PATH_PREFIX}/tutorial`,
     hasChildren: false,
     icon: OneTwoThreeIcon,
   },
   {
     label: 'Manual',
-    path: join(DOCS_PATH_PREFIX, 'manual'),
+    path: `${DOCS_PATH_PREFIX}/manual`,
     hasChildren: true,
     icon: BookOpenVariantIcon,
   },
   {
     label: 'Reference',
-    path: join(DOCS_PATH_PREFIX, 'reference'),
+    path: `${DOCS_PATH_PREFIX}/reference`,
     hasChildren: true,
     icon: BookOpenOutlineIcon,
   },
   {
     label: 'People',
-    path: join(DOCS_PATH_PREFIX, 'people'),
+    path: `${DOCS_PATH_PREFIX}/people`,
     hasChildren: false,
     icon: AccountHeartOutlineIcon,
   },
   {
     label: 'Resources',
-    path: join(DOCS_PATH_PREFIX, 'resources'),
+    path: `${DOCS_PATH_PREFIX}/resources`,
     hasChildren: false,
     icon: OpenInNewIcon,
   },
   {
     label: 'Changelog',
-    path: join(DOCS_PATH_PREFIX, 'changelog'),
+    path: `${DOCS_PATH_PREFIX}/changelog`,
     hasChildren: false,
     icon: ListStatusIcon,
   },
@@ -195,7 +127,6 @@ export const DENYLIST_NOTIFICATION_TYPES = {
   SLACK_CHANNEL: 'slack-channel',
 };
 
-export const KNOWN_ACRONYMS = ['IRC', 'API'];
 export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 export const AUTH_STARTED = '@@TASKCLUSTER_AUTH_STARTED';
 export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';

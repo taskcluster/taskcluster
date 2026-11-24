@@ -9,7 +9,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import { notificationAddress, pagination } from '../../utils/prop-types';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
-import titleCase from '../../utils/titleCase';
+import { titleCase } from 'title-case';
 import PaginatedDataTable from '../PaginatedDataTable';
 
 const tableHeaders = ['Address', 'Type'];
