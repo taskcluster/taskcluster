@@ -5,7 +5,6 @@ import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
-import { join } from 'path';
 
 export const ARTIFACTS_SHOW_MAX = 10;
 export const ARTIFACTS_PAGE_SIZE = 1000;
@@ -84,37 +83,37 @@ export const DOCS_MENU_ITEMS = [
   },
   {
     label: 'Tutorial',
-    path: join(DOCS_PATH_PREFIX, 'tutorial'),
+    path: `${DOCS_PATH_PREFIX}/tutorial`,
     hasChildren: false,
     icon: OneTwoThreeIcon,
   },
   {
     label: 'Manual',
-    path: join(DOCS_PATH_PREFIX, 'manual'),
+    path: `${DOCS_PATH_PREFIX}/manual`,
     hasChildren: true,
     icon: BookOpenVariantIcon,
   },
   {
     label: 'Reference',
-    path: join(DOCS_PATH_PREFIX, 'reference'),
+    path: `${DOCS_PATH_PREFIX}/reference`,
     hasChildren: true,
     icon: BookOpenOutlineIcon,
   },
   {
     label: 'People',
-    path: join(DOCS_PATH_PREFIX, 'people'),
+    path: `${DOCS_PATH_PREFIX}/people`,
     hasChildren: false,
     icon: AccountHeartOutlineIcon,
   },
   {
     label: 'Resources',
-    path: join(DOCS_PATH_PREFIX, 'resources'),
+    path: `${DOCS_PATH_PREFIX}/resources`,
     hasChildren: false,
     icon: OpenInNewIcon,
   },
   {
     label: 'Changelog',
-    path: join(DOCS_PATH_PREFIX, 'changelog'),
+    path: `${DOCS_PATH_PREFIX}/changelog`,
     hasChildren: false,
     icon: ListStatusIcon,
   },
