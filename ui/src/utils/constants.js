@@ -37,15 +37,8 @@ export const VIEW_DENYLIST_PAGE_SIZE = 20;
 export const VIEW_NAMESPACES_PAGE_SIZE = 20;
 export const VIEW_CACHE_PURGES_PAGE_SIZE = 1000;
 export const DASHBOARD_STATS_PAGE_SIZE = 1000;
-export const HOOKS_LAST_FIRE_TYPE = {
-  NO_FIRE: 'NoFire',
-  SUCCESSFUL_FIRE: 'HookSuccessfulFire',
-  FAILED_FIRE: 'HookFailedFire',
-};
 
 export const THEME = {
-  WHITE: '#fff',
-  BLACK: '#000',
   TEN_PERCENT_WHITE: alpha('#fff', 0.1),
   TEN_PERCENT_BLACK: alpha('#000', 0.1),
   DARK_THEME_BACKGROUND: '#12202c',
@@ -57,7 +50,6 @@ export const THEME = {
   SECONDARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.7)',
   SECONDARY: '#4177a5',
   DRAWER_WIDTH: 240,
-  DIVIDER: 'rgba(0, 0, 0, 0.12)',
   TONAL_OFFSET: 0.2,
 };
 export const CONTENT_MAX_WIDTH = 2000;
@@ -83,8 +75,6 @@ const SECOND = 1000;
 
 export const INTERACTIVE_CONNECT_TASK_POLL_INTERVAL = 10 * SECOND;
 export const TASK_POLL_INTERVAL = 60 * SECOND;
-export const VNC_DISPLAYS_POLLING_INTERVAL = 10 * SECOND;
-export const INITIAL_CURSOR = '$$FIRST$$';
 export const INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES = {
   groupNotifyTaskFailed: false,
   groupNotifySuccess: false,
