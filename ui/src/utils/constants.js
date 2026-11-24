@@ -127,7 +127,6 @@ export const DENYLIST_NOTIFICATION_TYPES = {
   SLACK_CHANNEL: 'slack-channel',
 };
 
-export const KNOWN_ACRONYMS = ['IRC', 'API'];
 export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 export const AUTH_STARTED = '@@TASKCLUSTER_AUTH_STARTED';
 export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';

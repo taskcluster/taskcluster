@@ -12,7 +12,7 @@ import TextField from '@mui/material/TextField';
 import DialogAction from '../DialogAction';
 import { notificationAddress as address } from '../../utils/prop-types';
 import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';
-import titleCase from '../../utils/titleCase';
+import { titleCase } from 'title-case';
 import Button from '../Button';
 
 @withStyles(theme => ({
