@@ -1,4 +1,3 @@
-import { alpha } from '@mui/material/styles';
 import GestureTapIcon from 'mdi-react/GestureTapIcon';
 import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
 import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
@@ -28,8 +27,8 @@ export const VIEW_CACHE_PURGES_PAGE_SIZE = 1000;
 export const DASHBOARD_STATS_PAGE_SIZE = 1000;
 
 export const THEME = {
-  TEN_PERCENT_WHITE: alpha('#fff', 0.1),
-  TEN_PERCENT_BLACK: alpha('#000', 0.1),
+  TEN_PERCENT_WHITE: 'rgba(255, 255, 255, 0.1)',
+  TEN_PERCENT_BLACK: 'rgba(0, 0, 0, 0.1)',
   DARK_THEME_BACKGROUND: '#12202c',
   PRIMARY_DARK: '#1b2a39',
   PRIMARY_LIGHT: '#fafafa',
