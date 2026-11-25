@@ -115,6 +115,7 @@ describe('task details', () => {
       <MemoryRouter>
         <TaskLog
           classes={{}}
+          location={{ hash: '' }}
           anonymousScopesLoaded
           match={{
             params: { taskId, runId: '1', name: 'public/logs/live.log' },
@@ -164,4 +165,39 @@ describe('task details', () => {
       )
     );
   });
+});
+
+it('keeps the signed log URL across re-renders', () => {
+  const now = Date.now();
+  const props = {
+    classes: {},
+    anonymousScopesLoaded: true,
+    anonymousScopes: null,
+    user: { credentials: { clientId: 'me', accessToken: 'secret' } },
+    match: { params: { taskId, runId: '0', name: 'private/logs/live.log' } },
+    createTaskclusterClient: () => ({
+      task: () => new Promise(() => {}),
+      status: () => new Promise(() => {}),
+    }),
+  };
+
+  try {
+    const { rerender } = render(
+      <MemoryRouter>
+        <TaskLog {...props} location={{ hash: '' }} />
+      </MemoryRouter>
+    );
+    const url = screen.getByTestId('log').textContent;
+
+    expect(url).toContain('bewit=');
+    vi.setSystemTime(now + 5000);
+    rerender(
+      <MemoryRouter>
+        <TaskLog {...props} location={{ hash: '#L3' }} />
+      </MemoryRouter>
+    );
+    expect(screen.getByTestId('log').textContent).toBe(url);
+  } finally {
+    vi.setSystemTime(now);
+  }
 });

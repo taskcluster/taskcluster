@@ -336,7 +336,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/search@npm:^6.0.0":
+"@codemirror/search@npm:^6.0.0, @codemirror/search@npm:^6.7.2":
   version: 6.7.2
   resolution: "@codemirror/search@npm:6.7.2"
   dependencies:
@@ -758,15 +758,6 @@ __metadata:
   version: 1.0.4
   resolution: "@marijn/find-cluster-break@npm:1.0.4"
   checksum: 10c0/6b3dc07fbccacad4cb58029bae59a106dd51be91a15b2810a62e4bf7adc633091eb0a23619f4da7f83f8b52c739b6f5674e8204883d1b34798df9bbf8f472df6
-  languageName: node
-  linkType: hard
-
-"@mattiasbuelens/web-streams-polyfill@npm:^0.2.0":
-  version: 0.2.1
-  resolution: "@mattiasbuelens/web-streams-polyfill@npm:0.2.1"
-  dependencies:
-    "@types/whatwg-streams": "npm:^0.0.7"
-  checksum: 10c0/07bdb6508b5bcf5c537ac0a1736a1956a30f3d5fe39e21d630688a6b07cc0f35a4cbd63c7be3bfac55e1d56827f32828fb910d60a21f938020111ae3700b6121
   languageName: node
   linkType: hard
 
@@ -1249,6 +1240,7 @@ __metadata:
     "@codemirror/lang-yaml": "npm:^6.1.3"
     "@codemirror/language": "npm:^6.13.1"
     "@codemirror/lint": "npm:^6.9.8"
+    "@codemirror/search": "npm:^6.7.2"
     "@codemirror/state": "npm:^6.7.6"
     "@codemirror/view": "npm:^6.43.15"
     "@emotion/react": "npm:^11.14.0"
@@ -1306,7 +1298,6 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-error-boundary: "npm:^3.1.4"
     react-helmet-async: "npm:^3.0.0"
-    react-lazylog: "npm:^4.5.1"
     react-router-dom: "npm:^5.3.4"
     react-virtualized: "npm:^9.22.6"
     react-window: "npm:^1.8.10"
@@ -1501,13 +1492,6 @@ __metadata:
   version: 2.0.6
   resolution: "@types/unist@npm:2.0.6"
   checksum: 10c0/8690789328e8e10c487334341fcf879fd49f8987c98ce49849f9871052f95d87477735171bb661e6f551bdb95235e015dfdad1867ca1d9b5b88a053f72ac40eb
-  languageName: node
-  linkType: hard
-
-"@types/whatwg-streams@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "@types/whatwg-streams@npm:0.0.7"
-  checksum: 10c0/f61362bfe9b2e62c8e9504f7a0ab7a8da767766de1e968a19edb47b3ea46d3cdbbde9ab4457b10fc89123c46338f66a4fa9b008964c39004012ee2aba7043524
   languageName: node
   linkType: hard
 
@@ -2868,13 +2852,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fetch-readablestream@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "fetch-readablestream@npm:0.2.0"
-  checksum: 10c0/5099b30d88160a57e3158c5254302be2fb00f245e44d70af5c7a7ce55ae56d39a9b8587cc6d4b544de8260e62ed87dce17646542efae1e6f9bb2086ced2259f4
-  languageName: node
-  linkType: hard
-
 "filter-obj@npm:^6.1.0":
   version: 6.1.0
   resolution: "filter-obj@npm:6.1.0"
@@ -3260,13 +3237,6 @@ __metadata:
   version: 3.0.6
   resolution: "immediate@npm:3.0.6"
   checksum: 10c0/f8ba7ede69bee9260241ad078d2d535848745ff5f6995c7c7cb41cfdc9ccc213f66e10fa5afb881f90298b24a3f7344b637b592beb4f54e582770cdce3f1f039
-  languageName: node
-  linkType: hard
-
-"immutable@npm:^3.8.2":
-  version: 3.8.4
-  resolution: "immutable@npm:3.8.4"
-  checksum: 10c0/fffbd0bf4ecf6cfed6b3444d2da740f171dd7c228d913d2cc81fc2782c10df0f6f7d822c926d38dd5fb5d91fcfce5c5482a8027817f07a5ed870b057271a3b8a
   languageName: node
   linkType: hard
 
@@ -3778,7 +3748,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.23, lodash@npm:^4.17.4":
+"lodash@npm:^4.17.23":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
@@ -4650,13 +4620,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mitt@npm:^1.1.2":
-  version: 1.2.0
-  resolution: "mitt@npm:1.2.0"
-  checksum: 10c0/81a0f22b7ac1a0ab5f17489e811641ad589b5e9d2a46a25adac19c8c0ba9c3b50bef7b287582357de25eaa0a47e5d4ced63ea8b8641ba6ca1d1f39d3ec47bb11
-  languageName: node
-  linkType: hard
-
 "mitt@npm:^3.0.1":
   version: 3.0.1
   resolution: "mitt@npm:3.0.1"
@@ -5076,7 +5039,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -5286,25 +5249,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-lazylog@npm:^4.5.1":
-  version: 4.5.3
-  resolution: "react-lazylog@npm:4.5.3"
-  dependencies:
-    "@mattiasbuelens/web-streams-polyfill": "npm:^0.2.0"
-    fetch-readablestream: "npm:^0.2.0"
-    immutable: "npm:^3.8.2"
-    mitt: "npm:^1.1.2"
-    prop-types: "npm:^15.6.1"
-    react-string-replace: "npm:^0.4.1"
-    react-virtualized: "npm:^9.21.0"
-    text-encoding-utf-8: "npm:^1.0.1"
-    whatwg-fetch: "npm:^2.0.4"
-  peerDependencies:
-    react: ">=16.3.0"
-  checksum: 10c0/93a694ad64ec656272b4c4d16b3e7b4811aa3cdf92a39b3b87b6e90d2216013488dc5f5a8eddcc4d61e9351751cbe4941d45d38a62aabf01822272092408d168
-  languageName: node
-  linkType: hard
-
 "react-lifecycles-compat@npm:^3.0.4":
   version: 3.0.4
   resolution: "react-lifecycles-compat@npm:3.0.4"
@@ -5348,15 +5292,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-string-replace@npm:^0.4.1":
-  version: 0.4.4
-  resolution: "react-string-replace@npm:0.4.4"
-  dependencies:
-    lodash: "npm:^4.17.4"
-  checksum: 10c0/a9b78f552e3646ae65a64410c226818ac9e4667d2cefe1a4f5e101d8c3c48bdcd9c9064f6c6e852d594102c2192af635d8ad7a683019b05e2b26579f824b9d2e
-  languageName: node
-  linkType: hard
-
 "react-transition-group@npm:^4.4.5":
   version: 4.4.5
   resolution: "react-transition-group@npm:4.4.5"
@@ -5372,7 +5307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtualized@npm:^9.21.0, react-virtualized@npm:^9.22.6":
+"react-virtualized@npm:^9.22.6":
   version: 9.22.6
   resolution: "react-virtualized@npm:9.22.6"
   dependencies:
@@ -6038,13 +5973,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"text-encoding-utf-8@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "text-encoding-utf-8@npm:1.0.2"
-  checksum: 10c0/87a64b394c850e8387c2ca7fc6929a26ce97fb598f1c55cd0fdaec4b8e2c3ed6770f65b2f3309c9175ef64ac5e403c8e48b53ceeb86d2897940c5e19cc00bb99
-  languageName: node
-  linkType: hard
-
 "timers-browserify@npm:^2.0.4":
   version: 2.0.12
   resolution: "timers-browserify@npm:2.0.12"
@@ -6677,13 +6605,6 @@ __metadata:
   version: 8.0.1
   resolution: "webidl-conversions@npm:8.0.1"
   checksum: 10c0/3f6f327ca5fa0c065ed8ed0ef3b72f33623376e68f958e9b7bd0df49fdb0b908139ac2338d19fb45bd0e05595bda96cb6d1622222a8b413daa38a17aacc4dd46
-  languageName: node
-  linkType: hard
-
-"whatwg-fetch@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "whatwg-fetch@npm:2.0.4"
-  checksum: 10c0/bf2bc1617218c63f2be86edefb95ac5e7f967ae402e468ed550729436369725c3b03a5d1110f62ea789b6f7f399969b1ef720b0bb04e8947fdf94eab7ffac829
   languageName: node
   linkType: hard
 
