@@ -1,7 +1,6 @@
 import React from 'react';
 import { node, string } from 'prop-types';
 import withStyles from '../../utils/withStyles';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@mui/material/TableCell';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
@@ -16,12 +15,18 @@ const styles = theme => ({
 });
 
 function CopyToClipboardTableCell(props) {
-  const { isCopy, onCopyClick } = useCopyToClipboard();
+  const { isCopy, copy } = useCopyToClipboard();
   const { classes, textToCopy, tooltipTitle = textToCopy, text } = props;
   const iconSize = 16;
   const copyable = Boolean(textToCopy);
-  const cell = (
-    <TableCell>
+  const copyLabel = isCopy ? 'Copied!' : 'Copy';
+
+  return (
+    <TableCell
+      {...(copyable && {
+        title: tooltipTitle ? `${tooltipTitle} (${copyLabel})` : copyLabel,
+        onClick: () => copy(textToCopy),
+      })}>
       <TableCellItem button={copyable}>
         {text}
         {copyable && (
@@ -35,21 +40,6 @@ function CopyToClipboardTableCell(props) {
         )}
       </TableCellItem>
     </TableCell>
-  );
-
-  if (!copyable) {
-    return cell;
-  }
-
-  const copyLabel = isCopy ? 'Copied!' : 'Copy';
-
-  return (
-    <CopyToClipboard
-      onCopy={onCopyClick}
-      title={tooltipTitle ? `${tooltipTitle} (${copyLabel})` : copyLabel}
-      text={textToCopy}>
-      {cell}
-    </CopyToClipboard>
   );
 }
 

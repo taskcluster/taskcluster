@@ -1,6 +1,5 @@
 import React from 'react';
 import { node, string, object } from 'prop-types';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { makeStyles } from 'tss-react/mui';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -17,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
 
 function CopyToClipboardListItem(props) {
   const { classes } = useStyles();
-  const { isCopy, onCopyClick } = useCopyToClipboard();
+  const { isCopy, copy } = useCopyToClipboard();
   const {
     textToCopy,
     tooltipTitle = textToCopy,
@@ -28,10 +27,16 @@ function CopyToClipboardListItem(props) {
   } = props;
 
   const copyable = Boolean(textToCopy);
+  const copyLabel = isCopy ? 'Copied!' : 'Copy';
   const Item = copyable ? ListItemButton : ListItem;
-  const item = (
+
+  return (
     <Item
       classes={copyable ? { root: classes.listItemButtonRoot } : undefined}
+      {...(copyable && {
+        title: tooltipTitle ? `${tooltipTitle} (${copyLabel})` : copyLabel,
+        onClick: () => copy(textToCopy),
+      })}
       {...listItemProps}>
       <ListItemText
         primary={primary}
@@ -40,21 +45,6 @@ function CopyToClipboardListItem(props) {
       />
       {copyable && (isCopy ? <CheckIcon /> : <ContentCopyIcon />)}
     </Item>
-  );
-
-  if (!copyable) {
-    return item;
-  }
-
-  const copyLabel = isCopy ? 'Copied!' : 'Copy';
-
-  return (
-    <CopyToClipboard
-      onCopy={onCopyClick}
-      title={tooltipTitle ? `${tooltipTitle} (${copyLabel})` : copyLabel}
-      text={textToCopy}>
-      {item}
-    </CopyToClipboard>
   );
 }
 
