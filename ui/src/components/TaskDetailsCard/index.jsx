@@ -269,7 +269,7 @@ export default class TaskDetailsCard extends Component {
                       disableTypography
                       primary={
                         <JsonDisplay
-                          wrapperClassName={classes.payload}
+                          className={classes.payload}
                           syntax="yaml"
                           objectContent={payload}
                         />

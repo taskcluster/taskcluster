@@ -423,7 +423,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                               class="MuiListItemText-root css-cfq8qh-MuiListItemText-root"
                             >
                               <div
-                                class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-d64g0g-MuiGrid-root"
+                                class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-wjsns7-MuiGrid-root"
                               >
                                 <div
                                   class="MuiTypography-root MuiTypography-body1 css-5ymzsq-MuiTypography-root"
@@ -467,38 +467,25 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                     </div>
                                   </label>
                                 </div>
-                                <div
-                                  class="MuiGrid-root MuiGrid-direction-xs-row css-17fpwt7-MuiGrid-root"
+                                <button
+                                  aria-label="copy to clipboard"
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ijjcdo-MuiButtonBase-root-MuiIconButton-root"
+                                  tabindex="0"
+                                  title="Copy"
+                                  type="button"
                                 >
-                                  <div
-                                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
-                                    role="button"
-                                    tabindex="0"
-                                    title="Copy"
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
                                   >
-                                    <div
-                                      class="MuiListItemText-root css-cfq8qh-MuiListItemText-root"
-                                    >
-                                      <span
-                                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-5ymzsq-MuiTypography-root"
-                                      />
-                                      <p
-                                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-1y00ooy-MuiTypography-root"
-                                      />
-                                    </div>
-                                    <svg
-                                      class="mdi-icon "
-                                      fill="currentColor"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      width="24"
-                                    >
-                                      <path
-                                        d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
-                                      />
-                                    </svg>
-                                  </div>
-                                </div>
+                                    <path
+                                      d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                                    />
+                                  </svg>
+                                </button>
                               </div>
                               <pre
                                 class="language-yaml css-15775ti-TaskDetailsCard-payload"

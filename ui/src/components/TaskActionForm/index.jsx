@@ -80,7 +80,7 @@ export default class TaskActionForm extends Component {
               </Typography>
               <JsonDisplay
                 syntax="yaml"
-                wrapperClassName={classes.code}
+                className={classes.code}
                 objectContent={action.schema || {}}
               />
             </Grid>

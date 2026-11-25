@@ -559,7 +559,7 @@ export default class TcYamlDebug extends Component {
                 />
                 {scopes?.length ? (
                   <JsonDisplay
-                    wrapperClassName={classes.scopes}
+                    className={classes.scopes}
                     syntax="yaml"
                     objectContent={{ scopes }}
                   />
