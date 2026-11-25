@@ -26,7 +26,6 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '../Label';
 import Button from '../Button';
 import PaginatedDataTable from '../PaginatedDataTable';
@@ -38,6 +37,7 @@ import getIconFromMime from '../../utils/getIconFromMime';
 import { ARTIFACTS_PAGE_SIZE, ARTIFACTS_SHOW_MAX } from '../../utils/constants';
 import { artifact, pagination, runs } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
+import useCopyToClipboard from '../../utils/useCopyToClipboard';
 import { withAnonymousScopes } from '../../utils/anonymousScopes';
 import { getArtifactUrl } from '../../utils/getArtifactUrl';
 import { buildLogViewerUrl } from '../../utils/artifactNames';
@@ -47,6 +47,19 @@ import Link from '../../utils/Link';
 import { sortArtifacts } from './sort';
 
 const DOTS_VARIANT_LIMIT = 5;
+
+function CopyArtifactUrlCell({ className, url }) {
+  const { isCopy, copy } = useCopyToClipboard();
+
+  return (
+    <TableCell
+      className={className}
+      title={`Artifact URL (${isCopy ? 'Copied!' : 'Copy'})`}
+      onClick={() => copy(url)}>
+      {isCopy ? <CheckIcon /> : <ContentCopyIcon />}
+    </TableCell>
+  );
+}
 
 @withRouter
 @withAuth
@@ -189,10 +202,6 @@ export default class TaskRunsCard extends Component {
     hasPreviousPage: false,
   };
 
-  state = {
-    isCopy: {},
-  };
-
   getCurrentRun() {
     return this.props.runs[this.props.selectedRunId];
   }
@@ -288,24 +297,8 @@ export default class TaskRunsCard extends Component {
     );
   };
 
-  onCopyClick(url) {
-    this.setState({
-      isCopy: {
-        [url]: true,
-      },
-    });
-    setTimeout(() => {
-      this.setState({
-        isCopy: {
-          [url]: false,
-        },
-      });
-    }, 3000);
-  }
-
   renderArtifactRow({ artifact }) {
     const { classes } = this.props;
-    const { isCopy } = this.state;
     const { name } = artifact;
     const isError = artifact.storageType === 'error';
     const {
@@ -360,16 +353,14 @@ export default class TaskRunsCard extends Component {
             )}
           </Link>
         </TableCell>
-        <TableCell className={classNames(classes.copyButton)}>
-          {!isError && (
-            <CopyToClipboard
-              onCopy={() => this.onCopyClick(url)}
-              title={`Artifact URL (${isCopy ? 'Copied!' : 'Copy'})`}
-              text={artifactUrl.toString()}>
-              {isCopy[url] ? <CheckIcon /> : <ContentCopyIcon />}
-            </CopyToClipboard>
-          )}
-        </TableCell>
+        {isError ? (
+          <TableCell className={classes.copyButton} />
+        ) : (
+          <CopyArtifactUrlCell
+            className={classes.copyButton}
+            url={artifactUrl.toString()}
+          />
+        )}
       </TableRow>
     );
   }

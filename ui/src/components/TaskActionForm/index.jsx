@@ -9,13 +9,24 @@ import ErrorPanel from '../ErrorPanel';
 import Markdown from '../Markdown';
 
 @withStyles(theme => ({
-  code: {
-    maxHeight: '70vh',
-    margin: 0,
+  panels: {
+    [theme.breakpoints.up('md')]: {
+      flex: 1,
+      minHeight: 400,
+    },
   },
-  codeEditor: {
+  panel: {
+    display: 'flex',
+    flexDirection: 'column',
+    [theme.breakpoints.up('md')]: {
+      height: '100%',
+    },
+  },
+  panelContent: {
+    flex: 1,
+    minHeight: 0,
     overflow: 'auto',
-    maxHeight: '70vh',
+    margin: 0,
   },
   description: {
     marginBottom: theme.spacing(3),
@@ -29,19 +40,25 @@ export default class TaskActionForm extends Component {
   static propTypes = {
     // TODO: Replace with taskAction
     action: object.isRequired,
-    /** Action input form. */
+    /** Initial action input form. */
     form: string.isRequired,
     onFormChange: func.isRequired,
     /** An error object to display. */
     error: object,
   };
 
+  state = {
+    form: this.props.form,
+  };
+
   handleFormChange = value => {
+    this.setState({ form: value });
     this.props.onFormChange(value, this.props.action.name);
   };
 
   render() {
-    const { classes, action, form, error } = this.props;
+    const { classes, action, error } = this.props;
+    const { form } = this.state;
 
     return (
       <Fragment>
@@ -61,26 +78,26 @@ export default class TaskActionForm extends Component {
           )}
         </div>
         {action.schema && (
-          <Grid container spacing={2}>
-            <Grid size={{ sm: 12, md: 6, lg: 6 }}>
+          <Grid container spacing={2} className={classes.panels}>
+            <Grid size={{ sm: 12, md: 6, lg: 6 }} className={classes.panel}>
               <Typography gutterBottom variant="subtitle1">
                 Action
               </Typography>
               <CodeEditor
-                className={classes.codeEditor}
+                className={classes.panelContent}
                 mode="yaml"
                 lint
                 value={form}
                 onChange={this.handleFormChange}
               />
             </Grid>
-            <Grid size={{ sm: 12, md: 6, lg: 6 }}>
+            <Grid size={{ sm: 12, md: 6, lg: 6 }} className={classes.panel}>
               <Typography gutterBottom variant="subtitle1">
                 Schema
               </Typography>
               <JsonDisplay
                 syntax="yaml"
-                wrapperClassName={classes.code}
+                className={classes.panelContent}
                 objectContent={action.schema || {}}
               />
             </Grid>

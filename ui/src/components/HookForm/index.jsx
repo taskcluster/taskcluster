@@ -20,7 +20,6 @@ import Switch from '@mui/material/Switch';
 import { load, dump } from 'js-yaml';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
@@ -30,7 +29,6 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import CodeEditor from '../CodeEditor';
-import JsonDisplay from '../JsonDisplay';
 import TextField from '@mui/material/TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import ErrorPanel from '../ErrorPanel';
@@ -39,6 +37,7 @@ import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
+import HookTriggerDialog from './HookTriggerDialog';
 import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
 import HookBindingDebugger from '../HookBindingDebugger';
@@ -99,14 +98,6 @@ const initialHook = {
   },
   successIcon: {
     ...theme.mixins.successIcon,
-  },
-  code: {
-    maxHeight: '70vh',
-    margin: 0,
-  },
-  codeEditor: {
-    overflow: 'auto',
-    maxHeight: '70vh',
   },
   scheduleEntry: {
     paddingTop: 0,
@@ -227,7 +218,6 @@ export default class HookForm extends Component {
     previousHook: null,
     taskInput: '',
     triggerSchemaInput: '',
-    triggerContextInput: '',
     scheduleTextField: '',
     taskValidYaml: true,
     triggerSchemaValidYaml: true,
@@ -253,7 +243,6 @@ export default class HookForm extends Component {
       previousHook: props.hook,
       taskInput: dump(removeKeys(cloneDeep(hook.task), ['__typename'])),
       triggerSchemaInput: dump(hook.triggerSchema),
-      triggerContextInput: dump({}),
       scheduleTextField: '',
       taskValidYaml: true,
       triggerSchemaValidYaml: true,
@@ -377,24 +366,6 @@ export default class HookForm extends Component {
         taskValidYaml: false,
       });
     }
-  };
-
-  handleTriggerContextChange = triggerContextInput => {
-    this.setState({ triggerContextInput });
-  };
-
-  handleTriggerHookSubmit = () => {
-    const { onTriggerHook } = this.props;
-    const {
-      hook: { hookId, hookGroupId },
-      triggerContextInput,
-    } = this.state;
-
-    return onTriggerHook({
-      hookId,
-      hookGroupId,
-      payload: load(triggerContextInput, { schema: yamlSchema }),
-    });
   };
 
   handleTriggerSchemaChange = value => {
@@ -562,6 +533,7 @@ export default class HookForm extends Component {
       onDialogActionDeleteComplete,
       onDialogDeleteHook,
       onDialogOpen,
+      onTriggerHook,
       exchangesDictionary,
     } = this.props;
     const {
@@ -570,7 +542,6 @@ export default class HookForm extends Component {
       scheduleTextField,
       taskInput,
       triggerSchemaInput,
-      triggerContextInput,
       hook,
       hookLastFires,
       validation,
@@ -883,51 +854,24 @@ export default class HookForm extends Component {
             </SpeedDial>
           </Fragment>
         )}
-        {dialogOpen && (
-          <DialogAction
-            fullScreen
+        {!isNewHook && (
+          <HookTriggerDialog
+            key={`${hook.hookGroupId}/${hook.hookId}`}
             open={dialogOpen}
-            onSubmit={this.handleTriggerHookSubmit}
+            hookGroupId={hook.hookGroupId}
+            hookId={hook.hookId}
+            triggerSchema={hook.triggerSchema}
+            error={dialogError}
+            onTrigger={context =>
+              onTriggerHook({
+                hookGroupId: hook.hookGroupId,
+                hookId: hook.hookId,
+                payload: context,
+              })
+            }
             onComplete={onDialogActionClose}
             onClose={onDialogActionClose}
             onError={onDialogActionError}
-            error={dialogError}
-            confirmText="Trigger Hook"
-            body={
-              <Fragment>
-                <Typography variant="body2" gutterBottom>
-                  Trigger Hook{' '}
-                  <code>
-                    {hook.hookGroupId}/{hook.hookId}
-                  </code>{' '}
-                  with the following context:
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid size={{ sm: 12, md: 6, lg: 6 }}>
-                    <Typography gutterBottom variant="subtitle1">
-                      Context
-                    </Typography>
-                    <CodeEditor
-                      mode="yaml"
-                      lint
-                      className={classes.codeEditor}
-                      value={triggerContextInput}
-                      onChange={this.handleTriggerContextChange}
-                    />
-                  </Grid>
-                  <Grid size={{ sm: 12, md: 6, lg: 6 }}>
-                    <Typography gutterBottom variant="subtitle1">
-                      Schema
-                    </Typography>
-                    <JsonDisplay
-                      syntax="yaml"
-                      className={classes.code}
-                      objectContent={hook.triggerSchema}
-                    />
-                  </Grid>
-                </Grid>
-              </Fragment>
-            }
           />
         )}
         {deleteDialogOpen && (

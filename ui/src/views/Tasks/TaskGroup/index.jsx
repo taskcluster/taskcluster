@@ -220,6 +220,8 @@ export default class TaskGroup extends Component {
     this.tableUpdateTimer = null;
   }
 
+  editedActionInputs = {};
+
   state = {
     filter: null,
     groupActions: initialTaskGroupActions,
@@ -333,6 +335,7 @@ export default class TaskGroup extends Component {
       this.tableUpdateTimer = null;
     }
 
+    this.editedActionInputs = {};
     this.setState({
       loading: true,
       error: null,
@@ -437,6 +440,7 @@ export default class TaskGroup extends Component {
           }
         });
 
+      this.editedActionInputs = {};
       this.setState({ taskActions, groupActions, actionInputs, actionData });
     } catch (_error) {
       // a missing or malformed actions.json just means no in-tree actions
@@ -778,7 +782,7 @@ export default class TaskGroup extends Component {
 
       const { actionInputs, actionData, decisionTask, taskActions } =
         this.state;
-      const form = actionInputs[name];
+      const form = this.editedActionInputs[name] ?? actionInputs[name];
       const { action } = actionData[name];
       const taskId = await submitTaskAction({
         task: decisionTask,
@@ -797,13 +801,9 @@ export default class TaskGroup extends Component {
     }
   };
 
-  handleFormChange = (value, name) =>
-    this.setState({
-      actionInputs: {
-        ...this.state.actionInputs,
-        [name]: value,
-      },
-    });
+  handleFormChange = (value, name) => {
+    this.editedActionInputs[name] = value;
+  };
 
   handleStatusClick = async ({ currentTarget: { name } }) => {
     const filter = this.state.filter === name ? null : name;
@@ -1119,7 +1119,10 @@ export default class TaskGroup extends Component {
             body={
               <TaskActionForm
                 action={selectedAction}
-                form={actionInputs[selectedAction.name]}
+                form={
+                  this.editedActionInputs[selectedAction.name] ??
+                  actionInputs[selectedAction.name]
+                }
                 onFormChange={this.handleFormChange}
               />
             }

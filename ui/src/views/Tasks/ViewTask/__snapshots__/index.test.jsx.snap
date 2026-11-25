@@ -45,7 +45,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           Task "a task"
         </h6>
         <form
-          class="css-lsegtc-Search-root"
+          class="css-11ov2wd-Search-root"
         >
           <div
             class="MuiFormControl-root css-9l58fz-MuiFormControl-root-Search-formControl"
@@ -66,7 +66,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
               </svg>
             </div>
             <input
-              class="css-zg20v3-Search-input css-16-Search-input-ref"
+              class="css-zg20v3-Search-input css-15-Search-input-ref"
               id="adornment-search"
               placeholder="Search"
               spellcheck="false"
@@ -278,7 +278,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="bI8bvUB2SDmpHVqTUOFCWw (Copy)"
@@ -310,7 +310,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:00:00.000Z (Copy)"
@@ -423,7 +423,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                               class="MuiListItemText-root css-cfq8qh-MuiListItemText-root"
                             >
                               <div
-                                class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-d64g0g-MuiGrid-root"
+                                class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-row css-wjsns7-MuiGrid-root"
                               >
                                 <div
                                   class="MuiTypography-root MuiTypography-body1 css-5ymzsq-MuiTypography-root"
@@ -467,38 +467,25 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                     </div>
                                   </label>
                                 </div>
-                                <div
-                                  class="MuiGrid-root MuiGrid-direction-xs-row css-17fpwt7-MuiGrid-root"
+                                <button
+                                  aria-label="copy to clipboard"
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ef5da5-MuiButtonBase-root-MuiIconButton-root"
+                                  tabindex="0"
+                                  title="Copy"
+                                  type="button"
                                 >
-                                  <div
-                                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
-                                    role="button"
-                                    tabindex="0"
-                                    title="Copy"
+                                  <svg
+                                    class="mdi-icon "
+                                    fill="currentColor"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
                                   >
-                                    <div
-                                      class="MuiListItemText-root css-cfq8qh-MuiListItemText-root"
-                                    >
-                                      <span
-                                        class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary css-5ymzsq-MuiTypography-root"
-                                      />
-                                      <p
-                                        class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-1y00ooy-MuiTypography-root"
-                                      />
-                                    </div>
-                                    <svg
-                                      class="mdi-icon "
-                                      fill="currentColor"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      width="24"
-                                    >
-                                      <path
-                                        d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
-                                      />
-                                    </svg>
-                                  </div>
-                                </div>
+                                    <path
+                                      d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                                    />
+                                  </svg>
+                                </button>
                               </div>
                               <pre
                                 class="language-yaml css-15775ti-TaskDetailsCard-payload"
@@ -605,7 +592,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T03:00:00.000Z (Copy)"
@@ -637,7 +624,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="2027-08-30T03:00:00.000Z (Copy)"
@@ -1126,12 +1113,12 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                                     </td>
                                     <td
                                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-11hwl5q-MuiTableCell-root-TaskRunsCard-copyButton"
+                                      title="Artifact URL (Copy)"
                                     >
                                       <svg
                                         class="mdi-icon "
                                         fill="currentColor"
                                         height="24"
-                                        title="Artifact URL (Copied!)"
                                         viewBox="0 0 24 24"
                                         width="24"
                                       >
@@ -1173,7 +1160,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </li>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:02:00.000Z (Copy)"
@@ -1205,7 +1192,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:03:00.000Z (Copy)"
@@ -1337,7 +1324,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
                     </div>
                   </a>
                   <div
-                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+                    class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
                     role="button"
                     tabindex="0"
                     title="2026-08-30T00:23:00.000Z (Copy)"

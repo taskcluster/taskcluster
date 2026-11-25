@@ -101,7 +101,7 @@ export default class ScopesetExpander extends Component {
           className={classes.editor}
           onChange={this.handleScopesChange}
           placeholder="new-scope:for-something:*"
-          mode="scopemode"
+          mode="text"
           value={scopeText}
         />
         {scopes && (
