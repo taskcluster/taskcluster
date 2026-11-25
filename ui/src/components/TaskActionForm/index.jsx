@@ -40,19 +40,25 @@ export default class TaskActionForm extends Component {
   static propTypes = {
     // TODO: Replace with taskAction
     action: object.isRequired,
-    /** Action input form. */
+    /** Initial action input form. */
     form: string.isRequired,
     onFormChange: func.isRequired,
     /** An error object to display. */
     error: object,
   };
 
+  state = {
+    form: this.props.form,
+  };
+
   handleFormChange = value => {
+    this.setState({ form: value });
     this.props.onFormChange(value, this.props.action.name);
   };
 
   render() {
-    const { classes, action, form, error } = this.props;
+    const { classes, action, error } = this.props;
+    const { form } = this.state;
 
     return (
       <Fragment>

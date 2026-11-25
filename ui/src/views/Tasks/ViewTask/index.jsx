@@ -390,6 +390,7 @@ export default class ViewTask extends Component {
     const { actionData, actionInputs } = this.getTaskActionsData();
     const { action } = actionData[name];
 
+    this.editedFormInputs = actionInputs[name] ?? '';
     this.setState({
       dialogError: null,
       dialogOpen: true,
@@ -431,7 +432,6 @@ export default class ViewTask extends Component {
       const { getCredentials, match, taskResource, actionsResource } =
         this.props;
       const { taskActions, decisionTask } = actionsResource.data;
-      const { formInputs } = this.state;
       const { actionData } = this.getTaskActionsData();
       const { action } = actionData[name];
       const taskId = await submitTaskAction({
@@ -443,7 +443,7 @@ export default class ViewTask extends Component {
           decisionTask,
         },
         taskActions,
-        form: formInputs,
+        form: this.editedFormInputs,
         action,
         getCredentials,
       });
@@ -601,10 +601,9 @@ export default class ViewTask extends Component {
     this.handleEdit(task);
   };
 
-  handleFormChange = value =>
-    this.setState({
-      formInputs: value,
-    });
+  handleFormChange = value => {
+    this.editedFormInputs = value;
+  };
 
   handleOpenLogProfiler = () => {
     const { taskId } = this.props.match.params;
