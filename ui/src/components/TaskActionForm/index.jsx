@@ -9,13 +9,24 @@ import ErrorPanel from '../ErrorPanel';
 import Markdown from '../Markdown';
 
 @withStyles(theme => ({
-  code: {
-    maxHeight: '70vh',
-    margin: 0,
+  panels: {
+    [theme.breakpoints.up('md')]: {
+      flex: 1,
+      minHeight: 400,
+    },
   },
-  codeEditor: {
+  panel: {
+    display: 'flex',
+    flexDirection: 'column',
+    [theme.breakpoints.up('md')]: {
+      height: '100%',
+    },
+  },
+  panelContent: {
+    flex: 1,
+    minHeight: 0,
     overflow: 'auto',
-    maxHeight: '70vh',
+    margin: 0,
   },
   description: {
     marginBottom: theme.spacing(3),
@@ -61,26 +72,26 @@ export default class TaskActionForm extends Component {
           )}
         </div>
         {action.schema && (
-          <Grid container spacing={2}>
-            <Grid size={{ sm: 12, md: 6, lg: 6 }}>
+          <Grid container spacing={2} className={classes.panels}>
+            <Grid size={{ sm: 12, md: 6, lg: 6 }} className={classes.panel}>
               <Typography gutterBottom variant="subtitle1">
                 Action
               </Typography>
               <CodeEditor
-                className={classes.codeEditor}
+                className={classes.panelContent}
                 mode="yaml"
                 lint
                 value={form}
                 onChange={this.handleFormChange}
               />
             </Grid>
-            <Grid size={{ sm: 12, md: 6, lg: 6 }}>
+            <Grid size={{ sm: 12, md: 6, lg: 6 }} className={classes.panel}>
               <Typography gutterBottom variant="subtitle1">
                 Schema
               </Typography>
               <JsonDisplay
                 syntax="yaml"
-                className={classes.code}
+                className={classes.panelContent}
                 objectContent={action.schema || {}}
               />
             </Grid>
