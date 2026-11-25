@@ -67,6 +67,7 @@ export default function JsonDisplay({
           onChange={() => setLanguage(language === 'yaml' ? 'json' : 'yaml')}
         />
         <IconButton
+          sx={{ ml: 1 }}
           title={isCopy ? 'Copied!' : 'Copy'}
           aria-label="copy to clipboard"
           onClick={() => copy(text)}>

@@ -100,13 +100,24 @@ const initialHook = {
   successIcon: {
     ...theme.mixins.successIcon,
   },
-  code: {
-    maxHeight: '70vh',
-    margin: 0,
+  triggerPanels: {
+    [theme.breakpoints.up('md')]: {
+      flex: 1,
+      minHeight: 0,
+    },
   },
-  codeEditor: {
+  triggerPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    [theme.breakpoints.up('md')]: {
+      height: '100%',
+    },
+  },
+  triggerPanelContent: {
+    flex: 1,
+    minHeight: 0,
     overflow: 'auto',
-    maxHeight: '70vh',
+    margin: 0,
   },
   scheduleEntry: {
     paddingTop: 0,
@@ -902,26 +913,30 @@ export default class HookForm extends Component {
                   </code>{' '}
                   with the following context:
                 </Typography>
-                <Grid container spacing={2}>
-                  <Grid size={{ sm: 12, md: 6, lg: 6 }}>
+                <Grid container spacing={2} className={classes.triggerPanels}>
+                  <Grid
+                    size={{ sm: 12, md: 6, lg: 6 }}
+                    className={classes.triggerPanel}>
                     <Typography gutterBottom variant="subtitle1">
                       Context
                     </Typography>
                     <CodeEditor
                       mode="yaml"
                       lint
-                      className={classes.codeEditor}
+                      className={classes.triggerPanelContent}
                       value={triggerContextInput}
                       onChange={this.handleTriggerContextChange}
                     />
                   </Grid>
-                  <Grid size={{ sm: 12, md: 6, lg: 6 }}>
+                  <Grid
+                    size={{ sm: 12, md: 6, lg: 6 }}
+                    className={classes.triggerPanel}>
                     <Typography gutterBottom variant="subtitle1">
                       Schema
                     </Typography>
                     <JsonDisplay
                       syntax="yaml"
-                      className={classes.code}
+                      className={classes.triggerPanelContent}
                       objectContent={hook.triggerSchema}
                     />
                   </Grid>

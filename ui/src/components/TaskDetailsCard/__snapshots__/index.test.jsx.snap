@@ -232,7 +232,7 @@ exports[`should render TaskDetailsCard 1`] = `
                         </div>
                         <button
                           aria-label="copy to clipboard"
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ijjcdo-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ef5da5-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           title="Copy"
                           type="button"

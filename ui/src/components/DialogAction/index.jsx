@@ -127,13 +127,22 @@ export default class DialogAction extends Component {
         {...withoutBodyProps}
         {...props}>
         <DialogTitle>{title}</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
           {error && (
             <DialogContentText>
               <ErrorPanel error={error} />
             </DialogContentText>
           )}
-          <DialogContentText>{body}</DialogContentText>
+          <DialogContentText
+            component="div"
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+            }}>
+            {body}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button disabled={executing} onClick={onClose}>
