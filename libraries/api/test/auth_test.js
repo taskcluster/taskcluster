@@ -47,7 +47,7 @@ suite(testing.suiteName(), function () {
 
     nockScope.on('request', req => {
       authenticated = true;
-      traceId = req.headers['x-taskcluster-trace-id'];
+      traceId = req.headers.get('x-taskcluster-trace-id');
     });
 
     // Create API

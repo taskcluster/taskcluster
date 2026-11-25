@@ -209,9 +209,7 @@ suite(suiteName(), () => {
     suiteSetup(() => {
       nock('http://proxy')
         .get('/api/secrets/v1/secret/path%2Fto%2Fsecret')
-        .reply(200, (_uri, _requestBody) => {
-          return { secret: { SECRET_VALUE: '13' } };
-        });
+        .reply(200, { secret: { SECRET_VALUE: '13' } });
     });
 
     suiteTeardown(() => {
