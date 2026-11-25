@@ -16,7 +16,8 @@ export const start = (clients, { rootUrl } = {}) => {
     .persist()
     .filteringRequestBody(/.*/, '*')
     .post(authPath, '*')
-    .reply(200, (_uri, body) => {
+    .reply(200, async request => {
+      const body = await request.json();
       let scopes = [];
       let from = 'client config';
       let ext = null;
