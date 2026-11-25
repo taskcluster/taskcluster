@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+type ResourceState<T> =
+  | { data: T | null; loading: true; error: null }
+  | { data: T; loading: false; error: null }
+  | { data: null; loading: false; error: Error };
+
 /**
  * Fetch a single (non-paginated) Taskcluster REST resource.
  *
@@ -7,8 +12,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * string that identifies the request; when it changes the resource is
  * refetched (analogous to `usePaginatedResource`'s query key).
  */
-export default function useResource(fetch, { key } = {}) {
-  const [state, setState] = useState({
+export default function useResource<T>(
+  fetch: () => Promise<T>,
+  { key }: { key?: string | null } = {}
+) {
+  const [state, setState] = useState<ResourceState<T>>({
     data: null,
     loading: true,
     error: null,
@@ -56,9 +64,7 @@ export default function useResource(fetch, { key } = {}) {
   }, [key, reloadCount]);
 
   return {
-    data: state.data,
-    loading: state.loading,
-    error: state.error,
+    ...state,
     reload: useCallback(() => setReloadCount(c => c + 1), []),
   };
 }
