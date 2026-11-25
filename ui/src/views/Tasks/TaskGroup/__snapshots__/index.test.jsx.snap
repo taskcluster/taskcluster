@@ -366,7 +366,7 @@ exports[`TaskGroup page > should render TaskGroup page 1`] = `
           class="MuiGrid-root MuiGrid-direction-xs-row MuiGrid-grid-xs-6 css-1ml5fja-MuiGrid-root"
         >
           <div
-            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-118nsgk-MuiButtonBase-root-MuiListItemButton-root-listItemButtonRoot"
+            class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters css-1l93pkv-MuiButtonBase-root-MuiListItemButton-root"
             role="button"
             tabindex="0"
             title="2027-08-30T00:00:00.000Z (Copy)"
