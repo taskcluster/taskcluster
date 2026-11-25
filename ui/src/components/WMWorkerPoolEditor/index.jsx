@@ -609,6 +609,7 @@ export default class WMWorkerPoolEditor extends Component {
               }
               secondary={
                 <CodeEditor
+                  mode="json"
                   value={workerPool.config}
                   onChange={this.handleEditorChange}
                   lint

@@ -1,24 +1,14 @@
-import React, { useMemo } from 'react';
-import { func, string } from 'prop-types';
+import { useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
 import { Prec } from '@codemirror/state';
 import { linter, lintGutter } from '@codemirror/lint';
+import { EditorView } from '@codemirror/view';
 import theme from './theme';
-import classNames from 'classnames';
-import { makeStyles } from 'tss-react/mui';
 import yamlLinter from './yaml-lint';
 
-const useStyles = makeStyles()({
-  root: {
-    width: '100%',
-    '& .cm-editor': {
-      fontSize: 13,
-      height: '100%',
-    },
-  },
-});
+const sizing = EditorView.theme({ '&': { fontSize: '13px', height: '100%' } });
 const basicSetup = {
   closeBrackets: false,
   autocompletion: false,
@@ -31,30 +21,38 @@ const languages = {
   yaml: { language: yaml(), linter: yamlLinter },
 };
 
+export interface CodeEditorProps {
+  value: string;
+  onChange?: (value: string) => void;
+  mode: 'json' | 'yaml' | 'text';
+  lint?: boolean;
+  placeholder?: string;
+  className?: string;
+}
+
 export default function CodeEditor({
   value,
   onChange,
-  mode = 'json',
+  mode,
   lint = false,
   placeholder,
   className,
-}) {
-  const { classes } = useStyles();
+}: CodeEditorProps) {
   const extensions = useMemo(() => {
-    const lang = languages[mode];
-
-    if (!lang) {
-      return [];
+    if (mode === 'text') {
+      return [sizing];
     }
 
+    const lang = languages[mode];
+
     return lint
-      ? [lang.language, linter(lang.linter), Prec.highest(lintGutter())]
-      : [lang.language];
+      ? [sizing, lang.language, linter(lang.linter), Prec.highest(lintGutter())]
+      : [sizing, lang.language];
   }, [mode, lint]);
 
   return (
     <CodeMirror
-      className={classNames(classes.root, className)}
+      className={className}
       value={value}
       onChange={onChange}
       extensions={extensions}
@@ -65,12 +63,3 @@ export default function CodeEditor({
     />
   );
 }
-
-CodeEditor.propTypes = {
-  /** Callback function fired when the editor is changed. */
-  onChange: func,
-  /** The value of the editor. */
-  value: string.isRequired,
-  /** The CSS class name of the wrapper element */
-  className: string,
-};

@@ -134,7 +134,7 @@ export default class ScopesetComparison extends Component {
               className={classes.editor}
               onChange={this.handleScopesAChange}
               placeholder="new-scope:for-something:*"
-              mode="scopemode"
+              mode="text"
               value={scopeTextA}
             />
           </Grid>
@@ -146,7 +146,7 @@ export default class ScopesetComparison extends Component {
               className={classes.editor}
               onChange={this.handleScopesBChange}
               placeholder="new-scope:for-something:*"
-              mode="scopemode"
+              mode="text"
               value={scopeTextB}
             />
           </Grid>
