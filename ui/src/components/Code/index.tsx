@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import classNames from 'classnames';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
@@ -14,10 +15,10 @@ export interface CodeProps {
  * Render children as syntax-highlighted monospace code.
  */
 export default function Code({ children, language, className }: CodeProps) {
-  const code = hljs.highlight(children, {
-    language,
-    ignoreIllegals: true,
-  }).value;
+  const code = useMemo(
+    () => hljs.highlight(children, { language, ignoreIllegals: true }).value,
+    [children, language]
+  );
 
   return (
     <pre className={classNames(`language-${language}`, className)}>

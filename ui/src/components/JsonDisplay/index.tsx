@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { dump } from 'js-yaml';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -54,10 +54,13 @@ export default function JsonDisplay({
 }: JsonDisplayProps) {
   const [language, setLanguage] = useState(syntax);
   const { isCopy, copy } = useCopyToClipboard();
-  const text =
-    language === 'yaml'
-      ? dump(objectContent)
-      : JSON.stringify(objectContent, null, 2);
+  const text = useMemo(
+    () =>
+      language === 'yaml'
+        ? dump(objectContent)
+        : JSON.stringify(objectContent, null, 2),
+    [language, objectContent]
+  );
 
   return (
     <>
