@@ -1618,35 +1618,13 @@
             },
             "name": "worker-manager-config",
             "next": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/object-service",
+              "title": "Object Service"
             },
             "path": "manual/deploying/worker-manager-config",
             "prev": {
               "path": "manual/deploying/static-clients",
               "title": "Static Clients"
-            },
-            "up": {
-              "path": "manual/deploying",
-              "title": "Deploying Taskcluster"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 20,
-              "title": "Workers"
-            },
-            "name": "workers",
-            "next": {
-              "path": "manual/deploying/object-service",
-              "title": "Object Service"
-            },
-            "path": "manual/deploying/workers",
-            "prev": {
-              "path": "manual/deploying/worker-manager-config",
-              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1667,8 +1645,8 @@
             },
             "path": "manual/deploying/object-service",
             "prev": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
