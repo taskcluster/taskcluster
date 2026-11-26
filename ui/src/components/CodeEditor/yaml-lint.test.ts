@@ -1,7 +1,9 @@
 import { EditorState } from '@codemirror/state';
+import { expect, it } from 'vitest';
 import yamlLinter from './yaml-lint';
 
-const lint = doc => yamlLinter({ state: EditorState.create({ doc }) });
+const lint = (doc: string) =>
+  yamlLinter({ state: EditorState.create({ doc }) });
 
 it('reports nothing for valid YAMLs', () => {
   expect(lint('a: 1\nb: [2, 3]\n')).toEqual([]);
