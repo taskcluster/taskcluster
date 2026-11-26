@@ -1304,7 +1304,6 @@ __metadata:
     react-window: "npm:^1.8.10"
     rehype-prism-plus: "npm:^2.0.2"
     remark-gfm: "npm:^4.0.1"
-    resolve-pathname: "npm:^3.0.0"
     taskcluster-lib-scopes: "npm:^11.0.0"
     taskcluster-lib-urls: "npm:^13.1.0"
     title-case: "npm:^4.3.2"
