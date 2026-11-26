@@ -12,7 +12,6 @@ import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import { join } from 'path';
 import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
-import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 
 const getDocsSectionFromPathname = pathname => {
@@ -139,8 +138,8 @@ export default class DocsSidebarList extends Component {
           (
         </Typography>
         {nodes.map((node, idx) => {
-          const href = removeReadmeFromPath(`${DOCS_PATH_PREFIX}/${node.path}`);
-          const isLinkActive = removeReadmeFromPath(location.pathname) === href;
+          const href = `${DOCS_PATH_PREFIX}/${node.path}`;
+          const isLinkActive = location.pathname.replace(/\/+$/, '') === href;
 
           return (
             <Fragment key={node.name}>
@@ -171,19 +170,13 @@ export default class DocsSidebarList extends Component {
     );
   };
 
-  shouldRenderNode = node =>
-    !(
-      !node.children ||
-      (node.path.includes('README') && !node.children.length)
-    );
-
   renderNode = (node, isRoot = false) => {
     const {
       classes,
       history: { location },
     } = this.props;
-    const href = removeReadmeFromPath(join(DOCS_PATH_PREFIX, node.path));
-    const isLinkActive = removeReadmeFromPath(location.pathname) === href;
+    const href = join(DOCS_PATH_PREFIX, node.path);
+    const isLinkActive = location.pathname.replace(/\/+$/, '') === href;
 
     if (node.children?.length) {
       const [nodes, inlineNodes] = node.children.reduce(
@@ -216,12 +209,9 @@ export default class DocsSidebarList extends Component {
           </Link>
           {hasInlineNodes && this.renderInlineNodes(inlineNodes)}
           <ul className={classes.ul}>
-            {nodes.map(
-              child =>
-                this.shouldRenderNode(child) && (
-                  <li key={child.path}>{this.renderNode(child)}</li>
-                )
-            )}
+            {nodes.map(child => (
+              <li key={child.path}>{this.renderNode(child)}</li>
+            ))}
           </ul>
         </Fragment>
       );
@@ -260,7 +250,7 @@ export default class DocsSidebarList extends Component {
         {DOCS_MENU_ITEMS.map(item => (
           <Fragment key={item.label}>
             {item.hasChildren && <Divider />}
-            <Link to={removeReadmeFromPath(item.path)}>
+            <Link to={item.path}>
               <ListItemButton
                 name={item.label}
                 onClick={this.handleSectionClick}>

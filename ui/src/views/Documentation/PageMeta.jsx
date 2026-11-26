@@ -5,7 +5,6 @@ import classNames from 'classnames';
 import withStyles from '../../utils/withStyles';
 import PageNavigation from '../../components/PageNavigation';
 import { docsPageInfo } from '../../utils/prop-types';
-import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
 @withStyles(theme => ({
@@ -54,9 +53,7 @@ export default class PageMeta extends Component {
             })}>
             {hasPreviousPage && (
               <PageNavigation
-                to={removeReadmeFromPath(
-                  join(DOCS_PATH_PREFIX, pageInfo.prev.path)
-                )}
+                to={join(DOCS_PATH_PREFIX, pageInfo.prev.path)}
                 variant="prev"
                 aria-label="Previous Page">
                 {pageInfo.prev.title}
@@ -64,9 +61,7 @@ export default class PageMeta extends Component {
             )}
             {hasNextPage && (
               <PageNavigation
-                to={removeReadmeFromPath(
-                  join(DOCS_PATH_PREFIX, pageInfo.next.path)
-                )}
+                to={join(DOCS_PATH_PREFIX, pageInfo.next.path)}
                 variant="next"
                 aria-label="Next Page">
                 {pageInfo.next.title}

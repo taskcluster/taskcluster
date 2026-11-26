@@ -11,7 +11,6 @@ import components from './components';
 import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
-import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 import docsSearchOptions from '../../../../generated/docs-search.json';
 import ErrorPanel from '../../components/ErrorPanel';
@@ -76,7 +75,7 @@ export default class Documentation extends Component {
       .replace(/\/$/, '')
       .replace(`${DOCS_PATH_PREFIX}/`, '');
 
-    if (node.path && currentPath === removeReadmeFromPath(node.path)) {
+    if (node.path && currentPath === node.path) {
       return node;
     }
 
