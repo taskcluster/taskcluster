@@ -2,6 +2,7 @@ import hawk from 'hawk';
 import assert from 'node:assert';
 import scopes from 'taskcluster-lib-scopes';
 import crypto from 'node:crypto';
+import addFormats from 'ajv-formats';
 import { cleanRouteAndParams } from '../utils.js';
 import ScopeExpressionTemplate from '../expressions.js';
 import { ErrorReply } from '../error-reply.js';
@@ -17,6 +18,9 @@ import { ErrorReply } from '../error-reply.js';
  * @template {Record<string, any>} TContext
  * @typedef {import('../../@types/index.d.ts').APIRequestHandler<TContext>} APIRequestHandler
  */
+
+const isIPv4 = addFormats.get('ipv4');
+const isIPv6 = addFormats.get('ipv6');
 
 /**
  * Authenticate client using remote API end-point and validate that it satisfies
@@ -147,12 +151,9 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     const host = hawk.utils.parseHost(req);
     // Find port, overwrite if forwarded by reverse proxy
     let port = host.port;
-    if (req.headers['x-forwarded-port'] !== undefined) {
-      if (Array.isArray(req.headers['x-forwarded-port'])) {
-        port = parseInt(req.headers['x-forwarded-port'][0], 10);
-      } else {
-        port = parseInt(req.headers['x-forwarded-port'], 10);
-      }
+    const forwardedPort = parseInt(req.headers['x-forwarded-port'], 10);
+    if (forwardedPort >= 0 && forwardedPort <= 65535) {
+      port = forwardedPort;
     } else if (req.headers['x-forwarded-proto'] !== undefined) {
       port = req.headers['x-forwarded-proto'] === 'https' ? 443 : port;
     }
@@ -166,7 +167,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
           host: host.name,
           port: parseInt(port, 10),
           authorization: req.headers.authorization,
-          sourceIp: req.ip,
+          sourceIp: isIPv4.test(req.ip) || isIPv6.test(req.ip) ? req.ip : undefined,
         },
         { traceId: req.traceId, requestId: req.requestId }
       )
