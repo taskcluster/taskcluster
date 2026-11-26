@@ -1,6 +1,6 @@
 import lazy from '../../utils/lazy';
-import ListHookGroups from './ListHookGroups';
 
+const ListHookGroups = lazy(() => import('./ListHookGroups'));
 const ListHooks = lazy(() => import('./ListHooks'));
 const ViewHook = lazy(() => import('./ViewHook'));
 
