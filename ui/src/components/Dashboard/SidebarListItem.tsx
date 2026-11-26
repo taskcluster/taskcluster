@@ -23,6 +23,8 @@ export interface SidebarListItemProps {
   children: ReactNode;
   icon?: ReactNode;
   rightIcon?: ReactNode;
+  /** Rendered inside this item's `li` */
+  nestedElement?: ReactNode;
   skipPrefetch?: boolean;
   onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
 }
@@ -36,8 +38,16 @@ const SidebarItemsContext = createContext({
   register: (_path: string) => () => {},
 });
 
-export function SidebarItems({ children }: { children: ReactNode }) {
+export function SidebarItems({
+  children,
+  onActive,
+}: {
+  children: ReactNode;
+  onActive?: () => void;
+}) {
+  const { pathname } = useLocation();
   const [paths, setPaths] = useState<string[]>([]);
+  const active = paths.some(path => matchesPath(pathname, path));
   const register = useCallback((path: string) => {
     setPaths(current => [...current, path]);
 
@@ -45,6 +55,12 @@ export function SidebarItems({ children }: { children: ReactNode }) {
       setPaths(current => current.toSpliced(current.indexOf(path), 1));
   }, []);
   const value = useMemo(() => ({ paths, register }), [paths, register]);
+
+  useLayoutEffect(() => {
+    if (active) {
+      onActive?.();
+    }
+  }, [active, onActive]);
 
   return (
     <SidebarItemsContext.Provider value={value}>
@@ -58,6 +74,7 @@ export default function SidebarListItem({
   children,
   icon,
   rightIcon,
+  nestedElement,
   skipPrefetch,
   onClick,
 }: SidebarListItemProps) {
@@ -70,7 +87,9 @@ export default function SidebarListItem({
   useLayoutEffect(() => register(to), [register, to]);
 
   return (
-    <ListItem disablePadding>
+    <ListItem
+      disablePadding
+      sx={nestedElement ? { display: 'block' } : undefined}>
       <ListItemButton
         component={Link}
         to={to}
@@ -107,6 +126,7 @@ export default function SidebarListItem({
         />
         {rightIcon}
       </ListItemButton>
+      {nestedElement}
     </ListItem>
   );
 }
