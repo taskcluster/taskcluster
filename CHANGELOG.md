@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v117.2.0
+
+### DEPLOYERS
+
+▶ [minor] [#9527](https://github.com/taskcluster/taskcluster/issues/9527)
+Azure providers can now weight Spot launch configurations by their [Azure Spot Placement Score](https://learn.microsoft.com/en-us/rest/api/recommenderrp/spot-placement-scores/post?view=rest-recommenderrp-2025-06-05). Set `spotPlacementScore: true` in the provider configuration and grant `Microsoft.Compute/locations/placementScores/generate/action` to the worker-manager service principal. Launch configurations in regions and VM sizes with less Spot capacity are selected less often, and restricted ones are skipped. This is off by default.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#9339](https://github.com/taskcluster/taskcluster/issues/9339)
+For Google and Azure worker pools, worker-manager now weights each launch configuration by its own recent failure rate (errors versus workers that registered and are still running, over the last 15 minutes) instead of its share of the pool's errors. The window can be changed with the new `worker_manager.launch_config_health_window_minutes` setting.
+
+▶ [patch] [#9552](https://github.com/taskcluster/taskcluster/issues/9552)
+Generic Worker logs a warning at startup if `idleTimeoutSecs` is set on a worker managed by Worker Manager (worker-runner on aws, azure, or google), since the setting has no effect.
+
+### USERS
+
+▶ [patch]
+Both dialogs for hook triggering context and action tasks now use all their available vertical space instead of being arbitrarily cutoff
+
+▶ [patch]
+Fix mimetype icons in task artifacts listing. It'll now detect code and archives better.
+
+▶ [patch] [#5792](https://github.com/taskcluster/taskcluster/issues/5792)
+Rewrite the task log viewer with codemirror. This improves searching through very large logs, ANSI support and selection/following
+
+▶ [patch]
+Typing in the hook trigger and task action dialogs is no longer sluggish
+
+▶ [patch] [#9339](https://github.com/taskcluster/taskcluster/issues/9339)
+UI: the worker pool Launch Configs page now labels its weight column "Capacity Weight" and computes it from capacity alone. For Google and Azure worker pools, worker-manager also lowers the weight of launch configurations that recently failed to launch workers, which the page cannot show.
+
 ## v117.1.0
 
 ### DEPLOYERS
