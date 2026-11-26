@@ -46,11 +46,7 @@ export default class SidebarList extends Component {
             Task Index
           </SidebarListItem>
 
-          <SidebarListGroup
-            skipPrefetch
-            to="/auth"
-            title="Authorization"
-            icon={<AccountKeyIcon />}>
+          <SidebarListGroup title="Authorization" icon={<AccountKeyIcon />}>
             <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
               Clients
             </SidebarListItem>
