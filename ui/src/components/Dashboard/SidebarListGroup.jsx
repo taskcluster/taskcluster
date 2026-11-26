@@ -6,11 +6,11 @@ import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
-import SidebarListItem from './SidebarListItem';
+import SidebarListItem, { SidebarItems } from './SidebarListItem';
 
 @withStyles(theme => ({
   listGroup: {
-    '& > a > li': {
+    '& > li > a': {
       paddingLeft: theme.spacing(3),
     },
   },
@@ -51,7 +51,7 @@ export default class SidebarListGroup extends Component {
         </SidebarListItem>
         <Collapse in={open} timeout="auto">
           <List component="div" disablePadding className={classes.listGroup}>
-            {children}
+            <SidebarItems>{children}</SidebarItems>
           </List>
           <Divider />
         </Collapse>

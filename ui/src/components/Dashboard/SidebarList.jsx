@@ -21,7 +21,7 @@ import PulseIcon from 'mdi-react/PulseIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import HistoryIcon from 'mdi-react/HistoryIcon';
 import SidebarListGroup from './SidebarListGroup';
-import SidebarListItem from './SidebarListItem';
+import SidebarListItem, { SidebarItems } from './SidebarListItem';
 import { withAuth } from '../../utils/Auth';
 
 @withAuth
@@ -31,95 +31,97 @@ export default class SidebarList extends Component {
     const clientId = user?.credentials?.clientId;
 
     return (
-      <List disablePadding>
-        <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
-          Create task
-        </SidebarListItem>
-        <SidebarListItem to="/tasks" icon={<FeatureSearchIcon />}>
-          View Task
-        </SidebarListItem>
-        <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
-          Task Groups
-        </SidebarListItem>
-        <SidebarListItem to="/tasks/index" icon={<FileTreeIcon />}>
-          Task Index
-        </SidebarListItem>
-
-        <SidebarListGroup
-          skipPrefetch
-          to="/auth"
-          title="Authorization"
-          icon={<AccountKeyIcon />}>
-          <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
-            Clients
+      <SidebarItems>
+        <List disablePadding>
+          <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
+            Create task
           </SidebarListItem>
-          {clientId && (
-            <SidebarListItem
-              to={`/audit/client/history/${encodeURIComponent(clientId)}`}
-              icon={<HistoryIcon />}>
-              My Client Audit History
+          <SidebarListItem to="/tasks" icon={<FeatureSearchIcon />}>
+            View Task
+          </SidebarListItem>
+          <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
+            Task Groups
+          </SidebarListItem>
+          <SidebarListItem to="/tasks/index" icon={<FileTreeIcon />}>
+            Task Index
+          </SidebarListItem>
+
+          <SidebarListGroup
+            skipPrefetch
+            to="/auth"
+            title="Authorization"
+            icon={<AccountKeyIcon />}>
+            <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
+              Clients
             </SidebarListItem>
-          )}
-          <SidebarListItem to="/auth/roles" icon={<AccountStarIcon />}>
-            Roles
+            {clientId && (
+              <SidebarListItem
+                to={`/audit/client/history/${encodeURIComponent(clientId)}`}
+                icon={<HistoryIcon />}>
+                My Client Audit History
+              </SidebarListItem>
+            )}
+            <SidebarListItem to="/auth/roles" icon={<AccountStarIcon />}>
+              Roles
+            </SidebarListItem>
+            <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
+              Scopes
+            </SidebarListItem>
+            <SidebarListItem
+              to="/auth/scopes/compare"
+              icon={<ScaleBalanceIcon />}>
+              Compare Scopes
+            </SidebarListItem>
+            <SidebarListItem
+              to="/auth/scopes/expansions"
+              icon={<ArrowExpandVerticalIcon />}>
+              Expand Scopes
+            </SidebarListItem>
+          </SidebarListGroup>
+
+          <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
+            Worker Manager
           </SidebarListItem>
-          <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
-            Scopes
-          </SidebarListItem>
+
           <SidebarListItem
-            to="/auth/scopes/compare"
-            icon={<ScaleBalanceIcon />}>
-            Compare Scopes
+            to="/worker-manager/errors"
+            icon={<MessageAlertIcon />}>
+            Provisioning Errors
           </SidebarListItem>
-          <SidebarListItem
-            to="/auth/scopes/expansions"
-            icon={<ArrowExpandVerticalIcon />}>
-            Expand Scopes
+
+          <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
+            Workers
           </SidebarListItem>
-        </SidebarListGroup>
 
-        <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
-          Worker Manager
-        </SidebarListItem>
+          <SidebarListItem to="/purge-caches" icon={<BackupRestoreIcon />}>
+            Purge Caches
+          </SidebarListItem>
 
-        <SidebarListItem
-          to="/worker-manager/errors"
-          icon={<MessageAlertIcon />}>
-          Provisioning Errors
-        </SidebarListItem>
+          <SidebarListItem to="/hooks" icon={<WebhookIcon />}>
+            Hooks
+          </SidebarListItem>
 
-        <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
-          Workers
-        </SidebarListItem>
+          <SidebarListItem to="/secrets" icon={<KeyIcon />}>
+            Secrets
+          </SidebarListItem>
 
-        <SidebarListItem to="/purge-caches" icon={<BackupRestoreIcon />}>
-          Purge Caches
-        </SidebarListItem>
+          <SidebarListItem to="/pulse-messages" icon={<PulseIcon />}>
+            Pulse Messages
+          </SidebarListItem>
 
-        <SidebarListItem to="/hooks" icon={<WebhookIcon />}>
-          Hooks
-        </SidebarListItem>
+          <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
+            GitHub Quickstart
+          </SidebarListItem>
 
-        <SidebarListItem to="/secrets" icon={<KeyIcon />}>
-          Secrets
-        </SidebarListItem>
+          <SidebarListItem to="/tcyaml-debug" icon={<GithubBoxIcon />}>
+            Debug .tc.yml
+          </SidebarListItem>
 
-        <SidebarListItem to="/pulse-messages" icon={<PulseIcon />}>
-          Pulse Messages
-        </SidebarListItem>
-
-        <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
-          GitHub Quickstart
-        </SidebarListItem>
-
-        <SidebarListItem to="/tcyaml-debug" icon={<GithubBoxIcon />}>
-          Debug .tc.yml
-        </SidebarListItem>
-
-        <SidebarListItem to="/notify/denylist" icon={<CancelIcon />}>
-          Denylist Addresses
-        </SidebarListItem>
-      </List>
+          <SidebarListItem to="/notify/denylist" icon={<CancelIcon />}>
+            Denylist Addresses
+          </SidebarListItem>
+        </List>
+      </SidebarItems>
     );
   }
 }
