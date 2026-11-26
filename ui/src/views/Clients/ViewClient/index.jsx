@@ -20,6 +20,7 @@ import ClientForm from '../../../components/ClientForm';
 import ErrorPanel from '../../../components/ErrorPanel';
 import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
 import { THEME } from '../../../utils/constants';
+import queryParamToArray from '../../../utils/queryParamToArray';
 import { withAuth } from '../../../utils/Auth';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import SignInDialog from '../../../components/SignInDialog';
@@ -319,7 +320,7 @@ export default class ViewClient extends Component {
         ? fromNow(query.expires)
         : addYears(new Date(), 1000),
       deleteOnExpiration: true,
-      scopes: typeof query.scope === 'string' ? [query.scope] : query.scope,
+      scopes: queryParamToArray(query.scope),
       expandedScopes: null,
       disabled: false,
     };
