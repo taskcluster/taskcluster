@@ -2,8 +2,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import routes from './App/docsRoutes';
-import Link from './utils/Link';
+import { setLinkRoutes } from './utils/linkRoutes';
 
-Link.setRoutes(routes);
+setLinkRoutes(routes);
 
 createRoot(document.getElementById('root')).render(<App routes={routes} />);
