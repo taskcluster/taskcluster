@@ -27,7 +27,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import { Box } from '@mui/material';
-import { Queue } from '@taskcluster/client-web';
+import { Queue, nice } from '@taskcluster/client-web';
 import CodeEditor from '../../../components/CodeEditor';
 import SpeedDial from '../../../components/SpeedDial';
 import SiteSpecific from '../../../components/SiteSpecific';
@@ -36,7 +36,6 @@ import HelpView from '../../../components/HelpView';
 import MuiErrorPanel from '../../../components/ErrorPanel/MuiErrorPanel';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import { nice } from '../../../utils/slugid';
 import {
   TASKS_CREATE_STORAGE_KEY,
   UI_SCHEDULER_ID,

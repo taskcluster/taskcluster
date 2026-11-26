@@ -1,6 +1,6 @@
 import { omit } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
-import fromNowJSON from './fromNowJSON';
+import { fromNowJSON } from '@taskcluster/client-web';
 import { TASK_ADDED_FIELDS } from './constants';
 
 // Transform task to an interactive task

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Auth } from '@taskcluster/client-web';
+import { Auth, fromNowJSON } from '@taskcluster/client-web';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import { parse } from 'qs';
 import Typography from '@mui/material/Typography';
@@ -8,7 +8,6 @@ import AuthConsent from '../../components/AuthConsent';
 import Dashboard from '../../components/Dashboard';
 import { withAuth } from '../../utils/Auth';
 import { withTaskclusterClient } from '../../utils/TaskclusterClient';
-import fromNowJSON from '../../utils/fromNowJSON';
 
 @withAuth
 @withTaskclusterClient

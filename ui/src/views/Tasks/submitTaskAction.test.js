@@ -7,7 +7,8 @@ import { Auth, Hooks, Queue } from '@taskcluster/client-web';
 vi.mock('../../utils/client', () => ({
   getClient: vi.fn(),
 }));
-vi.mock('@taskcluster/client-web', () => ({
+vi.mock('@taskcluster/client-web', async importOriginal => ({
+  ...(await importOriginal()),
   Auth: vi.fn(),
   Hooks: vi.fn(),
   Queue: vi.fn(),
