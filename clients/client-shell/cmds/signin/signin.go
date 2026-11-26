@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/browser"
@@ -23,6 +24,7 @@ import (
 )
 
 var log = root.Logger
+var scopeRe = regexp.MustCompile(`^[\x20-\x7e]*$`)
 
 func init() {
 	cmd := &cobra.Command{
@@ -58,6 +60,11 @@ tools using those libraries can also benefit from this signin method.`,
 func cmdSignin(cmd *cobra.Command, _ []string) error {
 	if check, _ := cmd.Flags().GetBool("check"); check {
 		return checkSignin()
+	}
+
+	scopes, _ := cmd.Flags().GetStringArray("scope")
+	if err := validateScopes(scopes); err != nil {
+		return err
 	}
 
 	// Load configuration
@@ -117,7 +124,6 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
 	name, _ := cmd.Flags().GetString("name")
-	scopes, _ := cmd.Flags().GetStringArray("scope")
 	expires, _ := cmd.Flags().GetString("expires")
 	var loginURL string
 
@@ -172,6 +178,15 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		log.Errorf("Error shutting down server: %s\n", err)
 	}
 
+	return nil
+}
+
+func validateScopes(scopes []string) error {
+	for _, scope := range scopes {
+		if !scopeRe.MatchString(scope) {
+			return fmt.Errorf("invalid scope %q: scopes may only contain printable ASCII characters", scope)
+		}
+	}
 	return nil
 }
 
