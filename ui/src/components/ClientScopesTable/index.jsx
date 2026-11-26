@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import WhitespaceHighlight from '../WhitespaceHighlight';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.clientId, b.clientId)),
@@ -98,7 +97,7 @@ export default class ClientScopesTable extends Component {
                 : `/auth/scopes/${encodeURIComponent(item)}`
             }>
             <ListItemButton className={classes.listItemButton} style={style}>
-              <WhitespaceHighlight text={item} />
+              {item}
               <LinkIcon size={iconSize} />
             </ListItemButton>
           </Link>

@@ -320,7 +320,7 @@ export default class RoleForm extends Component {
             title="Delete Role?"
             body={
               <Typography variant="body2">
-                This will delete the {roleId} role.
+                This will delete the <WhitespaceHighlight text={roleId} /> role.
               </Typography>
             }
             confirmText="Delete Role"
