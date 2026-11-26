@@ -1,7 +1,15 @@
+import { expect, it } from 'vitest';
 import matchRoutes from './matchRoutes';
 
+interface TestRoute {
+  path: string;
+  exact?: boolean;
+  component: string;
+  routes?: TestRoute[];
+}
+
 it('should match routes', () => {
-  const routes = [
+  const routes: TestRoute[] = [
     {
       path: '/',
       exact: true,
@@ -44,4 +52,6 @@ it('should match routes', () => {
       component: 'AboutMe',
     },
   ]);
+
+  expect(matchRoutes('/nope', routes)).toEqual([]);
 });
