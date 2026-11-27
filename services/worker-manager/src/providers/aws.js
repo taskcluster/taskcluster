@@ -437,10 +437,9 @@ export class AwsProvider extends Provider {
         w.state = Worker.states.STOPPING;
       }
     });
-    let result;
     try {
       const region = worker.providerData.region;
-      result = await this._enqueue(`${region}.modify`, () =>
+      await this._enqueue(`${region}.modify`, () =>
         this.ec2s[region].send(
           new TerminateInstancesCommand({
             InstanceIds: [worker.workerId.toString()],
@@ -457,17 +456,7 @@ export class AwsProvider extends Provider {
           description: `Error terminating AWS instance: ${e.message}`,
         });
       }
-
-      return;
     }
-
-    result.TerminatingInstances.forEach(ti => {
-      if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
-        throw new Error(
-          `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`
-        );
-      }
-    });
   }
 
   rootUrlTagValue() {
