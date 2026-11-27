@@ -133,14 +133,16 @@ func (github *Github) Version() error {
 
 // A paginated list of builds that have been run in
 // Taskcluster. Can be filtered on various git-specific
-// fields.
+// fields, or on `taskGroupId` to fetch the build for a
+// single task group. `taskGroupId` cannot be combined with
+// any other query parameter.
 //
 // Required scopes:
 //
 //	github:list-builds
 //
 // See #builds
-func (github *Github) Builds(continuationToken, limit, organization, pullRequest, repository, sha string) (*BuildsResponse, error) {
+func (github *Github) Builds(continuationToken, limit, organization, pullRequest, repository, sha, taskGroupId string) (*BuildsResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -159,6 +161,9 @@ func (github *Github) Builds(continuationToken, limit, organization, pullRequest
 	}
 	if sha != "" {
 		v.Add("sha", sha)
+	}
+	if taskGroupId != "" {
+		v.Add("taskGroupId", taskGroupId)
 	}
 	cd := tcclient.Client(*github)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(BuildsResponse), v)
@@ -172,7 +177,7 @@ func (github *Github) Builds(continuationToken, limit, organization, pullRequest
 //	github:list-builds
 //
 // See Builds for more details.
-func (github *Github) Builds_SignedURL(continuationToken, limit, organization, pullRequest, repository, sha string, duration time.Duration) (*url.URL, error) {
+func (github *Github) Builds_SignedURL(continuationToken, limit, organization, pullRequest, repository, sha, taskGroupId string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -191,6 +196,9 @@ func (github *Github) Builds_SignedURL(continuationToken, limit, organization, p
 	}
 	if sha != "" {
 		v.Add("sha", sha)
+	}
+	if taskGroupId != "" {
+		v.Add("taskGroupId", taskGroupId)
 	}
 	cd := tcclient.Client(*github)
 	return (&cd).SignedURL("/builds", v, duration)

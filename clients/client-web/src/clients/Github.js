@@ -13,7 +13,7 @@ export default class Github extends Client {
     this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"};
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"};
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"};
-    this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha","pullRequest"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"};
+    this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha","pullRequest","taskGroupId"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"};
     this.cancelBuilds.entry = {"args":["owner","repo"],"category":"Github Service","method":"post","name":"cancelBuilds","output":true,"query":["sha","pullRequest"],"route":"/builds/<owner>/<repo>/cancel","scopes":"github:cancel-builds:<owner>:<repo>","stability":"stable","type":"function"};
     this.badge.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","scopes":"github:get-badge:<owner>:<repo>:<branch>","stability":"experimental","type":"function"};
     this.repository.entry = {"args":["owner","repo"],"category":"Github Service","method":"get","name":"repository","output":true,"query":[],"route":"/repository/<owner>/<repo>","scopes":"github:get-repository:<owner>:<repo>","stability":"experimental","type":"function"};
@@ -46,7 +46,9 @@ export default class Github extends Client {
   }
   // A paginated list of builds that have been run in
   // Taskcluster. Can be filtered on various git-specific
-  // fields.
+  // fields, or on `taskGroupId` to fetch the build for a
+  // single task group. `taskGroupId` cannot be combined with
+  // any other query parameter.
   builds(...args) {
     this.validate(this.builds.entry, args);
 

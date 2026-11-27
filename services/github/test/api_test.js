@@ -352,6 +352,44 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(builds.builds[0].pullRequestNumber, 2);
   });
 
+  test('task group builds', async () => {
+    const builds = await helper.apiClient.builds({ taskGroupId: 'qiizERCQQwi9ZS_WkCSjXQ' });
+    assert.equal(builds.builds.length, 1);
+    assert.equal(builds.continuationToken, undefined);
+    assert.equal(builds.builds[0].taskGroupId, 'qiizERCQQwi9ZS_WkCSjXQ');
+    assert.equal(builds.builds[0].organization, 'abc123');
+    assert.equal(builds.builds[0].repository, 'xyz');
+    assert.equal(builds.builds[0].sha, 'x650871208002a13ba35cf232c0e30d2c3d64783');
+  });
+
+  test('task group builds combined with other query parameters are rejected', async () => {
+    const taskGroupId = 'ziizERCQQwi9ZS_WkCSjXQ';
+    for (const extra of [
+      { organization: 'abc123' },
+      { organization: 'abc123', repository: 'xyz' },
+      { organization: 'abc123', repository: 'xyz', sha: 'y650871208002a13ba35cf232c0e30d2c3d64783' },
+      { organization: 'abc123', repository: 'xyz', pullRequest: 2 },
+      { limit: 10 },
+      { continuationToken: 'abc' },
+    ]) {
+      await assert.rejects(
+        () => helper.apiClient.builds({ taskGroupId, ...extra }),
+        /`taskGroupId` cannot be combined with other query parameters/
+      );
+    }
+  });
+
+  test('task group builds for unknown task group', async () => {
+    const builds = await helper.apiClient.builds({ taskGroupId: 'fN1SbArXTPSVFNUvaOlinQ' });
+    assert.equal(builds.builds.length, 0);
+  });
+
+  test('builds with invalid taskGroupId are rejected', async () => {
+    await assert.rejects(async () => {
+      await helper.apiClient.builds({ taskGroupId: 'not-a-slugid' });
+    }, /taskGroupId/);
+  });
+
   test('builds invalid queries are rejected', async () => {
     await assert.rejects(async () => {
       await helper.apiClient.builds({

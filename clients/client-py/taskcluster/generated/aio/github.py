@@ -71,7 +71,9 @@ class Github(AsyncBaseClient):
 
         A paginated list of builds that have been run in
         Taskcluster. Can be filtered on various git-specific
-        fields.
+        fields, or on `taskGroupId` to fetch the build for a
+        single task group. `taskGroupId` cannot be combined with
+        any other query parameter.
 
         This method is ``stable``
         """
@@ -203,6 +205,7 @@ class Github(AsyncBaseClient):
                 "repository",
                 "sha",
                 "pullRequest",
+                "taskGroupId",
             ],
             "route": "/builds",
             "stability": "stable",

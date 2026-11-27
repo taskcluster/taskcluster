@@ -137,29 +137,31 @@ impl Github {
     ///
     /// A paginated list of builds that have been run in
     /// Taskcluster. Can be filtered on various git-specific
-    /// fields.
-    pub async fn builds(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>) -> Result<Value, Error> {
+    /// fields, or on `taskGroupId` to fetch the build for a
+    /// single task group. `taskGroupId` cannot be combined with
+    /// any other query parameter.
+    pub async fn builds(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>, taskGroupId: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest);
+        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest, taskGroupId);
         let body = None;
         let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the builds endpoint
-    pub fn builds_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest);
+    pub fn builds_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>, taskGroupId: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest, taskGroupId);
         self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the builds endpoint
-    pub fn builds_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest);
+    pub fn builds_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>, taskGroupId: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest, taskGroupId);
         self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for builds
-    fn builds_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>, organization: Option<&'a str>, repository: Option<&'a str>, sha: Option<&'a str>, pullRequest: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+    fn builds_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>, organization: Option<&'a str>, repository: Option<&'a str>, sha: Option<&'a str>, pullRequest: Option<&'a str>, taskGroupId: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
         let path = "builds";
         let mut query = None;
         if let Some(q) = continuationToken {
@@ -179,6 +181,9 @@ impl Github {
         }
         if let Some(q) = pullRequest {
             query.get_or_insert_with(Vec::new).push(("pullRequest", q));
+        }
+        if let Some(q) = taskGroupId {
+            query.get_or_insert_with(Vec::new).push(("taskGroupId", q));
         }
 
         (path, query)

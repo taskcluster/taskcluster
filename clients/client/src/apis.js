@@ -768,7 +768,7 @@ export default {
           "args": [
           ],
           "category": "Github Service",
-          "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
+          "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields, or on `taskGroupId` to fetch the build for a\nsingle task group. `taskGroupId` cannot be combined with\nany other query parameter.",
           "method": "get",
           "name": "builds",
           "output": "v1/build-list.json#",
@@ -778,7 +778,8 @@ export default {
             "organization",
             "repository",
             "sha",
-            "pullRequest"
+            "pullRequest",
+            "taskGroupId"
           ],
           "route": "/builds",
           "scopes": "github:list-builds",
