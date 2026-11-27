@@ -468,7 +468,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "builds",
 				Title:       "List of Builds",
-				Description: "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
+				Description: "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields, or on `taskGroupId` to fetch the build for a\nsingle task group. `taskGroupId` cannot be combined with\nany other query parameter.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/builds",
@@ -480,6 +480,7 @@ var services = map[string]definitions.Service{
 					"repository",
 					"sha",
 					"pullRequest",
+					"taskGroupId",
 				},
 				Input: "",
 			},

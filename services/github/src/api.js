@@ -30,6 +30,21 @@ function sanitizeGitHubField(field) {
   return field.replace(/[^a-zA-Z0-9-_.]/gi, '').replace(/\./g, '%');
 }
 
+const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+
+const serializeBuild = entry => ({
+  organization: entry.organization,
+  repository: entry.repository,
+  sha: entry.sha,
+  state: entry.state,
+  taskGroupId: entry.task_group_id,
+  eventType: entry.event_type,
+  eventId: entry.event_id,
+  created: entry.created.toJSON(),
+  updated: entry.updated.toJSON(),
+  pullRequestNumber: entry.pull_request_number || undefined,
+});
+
 // Reduce a pull request WebHook's data to only fields needed to checkout a
 // revision
 //
@@ -461,15 +476,27 @@ builder.declare(
       repository: /^([a-zA-Z0-9-_.%]*)$/,
       sha: /./,
       pullRequest: /^([0-9]*)$/,
+      taskGroupId: SLUGID_PATTERN,
     },
     description: [
       'A paginated list of builds that have been run in',
       'Taskcluster. Can be filtered on various git-specific',
-      'fields.',
+      'fields, or on `taskGroupId` to fetch the build for a',
+      'single task group. `taskGroupId` cannot be combined with',
+      'any other query parameter.',
     ].join('\n'),
   },
   async function (req, res) {
-    const { organization, repository, sha, pullRequest } = req.query;
+    const { organization, repository, sha, pullRequest, taskGroupId } = req.query;
+
+    if (taskGroupId) {
+      if (organization || repository || sha || pullRequest || req.query.continuationToken || req.query.limit) {
+        return res.reportError('InputError', '`taskGroupId` cannot be combined with other query parameters', {});
+      }
+      const builds = await this.db.fns.get_github_build_pr(taskGroupId);
+      return res.reply({ builds: builds.map(serializeBuild) });
+    }
+
     if (repository && !organization) {
       return res.reportError('InputError', 'Must provide `organization` if querying `repository`', {});
     }
@@ -495,20 +522,7 @@ builder.declare(
 
     return res.reply({
       continuationToken,
-      builds: builds.map(entry => {
-        return {
-          organization: entry.organization,
-          repository: entry.repository,
-          sha: entry.sha,
-          state: entry.state,
-          taskGroupId: entry.task_group_id,
-          eventType: entry.event_type,
-          eventId: entry.event_id,
-          created: entry.created.toJSON(),
-          updated: entry.updated.toJSON(),
-          pullRequestNumber: entry.pull_request_number || undefined,
-        };
-      }),
+      builds: builds.map(serializeBuild),
     });
   }
 );
@@ -579,20 +593,8 @@ builder.declare(
     }
 
     return res.reply({
-      builds: builds.map(entry => {
-        return {
-          organization: entry.organization,
-          repository: entry.repository,
-          sha: entry.sha,
-          state: GITHUB_BUILD_STATES.CANCELLED, // no need to refetch from db, we just updated it
-          taskGroupId: entry.task_group_id,
-          eventType: entry.event_type,
-          eventId: entry.event_id,
-          created: entry.created.toJSON(),
-          updated: entry.updated.toJSON(),
-          pullRequestNumber: entry.pull_request_number || undefined,
-        };
-      }),
+      // no need to refetch from db, we just updated it
+      builds: builds.map(entry => ({ ...serializeBuild(entry), state: GITHUB_BUILD_STATES.CANCELLED })),
     });
   }
 );
