@@ -11,6 +11,7 @@ const encoder = new TextEncoder();
 
 hterm.defaultStorage = new lib.Storage.Local();
 
+hterm.notify = () => {};
 hterm.openUrl = (url: string) => {
   const parsed = URL.parse(url);
 

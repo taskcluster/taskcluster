@@ -2,6 +2,7 @@ declare module 'hterm-umdjs' {
   namespace hterm {
     let defaultStorage: unknown;
     let openUrl: (url: string) => void;
+    let notify: () => void;
 
     interface IO {
       writeUTF8(data: string): void;
