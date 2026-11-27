@@ -10,7 +10,6 @@ import {
 } from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
-import cloneDeep from 'lodash.clonedeep';
 import Drawer from '@mui/material/Drawer';
 import withStyles from '../../utils/withStyles';
 import List from '@mui/material/List';
@@ -41,7 +40,6 @@ import HookTriggerDialog from './HookTriggerDialog';
 import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
 import HookBindingDebugger from '../HookBindingDebugger';
-import removeKeys from '../../utils/removeKeys';
 import yamlSchema from '../../utils/yamlSchema';
 import { FIRST_CHILD } from '../../utils/constants';
 
@@ -241,7 +239,7 @@ export default class HookForm extends Component {
       hook: props.hook,
       hookLastFires: props.hookLastFires,
       previousHook: props.hook,
-      taskInput: dump(removeKeys(cloneDeep(hook.task), ['__typename'])),
+      taskInput: dump(hook.task),
       triggerSchemaInput: dump(hook.triggerSchema),
       scheduleTextField: '',
       taskValidYaml: true,
@@ -269,7 +267,7 @@ export default class HookForm extends Component {
 
   getHookDefinition = () => {
     const { hook } = this.state;
-    const definition = {
+    return {
       metadata: {
         name: hook.metadata.name,
         description: hook.metadata.description,
@@ -281,8 +279,6 @@ export default class HookForm extends Component {
       task: hook.task,
       triggerSchema: hook.triggerSchema,
     };
-
-    return removeKeys(definition, ['__typename']);
   };
 
   handleCreateHook = () => {
