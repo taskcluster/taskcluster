@@ -72,6 +72,9 @@ export default function Shell({ url, version, taskId }: ShellProps) {
       terminal.prefs_.set('enable-clipboard-write', false);
       terminal.vt.characterEncoding = 'raw';
       terminal.keyboard.characterEncoding = 'raw';
+      terminal.setWindowTitle = title => {
+        document.title = `Shell: ${title} - ${window.env.APPLICATION_NAME}`;
+      };
 
       if (version !== '2') {
         println(`Interactive shell API version ${version} not supported`);

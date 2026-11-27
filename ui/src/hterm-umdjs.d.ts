@@ -25,6 +25,7 @@ declare module 'hterm-umdjs' {
       setCursorPosition(row: number, column: number): void;
       setCursorVisible(visible: boolean): void;
       setScrollbarVisible(visible: boolean): void;
+      setWindowTitle(title: string): void;
     }
   }
 
