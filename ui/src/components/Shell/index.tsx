@@ -11,6 +11,14 @@ const encoder = new TextEncoder();
 
 hterm.defaultStorage = new lib.Storage.Local();
 
+hterm.openUrl = (url: string) => {
+  const parsed = URL.parse(url);
+
+  if (parsed && ['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+    window.open(parsed.href, '_blank', 'noopener');
+  }
+};
+
 export interface ShellProps {
   url: string;
   version: string;
