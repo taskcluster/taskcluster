@@ -24,6 +24,7 @@ import PaginatedDataTable from '../PaginatedDataTable';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
+import WhitespaceHighlight from '../WhitespaceHighlight';
 import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
 import { pagination, taskDefinition, taskStatus } from '../../utils/prop-types';
 import splitTaskQueueId from '../../utils/splitTaskQueueId';
@@ -490,7 +491,7 @@ export default class TaskDetailsCard extends Component {
                               variant="body2"
                               component="span"
                               color="textSecondary">
-                              {scope}
+                              <WhitespaceHighlight text={scope} />
                             </Typography>
                           </li>
                         ))}

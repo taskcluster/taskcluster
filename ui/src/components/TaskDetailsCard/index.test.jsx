@@ -90,3 +90,16 @@ it('should sort the dependents by name', () => {
   fireEvent.click(getByText('Name'));
   expect(names()).toEqual(['bravo', 'alpha']);
 });
+
+it('should mark leading and trailing spaces in task scopes', () => {
+  const { getByText } = renderCard({
+    task: { ...task, scopes: [' queue:route:example '] },
+  });
+  const scope = getByText('queue:route:example', { exact: false });
+
+  expect(scope.textContent).toBe(' queue:route:example ');
+  expect(Array.from(scope.children).map(pad => pad.textContent)).toEqual([
+    ' ',
+    ' ',
+  ]);
+});

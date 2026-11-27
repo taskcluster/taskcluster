@@ -633,7 +633,9 @@ exports[`should render TaskDetailsCard 1`] = `
                   <span
                     class="MuiTypography-root MuiTypography-body2 css-1y00ooy-MuiTypography-root"
                   >
-                    scopes
+                    <span>
+                      scopes
+                    </span>
                   </span>
                 </li>
               </ul>

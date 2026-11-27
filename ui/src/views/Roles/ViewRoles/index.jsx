@@ -12,6 +12,7 @@ import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import DialogAction from '../../../components/DialogAction';
+import WhitespaceHighlight from '../../../components/WhitespaceHighlight';
 import withPaginatedResource from '../../../hocs/withPaginatedResource';
 import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
@@ -152,7 +153,8 @@ export default class ViewRoles extends Component {
             title="Delete Role?"
             body={
               <Typography variant="body2">
-                This will delete the role {deleteRoleId}.
+                This will delete the role{' '}
+                <WhitespaceHighlight text={deleteRoleId} />.
               </Typography>
             }
             confirmText="Delete Role"

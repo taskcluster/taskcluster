@@ -33,6 +33,7 @@ import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 import Link from '../../utils/Link';
 import scopeLink from '../../utils/scopeLink';
+import WhitespaceHighlight from '../WhitespaceHighlight';
 
 @withRouter
 @withStyles(theme => ({
@@ -341,7 +342,13 @@ export default class ClientForm extends Component {
                       {expandedScopes.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItemButton className={classes.listItemButton}>
-                            <ListItemText secondary={<code>{scope}</code>} />
+                            <ListItemText
+                              secondary={
+                                <code>
+                                  <WhitespaceHighlight text={scope} />
+                                </code>
+                              }
+                            />
                             <LinkIcon />
                           </ListItemButton>
                         </Link>

@@ -10,6 +10,7 @@ import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';
 import { withAuth } from '../../utils/Auth';
 import ErrorPanel from '../../components/ErrorPanel';
+import WhitespaceHighlight from '../../components/WhitespaceHighlight';
 import { withTaskclusterClient } from '../../utils/TaskclusterClient';
 import username from '../../utils/username';
 
@@ -116,7 +117,13 @@ export default class Profile extends Component {
                       <List>
                         {currentScopes.map(scope => (
                           <ListItem key={scope}>
-                            <ListItemText secondary={<code>{scope}</code>} />
+                            <ListItemText
+                              secondary={
+                                <code>
+                                  <WhitespaceHighlight text={scope} />
+                                </code>
+                              }
+                            />
                           </ListItem>
                         ))}
                       </List>
