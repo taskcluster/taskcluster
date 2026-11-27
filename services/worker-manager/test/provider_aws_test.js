@@ -7,9 +7,9 @@ import testing from '@taskcluster/lib-testing';
 import fs from 'node:fs';
 import path from 'node:path';
 import taskcluster from '@taskcluster/client';
-import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
+import { WorkerPool, Worker, WorkerPoolStats, WorkerPoolLaunchConfig } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
-import { DescribeInstancesCommand, DescribeVolumesCommand } from '@aws-sdk/client-ec2';
+import { DescribeInstancesCommand, DescribeVolumesCommand, RunInstancesCommand } from '@aws-sdk/client-ec2';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -141,6 +141,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         }
       });
     };
+
+    test('RunInstances failure reports error attributed to launch config', async () => {
+      const workerPool = await makeWorkerPool();
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      fake.mock.on(RunInstancesCommand).rejects(new Error('InsufficientInstanceCapacity'));
+
+      await provider.provision({ workerPool, workerPoolStats });
+
+      const [lc] = await WorkerPoolLaunchConfig.load(helper.db, workerPoolId);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].title, 'Instance Creation Error');
+      assert.equal(errors[0].kind, 'creation-error');
+      assert.equal(errors[0].launch_config_id, lc.launchConfigId);
+      assert.equal((await helper.getWorkers()).length, 0);
+    });
 
     provisionTest(
       'no launch configs',
