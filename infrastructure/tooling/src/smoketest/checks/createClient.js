@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import { retryAssertionFailures } from '../util.js';
 
@@ -29,14 +30,23 @@ tasks.push({
     const created = await auth.createClient(clientId, payload);
 
     // try using that new client, retrying until the auth service has synchronized
-    // the existence of the client.
-    await retryAssertionFailures(10, utils, async () => {
+    // the existence of the client.  Other auth replicas only learn about the new
+    // client from the clientCreated pulse message, so until then they respond
+    // with a 401 "not found".
+    await retryAssertionFailures(50, utils, async () => {
       const accessToken = created.accessToken;
       const auth2 = new taskcluster.Auth({
         rootUrl: process.env.TASKCLUSTER_ROOT_URL,
         credentials: { clientId, accessToken },
       });
-      await auth2.resetAccessToken(clientId);
+      try {
+        await auth2.resetAccessToken(clientId);
+      } catch (err) {
+        if (err.statusCode === 401 && /not found/.test(err.message)) {
+          assert.fail(err.message);
+        }
+        throw err;
+      }
     });
 
     // delete the new client

@@ -77,7 +77,8 @@ steps:
       - -c
       - |
         gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
-        && kubectl get pods -n dev --field-selector=status.phase!=Running -o name | xargs kubectl delete -n dev
+        && kubectl get pods -n dev --field-selector=status.phase!=Running -o name | xargs -r kubectl delete -n dev \
+        && kubectl get deployments -n dev -o name | xargs -r -n1 kubectl rollout status -n dev --timeout=5m
     entrypoint: bash
   - name: node:${_NODE_VERSION}
     args:
