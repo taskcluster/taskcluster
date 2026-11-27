@@ -69,6 +69,7 @@ export default function Shell({ url, version, taskId }: ShellProps) {
       terminal.prefs_.set('ctrl-c-copy', true);
       terminal.prefs_.set('ctrl-v-paste', true);
       terminal.prefs_.set('use-default-window-copy', true);
+      terminal.prefs_.set('enable-clipboard-write', false);
       terminal.vt.characterEncoding = 'raw';
       terminal.keyboard.characterEncoding = 'raw';
 
