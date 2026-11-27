@@ -4,6 +4,10 @@ declare module 'hterm-umdjs' {
     let openUrl: (url: string) => void;
     let notify: () => void;
 
+    const VT: {
+      OSC: Record<string, () => void>;
+    };
+
     interface IO {
       writeUTF8(data: string): void;
       sendString: (data: string) => void;

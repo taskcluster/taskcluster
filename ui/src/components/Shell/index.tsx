@@ -12,6 +12,7 @@ const encoder = new TextEncoder();
 hterm.defaultStorage = new lib.Storage.Local();
 
 hterm.notify = () => {};
+hterm.VT.OSC['1337'] = () => {};
 hterm.openUrl = (url: string) => {
   const parsed = URL.parse(url);
 
