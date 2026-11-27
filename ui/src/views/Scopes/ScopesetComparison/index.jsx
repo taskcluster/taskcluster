@@ -10,6 +10,7 @@ import CodeEditor from '../../../components/CodeEditor';
 import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button/index';
 import splitLines from '../../../utils/splitLines';
+import queryParamToArray from '../../../utils/queryParamToArray';
 
 const getScopesetDiff = (scopesA, scopesB) => {
   const scopesUnion = scopeUnion(scopesA, scopesB);
@@ -71,9 +72,10 @@ export default class ScopesetComparison extends Component {
     super(props);
 
     const query = parse(this.props.location.search.slice(1));
-    const { scopesA, scopesB } = query;
+    const scopesA = queryParamToArray(query.scopesA);
+    const scopesB = queryParamToArray(query.scopesB);
 
-    if (scopesA && scopesB) {
+    if (scopesA.length && scopesB.length) {
       const scopesetDiff = getScopesetDiff(scopesA, scopesB);
       const cellColors = getCellColors(scopesetDiff);
 

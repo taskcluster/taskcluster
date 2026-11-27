@@ -14,6 +14,7 @@ import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
+import queryParamToArray from '../../../utils/queryParamToArray';
 import Link from '../../../utils/Link';
 import scopeLink from '../../../utils/scopeLink';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
@@ -42,10 +43,10 @@ export default class ScopesetExpander extends Component {
     super(props);
 
     const query = parse(this.props.location.search.slice(1));
-    const scopes = query.scopes ? [].concat(query.scopes) : null;
+    const scopes = queryParamToArray(query.scopes);
 
     this.state = {
-      scopeText: scopes ? scopes.join('\n') : '',
+      scopeText: scopes.join('\n'),
       scopes: null,
       expandedScopes: null,
       loading: false,
