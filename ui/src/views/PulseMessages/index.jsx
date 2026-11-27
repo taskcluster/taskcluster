@@ -27,7 +27,6 @@ import DataTable from '../../components/DataTable';
 import PulseBindings from '../../components/PulseBindings';
 import subscribeToPulseMessages from '../../utils/pulseListener';
 import { withAuth } from '../../utils/Auth';
-import removeKeys from '../../utils/removeKeys';
 import exchangesList from '../../utils/exchangesList';
 
 const getBindingsFromProps = props => {
@@ -202,9 +201,7 @@ export default class PulseMessages extends Component {
   };
 
   addMessage(message) {
-    const messages = removeKeys(this.state.messages.concat(message), [
-      '__typename',
-    ]);
+    const messages = this.state.messages.concat(message);
     const params = btoa(JSON.stringify(messages, null, 2));
 
     this.setState({

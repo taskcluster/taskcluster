@@ -1,16 +1,13 @@
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
-import cloneDeep from 'lodash.clonedeep';
 import jsone from 'json-e';
 import { load } from 'js-yaml';
 import { Auth, Hooks, Queue, nice } from '@taskcluster/client-web';
-import removeKeys from '../../utils/removeKeys';
 import yamlSchema from '../../utils/yamlSchema';
 import validateActionsJson from '../../utils/validateActionsJson';
 import ajv from '../../utils/ajv';
 import { getClient } from '../../utils/client';
 
 export default async ({ task, form, action, getCredentials, taskActions }) => {
-  const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
   // We need to source scopes from somewhere. Typically these come from the
   // task we're given, which is either a regular decision task or an action
   // task. Decision tasks are easily identified, because their taskId matches
@@ -28,7 +25,7 @@ export default async ({ task, form, action, getCredentials, taskActions }) => {
   const validate = ajv.compile(action.schema || {});
   const valid = validate(input);
   const validateActionsJsonInstance = await validateActionsJson();
-  const validActionsJson = validateActionsJsonInstance(actions);
+  const validActionsJson = validateActionsJsonInstance(taskActions);
 
   if (!validActionsJson) {
     throw new Error(ajv.errorsText(validateActionsJsonInstance.errors));
@@ -43,7 +40,7 @@ export default async ({ task, form, action, getCredentials, taskActions }) => {
     taskId: task.taskId,
     task,
     input,
-    ...actions.variables,
+    ...taskActions.variables,
   };
 
   if (action.kind === 'task') {

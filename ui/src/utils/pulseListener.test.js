@@ -103,7 +103,7 @@ describe('subscribeToPulseMessages', () => {
         {
           exchange: 'exchange/foo/v1/thing',
           routingKeyPattern: '#.bar.#',
-          __typename: 'PulseBinding',
+          extra: 'ignored',
         },
       ],
       { onMessage: vi.fn(), onError: vi.fn() }
