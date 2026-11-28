@@ -104,3 +104,9 @@ worker:
   configPath: c:\generic-worker\generic-worker-config.yml
   protocolPipe: \\.\pipe\generic-worker
 ```
+
+On a sysprepped image (such as a cloud worker image), Worker-Runner itself must
+not start until Windows Setup has completed on first boot, otherwise it may
+claim a task that Setup then interrupts. Install it as a demand-start service
+and start it from `SetupComplete.cmd` (or `SetupComplete2.cmd` on Azure), as
+described in [Installing Generic-Worker](/docs/reference/workers/generic-worker/installing#windows-multiuser-build).
