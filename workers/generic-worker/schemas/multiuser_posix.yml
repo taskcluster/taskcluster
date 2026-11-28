@@ -47,10 +47,18 @@ oneOf:
           * `HOME` - the home directory of the task user
           * `PATH` - `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`
           * `USER` - the name of the task user
+          * Linux only, and only when `headlessTasks` is `false`: the following
+            variables, taken from the task user's desktop session (the environment of
+            their systemd user manager), if the session sets them: `DISPLAY`,
+            `WAYLAND_DISPLAY`, `XAUTHORITY`, `XDG_SESSION_TYPE`, `XDG_CURRENT_DESKTOP`,
+            `XDG_SESSION_DESKTOP`, `XDG_DATA_DIRS` and `DBUS_SESSION_BUS_ADDRESS`. The
+            worker does not claim tasks until the session has set `WAYLAND_DISPLAY` (or,
+            outside of a Wayland session, `DISPLAY`).
 
         The following environment variables will automatically be set in the task
         commands, and may not be overridden by environment variables in the task payload:
-          * `DISPLAY` - `:0` (Linux only, and only when `headlessTasks` is `false`)
+          * `XDG_RUNTIME_DIR` - `/run/user/<uid of task user>` (Linux only, and only when
+            `headlessTasks` is `false`)
           * `TASK_ID` - the task ID of the currently running task
           * `RUN_ID` - the run ID of the currently running task
           * `TASK_WORKDIR` - the working directory of the currently running task
