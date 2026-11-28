@@ -136,17 +136,10 @@ function makeToc({ files, rootPath }) {
               path: `${rootPath}${path.join('/')}`,
             };
 
-            if (rootPath !== 'reference/' && name === 'README') {
+            if (name === 'README') {
               ptr.data = child.data;
             } else {
-              if (rootPath === 'reference/' && name === 'README') {
-                ptr.data = child.data;
-                ptr.path = `${rootPath}${path.join('/')}`;
-              }
-
-              if (ptr.path !== child.path) {
-                ptr.children.push(child);
-              }
+              ptr.children.push(child);
             }
           }
 
@@ -179,7 +172,7 @@ export const tasks = [
         fileName =>
           Object.assign(files[fileName], {
             name: fileName,
-            path: fileName,
+            path: fileName === 'README' ? '' : fileName,
             children: [],
             content: undefined,
             data: Object.assign(files[fileName].data || {}, {

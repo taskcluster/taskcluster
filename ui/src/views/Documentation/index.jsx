@@ -8,10 +8,8 @@ import Dashboard from '../../components/Dashboard';
 import NotFound from '../../components/NotFound';
 import DocSearch from '../../components/DocSearch';
 import components from './components';
-import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
-import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 import docsSearchOptions from '../../../../generated/docs-search.json';
 import ErrorPanel from '../../components/ErrorPanel';
@@ -38,7 +36,7 @@ export default class Documentation extends Component {
   };
 
   componentDidMount() {
-    const { history, theme, location } = this.props;
+    const { history, theme } = this.props;
 
     this.load();
     // setTimeout makes sure the DOM  of the component is in a ready state
@@ -50,20 +48,25 @@ export default class Documentation extends Component {
 
         scrollToHash(parseFloat(theme.spacing(2)));
       });
-
-      // Handle initial scroll if necessary
-      if (location.hash) {
-        scrollToHash(parseFloat(theme.spacing(2)));
-      }
     }, 0);
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.match.params.path !== prevProps.match.params.path) {
+  componentDidUpdate(prevProps, prevState) {
+    const pathChanged =
+      this.props.match.params.path !== prevProps.match.params.path;
+
+    if (pathChanged) {
       this.load();
     }
 
-    if (
+    if (prevState.Page !== this.state.Page) {
+      if (this.props.location.hash) {
+        scrollToHash(parseFloat(this.props.theme.spacing(2)));
+      } else {
+        window.scrollTo(0, 0);
+      }
+    } else if (
+      !pathChanged &&
       prevProps.location.hash !== this.props.location.hash &&
       this.props.location.hash
     ) {
@@ -76,7 +79,7 @@ export default class Documentation extends Component {
       .replace(/\/$/, '')
       .replace(`${DOCS_PATH_PREFIX}/`, '');
 
-    if (node.path && currentPath === removeReadmeFromPath(node.path)) {
+    if (node.path && currentPath === node.path) {
       return node;
     }
 
@@ -147,18 +150,16 @@ export default class Documentation extends Component {
         disableTitleFormatting
         title={pageInfo?.data.title ? pageInfo.data.title : 'Documentation'}
         search={<DocSearch options={docsSearchOptions} />}>
-        <ScrollToTop scrollKey={Page ? Page.toString() : null}>
-          {error && error.code === 'MODULE_NOT_FOUND' && <NotFound isDocs />}
-          {error && error.code !== 'MODULE_NOT_FOUND' && (
-            <ErrorPanel fixedDocs error={error} />
-          )}
-          {!error && Page && (
-            <MDXProvider components={components}>
-              <Page />
-            </MDXProvider>
-          )}
-          {pageInfo && <PageMeta pageInfo={pageInfo} history={history} />}
-        </ScrollToTop>
+        {error && error.code === 'MODULE_NOT_FOUND' && <NotFound isDocs />}
+        {error && error.code !== 'MODULE_NOT_FOUND' && (
+          <ErrorPanel fixedDocs error={error} />
+        )}
+        {!error && Page && (
+          <MDXProvider components={components}>
+            <Page />
+          </MDXProvider>
+        )}
+        {pageInfo && <PageMeta pageInfo={pageInfo} history={history} />}
       </Dashboard>
     );
   }

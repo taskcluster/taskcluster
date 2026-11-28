@@ -85,7 +85,7 @@ providers: {
   }
 ```
 
-For more information, you can check out [this page](https://docs.taskcluster.net/docs/manual/deploying/workers#aws).
+For more information, you can check out [this page](https://docs.taskcluster.net/docs/manual/deploying/worker-manager-config#aws).
 
 ### Worker pool secret configuration
 

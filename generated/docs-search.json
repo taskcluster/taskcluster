@@ -792,13 +792,6 @@
   },
   {
     "element": "h1",
-    "id": "worker-manager-configuration",
-    "path": "/manual/deploying/workers",
-    "subtitle": null,
-    "title": "Worker Manager Configuration"
-  },
-  {
-    "element": "h1",
     "id": "api-errors",
     "path": "/manual/design/apis/errors",
     "subtitle": null,

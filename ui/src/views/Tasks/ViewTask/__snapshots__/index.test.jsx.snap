@@ -45,7 +45,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
           Task "a task"
         </h6>
         <form
-          class="css-11ov2wd-Search-root"
+          class="css-1ne8laz-Search-root"
         >
           <div
             class="MuiFormControl-root css-9l58fz-MuiFormControl-root-Search-formControl"
@@ -66,7 +66,7 @@ exports[`ViewTask page > should render ViewTask page 1`] = `
               </svg>
             </div>
             <input
-              class="css-zg20v3-Search-input css-15-Search-input-ref"
+              class="css-zg20v3-Search-input css-13-Search-input-ref"
               id="adornment-search"
               placeholder="Search"
               spellcheck="false"

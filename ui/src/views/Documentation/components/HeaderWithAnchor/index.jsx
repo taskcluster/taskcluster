@@ -30,13 +30,11 @@ const childrenToText = node => {
       marginTop: 0,
     },
     '& .anchor-link-style': {
-      opacity: 0,
       // To prevent the link to get the focus.
       display: 'none',
     },
     '&:hover .anchor-link-style': {
-      display: 'inline-block',
-      opacity: 1,
+      display: 'inline',
       padding: `0 ${theme.spacing(1)}`,
       color: theme.palette.text.hint,
       '&:hover': {

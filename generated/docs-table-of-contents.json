@@ -17,7 +17,7 @@
       "order": 1000
     },
     "name": "README",
-    "path": "README"
+    "path": ""
   },
   "manual": {
     "children": [
@@ -1618,35 +1618,13 @@
             },
             "name": "worker-manager-config",
             "next": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/object-service",
+              "title": "Object Service"
             },
             "path": "manual/deploying/worker-manager-config",
             "prev": {
               "path": "manual/deploying/static-clients",
               "title": "Static Clients"
-            },
-            "up": {
-              "path": "manual/deploying",
-              "title": "Deploying Taskcluster"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 20,
-              "title": "Workers"
-            },
-            "name": "workers",
-            "next": {
-              "path": "manual/deploying/object-service",
-              "title": "Object Service"
-            },
-            "path": "manual/deploying/workers",
-            "prev": {
-              "path": "manual/deploying/worker-manager-config",
-              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -1667,8 +1645,8 @@
             },
             "path": "manual/deploying/object-service",
             "prev": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -2036,7 +2014,7 @@
             },
             "name": "websocktunnel",
             "next": {
-              "path": "reference/README",
+              "path": "reference",
               "title": "Taskcluster Reference"
             },
             "path": "manual/deploying/websocktunnel",
@@ -2107,11 +2085,11 @@
         },
         "path": "reference/guide",
         "prev": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       },
@@ -2134,7 +2112,7 @@
           "title": "Guide to The Microservices"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       },
@@ -2147,7 +2125,7 @@
         },
         "name": "url-structure",
         "next": {
-          "path": "reference/platform/README",
+          "path": "reference/platform",
           "title": "Taskcluster Platform"
         },
         "path": "reference/url-structure",
@@ -2156,7 +2134,7 @@
           "title": "Schema Index"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       },
@@ -2179,11 +2157,11 @@
                 },
                 "path": "reference/platform/auth/api",
                 "prev": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2206,7 +2184,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2229,7 +2207,7 @@
                   "title": "exchanges"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2252,7 +2230,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2274,7 +2252,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2296,7 +2274,7 @@
                   "title": "Scopes and Satisfaction"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2318,7 +2296,7 @@
                   "title": "Audit History"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2340,7 +2318,7 @@
                   "title": "Clients"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               },
@@ -2353,7 +2331,7 @@
                 },
                 "name": "external-services-credentials",
                 "next": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 },
                 "path": "reference/platform/auth/external-services-credentials",
@@ -2362,7 +2340,7 @@
                   "title": "Roles and Role Expansion"
                 },
                 "up": {
-                  "path": "reference/platform/auth/README",
+                  "path": "reference/platform/auth",
                   "title": "auth"
                 }
               }
@@ -2375,13 +2353,13 @@
               "path": "reference/platform/auth/api",
               "title": "api"
             },
-            "path": "reference/platform/auth/README",
+            "path": "reference/platform/auth",
             "prev": {
-              "path": "reference/platform/README",
+              "path": "reference/platform",
               "title": "Taskcluster Platform"
             },
             "up": {
-              "path": "reference/platform/README",
+              "path": "reference/platform",
               "title": "Taskcluster Platform"
             }
           },
@@ -2402,11 +2380,11 @@
                 },
                 "path": "reference/platform/object/api",
                 "prev": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               },
@@ -2429,7 +2407,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               },
@@ -2452,7 +2430,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               },
@@ -2474,7 +2452,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               },
@@ -2496,7 +2474,7 @@
                   "title": "Download Methods"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               },
@@ -2518,7 +2496,7 @@
                   "title": "Simple Downloads"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               },
@@ -2531,7 +2509,7 @@
                 },
                 "name": "aws-backend",
                 "next": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 },
                 "path": "reference/platform/object/aws-backend",
@@ -2540,7 +2518,7 @@
                   "title": "Upload Methods"
                 },
                 "up": {
-                  "path": "reference/platform/object/README",
+                  "path": "reference/platform/object",
                   "title": "object"
                 }
               }
@@ -2553,13 +2531,13 @@
               "path": "reference/platform/object/api",
               "title": "api"
             },
-            "path": "reference/platform/object/README",
+            "path": "reference/platform/object",
             "prev": {
               "path": "reference/platform/auth/external-services-credentials",
               "title": "External Service Credentials"
             },
             "up": {
-              "path": "reference/platform/README",
+              "path": "reference/platform",
               "title": "Taskcluster Platform"
             }
           },
@@ -2580,11 +2558,11 @@
                 },
                 "path": "reference/platform/queue/api",
                 "prev": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2607,7 +2585,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2630,7 +2608,7 @@
                   "title": "exchanges"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2653,7 +2631,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2675,7 +2653,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2698,7 +2676,7 @@
                   "title": "Worker Hierarchy"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2721,7 +2699,7 @@
                   "title": "Task Life-Cycle"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2750,7 +2728,7 @@
                   "title": "Queue-Worker Interaction"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               },
@@ -2763,7 +2741,7 @@
                 },
                 "name": "artifacts",
                 "next": {
-                  "path": "reference/core/README",
+                  "path": "reference/core",
                   "title": "Core Services"
                 },
                 "path": "reference/platform/queue/artifacts",
@@ -2772,7 +2750,7 @@
                   "title": "Task Schema"
                 },
                 "up": {
-                  "path": "reference/platform/queue/README",
+                  "path": "reference/platform/queue",
                   "title": "queue"
                 }
               }
@@ -2785,13 +2763,13 @@
               "path": "reference/platform/queue/api",
               "title": "api"
             },
-            "path": "reference/platform/queue/README",
+            "path": "reference/platform/queue",
             "prev": {
               "path": "reference/platform/object/aws-backend",
               "title": "AWS Backend Type"
             },
             "up": {
-              "path": "reference/platform/README",
+              "path": "reference/platform",
               "title": "Taskcluster Platform"
             }
           }
@@ -2802,16 +2780,16 @@
         },
         "name": "platform",
         "next": {
-          "path": "reference/platform/auth/README",
+          "path": "reference/platform/auth",
           "title": "auth"
         },
-        "path": "reference/platform/README",
+        "path": "reference/platform",
         "prev": {
           "path": "reference/url-structure",
           "title": "URL Structure"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       },
@@ -2834,11 +2812,11 @@
                 },
                 "path": "reference/core/hooks/api",
                 "prev": {
-                  "path": "reference/core/hooks/README",
+                  "path": "reference/core/hooks",
                   "title": "hooks"
                 },
                 "up": {
-                  "path": "reference/core/hooks/README",
+                  "path": "reference/core/hooks",
                   "title": "hooks"
                 }
               },
@@ -2861,7 +2839,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/hooks/README",
+                  "path": "reference/core/hooks",
                   "title": "hooks"
                 }
               },
@@ -2884,7 +2862,7 @@
                   "title": "exchanges"
                 },
                 "up": {
-                  "path": "reference/core/hooks/README",
+                  "path": "reference/core/hooks",
                   "title": "hooks"
                 }
               },
@@ -2907,7 +2885,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/hooks/README",
+                  "path": "reference/core/hooks",
                   "title": "hooks"
                 }
               },
@@ -2920,7 +2898,7 @@
                 },
                 "name": "firing-hooks",
                 "next": {
-                  "path": "reference/core/index/README",
+                  "path": "reference/core/index",
                   "title": "index"
                 },
                 "path": "reference/core/hooks/firing-hooks",
@@ -2929,7 +2907,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/core/hooks/README",
+                  "path": "reference/core/hooks",
                   "title": "hooks"
                 }
               }
@@ -2942,13 +2920,13 @@
               "path": "reference/core/hooks/api",
               "title": "api"
             },
-            "path": "reference/core/hooks/README",
+            "path": "reference/core/hooks",
             "prev": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           },
@@ -2969,11 +2947,11 @@
                 },
                 "path": "reference/core/index/api",
                 "prev": {
-                  "path": "reference/core/index/README",
+                  "path": "reference/core/index",
                   "title": "index"
                 },
                 "up": {
-                  "path": "reference/core/index/README",
+                  "path": "reference/core/index",
                   "title": "index"
                 }
               },
@@ -2996,7 +2974,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/index/README",
+                  "path": "reference/core/index",
                   "title": "index"
                 }
               },
@@ -3010,7 +2988,7 @@
                 },
                 "name": "metrics",
                 "next": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 },
                 "path": "reference/core/index/metrics",
@@ -3019,7 +2997,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/index/README",
+                  "path": "reference/core/index",
                   "title": "index"
                 }
               }
@@ -3032,13 +3010,13 @@
               "path": "reference/core/index/api",
               "title": "api"
             },
-            "path": "reference/core/index/README",
+            "path": "reference/core/index",
             "prev": {
               "path": "reference/core/hooks/firing-hooks",
               "title": "Firing Hooks"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           },
@@ -3059,11 +3037,11 @@
                 },
                 "path": "reference/core/notify/api",
                 "prev": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 },
                 "up": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 }
               },
@@ -3086,7 +3064,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 }
               },
@@ -3109,7 +3087,7 @@
                   "title": "exchanges"
                 },
                 "up": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 }
               },
@@ -3132,7 +3110,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 }
               },
@@ -3145,7 +3123,7 @@
                 },
                 "name": "usage",
                 "next": {
-                  "path": "reference/core/purge-cache/README",
+                  "path": "reference/core/purge-cache",
                   "title": "purge-cache"
                 },
                 "path": "reference/core/notify/usage",
@@ -3154,7 +3132,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/core/notify/README",
+                  "path": "reference/core/notify",
                   "title": "notify"
                 }
               }
@@ -3167,13 +3145,13 @@
               "path": "reference/core/notify/api",
               "title": "api"
             },
-            "path": "reference/core/notify/README",
+            "path": "reference/core/notify",
             "prev": {
               "path": "reference/core/index/metrics",
               "title": "metrics"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           },
@@ -3194,11 +3172,11 @@
                 },
                 "path": "reference/core/purge-cache/api",
                 "prev": {
-                  "path": "reference/core/purge-cache/README",
+                  "path": "reference/core/purge-cache",
                   "title": "purge-cache"
                 },
                 "up": {
-                  "path": "reference/core/purge-cache/README",
+                  "path": "reference/core/purge-cache",
                   "title": "purge-cache"
                 }
               },
@@ -3221,7 +3199,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/purge-cache/README",
+                  "path": "reference/core/purge-cache",
                   "title": "purge-cache"
                 }
               },
@@ -3235,7 +3213,7 @@
                 },
                 "name": "metrics",
                 "next": {
-                  "path": "reference/core/secrets/README",
+                  "path": "reference/core/secrets",
                   "title": "secrets"
                 },
                 "path": "reference/core/purge-cache/metrics",
@@ -3244,7 +3222,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/purge-cache/README",
+                  "path": "reference/core/purge-cache",
                   "title": "purge-cache"
                 }
               }
@@ -3257,13 +3235,13 @@
               "path": "reference/core/purge-cache/api",
               "title": "api"
             },
-            "path": "reference/core/purge-cache/README",
+            "path": "reference/core/purge-cache",
             "prev": {
               "path": "reference/core/notify/usage",
               "title": "Enable Notifications"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           },
@@ -3284,11 +3262,11 @@
                 },
                 "path": "reference/core/secrets/api",
                 "prev": {
-                  "path": "reference/core/secrets/README",
+                  "path": "reference/core/secrets",
                   "title": "secrets"
                 },
                 "up": {
-                  "path": "reference/core/secrets/README",
+                  "path": "reference/core/secrets",
                   "title": "secrets"
                 }
               },
@@ -3311,7 +3289,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/secrets/README",
+                  "path": "reference/core/secrets",
                   "title": "secrets"
                 }
               },
@@ -3325,7 +3303,7 @@
                 },
                 "name": "metrics",
                 "next": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 },
                 "path": "reference/core/secrets/metrics",
@@ -3334,7 +3312,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/secrets/README",
+                  "path": "reference/core/secrets",
                   "title": "secrets"
                 }
               }
@@ -3347,13 +3325,13 @@
               "path": "reference/core/secrets/api",
               "title": "api"
             },
-            "path": "reference/core/secrets/README",
+            "path": "reference/core/secrets",
             "prev": {
               "path": "reference/core/purge-cache/metrics",
               "title": "metrics"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           },
@@ -3374,11 +3352,11 @@
                 },
                 "path": "reference/core/web-server/api",
                 "prev": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 },
                 "up": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 }
               },
@@ -3401,7 +3379,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 }
               },
@@ -3424,7 +3402,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 }
               },
@@ -3446,7 +3424,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 }
               },
@@ -3459,7 +3437,7 @@
                 },
                 "name": "mozilla-auth0-login-strategy",
                 "next": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 },
                 "path": "reference/core/web-server/mozilla-auth0-login-strategy",
@@ -3468,7 +3446,7 @@
                   "title": "GitHub Login Strategy"
                 },
                 "up": {
-                  "path": "reference/core/web-server/README",
+                  "path": "reference/core/web-server",
                   "title": "web-server"
                 }
               }
@@ -3481,13 +3459,13 @@
               "path": "reference/core/web-server/api",
               "title": "api"
             },
-            "path": "reference/core/web-server/README",
+            "path": "reference/core/web-server",
             "prev": {
               "path": "reference/core/secrets/metrics",
               "title": "metrics"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           },
@@ -3508,11 +3486,11 @@
                 },
                 "path": "reference/core/worker-manager/api",
                 "prev": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3535,7 +3513,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3558,7 +3536,7 @@
                   "title": "exchanges"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3581,7 +3559,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3603,7 +3581,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3625,7 +3603,7 @@
                   "title": "Azure Provider Type"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3647,7 +3625,7 @@
                   "title": "Google Provider Type"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3669,7 +3647,7 @@
                   "title": "AWS Provider Type"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3691,7 +3669,7 @@
                   "title": "Static Provider Type"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               },
@@ -3704,7 +3682,7 @@
                 },
                 "name": "worker-interaction",
                 "next": {
-                  "path": "reference/integrations/README",
+                  "path": "reference/integrations",
                   "title": "Integrations"
                 },
                 "path": "reference/core/worker-manager/worker-interaction",
@@ -3713,7 +3691,7 @@
                   "title": "Worker-Manager - Launch Configurations"
                 },
                 "up": {
-                  "path": "reference/core/worker-manager/README",
+                  "path": "reference/core/worker-manager",
                   "title": "worker-manager"
                 }
               }
@@ -3726,13 +3704,13 @@
               "path": "reference/core/worker-manager/api",
               "title": "api"
             },
-            "path": "reference/core/worker-manager/README",
+            "path": "reference/core/worker-manager",
             "prev": {
               "path": "reference/core/web-server/mozilla-auth0-login-strategy",
               "title": "Mozilla-Auth0 Login Strategy"
             },
             "up": {
-              "path": "reference/core/README",
+              "path": "reference/core",
               "title": "Core Services"
             }
           }
@@ -3743,16 +3721,16 @@
         },
         "name": "core",
         "next": {
-          "path": "reference/core/hooks/README",
+          "path": "reference/core/hooks",
           "title": "hooks"
         },
-        "path": "reference/core/README",
+        "path": "reference/core",
         "prev": {
           "path": "reference/platform/queue/artifacts",
           "title": "Artifacts"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       },
@@ -3775,11 +3753,11 @@
                 },
                 "path": "reference/integrations/github/api",
                 "prev": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3802,7 +3780,7 @@
                   "title": "api"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3825,7 +3803,7 @@
                   "title": "exchanges"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3848,7 +3826,7 @@
                   "title": "logs"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3870,7 +3848,7 @@
                   "title": "metrics"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3892,7 +3870,7 @@
                   "title": "Using Taskcluster for Github Projects"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3914,7 +3892,7 @@
                   "title": ".taskcluster.yml version 1"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               },
@@ -3927,7 +3905,7 @@
                 },
                 "name": "checks",
                 "next": {
-                  "path": "reference/workers/README",
+                  "path": "reference/workers",
                   "title": "Workers"
                 },
                 "path": "reference/integrations/github/checks",
@@ -3936,7 +3914,7 @@
                   "title": ".taskcluster.yml version 0"
                 },
                 "up": {
-                  "path": "reference/integrations/github/README",
+                  "path": "reference/integrations/github",
                   "title": "github"
                 }
               }
@@ -3949,13 +3927,13 @@
               "path": "reference/integrations/github/api",
               "title": "api"
             },
-            "path": "reference/integrations/github/README",
+            "path": "reference/integrations/github",
             "prev": {
-              "path": "reference/integrations/README",
+              "path": "reference/integrations",
               "title": "Integrations"
             },
             "up": {
-              "path": "reference/integrations/README",
+              "path": "reference/integrations",
               "title": "Integrations"
             }
           }
@@ -3966,16 +3944,16 @@
         },
         "name": "integrations",
         "next": {
-          "path": "reference/integrations/github/README",
+          "path": "reference/integrations/github",
           "title": "github"
         },
-        "path": "reference/integrations/README",
+        "path": "reference/integrations",
         "prev": {
           "path": "reference/core/worker-manager/worker-interaction",
           "title": "Worker-Manager - Worker Interaction"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       },
@@ -3993,16 +3971,16 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 },
                 "path": "reference/workers/built-in-workers/logs",
                 "prev": {
-                  "path": "reference/workers/built-in-workers/README",
+                  "path": "reference/workers/built-in-workers",
                   "title": "built-in-workers"
                 },
                 "up": {
-                  "path": "reference/workers/built-in-workers/README",
+                  "path": "reference/workers/built-in-workers",
                   "title": "built-in-workers"
                 }
               }
@@ -4015,13 +3993,13 @@
               "path": "reference/workers/built-in-workers/logs",
               "title": "logs"
             },
-            "path": "reference/workers/built-in-workers/README",
+            "path": "reference/workers/built-in-workers",
             "prev": {
-              "path": "reference/workers/README",
+              "path": "reference/workers",
               "title": "Workers"
             },
             "up": {
-              "path": "reference/workers/README",
+              "path": "reference/workers",
               "title": "Workers"
             }
           },
@@ -4041,11 +4019,11 @@
                 },
                 "path": "reference/workers/generic-worker/usage",
                 "prev": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4067,7 +4045,7 @@
                   "title": "Usage/Config"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4089,7 +4067,7 @@
                   "title": "Features"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4111,7 +4089,7 @@
                   "title": "Engines"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4133,7 +4111,7 @@
                   "title": "Support Tiers"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4155,7 +4133,7 @@
                   "title": "Installing"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4177,7 +4155,7 @@
                   "title": "Task Payload - insecure, posix"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               },
@@ -4199,7 +4177,7 @@
                   "title": "Task Payload - multiuser, posix"
                 },
                 "up": {
-                  "path": "reference/workers/generic-worker/README",
+                  "path": "reference/workers/generic-worker",
                   "title": "generic-worker"
                 }
               }
@@ -4212,13 +4190,13 @@
               "path": "reference/workers/generic-worker/usage",
               "title": "Usage/Config"
             },
-            "path": "reference/workers/generic-worker/README",
+            "path": "reference/workers/generic-worker",
             "prev": {
               "path": "reference/workers/built-in-workers/logs",
               "title": "logs"
             },
             "up": {
-              "path": "reference/workers/README",
+              "path": "reference/workers",
               "title": "Workers"
             }
           },
@@ -4231,7 +4209,7 @@
             },
             "name": "websocktunnel",
             "next": {
-              "path": "reference/workers/worker-runner/README",
+              "path": "reference/workers/worker-runner",
               "title": "worker-runner"
             },
             "path": "reference/workers/websocktunnel",
@@ -4240,7 +4218,7 @@
               "title": "Task Payload - multiuser, windows"
             },
             "up": {
-              "path": "reference/workers/README",
+              "path": "reference/workers",
               "title": "Workers"
             }
           },
@@ -4260,11 +4238,11 @@
                 },
                 "path": "reference/workers/worker-runner/worker-configuration",
                 "prev": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 },
                 "up": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 }
               },
@@ -4286,7 +4264,7 @@
                   "title": "Worker Configuration"
                 },
                 "up": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 }
               },
@@ -4308,7 +4286,7 @@
                   "title": "Runner Configuration"
                 },
                 "up": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 }
               },
@@ -4330,7 +4308,7 @@
                   "title": "Providers"
                 },
                 "up": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 }
               },
@@ -4352,7 +4330,7 @@
                   "title": "Workers"
                 },
                 "up": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 }
               },
@@ -4370,7 +4348,7 @@
                   "title": "Logging"
                 },
                 "up": {
-                  "path": "reference/workers/worker-runner/README",
+                  "path": "reference/workers/worker-runner",
                   "title": "worker-runner"
                 }
               }
@@ -4383,13 +4361,13 @@
               "path": "reference/workers/worker-runner/worker-configuration",
               "title": "Worker Configuration"
             },
-            "path": "reference/workers/worker-runner/README",
+            "path": "reference/workers/worker-runner",
             "prev": {
               "path": "reference/workers/websocktunnel",
               "title": "websocktunnel"
             },
             "up": {
-              "path": "reference/workers/README",
+              "path": "reference/workers",
               "title": "Workers"
             }
           }
@@ -4400,16 +4378,16 @@
         },
         "name": "workers",
         "next": {
-          "path": "reference/workers/built-in-workers/README",
+          "path": "reference/workers/built-in-workers",
           "title": "built-in-workers"
         },
-        "path": "reference/workers/README",
+        "path": "reference/workers",
         "prev": {
           "path": "reference/integrations/github/checks",
           "title": "checks"
         },
         "up": {
-          "path": "reference/README",
+          "path": "reference",
           "title": "Taskcluster Reference"
         }
       }
@@ -4422,7 +4400,7 @@
       "path": "reference/guide",
       "title": "Guide to The Microservices"
     },
-    "path": "reference/README",
+    "path": "reference",
     "prev": {
       "path": "manual/deploying/websocktunnel",
       "title": "Websocktunnel"
